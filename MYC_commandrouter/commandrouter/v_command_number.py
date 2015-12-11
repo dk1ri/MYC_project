@@ -1,0 +1,1 @@
+a=1                                           #a: actual commandnumber

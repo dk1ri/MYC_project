@@ -1,0 +1,1 @@
+a=[]                                            #a: list of announcements
