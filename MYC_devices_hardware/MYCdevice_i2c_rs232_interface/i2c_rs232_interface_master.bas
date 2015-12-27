@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_master.bas
-'Version V03.0, 20151117
+'Version V03.1, 20151221
 'purpose : Programm for rs232 to i2c Interface for test of MYC devices
 'This Programm workes as I2C master
 'Can be used with hardware rs232_i2c_interface Version V01.9 by DK1RI
@@ -101,6 +101,8 @@ Dim Last_error As String * 30                               'Error Buffer
 Dim Last_error_b(30) As Byte At Last_error Overlay
 Dim Error_no As Byte
 Dim Cmd_watchdog As Word                                    'Watchdog notifier
+Dim I2C_name As String * 1
+Dim I2C_name_eeram As Eram String * 1
 '
 Dim Myc_mode As Byte
 Dim Myc_mode_eeram As Eram Byte
@@ -140,6 +142,7 @@ Else
    Dev_name = Dev_name_eeram
    Adress = Adress_eeram
    Myc_mode = Myc_mode_eeram
+   I2C_name=I2C_name_eeram
 End If
 '
 Gosub Init
@@ -179,10 +182,12 @@ Dev_number = 1                                              'unsigned , set at f
 Dev_number_eeram = Dev_number                               'default values
 Dev_name = "Device 1"
 Dev_name_eeram = Dev_name
-Adress = 2
+Adress = 0
 Adress_eeram = Adress
 Myc_mode = 0
 Myc_mode_eeram = Myc_mode
+i2C_name="1"
+I2C_name_eeram =I2C_name
 Return
 '
 Init:
@@ -362,7 +367,7 @@ Select Case Command_b(1)
    Case 0
 'Befehl &H00               basic annoumement wird gelesen
 '                          basic announcement is read
-'Data "0;m;DK1RI;RS232_I2C_interface Master;V03.0;1;170;15;20"
+'Data "0;m;DK1RI;RS232_I2C_interface Master;V03.1;1;170;15;20"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -404,9 +409,9 @@ Select Case Command_b(1)
       End If
 '
    Case 2
-'Befehl &H01 <s>           string von angeschlossenem device lesen, Myc_mode = 0
+'Befehl &H02 <s>           string von angeschlossenem device lesen, Myc_mode = 0
 '                          read string from device
-'Data "2;aa;as1"
+'Data "2;aa,as1"
       If Myc_mode = 0 Then
          If Commandpointer = 2 Then
             If Myc_mode = 0 Then
@@ -435,7 +440,7 @@ Select Case Command_b(1)
    Case 16
 'Befehl &H10               übersetzes 0 des slave Myc_mode = 1
 '                          translated 0 of slave
-'Data "16;m;DK1RI;RS232_I2C_interface Slave;V01.1.4;1;170;8"
+'Data "16;m;DK1RI;RS232_I2C_interface Slave;V01.1.4;1;170;8;13"
       If Myc_mode = 1 Then
          A_line = 3
          Gosub Sub_restore
@@ -483,7 +488,7 @@ Select Case Command_b(1)
    Case 18
 'Befehl &H12               übersetzes 2 des slave Myc_mode = 1 , RS232 nach I2C
 '                          translated 2 of slave, RS232 to I2C
-'Data "18,aa;as17"
+'Data "18,aa,as17"
       If Myc_mode = 1 Then
          Tempb = 2                                          'read command to slave
          I2csend Adress , Tempb
@@ -563,7 +568,7 @@ Select Case Command_b(1)
    Case 22
 'Befehl &H16 <n> <n>       übersetzes 254 des slave Myc_mode = 1
 '                          translated 254 of slave,
-'Data "22;oa,INDIVIDUALIZATION;NAME;20;Device 1;NUMBER;b;1;INTERFACETYPE;3;I2C;ADRESS;b;2"
+'Data "22;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,1"
       If Myc_mode = 1 Then
          If Commandpointer = 1 Then
              Incr Commandpointer
@@ -659,7 +664,7 @@ Select Case Command_b(1)
    Case 23
 'Befehl &H17 <n>           übersetzes 255 des slave Myc_mode = 1
 '                          translated 255 of slave,
-'Data "23;aa;as22"
+'Data "23;aa,as22"
       If Myc_mode = 1 Then
          If Commandpointer = 2 Then
             Tempb = Command_b(commandpointer)
@@ -726,7 +731,7 @@ Select Case Command_b(1)
    Case 239
 'Befehl &HEF               MYC_mode lesen
 '                          read myc_mod
-'Data "239;aa;as238"
+'Data "239;aa,as238"
       Print Chr(myc_mode);
       Gosub Command_received                                '
 '
@@ -758,7 +763,7 @@ Select Case Command_b(1)
          End If
 '
       Case 252
-'Befehl &HFC               Liest letzen Fehler
+'Befehl &HFC               Liest letzten Fehler
 '                          read last error
 'Data "252;aa,LAST ERROR;20,last_error"
          Buffer = String(stringlength , 0)                  'will delete buffer and restart ponter
@@ -792,7 +797,7 @@ Select Case Command_b(1)
       Case 254
 'Befehl &HFE <n> <n>       Individualisierung schreiben
 '                          write indivdualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,1;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1;INTERFACETYPE,USB"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,1"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -830,25 +835,12 @@ Select Case Command_b(1)
                      Incr Commandpointer
                   End If
                Case 2
-                  If Commandpointer = 2 Then
+                  If Commandpointer < 4 Then
                      Incr Commandpointer
-                  Else
-                     If Commandpointer = 3 Then
-                        L = Command_b(3)
-                        If L = 0 Then
-                           Gosub Command_received
-                        Else
-                           If L > 3 Then L = 3
-                           L = L + 3
-                           Incr Commandpointer
-                        End If
-                     Else
-                        If Commandpointer = L Then
-                        Gosub Command_received
-                        Else
-                           Incr Commandpointer
-                        End If
-                     End If
+                  Else                                                        'as per announcement: 1 byte string
+                     I2C_name = Chr(Command_b(4))
+                     I2C_name_eeram=I2C_name
+                     Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
@@ -875,7 +867,7 @@ Select Case Command_b(1)
          End If
 '
       Case 255
-'Data "255;aa;as254"
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,0;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;1,USB,1"
          If Commandpointer = 2 Then
             Buffer = String(stringlength , 0)               'delete buffer and restart ponter
             Buffer_pointer = 1
@@ -888,12 +880,27 @@ Select Case Command_b(1)
                   Tempb = Dev_number
                   Printbin Tempb
                Case 2
-                  Buffer = "{003}I2C"
-                  L = 4
+                  Buffer = I2C_name
+                  L = 1
                   Gosub Print_line
                Case 3
                   Tempb = Adress / 2
                   Printbin Tempb
+               Case 4
+                  Buffer = "1"
+                  L = 1
+                  Gosub Print_line
+               Case 5
+                  Tempb = 0
+                  Printbin Tempb
+               Case 6
+                  Buffer = "8n1"
+                  L = 3
+                  Gosub Print_line
+               Case 7
+                  Buffer = "1"
+                  L = 1
+                  Gosub Print_line
                Case Else
                   Error_no = 4                              'ignore anything else
                   Gosub Last_err
@@ -920,7 +927,7 @@ End
 Announce0:
 'Befehl &H00               basic annoumement wird gelesen
 '                          basic announcement is read
-Data "0;m;DK1RI;RS232_I2C_interface Master;V02.1;1;170;15;20"
+Data "0;m;DK1RI;RS232_I2C_interface Master;V03.1;1;170;15;20"
 '
 Announce1:
 'Befehl &H01 <s>           string an angeschlossenes device schicken Myc_mode = 0
@@ -928,14 +935,14 @@ Announce1:
 Data "1;oa;253"
 '
 Announce2:
-'Befehl &H01 <s>           string von angeschlossenem device lesen, Myc_mode = 0
+'Befehl &H02 <s>           string von angeschlossenem device lesen, Myc_mode = 0
 '                          read string from device
-Data "2;aa;as1"
+Data "2;aa,as1"
 '
 Announce3:
 'Befehl &H10               übersetzes 0 des slave Myc_mode = 1
 '                          translated 0 of slave
-Data "16;m;DK1RI;RS232_I2C_interface Slave;V01.1.4;1;170;8"
+Data "16;m;DK1RI;RS232_I2C_interface Slave;V01.1.4;1;170;8;13"
 '
 Announce4:
 'Befehl &H11 <s>           übersetzes 1 des slave Myc_mode = 1 I2C nach RS232
@@ -945,7 +952,7 @@ Data "17,oa;252"
 Announce5:
 'Befehl &H12               übersetzes 2 des slave Myc_mode = 1 , RS232 nach I2C
 '                          translated 2 of slave, RS232 to I2C
-Data "18,aa;as17"
+Data "18,aa,as17"
 '
 Announce6:
 'Befehl &H13 <n>           übersetzes 240 des slave Myc_mode = 1 , Daten sind lokal wie bei einem commandrouter gespreichert
@@ -965,12 +972,12 @@ Data "21;af,MYC INFO;b,&H04"
 Announce9:
 'Befehl &H16 <n> <n>       übersetzes 254 des slave Myc_mode = 1
 '                          translated 254 of slave,
-Data "22;oa,INDIVIDUALIZATION;NAME;20;Device 1;NUMBER;b;1;INTERFACETYPE;3;I2C;ADRESS;b;2"
+Data "22;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,1"
 '
 Announce10:
 'Befehl &H17 <n>           übersetzes 255 des slave Myc_mode = 1
 '                          translated 255 of slave,
-Data "23;aa;as22"
+Data "23;aa,as22"
 '
 Announce11:
 'Befehl &HEE 0|1           MYC_mode speichern
@@ -980,7 +987,7 @@ Data "238;oa;a"
 Announce12:
 'Befehl &HEF               MYC_mode lesen
 '                          read myc_mod
-Data "239;aa;as238"
+Data "239;aa,as238"
 '
 Announce13:
 'Befehl &HF0 0-13,
@@ -989,7 +996,7 @@ Announce13:
 Data "240;am,ANNOUNCEMENTS;170;20"
 '
 Announce14:                                                 '
-'Befehl &HFC               Liest letzen Fehler
+'Befehl &HFC               Liest letzten Fehler
 '                          read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
@@ -1001,10 +1008,10 @@ Data "253;aa,MYC INFO;b,&H04,BUSY"
 Announce16:
 'Befehl &HFE <n> <n>       Individualisierung schreiben
 '                          write indivdualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,1;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1;INTERFACETYPE,USB"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,1"
 '
 Announce17:
-Data "255;aa,as254"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,0;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;1,USB,1"
 Announce18:
 Data "R !($1 $2) IF $238=1"
 Announce19:

@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_slave.bas
-'Version V03.0, 20151117
+'Version V03.1, 20151222
 'purpose : I2C-RS232_interface Slave
 'This Programm workes as I2C slave
 'Can be used with hardware rs232_i2c_interface Version V01.9 by DK1RI
@@ -56,7 +56,6 @@ Const Lf = 10
 Const Stringlength = 254                                    'that is maximum
 Const Rs232length = 253                                     'must be smaller than Stringlength
 Const Cmd_watchdog_time = 65000                             'Number of main loop before command reset
-Const Blinktime = 3000
 Const No_of_announcelines = 8                               'announcements start with 0 -> minus 1
 '
 Dim First_set As Eram Byte                                  'first run after reset
@@ -67,8 +66,6 @@ Dim Tempb As Byte
 Dim Tempc As Byte
 Dim Tempd As Byte
 Dim Temps As String * 20
-Dim I As Integer                                            'Blinkcounter  for tests
-Dim J As Integer
 Dim Temps_b(20) As Byte At Temps Overlay
 Dim Rs232_in As String * Stringlength                       'RS232 input
 Dim Rs232_in_b(stringlength) As Byte At Rs232_in Overlay
@@ -97,6 +94,8 @@ Dim Last_error As String * 30                               'Error Buffer
 Dim Last_error_b(30) As Byte At Last_error Overlay
 Dim Error_no As Byte
 Dim Cmd_watchdog As Word                                    'Watchdog notifier
+Dim I2C_name As String * 1
+Dim I2C_name_eeram As Eram String * 1
 '
 '**************** Config / Init
 ' Jumper:
@@ -132,6 +131,7 @@ Else
    Dev_number = Dev_number_eeram
    Dev_name = Dev_name_eeram
    Adress = Adress_eeram
+   I2C_name= I2C_name_eeram
 End If
 '
 Gosub Init
@@ -139,7 +139,6 @@ Gosub Init
 If Reset__ = 0 Then Gosub Reset_
 '
 Slave_loop:
-Gosub Blink_                                                  'for tests
 
 Start Watchdog                                               'Loop must be less than 512 ms
 '
@@ -150,9 +149,7 @@ Gosub Cmd_watch
 A = Ischarwaiting()
 If A = 1 Then
    A = Waitkey()
-   Print Chr(a) ;                                              'As a testdevice, all characters are send to RS232
-   Rs232_in_b(rs232_pointer) = A                                'If Buffer is full, chars are ignored !!
-   If Rs232_pointer < Rs232length Then
+   If Rs232_pointer < Rs232length Then                          'If Buffer is full, chars are ignored !!
       Rs232_in_b(rs232_pointer) = A
       Incr Rs232_pointer
    End If
@@ -212,14 +209,14 @@ Dev_name = "Device 1"
 Dev_name_eeram = Dev_name
 Adress = 2
 Adress_eeram = Adress
+I2C_name="1"
+I2C_Name_eeram = I2C_name
 Return
 '
 Init:
 Portc.3 = 1
 Set Led3                                                     'for tests
 Set Led4
-I = 0
-J = 0
 Command_no = 1
 Announceline = 255                                          'no multiple announcelines
 Rs232_pointer = 1
@@ -264,21 +261,6 @@ For Tempd = 1 To Tempb
    Insertchar Last_error , Tempc , Temps_b(tempd)
 Next Tempd
 Error_no = 255
-Return
-'
-Blink_:                                                     'for tests
-' Led Blinks To Show Life
-J = J + 1
-If J = Blinktime Then
-   J = 0
-   Select Case I
-     Set Led4
-   Case 8
-      I = 0
-      Reset Led4
-   End Select
-   Incr I
-End If
 Return
 '
 Command_finished:
@@ -344,7 +326,7 @@ Else
       Case 0
 'Befehl &H00               basic annoumement wird gelesen
 '                          basic announcement is read to I2C
-'Data "0;m;DK1RI;Rs232_i2c_interface Slave;V02.1;1;170;3"
+'Data "0;m;DK1RI;Rs232_i2c_interface Slave;V03.1;1;170;3;8"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -356,16 +338,16 @@ Else
          If Commandpointer = 1 Then
             Incr Commandpointer
          Else
+            L = Command_b(2)
             If Commandpointer = 2 Then
-               L = Command_b(2)
                If L = 0 Then
                   Gosub Command_received
                Else
-                  If L > 252 Then L = 252
-                  L = L + 2
                   Incr Commandpointer
                End If
             Else
+               L=L+2
+               If L > 254  Then Commandpointer =254
                If Commandpointer = L Then                   'string finished
                   For Tempb = 3 To Commandpointer
                      Print Chr(command_b(tempb)) ;
@@ -381,7 +363,7 @@ Else
       Case 2
 'Befehl &H02               liest Daten von RS232 nach I2C
 '                          read data from RS232, write to I2C  (read from device)
-'Data "2,aa;as1"
+'Data "2,aa,252"
          I2c_tx = String(stringlength , 0)                  'will delete buffer and restart ponter
          I2c_pointer = 1
          I2c_length = Len(rs232_in)
@@ -423,7 +405,7 @@ Else
          End If
 '
       Case 252
-'Befehl &HFC               Liest letzen Fehler
+'Befehl &HFC               Liest letzten Fehler
 '                          read last error
 'Data "252;aa,LAST ERROR;20,last_error"
          I2c_tx = String(stringlength , 0)                  'will delete buffer and restart ponter
@@ -458,7 +440,7 @@ Else
       Case 254
 'Befehl &HFE <n> <n>       Individualisierung schreiben
 '                          write indivdualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,1;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1;INTERFACETYPE,USB"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,1"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -496,25 +478,12 @@ Else
                      Incr Commandpointer
                   End If
                Case 2
-                  If Commandpointer = 2 Then
+                  If Commandpointer < 4 Then
                      Incr Commandpointer
-                  Else
-                     If Commandpointer = 3 Then
-                        L = Command_b(3)
-                        If L = 0 Then
-                           Gosub Command_received
-                        Else
-                           If L > 3 Then L = 3
-                           L = L + 3
-                           Incr Commandpointer
-                        End If
-                     Else
-                        If Commandpointer = L Then
-                        Gosub Command_received
-                        Else
-                           Incr Commandpointer
-                        End If
-                     End If
+                  Else                                                        'as per announcement: 1 byte string
+                     I2C_name = Chr(Command_b(4))
+                     i2C_name_eeram=I2C_name
+                     Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
@@ -540,7 +509,7 @@ Else
          End If
 '
       Case 255
-'Data "255;aa;as254"
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,0;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;1,USB,1"
          If Commandpointer = 2 Then
             I2c_tx = String(stringlength , 0)               'delete buffer and restart ponter
             I2c_pointer = 1
@@ -554,14 +523,27 @@ Else
                   Incr I2c_length
                Case 1
                   I2c_tx_b(1) = Dev_number
-                  I2c_length = 2
+                  I2c_length = 1
                Case 2
-                  I2c_tx = "{003}I2C"
-                  I2c_length = 4
+                  I2C_tx="{001}"
+                  I2C_tx_b(2) = I2C_name
+                  I2c_length = 2
                Case 3
                   Tempb = Adress / 2
                   I2c_tx_b(1) = Tempb
                   I2c_length = 1
+               Case 4
+                  I2C_tx="{001}1"
+                  I2c_length = 2
+               Case 5
+                  I2C_tx_b(1)=0
+                  I2c_length = 1
+               Case 6
+                  I2C_tx="{003}1n8"
+                  I2c_length = 4
+               Case 7
+                  I2C_tx="{001}1"
+                  I2c_length = 2
                Case Else
                   Error_no = 4                              'ignore anything else
                   Gosub Last_err
@@ -586,7 +568,7 @@ End
 Announce0:
 'Befehl &H00               basic annoumement wird gelesen
 '                          basic announcement is read to I2C
-Data "0;m;DK1RI;Rs232_i2c_interface Slave;V03.0;1;170;3;8"
+Data "0;m;DK1RI;Rs232_i2c_interface Slave;V03.1;1;170;3;8"
 '
 Announce1:
 'Befehl &H01 <s>           Sendet Daten von I2C nach RS232
@@ -596,7 +578,7 @@ Data "1;oa;252"
 Announce2:
 'Befehl &H02               liest Daten von RS232 nach I2C
 '                          read data from RS232, write to I2C  (read from device)
-Data "2;aa;as1"
+Data "2;aa,252"
 '
 Announce3:
 'Befehl &HF0 0-13,
@@ -605,7 +587,7 @@ Announce3:
 Data "240;am,ANNOUNCEMENTS;170;8"
 '
 Announce4:                                                  '
-'Befehl &HFC               Liest letzen Fehler
+'Befehl &HFC               Liest letzten Fehler
 '                          read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
@@ -617,8 +599,8 @@ Data "253;af,MYC INFO;b,&H04,BUSY"
 Announce6:
 'Befehl &HFE <n> <n>       Individualisierung schreiben
 '                          write indivdualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,1;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1;INTERFACETYPE,USB"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,1"
 '
 Announce7:
-Data "255;aa;as254"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,1;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;1,USB,1"
 '
