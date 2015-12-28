@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : Fs20_8_kanal_sender.bas
-'Version V02.0, 20151117
+'Version V02.1, 20151227
 'purpose : Programm for sending FS20 Signals
 'This Programm workes as I2C slave and with RS232
 'Can be used with hardware FS20_interface Version V01.2 by DK1RI
@@ -96,6 +96,8 @@ Dim Command_mode As Byte                                    '0: rs232 input, 1: 
 Dim Kanal_mode as Byte                                      '0, 4 Kanal, 1 8 Kanal
 Dim Kanal_mode_eeram as Eram Byte
 Dim Medium As Bit
+Dim I2C_name As String * 1
+Dim I2C_name_eeram As Eram String * 1
 '
 '**************** Config / Init   pin of FS20-S8M Sender
 Config PortB.0 = Input
@@ -149,6 +151,7 @@ Else
    Dev_name = Dev_name_eeram
    Adress = Adress_eeram
    Kanal_mode = Kanal_mode_eeram
+   I2C_name= I2C_name_eeram
 End If
 '
 If Reset__ = 0 Then Gosub Reset_
@@ -239,6 +242,8 @@ Adress = 24
 Adress_eeram = Adress
 Kanal_mode = 0
 Kanal_mode_eeram = Kanal_mode
+I2C_name="1"
+I2C_Name_eeram = I2C_name
 Return
 '
 Init:
@@ -552,7 +557,7 @@ Else
       Case 0
 'Befehl &H00            eigenes basic announcement lesen
 '                       basic announcement is read to I2C or output
-'Data "0;m;DK1RI;FS20 8 chanal sender;V02.0;1;170;12;19"
+'Data "0;m;DK1RI;FS20 8 chanal sender;V02.1;1;170;12;19"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -817,7 +822,7 @@ Else
       Case 10
 'Befehl &H0A             lesen 4 / 8 Kanalmodemode
 '                        read 4 / 8 chanal mode
-'Data "10;as;as9"
+'Data "10,as,as9"
          I2c_tx = String(stringlength , 0)                     'will delete buffer and restart ponter
          I2c_pointer = 1
          I2c_tx_b(1) = Kanal_mode
@@ -919,7 +924,7 @@ Else
          Gosub Command_received
 '
       Case 254
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,12;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,12"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -957,25 +962,12 @@ Else
                      Incr Commandpointer
                   End If
                Case 2
-                  If Commandpointer = 2 Then
+                  If Commandpointer < 4 Then
                      Incr Commandpointer
-                  Else
-                     If Commandpointer = 3 Then
-                        L = Command_b(3)
-                        If L = 0 Then
-                           Gosub Command_received
-                        Else
-                           If L > 3 Then L = 3
-                           L = L + 3
-                           Incr Commandpointer
-                        End If
-                     Else
-                        If Commandpointer = L Then
-                        Gosub Command_received
-                        Else
-                           Incr Commandpointer
-                        End If
-                     End If
+                  Else                                                        'as per announcement: 1 byte string
+                     I2C_name = Chr(Command_b(4))
+                     i2C_name_eeram=I2C_name
+                     Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
@@ -989,11 +981,9 @@ Else
                      Gosub Last_err
                      End If
                      Gosub Command_received
-                  Else
-                     Incr Commandpointer
                   End If
                Case Else
-                  Error_no = 0
+                  Error_no = 4
                   Gosub Last_err
             End Select
          Else
@@ -1001,7 +991,7 @@ Else
          End If
 '
       Case 255
-'Data "255;aa;as254"
+'Data "255 ;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,12;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
          If Commandpointer = 2 Then
             I2c_tx = String(stringlength , 0)                  'delete buffer and restart ponter
             I2c_pointer = 1
@@ -1017,14 +1007,24 @@ Else
                   I2c_tx_b(1) = Dev_number
                   I2c_length = 1
                Case 2
-                  I2c_tx = "{003}I2C"
-                  I2c_length = 4
+                  I2C_tx="{001}"
+                  I2C_tx_b(2) = I2C_name
+                  I2c_length = 2
                Case 3
                   Tempb = Adress / 2
                   I2c_tx_b(1) = Tempb
                   I2c_length = 1
+               Case 4
+                  I2C_tx="{001}1"
+                  I2c_length = 2
+               Case 5
+                  I2C_tx_b(1)=0
+                  I2c_length = 1
+               Case 6
+                  I2C_tx="{003}1n8"
+                  I2c_length = 4
                Case Else
-                  Error_no = 0                                 'ignore anything else
+                  Error_no = 4                                 'ignore anything else
                   Gosub Last_err
             End Select
             If Command_mode = 0 Then
@@ -1053,7 +1053,7 @@ End
 Announce0:
 'Befehl &H00            eigenes basic announcement lesen
 '                       basic announcement is read to I2C or output
-Data "0;m;DK1RI;FS20 8 chanal sender;V02.0;1;170;12;19"
+Data "0;m;DK1RI;FS20 8 chanal sender;V02.1;1;170;12;19"
 '
 Announce1:
 'Befehl &H01             schaltet kanäle aus
@@ -1103,7 +1103,7 @@ Data "9;os;0,4 Kanal;1,8 Kanal"
 Announce10:
 'Befehl &H0A             lesen 4 / 8 Kanalmodemode
 '                        read 4 / 8 chanal mode
-Data "10;as;as9"
+Data "10;as,as9"
 '
 Announce11:
 'Befehl &H0B             Reset
@@ -1126,10 +1126,10 @@ Announce14:
 Data "253;aa,MYC INFO;b,BUSY"
 '
 Announce15:
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,12;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,12"
 '
 Announce16:
-Data "255;aa;as254"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,12;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 '
 Announce17:
 Data "R !$1 !$2 !$4 !$5 !$7 If $9=1"

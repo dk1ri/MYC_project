@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rotorsteuerung_create.bas
-'Version V03.0, 20151117
+'Version V03.1, 201511227
 'purpose : Programm for control a Create RC5 Rotator
 'Can be used with hardware rotorsteuerung_create V01.5 by DK1RI
 'The Programm supports the MYC protocol
@@ -36,7 +36,8 @@ $PROG &HFF,&HC6,&HDF,&HF9' generated. Take care that the chip supports all fuse 
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-$regfile = "m88def.dat"                                     ' for ATmega8)
+'$regfile = "m88def.dat"                                     ' for ATmega8
+$regfile = "m328pdef.dat"                                   ' for ATmega 328
 $crystal = 20000000                                         ' used crystal frequency
 '$baud = 19200                                               ' use baud rate
 $hwstack = 32                                               ' default use 32 for the hardware stack                            ' generated. Take care that the chip supports all fuse bytes.
@@ -116,6 +117,9 @@ Dim Cw_360_voltage_temp As Word                             'cw adc value at cal
 Dim Cw_360_voltage_eeram As Eram Word
 Dim Voltage_range_0_360 As Word                             'difference of the above
 Dim Hw_limit_detected As Byte                               '0: not detected 1: detected 2: move rotator manually
+Dim I2C_name As String * 1
+Dim I2C_name_eeram As Eram String * 1
+'
 Const Ccw_limit_default = 953                               '25 deg (out of400) before end -> 6,25% -> 6,25 % * 1024 = 64
                                                              'ccw has high voltage, cw low voltage
                                                              'those are my values
@@ -284,6 +288,8 @@ Dev_name = "Device 1"
 Dev_name_eeram = Dev_name
 Adress = 4
 Adress_eeram = Adress
+I2C_name="1"
+I2C_Name_eeram = I2C_name
 '
 Rotator_offset = 180                                          'standard of compass display is South
 Rotator_offset_eeram = Rotator_offset
@@ -321,6 +327,7 @@ Rotator_offset = Rotator_offset_eeram
 Antenna_offset=Antenna_offset_eeram
 Preset_pos_antenna = Preset_pos_antenna_eeram
 Preset_active = Preset_active_eeram
+I2C_name= I2C_name_eeram
 Hw_limit_detected = 0
 Gosub Command_received
 Gosub Command_finished
@@ -515,7 +522,7 @@ Slave_commandparser:
       Case 0
 'Befehl &H00               basic annoumement wird gelesen
 '                          basic announcement is read
-'Data "0;m;DK1RI;RC5 rotator control;V03.0;1;120;15;23"
+'Data "0;m;DK1RI;RC5 rotator control;V03.1;1;120;15;23"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -802,7 +809,7 @@ Slave_commandparser:
       Case 254
 'Befehl &HFE <n> <n>       Individualisierung schreiben
 '                          write indivdualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,2"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,2"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -840,25 +847,12 @@ Slave_commandparser:
                      Incr Commandpointer
                   End If
                Case 2
-                  If Commandpointer = 2 Then
+                  If Commandpointer < 4 Then
                      Incr Commandpointer
-                  Else
-                     If Commandpointer = 3 Then
-                        L = Command_b(3)
-                        If L = 0 Then
-                           Gosub Command_received
-                        Else
-                           If L > 3 Then L = 3
-                           L = L + 3
-                           Incr Commandpointer
-                        End If
-                     Else
-                        If Commandpointer = L Then
-                        Gosub Command_received
-                        Else
-                           Incr Commandpointer
-                        End If
-                     End If
+                  Else                                                        'as per announcement: 1 byte string
+                     I2C_name = Chr(Command_b(4))
+                     i2C_name_eeram=I2C_name
+                     Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
@@ -886,8 +880,8 @@ Slave_commandparser:
       Case 255
 'Befehl &HFF <n>           Individualisierung lesen
 '                          read indivdualization
-'Data "255;aa;as254"
-         If Commandpointer = 2 Then
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,2"
+        If Commandpointer = 2 Then
             I2c_tx = String(stringlength , 0)              'delete buffer and restart ponter
             I2c_pointer = 1
             Select Case Command_b(2)
@@ -902,8 +896,9 @@ Slave_commandparser:
                   I2c_tx_b(1) = Dev_number
                   I2c_length = 2
                Case 2
-                  I2c_tx = "{003}I2C"
-                  I2c_length = 4
+                  I2C_tx="{001}"
+                  I2C_tx_b(2) = I2C_name
+                  I2c_length = 2
                Case 3
                   Tempb = Adress / 2
                   I2c_tx_b(1) = Tempb
@@ -932,7 +927,7 @@ End
 Announce0:                                                  'Slave
 'Befehl &H00               basic annoumement wird gelesen
 '                          basic announcement is read
-Data "0;m;DK1RI;RC5 rotator control;V03.0;1;120;15;23"
+Data "0;m;DK1RI;RC5 rotator control;V03.1;1;120;15;23"
 '
 Announce1:
 'Befehl &H01 0|1           Motorsteuerung aus /an schalten
@@ -1023,12 +1018,12 @@ Data "253;aa,MYC INFO;b,&H04BUSY"
 Announce18:
 'Befehl &HFE <n> <n>       Individualisierung schreiben
 '                          write indivdualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,2"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,2"
 '
 Announce19:
 'Befehl &HFF <n>           Individualisierung lesen
 '                          read indivdualization
-Data "255;aa;as254"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,2"
 '
 Announce20:
 ' - no operate command is done before Control_on is set

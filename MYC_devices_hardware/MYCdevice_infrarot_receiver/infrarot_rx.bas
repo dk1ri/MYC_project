@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : infrarot_rx.bas
-'Version V02.0, 20151117
+'Version V02.1, 20151227
 'purpose : Programm for receiving infrared RC5 Signals
 'This Programm workes as I2C slave, or serial
 'Can be used with hardware i2c_rs232_interface Version V01.9 by DK1RI
@@ -108,6 +108,8 @@ Dim blocked As Byte
 Dim Additional_Byte as Bit
 Dim Daten as Byte
 Dim valid_adress As Byte
+Dim I2C_name As String * 1
+Dim I2C_name_eeram As Eram String * 1
 '
 '**************** Config / Init
 DDRB.0 = 0
@@ -151,6 +153,7 @@ Else
    Dev_name = Dev_name_eeram
    Adress = Adress_eeram
    no_myc=no_myc_eeram
+   I2C_name= I2C_name_eeram
 End If
 '
 Gosub Init
@@ -297,6 +300,8 @@ Adress = 12
 Adress_eeram = Adress
 no_myc=0
 no_myc_eeram = no_myc
+I2C_name="1"
+I2C_Name_eeram = I2C_name
 Return
 '
 Init:
@@ -453,7 +458,7 @@ Else
       Case 0
 'Befehl &H00            eigenes basic announcement lesen
 '                       basic announcement is read to I2C or output
-'Data "0;m;DK1RI;Infrared (RC5) receiver;V02.0;1;160;7;12"
+'Data "0;m;DK1RI;Infrared (RC5) receiver;V02.1;1;160;7;12"
          If Command_mode = 1 Then blocked = 1
          A_line = 0
          Gosub Sub_restore
@@ -502,7 +507,7 @@ Else
       Case 4
 'Befehl &H04            RC5 Adresse lesen
 '                       read RC5 adress
-'Data "4;oa,rc5adress;as3"
+'Data "4;oa,rc5adress,as3"
          I2c_pointer = 1
          I2c_length = 1
          If Command_mode = 0 Then
@@ -628,7 +633,7 @@ Else
 '                               Anderer Adresstyp &HFE02 kann maximal 3 Zeichen haben.
 '                               wird aber ignoriert.
 '
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,6;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1;INTERFACETYPE,USB"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,6"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -666,25 +671,12 @@ Else
                      Incr Commandpointer
                   End If
                Case 2
-                  If Commandpointer = 2 Then
+                  If Commandpointer < 4 Then
                      Incr Commandpointer
-                  Else
-                     If Commandpointer = 3 Then
-                        L = Command_b(3)
-                        If L = 0 Then
-                           Gosub Command_received
-                        Else
-                           If L > 3 Then L = 3
-                           L = L + 3
-                           Incr Commandpointer
-                        End If
-                     Else
-                        If Commandpointer = L Then
-                        Gosub Command_received
-                        Else
-                           Incr Commandpointer
-                        End If
-                     End If
+                  Else                                                        'as per announcement: 1 byte string
+                     I2C_name = Chr(Command_b(4))
+                     i2C_name_eeram=I2C_name
+                     Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
@@ -711,7 +703,7 @@ Else
 '
       Case 255
 'Befehl &HFF :        0 - 3         eigene Individualisierung lesen
-'Data "255;aa;as254"
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,6;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;1,USB,1"
          If Commandpointer = 2 Then
             I2c_tx = String(stringlength , 0)               'delete buffer and restart ponter
             I2c_pointer = 1
@@ -727,12 +719,25 @@ Else
                   I2c_tx_b(1) = Dev_number
                   I2c_length = 1
                Case 2
-                  I2c_tx = "{003}I2C"
-                  I2c_length = 4
+                  I2C_tx="{001}"
+                  I2C_tx_b(2) = I2C_name
+                  I2c_length = 2
                Case 3
                   Tempb = Adress / 2
                   I2c_tx_b(1) = Tempb
                   I2c_length = 1
+               Case 4
+                  I2C_tx="{001}1"
+                  I2c_length = 2
+               Case 5
+                  I2C_tx_b(1)=0
+                  I2c_length = 1
+               Case 6
+                  I2C_tx="{003}1n8"
+                  I2c_length = 4
+               Case 7
+                  I2C_tx="{001}1"
+                  I2c_length = 2
                Case Else
                   Error_no = 0                               'ignore anything else
                   Gosub Last_err
@@ -766,7 +771,7 @@ End
 Announce0:
 'Befehl &H00            eigenes basic announcement lesen
 '                       basic announcement is read to I2C or output
-Data "0;m;DK1RI;Infrared (RC5) receiver;V02.0;1;160;7;12"
+Data "0;m;DK1RI;Infrared (RC5) receiver;V02.1;1;160;7;12"
 '
 Announce1:
 'Befehl  &H01           definiert den DTMF-Lesespeicher
@@ -787,7 +792,7 @@ Announce3:
 Announce4:
 'Befehl &H04            RC5 Adresse lesen
 '                       read RC5 adress
-'Data "4;oa,rc5adress;as3"
+'Data "4;oa,rc5adress,as3"
 '
 Announce5:
 'Befehl  &H14           schaltet MYC / no_MYC mode
@@ -820,9 +825,9 @@ Announce10:
 '                                   Der Devicename &HFE00 kann maximal 20 Zeichen haben
 '                                   Anderer Adresstyp &HFE02 kann maximal 3 Zeichen haben.
 '                                   wird aber ignoriert.
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,6;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1;INTERFACETYPE,USB"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,6"
 '
 Announce11:
 'Befehl &HFF :        0 - 3         eigene Individualisierung in I2C Puffer kopieren
-Data "255;aa;as254"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,6;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;1,USB,1"
 '

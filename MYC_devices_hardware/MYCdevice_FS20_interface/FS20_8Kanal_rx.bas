@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : FS20_8Kanal_rx.bas
-'Version V02.0, 20151117
+'Version V02.1, 20151227
 'purpose : Programm for receiving FS20 Signals
 'This Programm workes as I2C slave, or serial
 'Can be used with hardware FS20_interface Version V01.2 by DK1RI
@@ -100,6 +100,8 @@ Dim Scan_mode As Byte
 Dim Scan_mode_eeram As Eram Byte
 Dim Event_write_pointer As Byte
 Dim Event_received As Bit
+Dim I2C_name As String * 1
+Dim I2C_name_eeram As Eram String * 1
 '
 '**************** Config / Init
 Config Portb.0 = Input
@@ -180,6 +182,7 @@ Else
    Dev_name = Dev_name_eeram
    Adress = Adress_eeram
    Scan_mode = Scan_mode_eeram
+   I2C_name= I2C_name_eeram
 End If
 '
 Gosub Init
@@ -287,6 +290,8 @@ Adress = 26
 Adress_eeram = Adress
 Scan_mode = 0
 Scan_mode_eeram = Scan_mode
+I2C_name="1"
+I2C_Name_eeram = I2C_name
 Return
 '
 Init:
@@ -525,7 +530,7 @@ Else
       Case 0
 'Befehl &H00            eigenes basic announcement lesen
 '                       basic announcement is read to I2C or output
-'Data "0;m;DK1RI;FS20_receiver;V02.0;1;170;6;11"
+'Data "0;m;DK1RI;FS20_receiver;V02.1;1;170;6;11"
          Gosub Reset_i2c_tx
          A_line = 0
          Gosub Sub_restore
@@ -702,7 +707,7 @@ Else
 '                               Anderer Adresstyp &HFE02 kann maximal 3 Zeichen haben.
 '                               wird aber ignoriert.
 '                                write indivdualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,13;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,13"
          If Commandpointer >= 2 Then
             Gosub Reset_i2c_tx
             Select Case Command_b(2)
@@ -741,25 +746,12 @@ Else
                      Incr Commandpointer
                   End If
                Case 2
-                  If Commandpointer = 2 Then
+                  If Commandpointer < 4 Then
                      Incr Commandpointer
-                  Else
-                     If Commandpointer = 3 Then
-                        L = Command_b(3)
-                        If L = 0 Then
-                           Gosub Command_received
-                        Else
-                           If L > 3 Then L = 3
-                           L = L + 3
-                           Incr Commandpointer
-                        End If
-                     Else
-                        If Commandpointer = L Then
-                        Gosub Command_received
-                        Else
-                           Incr Commandpointer
-                        End If
-                     End If
+                  Else                                                        'as per announcement: 1 byte string
+                     I2C_name = Chr(Command_b(4))
+                     i2C_name_eeram=I2C_name
+                     Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
@@ -786,7 +778,7 @@ Else
 '
       Case 255
 'Befehl &HFF :        0 - 3         eigene Individualisierung lesen
-'Data "255;aa;as254"
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,13;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
          If Commandpointer = 2 Then
             I2c_tx = String(stringlength , 0)               'delete buffer and restart ponter
             I2c_pointer = 1
@@ -802,14 +794,24 @@ Else
                   I2c_tx_b(1) = Dev_number
                   I2c_length = 1
                Case 2
-                  I2c_tx = "{003}I2C"
-                  I2c_length = 4
+                  I2C_tx="{001}"
+                  I2C_tx_b(2) = I2C_name
+                  I2c_length = 2
                Case 3
                   Tempb = Adress / 2
                   I2c_tx_b(1) = Tempb
                   I2c_length = 1
+               Case 4
+                  I2C_tx="{001}1"
+                  I2c_length = 2
+               Case 5
+                  I2C_tx_b(1)=0
+                  I2c_length = 1
+               Case 6
+                  I2C_tx="{003}1n8"
+                  I2c_length = 4
                Case Else
-                  Error_no = 0                               'ignore anything else
+                  Error_no = 4                               'ignore anything else
                   Gosub Last_err
             End Select
             If Command_mode = 0 Then
@@ -838,7 +840,7 @@ End
 Announce0:
 'Befehl &H00            eigenes basic announcement lesen
 '                       basic announcement is read to I2C or output
-Data "0;m;DK1RI;FS20_receiver;V02.0;1;170;6;11"
+Data "0;m;DK1RI;FS20_receiver;V02.1;1;170;6;11"
 '
 Announce1:
 'Befehl  &H01           definiert 8 fach Taster Scan_mode : 0
@@ -887,9 +889,9 @@ Announce9:
 '                               Anderer Adresstyp &HFE02 kann maximal 3 Zeichen haben.
 '                               wird aber ignoriert.
 '                                write indivdualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,13;INTERFACETYPE,RS232;IF_PARAMETER1,19200Bd;IF_PARAMETER2,8n1"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,13"
 '
 Announce10:
 'Befehl &HFF :        0 - 3         eigene Individualisierung lesen
-Data "255;aa;as254"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,13;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 '

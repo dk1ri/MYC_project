@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : relaisteuerung.bas
-'Version V03.0, 20151117
+'Version V03.1, 20151228
 'purpose : Control of a board with 4 Relais and 12 Inputs
 'This Programm workes as I2C slave
 'Can be used with hardware relaisteuerunge Version V01.3 by DK1RI
@@ -104,6 +104,8 @@ Dim In_mode11_eeram As Eram Byte
 Dim Adc_value As Word
 Dim Adc_reference As Byte
 Dim Adc_reference_eeram As Eram Byte
+Dim I2C_name As String * 1
+Dim I2C_name_eeram As Eram String * 1
 '
 '**************** Config / Init
 Config Pind.5 = Input
@@ -185,6 +187,7 @@ Else
    In_mode9 = In_mode9_eeram
    In_mode10 = In_mode10_eeram
    In_mode11 = In_mode11_eeram
+   I2C_name= I2C_name_eeram
 End If
 '
 Gosub Init
@@ -260,6 +263,8 @@ In_mode10 = 0
 In_mode10_eeram = In_mode10
 In_mode11 = 0
 In_mode11_eeram = In_mode11
+I2C_name="1"
+I2C_Name_eeram = I2C_name
 Return
 '
 Init:
@@ -450,7 +455,7 @@ Else
       Case 0
 'Befehl &H00               basic annoumement wird gelesen
 '                          basic announcement is read
-'Data "0;m;DK1RI; 4 Relais Bord;V03.0;1;100;3;441"
+'Data "0;m;DK1RI; 4 Relais Bord;V03.1;1;100;31;44"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -731,7 +736,7 @@ Else
          Gosub Command_received
 '
       Case 20
-'Befehl &H13               liest digital alle
+'Befehl &H14               liest digital alle
 '                          read digital all
 'Data"20,am,all;w,0 to 4095"
          Tempb = 0
@@ -754,7 +759,7 @@ Else
          Gosub Command_finished
 '
       Case 21
-'Befehl &H14               schaltet Relais1
+'Befehl &H15               schaltet Relais1
 '                          switch relais1
 'Data "21,os,relais1;0,off;1,on"
          If Commandpointer = 1 Then
@@ -769,9 +774,9 @@ Else
          End If
 '
       Case 22
-'Befehl &H15               liest Status Relais1
+'Befehl &H16               liest Status Relais1
 '                          read state relais1
-'Data "22,as;as21"
+'Data "22,as,as21"
          I2c_tx = String(stringlength , 0)                  'delete buffer and restart ponter
          I2c_pointer = 1
          I2c_tx_b(1) = Relais1
@@ -779,7 +784,7 @@ Else
          Gosub Command_received
 '
       Case 23
-'Befehl &H16               schaltet Relais2
+'Befehl &H17               schaltet Relais2
 '                          switch relais2
 'Data "23,os,relais2;0,off;1,on"
          If Commandpointer = 1 Then
@@ -794,9 +799,9 @@ Else
          End If
 '
       Case 24
-'Befehl &H17               liest Status Relais2
+'Befehl &H18               liest Status Relais2
 '                          read state relais2
-'Data "24,as;as23"
+'Data "24,as,as23"
          I2c_tx = String(stringlength , 0)                  'delete buffer and restart ponter
          I2c_pointer = 1
          I2c_tx_b(1) = Relais2
@@ -804,7 +809,7 @@ Else
          Gosub Command_received
 '
       Case 25
-'Befehl &H18               schaltet Relais3
+'Befehl &H19               schaltet Relais3
 '                          switch relais3
 'Data "25,os,relais3;0,off;1,on"
          If Commandpointer = 1 Then
@@ -819,9 +824,9 @@ Else
          End If
 '
       Case 26
-'Befehl &H19               liest Status Relais3
+'Befehl &H1A               liest Status Relais3
 '                          read state relais3
-'Data "26,as;as25"
+'Data "26,as,as25"
          I2c_tx = String(stringlength , 0)                  'delete buffer and restart ponter
          I2c_pointer = 1
          I2c_tx_b(1) = Relais3
@@ -829,7 +834,7 @@ Else
          Gosub Command_received
 '
       Case 27
-'Befehl &H1A               schaltet Relais4
+'Befehl &H1B               schaltet Relais4
 '                          switch relais4
 'Data "27,os, relais4;0,off;1,on"
          If Commandpointer = 1 Then
@@ -844,9 +849,9 @@ Else
          End If
 '
       Case 28
-'Befehl &H1B               liest Status Relais4
+'Befehl &H1C               liest Status Relais4
 '                          read state relais4
-'Data "28,as;as27"
+'Data "28,as,as27"
          I2c_tx = String(stringlength , 0)                  'delete buffer and restart ponter
          I2c_pointer = 1
          I2c_tx_b(1) = Relais4
@@ -879,7 +884,7 @@ Else
    Case 239
 'Befehl &HEF               liest Referenz default: 0:5V 1: 1.1V
 '                          read reference voltage
-'Data "239;aa;as238"
+'Data "239;aa,as238"
       I2c_tx = String(stringlength , 0)                     'delete buffer and restart ponter
       I2c_pointer = 1
       I2c_tx_b(1) = Adc_reference
@@ -955,7 +960,7 @@ Else
 '                               Anderer Adresstyp &HFE02 kann maximal 3 Zeichen haben.
 '                               wird aber ignoriert.
 '                                write indivdualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,4"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,4"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -993,25 +998,12 @@ Else
                      Incr Commandpointer
                   End If
                Case 2
-                  If Commandpointer = 2 Then
+                  If Commandpointer < 4 Then
                      Incr Commandpointer
-                  Else
-                     If Commandpointer = 3 Then
-                        L = Command_b(3)
-                        If L = 0 Then
-                           Gosub Command_received
-                        Else
-                           If L > 3 Then L = 3
-                           L = L + 3
-                           Incr Commandpointer
-                        End If
-                     Else
-                        If Commandpointer = L Then
-                        Gosub Command_received
-                        Else
-                           Incr Commandpointer
-                        End If
-                     End If
+                  Else                                                        'as per announcement: 1 byte string
+                     I2C_name = Chr(Command_b(4))
+                     i2C_name_eeram=I2C_name
+                     Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
@@ -1038,7 +1030,7 @@ Else
 '
       Case 255
 'Befehl &HFF :        0 - 3         eigene Individualisierung lesen
-'Data "255;aa;as254"
+'Data "255;aa,as254"
          If Commandpointer = 2 Then
             I2c_tx = String(stringlength , 0)               'delete buffer and restart ponter
             I2c_pointer = 1
@@ -1053,13 +1045,13 @@ Else
                Case 1
                   I2c_tx_b(1) = Dev_number
                   I2c_length = 2
-               Case 2
-                  I2c_tx = "{003}I2C"
-                  I2c_length = 4
+                Case 2
+                  I2C_tx="{001}"
+                  I2C_tx_b(2) = I2C_name
+                  I2c_length = 2
                Case 3
                   Tempb = Adress / 2
                   I2c_tx_b(1) = Tempb
-                  I2c_length = 1
                Case Else
                   Error_no = 0                              'ignore anything else
                   Gosub Last_err
@@ -1083,7 +1075,7 @@ End
 Announce0:
 'Befehl &H00               basic annoumement wird gelesen
 '                          basic announcement is read
-Data "0;m;DK1RI; 4 Relais Bord;V03.0;1;100;31;44"
+Data "0;m;DK1RI; 4 Relais Bord;V03.1;1;100;31;44"
 '
 Announce1:
 'Befehl &H01               liest digital Wert INP1
@@ -1181,49 +1173,49 @@ Announce19:
 Data "19,as,INP11;0,0;1,1"
 '
 Announce20:
-'Befehl &H13               liest digital alle
+'Befehl &H14               liest digital alle
 '                          read digital all
 Data"20,am,all;w,0 to 4095"
 '
 Announce21:
-'Befehl &H14               schaltet Relais1
+'Befehl &H15               schaltet Relais1
 '                          switch relais1
 Data "21,os,relais1;0,off;1,on"
 '
 Announce22:
-'Befehl &H15               liest Status Relais1
+'Befehl &H16               liest Status Relais1
 '                          read state relais1
-Data "22,as;as21"
+Data "22,as,as21"
 '
 Announce23:
-'Befehl &H16               schaltet Relais2
+'Befehl &H17               schaltet Relais2
 '                          switch relais2
 Data "23,os,relais2;0,off;1,on"
 '
 Announce24:
-'Befehl &H17               liest Status Relais2
+'Befehl &H18               liest Status Relais2
 '                          read state relais2
-Data "24,as;as23"
+Data "24,as,as23"
 '
 Announce25:
-'Befehl &H18               schaltet Relais3
+'Befehl &H19               schaltet Relais3
 '                          switch relais3
 Data "25,os,relais3;0,off;1,on"
 '
 Announce26:
-'Befehl &H19               liest Status Relais3
+'Befehl &H1A               liest Status Relais3
 '                          read state relais3
-Data "26,as;as25"
+Data "26,as,as25"
 '
 Announce27:
-'Befehl &H1A               schaltet Relais4
+'Befehl &H1B               schaltet Relais4
 '                          switch relais4
 Data "27,os, relais4;0,off;1,on"
 '
 Announce28:
-'Befehl &H1B               liest Status Relais4
+'Befehl &H1C               liest Status Relais4
 '                          read state relais4
-Data "28,as;as27"
+Data "28,as,as27"
 '
 Announce29:
 'Befehl &HEE               schreibt Referenz default: 0:5V 1: 1.1V
@@ -1233,7 +1225,7 @@ Data "238;oa;a"
 Announce30:
 'Befehl &HEF               liest Referenz default: 0:5V 1: 1.1V
 '                          read reference voltage
-Data "239;aa;as238"                                         '
+Data "239;aa,as238"                                         '
 '
 Announce31:
 'Befehl &HF0 :   0-13,
@@ -1257,11 +1249,11 @@ Announce34:
 '                               Anderer Adresstyp &HFE02 kann maximal 3 Zeichen haben.
 '                               wird aber ignoriert.
 '                                write indivdualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;3,INTERFACETYPE,I2C;b,ADRESS,4"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,4"
 '
 Announce35:
 'Befehl &HFF :        0 - 3         eigene Individualisierung lesen
-Data "255;aa;as254"
+Data "255;aa,as254"
 '
 Announce36:
 Data "R !$9  IF $8=0"
