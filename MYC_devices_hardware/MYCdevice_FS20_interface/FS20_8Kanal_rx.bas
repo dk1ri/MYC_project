@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : FS20_8Kanal_rx.bas
-'Version V02.1, 20151227
+'Version V02.1, 20160104
 'purpose : Programm for receiving FS20 Signals
 'This Programm workes as I2C slave, or serial
 'Can be used with hardware FS20_interface Version V01.2 by DK1RI
@@ -100,8 +100,8 @@ Dim Scan_mode As Byte
 Dim Scan_mode_eeram As Eram Byte
 Dim Event_write_pointer As Byte
 Dim Event_received As Bit
-Dim I2C_name As String * 1
-Dim I2C_name_eeram As Eram String * 1
+Dim I2C_name As Byte
+Dim I2C_name_eeram As Eram Byte
 '
 '**************** Config / Init
 Config Portb.0 = Input
@@ -225,7 +225,7 @@ If Twi_control = &H80 Then                                   'twsr 60 -> start, 
                Twdr = I2c_tx_b(i2c_pointer)
                Incr I2c_pointer
             Else
-               If Announceline < No_of_announcelines Then    'multiple lines to send
+               If Announceline <= No_of_announcelines Then    'multiple lines to send
                   Cmd_watchdog = 0                            'command may take longer
                   A_line = Announceline
                   Gosub Sub_restore
@@ -638,7 +638,7 @@ Else
                Case 254
                   Announceline = 1
                   If Command_mode = 0 Then                   'RS232 multiple announcelines
-                     For A_line = 0 To No_of_announcelines
+                     For A_line = 0 To No_of_announcelines - 1
                         Gosub Sub_restore
                      Next A_line
                      Announceline = 255
@@ -749,7 +749,7 @@ Else
                   If Commandpointer < 4 Then
                      Incr Commandpointer
                   Else                                                        'as per announcement: 1 byte string
-                     I2C_name = Chr(Command_b(4))
+                     I2C_name = Command_b(4)
                      i2C_name_eeram=I2C_name
                      Gosub Command_received
                   End If

@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_slave.bas
-'Version V03.1, 20151222
+'Version V03.1, 20160104
 'purpose : I2C-RS232_interface Slave
 'This Programm workes as I2C slave
 'Can be used with hardware rs232_i2c_interface Version V01.9 by DK1RI
@@ -94,8 +94,8 @@ Dim Last_error As String * 30                               'Error Buffer
 Dim Last_error_b(30) As Byte At Last_error Overlay
 Dim Error_no As Byte
 Dim Cmd_watchdog As Word                                    'Watchdog notifier
-Dim I2C_name As String * 1
-Dim I2C_name_eeram As Eram String * 1
+Dim I2C_name As Byte
+Dim I2C_name_eeram As Eram Byte
 '
 '**************** Config / Init
 ' Jumper:
@@ -481,7 +481,7 @@ Else
                   If Commandpointer < 4 Then
                      Incr Commandpointer
                   Else                                                        'as per announcement: 1 byte string
-                     I2C_name = Chr(Command_b(4))
+                     I2C_name = Command_b(4)
                      i2C_name_eeram=I2C_name
                      Gosub Command_received
                   End If

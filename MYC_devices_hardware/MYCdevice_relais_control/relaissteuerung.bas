@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : relaisteuerung.bas
-'Version V03.1, 20151228
+'Version V03.1, 20160104
 'purpose : Control of a board with 4 Relais and 12 Inputs
 'This Programm workes as I2C slave
 'Can be used with hardware relaisteuerunge Version V01.3 by DK1RI
@@ -104,8 +104,8 @@ Dim In_mode11_eeram As Eram Byte
 Dim Adc_value As Word
 Dim Adc_reference As Byte
 Dim Adc_reference_eeram As Eram Byte
-Dim I2C_name As String * 1
-Dim I2C_name_eeram As Eram String * 1
+Dim I2C_name As Byte
+Dim I2C_name_eeram As Eram Byte
 '
 '**************** Config / Init
 Config Pind.5 = Input
@@ -1001,7 +1001,7 @@ Else
                   If Commandpointer < 4 Then
                      Incr Commandpointer
                   Else                                                        'as per announcement: 1 byte string
-                     I2C_name = Chr(Command_b(4))
+                     I2C_name = Command_b(4)
                      i2C_name_eeram=I2C_name
                      Gosub Command_received
                   End If

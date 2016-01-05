@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rotorsteuerung_create.bas
-'Version V03.1, 201511227
+'Version V03.1, 20160104
 'purpose : Programm for control a Create RC5 Rotator
 'Can be used with hardware rotorsteuerung_create V01.5 by DK1RI
 'The Programm supports the MYC protocol
@@ -117,8 +117,8 @@ Dim Cw_360_voltage_temp As Word                             'cw adc value at cal
 Dim Cw_360_voltage_eeram As Eram Word
 Dim Voltage_range_0_360 As Word                             'difference of the above
 Dim Hw_limit_detected As Byte                               '0: not detected 1: detected 2: move rotator manually
-Dim I2C_name As String * 1
-Dim I2C_name_eeram As Eram String * 1
+Dim I2C_name As Byte
+Dim I2C_name_eeram As Eram Byte
 '
 Const Ccw_limit_default = 953                               '25 deg (out of400) before end -> 6,25% -> 6,25 % * 1024 = 64
                                                              'ccw has high voltage, cw low voltage
@@ -850,7 +850,7 @@ Slave_commandparser:
                   If Commandpointer < 4 Then
                      Incr Commandpointer
                   Else                                                        'as per announcement: 1 byte string
-                     I2C_name = Chr(Command_b(4))
+                     I2C_name = Command_b(4)
                      i2C_name_eeram=I2C_name
                      Gosub Command_received
                   End If

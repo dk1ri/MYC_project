@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : Fs20_8_kanal_sender.bas
-'Version V02.1, 20151227
+'Version V02.1, 20160104
 'purpose : Programm for sending FS20 Signals
 'This Programm workes as I2C slave and with RS232
 'Can be used with hardware FS20_interface Version V01.2 by DK1RI
@@ -96,8 +96,8 @@ Dim Command_mode As Byte                                    '0: rs232 input, 1: 
 Dim Kanal_mode as Byte                                      '0, 4 Kanal, 1 8 Kanal
 Dim Kanal_mode_eeram as Eram Byte
 Dim Medium As Bit
-Dim I2C_name As String * 1
-Dim I2C_name_eeram As Eram String * 1
+Dim I2C_name As Byte
+Dim I2C_name_eeram As Eram Byte
 '
 '**************** Config / Init   pin of FS20-S8M Sender
 Config PortB.0 = Input
@@ -195,7 +195,7 @@ If Twi_control = &H80 Then                                     'twsr 60 -> start
          Twdr = I2c_tx_b(i2c_pointer)
          Incr I2c_pointer
       Else
-         If Announceline < No_of_announcelines Then            'multiple lines to send
+         If Announceline <= No_of_announcelines Then            'multiple lines to send
             Cmd_watchdog = 0                                   'command may take longer
             A_line = Announceline
             Gosub Sub_restore
@@ -859,7 +859,7 @@ Else
                Case 254
                   Announceline = 1
                   If  Command_mode = 0  Then                   'RS232 multiple announcelines
-                     For A_line = 0 to No_of_announcelines
+                     For A_line = 0 to No_of_announcelines - 1
                         Gosub  Sub_restore
                      Next A_line
                      Announceline = 255
@@ -965,7 +965,7 @@ Else
                   If Commandpointer < 4 Then
                      Incr Commandpointer
                   Else                                                        'as per announcement: 1 byte string
-                     I2C_name = Chr(Command_b(4))
+                     I2C_name = Command_b(4)
                      i2C_name_eeram=I2C_name
                      Gosub Command_received
                   End If

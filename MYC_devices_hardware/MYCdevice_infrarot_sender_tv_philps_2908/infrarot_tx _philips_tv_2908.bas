@@ -1,5 +1,5 @@
 'name : infrarot_tx _philips_tv_2908.bas
-'Version V02.1, 201511227
+'Version V02.1, 20160104
 'most copied from infrarot tx 1.0
 'purpose : Programm to send RC5 Codes to Philips TV 2908
 'This Programm workes as I2C slave or serial interface
@@ -99,8 +99,8 @@ Dim Last_error As String * 30                               'Error Buffer
 Dim Last_error_b(30) As Byte At Last_error Overlay
 Dim Error_no As Byte
 Dim Cmd_watchdog As Word                                    'Watchdog notifier
-Dim I2C_name As String * 1
-Dim I2C_name_eeram As Eram String * 1
+Dim I2C_name As Byte
+Dim I2C_name_eeram As Eram Byte
 '
 Dim Togglebit As Byte
 Dim Rc5_adress As Byte
@@ -179,7 +179,7 @@ If Twi_control = &H80 Then                                     'twsr 60 -> start
          Twdr = I2c_tx_b(i2c_pointer)
          Incr I2c_pointer
       Else
-         If Announceline < No_of_announcelines Then            'multiple lines to send
+         If Announceline <= No_of_announcelines Then            'multiple lines to send
             Cmd_watchdog = 0                                   'command may take longer
             A_line = Announceline
             Gosub Sub_restore
@@ -790,7 +790,7 @@ Else
                Case 254
                   Announceline = 1
                   If  Command_mode = 0  Then                   'RS232 multiple announcelines
-                     For A_line = 0 to No_of_announcelines
+                     For A_line = 0 to No_of_announcelines - 1
                         Gosub  Sub_restore
                      Next A_line
                      Announceline = 255
@@ -845,12 +845,12 @@ Else
 '                                   Life signal
 'Data "253;aa,MYC INFO;b,BUSY"
          I2c_tx = String(stringlength , 0)                     'will delete buffer and restart ponter
-         I2c_pointer = 1
-         I2c_tx_b(1) = 4                                        'no info
-         I2c_length = 1
-         If Command_mode = 0 Then
+          If Command_mode = 0 Then
             Printbin 4
-            I2c_length = 0
+         Else
+            I2c_tx_b(1) = 4                                   'no info
+            I2c_pointer = 1
+            I2C_length = 1
          End If
          Gosub Command_received
 '
@@ -901,7 +901,7 @@ Else
                   If Commandpointer < 4 Then
                      Incr Commandpointer
                   Else                                                        'as per announcement: 1 byte string
-                     I2C_name = Chr(Command_b(4))
+                     I2C_name = Command_b(4)
                      i2C_name_eeram=I2C_name
                      Gosub Command_received
                   End If
