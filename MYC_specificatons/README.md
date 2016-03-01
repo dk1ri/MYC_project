@@ -26,7 +26,7 @@ reserved token: describe the syntax and the meaning of reserved commands (token)
 
 rules: describe the syntax for rules.
 
-The "original" of these three specification are Open office documents. Because I do not know, weather git can handle this document type, git will hold converted HTML documents.
+The "original" of these three specification are Open office documents. Because I do not know, weather git can handle this document type, git will hold converted txt documents.
 
 A more detailed description of the MYC system can be found in www.dk1ri.de -> MYC
 
