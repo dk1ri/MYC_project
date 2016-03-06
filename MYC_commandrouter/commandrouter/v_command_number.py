@@ -1,1 +1,1 @@
-a=1                                           #a: actual commandnumber
+a = 1                               # a: actual commandnumber

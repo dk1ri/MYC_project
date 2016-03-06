@@ -1,1 +1,1 @@
-a=[]                                            #a: actual list of token of basic announcements
+a = []                                            # a: actual list of token of basic announcements

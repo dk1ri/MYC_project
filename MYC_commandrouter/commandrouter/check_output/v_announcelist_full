@@ -1,0 +1,32 @@
+0;c;DK1RI;commandrouter1;V01.1;1;71;27;32
+1;m;DK1RI;Test2;V01;1;100;22;27
+2;or;0,on off
+3;or;0,on;1,aus
+4;or;0,on;1,aus;2,idle;3,other;b,DIMENSION,1,X;b,DIMENSION,1,Y
+5;os;0,on
+6;os;0,on;1,aus
+7;os;0,on;1,aus;2,idle;3,other;b,DIMENSION,1,X;b,DIMENSION,1,Y
+8;ot;0,on off
+9;ot;0,on;1,aus
+10;ot;0,on;1,aus;2,idle;3,other;b,DIMENSION,1,X;b,DIMENSION,1,Y
+11;ou;0,on off
+12;ou;0,on;1,aus;2,idle;3,other
+13;ou;0.on;1,aus;2,idle;3,other;b,DIMENSION,1,X;b,DIMENSION,1,Y
+14;ar;0,on off
+15;ar;0,on;1,aus
+16;ar;0,on;1,aus;2,idle;3,other
+17;as;0,on
+18;as;0,on;1,aus
+19;as;0,on;1,aus;2,idle;3,other
+20;at;0,on off
+21;at;0,on;1,aus
+22;at;0,on;1,aus;2,idle;3,other
+23;aa,LAST ERROR;20,last_error
+24;aa,MYC INFO;b,BUSY
+25;oa,INDIVIDUALIZATION;20,NAME,mod Device 1;b,NUMBER,1
+26;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1
+240;am,ANNOUNCEMENTS;71;32
+252;aa,LAST ERROR;20
+253;aa,MYC INFO;b,BUSY
+254;oa,INDIVIDUALIZATION;20,NAME,CR0-;b,NUMBER,5;6,TELNET,CR0;w,PORT,23
+255;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,5;6,TELNET,CR0;w,PORT,23

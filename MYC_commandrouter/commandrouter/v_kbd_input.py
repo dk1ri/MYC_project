@@ -1,1 +1,1 @@
-a=""                                            #a: string from keyboard
+a = ""                                            # a: string from keyboard

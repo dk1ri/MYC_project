@@ -1,11 +1,11 @@
 0;c;DK1RI;commandrouter1;V01.1;1;100;1;6
-240;am,ANNOUNCEMENTS;1;100
+240;an,ANNOUNCEMENTS;1;100
 252;aa,LAST ERROR;20
 253;aa,MYC INFO;b,BUSY
 #The interfaces are those, where HI and programs can connect the CR
-#all devices, which can send commands, must be listed here!!!
+#all interfaces for devices, which can send commands, must be listed here!!!
 #(so all except normal devices, lower level CR, rules and logic device)
 #number of fields limited  to 255 (one byte)
-254;oa,INDIVIDUALIZATION;20,NAME,--;b,NUMBER,5;1,Terminal,1;1,TELNET,1;w,PORT,23;1,USB,1;1,RC5,1;b,ADRESS,12;1,I2C,1;b,ADRESS,34
+254;oa,INDIVIDUALIZATION;20,NAME,CR0-;b,NUMBER,1;a,TELNET,1;w,PORT,23
 # no "as" line supported here!!!!!!!!!!!!!!!!!!:
-255;aa,INDIVIDUALIZATION;20,NAME,Device1;b,NUMBER,5;1,Terminal,1;1,TELNET,1;w,PORT,23;1,USB,1;1,RC5,1;b,ADRESS,12;1,I2C,1;b,ADRESS,34
+255;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,TELNET,1;w,PORT,23

@@ -1,3 +1,3 @@
-#per device
-announceline=[]                                             #announcements
-token=[]                                                    #commandtoken as int
+# per device
+announceline = []                                             # announcements
+token = []                                                    # commandtoken as int

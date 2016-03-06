@@ -1,0 +1,3 @@
+#lower level device
+0;c;DK1RI2;commandrouterlevel-1;V01;1;91;52
+254;oa,INDIVIDUALIZATION;20,NAME,mod CR 1;b,NUMBER,4;a,I2C,1;b,ADRESS,16

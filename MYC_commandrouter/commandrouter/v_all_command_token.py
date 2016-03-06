@@ -1,1 +1,1 @@
-a=[]                                            #a: all actual commandtoken without own CR
+a = []                 # a: all actual commandtoken without own CR

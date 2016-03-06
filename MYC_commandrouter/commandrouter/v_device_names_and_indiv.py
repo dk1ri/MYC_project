@@ -1,4 +1,4 @@
-#devicegroup and indiv strings
-all=[]                  #all
-activ=[]				#activ
-last=[]					#last
+# devicegroup and indiv strings
+active_and_last = []    # all
+activ = []				# activ
+last = []				# last

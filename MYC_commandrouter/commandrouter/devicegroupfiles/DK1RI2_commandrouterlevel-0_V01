@@ -1,0 +1,57 @@
+0;c;DK1RI2;commandrouterlevel-0;V01;1;91;52
+240;an,ANNOUNCEMENTS;7;91;121
+252;aa,LAST ERROR
+253;af,MYC INFO;b
+254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8
+255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8
+6;m;DK1RI2;Test1,metacommands;V01.1.4;1;100;8
+7;wd;10
+8;wk;1;2;3;4
+9;wh;450
+10;wi;3;6;7;9
+11;we;255
+12;wf;2;8;9;10
+13;aa,LAST ERROR;20,last_error
+14;aa,MYC INFO;b,BUSY
+17;c;DK1RI2;empty commandrouterlevel-1;V01.1;1;91;1211
+18;aa,LAST ERROR
+19;af,MYC INFO;b
+22;m;DK1RI2;RC5 rotator control;V01.5;1;100;21
+23;op,Preset Position;1,range;degree;lin;0;359
+24;ou,Motor ccw;0
+25;ou,Motor stop;0
+26;ou,Motor cw;0
+27;op,Rotatoroffset;1,range;degree;lin;0;359
+28;ap,Position;1,range;degree;lin;0;359
+29;aa,Values 1;a;controlon;a,Preset;a,Motor_cw;a,Motor_ccw;a,Limit;a,Under
+30;ou;0,idle,CCW calibration
+31;ou;0,idle,CW Calibration
+32;aa,LAST ERROR;20,last_error
+33;aa,MYC INFO;b,BUSY
+R  !$22 !$23 !$24 IF $21=0
+R  $25 $26 IF $30=1 OR $21=1
+R  $27=0 IF $30=1
+#there aere gaps, when divices disappear
+92;m;DK1RI2;RC5 rotator control;V01.5;1;100;21
+93;or,Device on off;0,off;1,on
+94;or;0,manual;1,preset
+95;op,Preset Position;1,range;degree;lin;0;359
+96;ou,Motor ccw;0
+97;ou,Motor stop;0
+98;ou,Motor cw;0
+99;op,Rotatoroffset;1,range;degree;lin;0;359
+100;ap,Position;1,range;degree;lin;0;359
+101;aa,Values 1;a;controlon;a,Preset;a,Motor_cw;a,Motor_ccw;a,Limit;a,Under
+102;ou;0,idle,CCW calibration
+103;ou;0,idle,CW Calibration
+105;aa,LAST ERROR;20,last_error
+106;aa,MYC INFO;b,BUSY
+R  !$94 !$96 !$98 IF $93=0
+R  $97 $98 IF $95=1 OR $96=1
+R  $96=0 IF $98=1
+109;m;DK1RI2;Rs232_i2c_interface_Slave;V01.1;1;100;8
+110;oa;252
+111;aa;252
+113;aa,LAST ERROR;20,last_error
+114;aa,MYC INFO;b,BUSY
+

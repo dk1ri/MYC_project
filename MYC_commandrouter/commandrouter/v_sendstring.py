@@ -1,1 +1,1 @@
-a=[]                                            #a: string to send
+a = []                                            # a: string to send

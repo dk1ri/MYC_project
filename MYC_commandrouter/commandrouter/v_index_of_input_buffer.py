@@ -1,2 +1,3 @@
-a=[]                                                    	#0: Terminal,  Ethernet, RS232, I2C, RC5, RC6, CAN
-                                                            #1: different interfaces or users for ethernet, start with 0
+a = []
+# 0: Terminal,  Ethernet, RS232, I2C, RC5, RC6, CAN
+# 1: different interfaces or users for ethernet, start with 0

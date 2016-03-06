@@ -1,1 +1,1 @@
-a=[]                                            #a: list of announcements
+a = []                               # a: list of announcements
