@@ -1,0 +1,178 @@
+Sprachausgabe
+
+Author DK1RI, Version V01.2, 20160502
+This project can be found in https://www.github.com/dk1ri
+
+Einleitung
+
+Dieses Interface ist bindet das Sprachausgabe Modul MSM2 von ELV in das MYC System ein.
+Das Interface arbeitet als Slave am I2C Bus oder kann über RS232 /USB gesteuert werden.
+Dieses Interface ist ein Beispiel dafür, wie mit minimalem Entwicklungsaufwand eine Funktion in das MYC System integriert werden kann. Eine neu entwickelte Leiterplatte mit eigener Software ist sicher billiger zu realisieren, aber wesentlich aufwendiger.
+
+Beschreibung
+
+Die Eagle Daten der Leiterplatte stehen unter  [1].
+Als Sprachausgabemodul wird der MSM2 von ELV verwendet.
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA, je nach Ausgangsleistung.
+Die Steuerung des Interfaces kann, abhängig von der Bestückung über I2C, RS232 oder USB erfolgen
+Die Befehle und Parameter müssen binär eingegeben werden; es erfolgt keine Wandlung.
+Das Sprachmodul muss initialisiert werden; das Interface funktioniert daher erst ca 15 Sekunden nach dem Einschalten.
+Die unterschiedlichen Modi (>10 s Tastendruck) können nicht gesteuert werden.
+Wird der Befehl &H01 oder &H02 gesendet, während noch eine Sprachausgabe läuft, wird diese unterbrochen.
+
+Befehle
+
+Folgende Befehle werden von der I2C / RS232 /USB Schnittstelle akzeptiert:
+
+Announce0:
+'Befehl &H00
+'basic annoumement wird gelesen
+'basic announcement is read
+Data "0;m;DK1RI;Sprachausgabe;V02.0;1;170;3;8"
+'
+Announce1:
+'Befehl &H01 0 to 9
+'spielt Sprache/Musik
+'play voice/music
+Data "1;os,,sound;0;1;2;3;4;5;6;7;8;9"
+'
+Announce2:
+'Befehl &H01 0 to 9
+'spielt Playliste
+'play playlist
+Data "2;os,playlist;0;1;2;3;4;5;6;7;8;9"
+'
+Announce3:
+'Befehl &HF0<n><m>
+'liest announcements
+'read n announcement lines
+Data "240;an,ANNOUNCEMENTS;100;8"
+'
+Announce4:                                                  '
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;20,last_error"
+'
+Announce5:                                                  '
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+Announce6:
+'Befehl &HFE :
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
+'
+Announce7:
+'Befehl &HFF :
+'eigene Individualisierung lesen
+'read individualization
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'
+
+I2C
+
+Die Default Adresse ist 20 / &H14
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
+Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+
+Reset
+
+Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Watchdog
+
+Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer
+Die Software wurde in BASCOM geschrieben [2]
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
+Um der Prozessor von der Stromversorgung der übrigen Schaltung zu trennen, muss der Jumper JP1 entfernt werden.
+Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+
+RS232 Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+I2C und RS232 / USB können nicht gleichzeitig verwendet. Der Befehlspuffer wird gelöscht, wenn die Schnittstelle gewechselt wird.
+
+USB Schnittstelle
+
+Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt seitlich nach außen. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP9 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur  relativ großen Kondensatoren und Widerstände (1206).
+
+Stromversorgung
+
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
+
+Bestückung der Leiterplatte
+
+Alle Bauteile außer den unten genannten müssen immer bestückt werden.
+
+Mit USB Schnittstelle entfällt:
+X1, D1, IC2, C1, IC3, C7 – C10 X4 (Buchse)
+
+Ohne ISP:
+JP6
+
+ohne I2C Schnittstelle:
+X2, X3
+R8, R9 nach Bedarf
+
+Ein Bild: links: USB und I2C mit Soundmodul; rechts: I2C und RS232 ohne Soundmodul
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+RS232 (Buchse)
+5	GND
+2	zum Computer
+3	vom Computer
+
+I2C (2 x 3,5mm Klinke, Stereo)
+Sleeve	GND
+Ring	SDA
+Tip	SCL
+
+8Ohm Lautsprecher (3,5mm Klinke, Stereo)
+Sleeve	1
+Ring	2
+Tip	2
+
+Versionen
+
+Diese Beschreibung gilt für die 
+Leiterplattenversion 01.0
+Bascom Version 02.0
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Referenzen
+
+[[1]	sprachausgabe_eagle.zip
+[2]	sprachausgabe_bascom.zip
+[3]	MYC.pdf

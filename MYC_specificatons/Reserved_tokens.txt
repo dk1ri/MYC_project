@@ -1,7 +1,7 @@
 MYC, Reserved and Mandatory Commands / Tokens
 
 Author: DK1RI 
-Version V01.14 20160326
+Version V01.14 20160502
 This project can be found in https://github.com/dk1ri also.
 
 This paper describes reserved command tokens.
@@ -188,8 +188,7 @@ The format of the string is not defined. It should be used for debugging
 
 Info Command &HxxFD
 
-These info command deliver variable data. This 
-These devices can store infos in a info buffer and the command-router can poll with the info command.
+This info command deliver administrative data off the device.
 Multiple <OPTION> are addressed by position.
 The command announcement has the first description  "MYC INFO" to identify them in a list with the translated command-token, which is sent by the command-router.
 

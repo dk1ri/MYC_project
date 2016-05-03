@@ -1,6 +1,6 @@
 MYC Announcements and  Commands
 Author: DK1RI
-Version V02.7 20160326
+Version V02.7 20160502
 This paper is published in github.com/dk1ri as well
 
 This paper describes announcements and the command syntax and the format.
@@ -99,7 +99,7 @@ A command consist of a command-token and properties (parameters) depending on th
 The number and type of the properties of a command must match the announcement. If the announcement describe a min and max property and unit, the command will obviously have one property only for the value. For details see List of Standardized Command-types below.
 Each command belongs to a standardized command-type. There are w and i command-types for metacommands, operate (o) command-types, answer (a) command-types, "require to operate" (r)  command-types and “require to answer” (s) command-types. The announcement for r and s command-types is identical to the o and a command-type and therefore not mentioned in the list below. These are used by PQ and HI to denote what they want to sent in addition to the commands they get from the CR. The LD must find a translation of these other commands or block them. Therefore r and s commands are forwarded to the LD only.
 Each standardized command-type denotes a general function like os for operate a switch and defines the number and type of the properties. From this other devices will know the details of the devices function and the length of a command. The list below show the announcement templates, corresponding command, answer and info for the command-types.
-In some cases, different command-types can be chosen for a command. A frequency control will obviously get a range op type, because it covers a range of values, which can be easily defined with a min and max value. But what about a address ranging from 1  to 10? This can also be realized as a switch with 10 positions or a range type command. The command will act identical; the display on the HI may be different. If the real values are not a range  or each position has a individual label the switch must be used in any case.
+In some cases, different command-types can be chosen for a command. A frequency control will obviously get a range op type, because it covers a range of values, which can be easily defined with a min and max value. But what about an address ranging from 1  to 10? This can also be realized as a switch with 10 positions or a range type command. The command will act identical; the display on the HI may be different. If the real values are not a range  or each position has an individual label the switch must be used in any case.
 A rule of thumb is, that the range, p command-type will be used, if there are "many" equal distance values in a range.
 Optional properties are defined for some command-types and are optional for an announcement. If they are defined in an announcement, they must be given in a command. 
 
@@ -398,7 +398,7 @@ info:		<c><n><m><data>								if end of memory is reached next element is read f
 More about Descriptions
 
 The description should help the HI to find the correct parameters and to do the correct user readable labeling. If there is no description the HI will use the full range as defined by the property type and the labeling will be accordingly.
-It can also be used to limit the range of allowed values.
+It can also be used to limit the range of allowed values. Hex Values as &H00 to &H7F are allowed.
 The first “part” within the description is used for this; additional description separated by “,” may follow.
 The following rules apply for the three types of commands:
 Descriptions for switches:
@@ -408,6 +408,7 @@ Descriptions for range commands:
 To separate the labeling from the other description bracket {} are used.
 The number of values is given by the properties. So this labeling information is  necessary only, if the real and transmitted values are different.
 999,{1 to 999}			transmitted as 0 to 998
+1000,{1.0 to 99.9}			transmitted as 0 to 999
 4,{1,3,4,5}				transmitted as 0 to 3
 401,{1 to 99, 200 to 500}		transmitted as 0 to 400  (2 byte)
 
@@ -423,13 +424,14 @@ The following is allowed:
 {1 to 999}		real values 1 to 999 for 0 to 998
 row: {1,2} col: {3,4}	the label for &H01 could be “2 3”, for &H04: “2 4”
 
-The second type of description describe the allowed values of data and come as first description with <ty>. This is a restriction of the full range of <ty>. 
+The second type of description describe the allowed values of data and come as first description with <ty>. This is a restriction of the full range of <ty>. For string type values, it is a restriction of the allowed values, others are transferred “0” based; so it may be a restriction and translation.
+In other words: if you want to avoid a translation, you must use a string type. 
 This type of description is enclosed by {}
-{a,c,d}			for strings (type <s>) this limits the allowed characters, others will be ignored by the device.
-{a,c,d}			for numeric types stored as 0,1,2 . Others will be ignored.
-{a to z,A to Z}	letters only allowed for <s>
-{0 to 1000}		0 to 1000 only, transmitted as 0 to 1000, other numbers are ignored.
-The device will ignore commands with values out of range and may produce a error message.
+2,{a,c,d}		string of 2 characters; this limits the allowed characters, others will be ignored by the device.
+2,{a to z,A to Z}	string of 2 characters; letters only allowed
+b,{a,c,d}		byte; stored and transmitted as 0,1,2 Others will be ignored.
+w,{0 to 100.0}		word (2 bytes); 0 to 100.0 only, transmitted as 0 to 1000, other numbers are ignored.
+The device will ignore commands with values out of range and may produce an error message.
 
 The third type of description separated by “,” can give additional information for the HI.
 
