@@ -1,0 +1,251 @@
+MYC Textdisplay
+					
+
+Author DK1RI, Version V01.1, 20160519
+This project can be found in https://www.github.com/dk1ri
+
+Einleitung
+
+Dies ist ein MYC Interface für zwei Typen von LCD Modulen, die in meiner Bastelkiste lagen:
+LM016XML (16 Zeichen zweireihig) und TLC501-30 (20 Zeichen, zweireihig)
+Diese Module sind mindestens 20 Jahre alt, aber ähnliche Displays mit HD44780 kompatibler Ansteuerung und identischer Pinbelegung sind auch heute noch erhältlich.
+
+Beschreibung und Bedienung
+
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max.
+Es können LCD Module mit HD44780 kompatiblen Chips mit der Standard Pinbelegung direkt angeschlossen werden. 
+Die Steuerung kann über I2C, USB, seriell (allerdings ohne SUBD Verbinder und Pegelwandler)  erfolgen.
+
+Es können Texte mit einer maximalen Länge von 32  (40) Zeichen eingeben werden. Der Text wird umlaufend angezeigt; möglicherweise wird vorhandener Text überschrieben.
+Falls das Display nichts anzeigt, muss möglicherweise die Kontrasteinstellung verändert werden. Die nötige Einstellung variiert stark in Abhängigkeit vom verwendeten Display.
+
+Einbindung in das MYC System
+
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
+
+Announce0:
+'Befehl &H00
+'eigenes basic announcement lesen
+'basic announcement is read to I2C or output
+Data "0;m;DK1RI;Textdisplay;V02.0;1;160;12;19"
+'
+Announce1:
+'Befehl &H01
+'LCD schreiben
+'write LCD
+Data "1;oa,write text;32"
+'
+Announce2:
+'Befehl &H02
+'an position schreiben
+'goto position and write
+Data "2;on,write to position;b;32"
+'
+Announce3:
+'Befehl  &H03
+'gehe zu Cursorposition
+' go to Cursorposition
+Data "3;op,Cursorposition;32;lin;-"
+'
+Announce4:
+'Befehl &H04
+'LCD schreiben
+'write LCD
+Data "4;oa,write text;40"
+'
+Announce5:
+'Befehl &H05
+'an position schreiben
+'goto position and write
+Data "5;on,w6ite to position;b;40"
+'
+Announce6:
+'Befehl  &H06
+'gehe zu Cursorposition
+' go to Cursorposition
+Data "6;op,Cursorposition;40;lin;-"
+'
+Announce7:
+'Befehl &H07
+'Anzeige löschen
+'clear screen
+Data "7;ou,CLS;0,CLS"
+'
+Announce8:
+'Befehl &H08
+'Kontrast schreiben
+'write Contrast
+Data "8;oa,contrast;b"
+'
+Announce9:
+'Befehl &H09
+'Kontrast lesen
+'read Contrast
+Data "9;oa,contrast;b"
+'
+Announce10:
+'Befehl &H0A
+'Helligkeit schreiben
+'write brightness
+Data "10;oa,brightness;b"
+'
+Announce11:
+'Befehl &H0B
+'Helligkeit lesen
+'read brightness
+Data "11;oa,brightness;b"
+'
+Announce12:
+'Befehl &HF0<n><m>
+'liest announcements
+'read n announcement lines
+Data "240;an,ANNOUNCEMENTS;100;19"
+'
+Announce13:                                                  '
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;20,last_error"
+'
+Announce14:                                                  '
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+Announce15:
+'Befehl &HFE :
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;DISPLAYSIZE,0,{16x2,20x2}"
+ '
+Announce16:
+'Befehl &HFF :
+'eigene Individualisierung lesen
+'read individualization
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1,DISPLAYSIZE,0,{16x2,20x2}"
+'
+Announce17:
+Data "R !($1 $2 $3) IF $8 &5 = 1"
+'
+Announce18:
+Data "R !($4 $5 $6) IF $8 &5 = 0"
+
+I2C Adresse
+
+Die Default Adresse ist 8 / 16.
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
+Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
+Wenn Geräte am I2C Bus nur 3.3V Vertragen (zB der Raspberry), dürfen die Pullup Widerstände nicht bestückt werden.
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+
+Reset
+
+Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+
+Watchdog
+
+Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8
+Die Software wurde in BASCOM geschrieben [2]
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+
+Serielle Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+Der Pegelwandler für RS232 ist nicht vorhanden!!!
+Für den seriellen Anschluss steht ein 4 poliger Anschluss (JP1) zur Verfügung. 
+I2C und seriell / USB können nicht gleichzeitig verwendet. Der Befehlspuffer wird gelöscht, wenn die Schnittstelle gewechselt wird.
+
+USB Schnittstelle
+
+Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt in Richtung der Steckverbinder. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP1 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ große Bauteile.
+
+Stromversorgung
+
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max. 
+Alternativ erfolgt die Stromversorgung über USB
+
+Bestückung der Leiterplatte 
+
+Verwendung von ISP:
+JP2
+
+I2C Pullups nach Bedarf:
+R1, R2
+
+Mit USB Schnittstelle:
+Bei Verwendung des USB Moduls UM2102 wird  X1, D1, L1, IC2, und C1 nicht bestückt.
+
+Der Steckverbinder zur LCD Anzeige besteht aus 2 (anreihbaren) BHuchsenleistenn; können aber auch als eine Leiste realisiert werden.
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+I2C Stereo (2 x 3,5mm Klinke)
+Sleeve	GND
+Ring	SDA
+Tip	SCL
+
+LCD
+das Modul LM016XML hat eine Stiftleiste. Eine Buchsenleise wurde auf der Rückseite der Platine  gelötet; das Modul wird direkt darauf gesteckt.
+Das TLC501-30  hat Lötanschlüsse;
+LCD Pinbelegung	
+				
+1	GND
+2	5V
+3	Kontrast
+4	Command/Data, Resgister Select
+5	read / write
+6	Enable
+7	DB0
+8	DB1
+9	DB2
+10	DB3
+11	DB4
+12	DB5
+13	DB6
+14	DB7
+15	Vs Beleuchtung
+16	Beleuchtung GND
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion 01.2 (Diese Version ist noch nicht getestet)
+Bascom Version 02.0
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Referenzen
+
+[1]	MYC_Textdisplay_eagle.zip
+[2]	MYC_Textdisplay_bascom.zip
+[3]	MYC.pdf

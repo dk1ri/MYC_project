@@ -33,7 +33,7 @@ Data "0;m;DK1RI;DTMF receiver;V02.0;1;160;4;9"
 Announce1:
 'Befehl  &H01
 'liest den DTMF-Lesespeicher
-'readthe read DTMF buffer
+'read DTMF buffer
 Data "1;aa,DTMF buffer;252,{0 to 9,*,#,A to D}"
 '
 Announce2:
