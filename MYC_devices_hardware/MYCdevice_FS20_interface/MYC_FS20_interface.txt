@@ -1,0 +1,334 @@
+MYC - FS20 Sender und Empfänger
+
+Author DK1RI, Version V02.2, 201625
+This project can be found in https://www.github.com/dk1ri
+
+Einleitung
+
+Diese beiden Interfaces können ein MYC System mit einem FS20 System zur Haussteuerung verbinden.
+Die Leiterplatte kann die Module FS20 SM8 - 8 Kanal FS20 Empfänger - oder FS20 S8M - 8 Kanal Sender - aufnehmen.
+Für beide Bestückungen gibt es jeweils eine Firmware des Interfaces.
+Die Beschreibung der FS20 Funktionen steht in der Bedienungsanleitung der Module. Das Verständnis des FS20 Systems wird vorausgesetzt.
+
+Beschreibung
+
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA max.
+Als Interface zum MYC System ist eine I2C und eine serielle / USB Schnittstelle vorgesehen.
+Beide Schnittstellen könne nicht gleichzeitig verwendet werden. Wird die Schnittstelle gewechselt, wird der Befehlspuffer gelöscht.
+An der seriellen Schnittstelle kann ein Rechner mit Terminalprogramm (19,2kB, 8N1) angeschlossen werden.
+Die FS20 Adressen müssen über die Tasten der Module eingeben werden.
+Das FS20 System selbst liefert keine Rückmeldung, ob ein Befehl ausgeführt wurde. Deshalb gibt es beim Sender auch keine Abfrage des Status. Es gibt daher auch keine Möglichkeit, abzufragen, wann ein Befehl ausgeführt ist. Die Dimmbefehle duaern bis zu 1,5Sekunden. In dieser Zeit werden andere Befehle ignoriert. Einige Befehle duaern sehr lange und können daher nur mit den Tasten ausgeführt werden.
+
+FS20-Empfänger 
+Das Empfängerinterface kann verwendet werden, um mit einem FS20 Sender beliebige (Schalt)funktionen im MYC System durchzuführen – also nicht nur FS20 Komponenten zu steuern.
+Das Empfängerinterface erhält die Befehle von einem FS20 Sender und gibt die (in einem MYC System) an das Logikdevice weiter. Dieses muss so konfiguriert werden, dass es die Befehle an das richtige Device weitergibt. Auch ein anderes Benutzerinterface kann die Daten erhalten. 
+
+Die beim dem Modul vorgesehene Funktionalität –  nur ein Ausgang aktiv – soll nicht verwendet werden : Jumper 1 des Moduls ist offen.
+Der Empfängermodul muss entsprechend der Bedienungsanleitung mit den Tasten angelernt werden. Auch andere Einstellungen der Konfiguration müssen über die Tasten eingegeben werden.
+
+Die Ausgabe ist“0aktiv“: der Ausgangspegel ist 0, wenn der Ausgang eingeschaltet ist und die LED leuchtet.
+
+Es gibt zwei Betriebsarten des Empfängerinterfaces:
+
+ Eventmode (Default): Es wird sofort als Info weitergegeben, wenn sich der Zustand eines Schalters ändert: Nummer des Schalters  und neuer Status, jeweils die letzte Info (3 Byte) stehen im I2Cpuffer. 
+Wird ein Befehl gesendet, der eine Antwort liefert, wird die Info Ausgabe unterbrochen, bis alle Daten abgerufen wurden. Dadurch können Info Pakete verloren gehen. Der I2C Master muss auch ausreichend oft Daten abfragen, um alle Statusänderungen zu erhalten. Ohne neue Daten erhält der Master „0“.
+Wird die serielle Schnittstelle verwendet, werden alle Daten sofort ausgegeben.
+
+ Status-mode: Mit dem Befehl &H01<n> wird der entsprechende Schaltausgänge abgefragt und der Status auf die I2C / serielle Schnittstelle ausgegeben. Damit wird die volle Funktionsvielfalt des FS20 Systems ausgenutzt. Es erfolgt keine Mitteilung bei Änderungen des Status.
+
+
+FS20-Sender
+Die Funktion des Sendeinterfaces ist einfach: Über die I2C / serielle Schnittstelle erhält das Interface Befehle zur Steuerung.
+Die  Programmiersperre und der Sofort-Senden Mode dürfen nicht aktiviert sein, andernfalls funktionieren einige Funktionen nicht.
+Der gewählte 4 Kanal / 8 Kanal Mode bleibt auch nach dem Abschalten erhalten und wird beim Einschalten initialisiert. Der Default Mode ist 4 Kanal.
+Die Befehle des Senders dauern bis zu 7 Sekunden. In dieser Zeit werden andere Befehle ignoriert.
+Nicht alle Empfänger verstehen alle Befehle; zum Beispiel den Dimmbefehl.
+Eine Änderung des 4 Kanal 8 Kanal Modes wird erst nach einem Reboot aktiv.
+
+Befehle
+
+Nimmt das Interface Daten entgegen und interpretiert das erste Zeichen als Befehl und handelt entsprechend. Wird ein Befehl als ungültig erkannt, wird der komplette Befehlspuffer gelöscht.
+Ein begonnener Befehl erwartet eine bestimmte Menge an Parametern und kann nicht unterbrochen werden.
+Ein nicht vollständiger Befehl wird nach ca 1,5 s gelöscht.
+Details zum MYC System stehen in [3].
+
+Es wurden keine Befehle zur Änderung der Adressen der Module vorgesehen. Dies muss über die Tasten der Module erfolgen. Die Details stehen in der Beschreibung der Module.
+
+FS20 Empfänger
+
+Folgende Befehle werden akzeptiert:
+
+Announce0:
+'Befehl &H00
+'eigenes basic announcement lesen
+'basic announcement is read
+Data "0;m;DK1RI;FS20_receiver;V03.1;1;170;5;11"
+'
+Announce1:
+'Befehl  &H01
+'liest Status der 8 Schalter  scan_mode : 0
+'read status of 8 switches
+Data "1;au,8 shwitches;0;1;2;3;4;5.6,7"
+'
+Announce2:
+'Befehl  &H02
+'liest Status aller 8 Schalter  scan_mode : 0
+'read status of all 8 switches
+Data "2;aa,status all shwitches;b"
+ '
+Announce3:
+'Befehl  &H03
+'schreibt scanmode 0 default: eventmode, 1: Statusmode
+'write scanmode 0 default: eventmode, 1: Statusmode
+Data "3;oa,scanmode;a"
+'
+Announce4:
+'Befehl  &H04
+'liest scanmode
+'read scanmode
+Data "4;aa,as3"
+'
+Announce5:
+'Befehl &HF0
+'announcement aller Befehle lesen
+'read announcement lines
+Data "240;am,ANNOUNCEMENTS;100;11"
+'
+Announce6:                                                  '
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;20,last_error"
+'
+Announce7:                                                  '
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+Announce8:
+'Befehl &HFE :
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,13,{0 to 127};a,RS232,1;a,USB,1"
+'
+Announce9:
+'Befehl &HFF :
+'eigene Individualisierung lesen
+'read individualization
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,13,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'
+Announce10:
+Data "R !($1 $2) IF $4 = 0"
+
+FS20 Sender
+
+Folgende Befehle werden akzeptiert:
+
+Announce0:
+'Befehl &H00
+'eigenes basic announcement lesen
+'basic announcement is read to I2C or output
+Data "0;m;DK1RI;FS20 8 chanal sender;V03.1;1;170;12;18"
+'
+Announce1:
+'Befehl &H01
+'schaltet kanäle aus
+'switch chanals off
+Data "1;or,Aus;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+'
+Announce2:
+'Befehl &H02
+'schaltet Kanäle  ein
+'switch chanals on
+Data "2;or,Ein;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+'
+Announce3:
+'Befehl &H03
+'schaltet Kanäle an / aus
+'switch chanals on / off
+Data "3;or,Ein/Aus;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8"
+'
+Announce4:
+'Befehl &H04
+'dimmt kanäle ab
+'dim chanals down
+Data "4;or,dimmt ab;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+'
+Announce5:
+'Befehl &H05
+'dimmt kanäle  auf
+'dims chanals up
+Data "5;or,dimmt auf;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+'
+Announce6:
+'Befehl &H06
+'dimmt kanäle  auf/ab
+'dims chanals up/down
+Data "6;or,dimmt auf/ab;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8"
+'
+Announce7:
+'Befehl &H07
+'Timer für 4 Kanal Mode
+'Timer for 4 chanal mode
+Data "7;or,Timer start/stop;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4""
+'
+Announce8:
+'Befehl &H08
+'Timer für 8 Kanal Mode
+'Timer for 8 chanal modef
+Data "8;or,Timer start/stop;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8""
+'
+Announce9:
+'Befehl &H09
+'schreiben 1: 4 / 2: 8 Kanalmode
+'write 1: 4 / 2:8 chanalmode
+Data "9;os;0,4 Kanal;1,8 Kanal"
+'
+Announce10:
+'Befehl &H0A
+'lesen 4 / 8 Kanalmodemode
+'read 4 / 8 chanal mode
+Data "10,as,as9"
+'
+Announce11:
+'Befehl &HF0
+'announcement aller Befehle lesen
+'read announcement lines
+Data "240;am,ANNOUNCEMENTS;100;18"
+'
+Announce12:                                                  '
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;20,last_error"
+'
+Announce13:                                                  '
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+Announce14:
+'Befehl &HFE :
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;a,USB,1"
+'
+Announce15:
+'Befehl &HFF :
+'eigene Individualisierung lesen
+'read individualization
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'
+Announce16:
+Data "R !$1 !$2 !$4 !$5 !$7 If $9 = 1"
+Announce17:
+Data "R !$3 !$6 !$8 IF $9 = 0"
+
+I2C Adresse 
+
+Die Default Adresse ist 12 (&H0C) für den Sender und 13 (&H0D) für den Empfänger.
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
+Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+
+Reset
+
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Beim Reset sollte der FS20 Modul nicht installiert sein, da der Anschluss doppelt verwendet wird.
+
+
+Watchdog
+
+Die Befehlseingabe muss in weniger als 1,5 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+Die Ausführung der einiger Befehle kann aber bis zu 6 Sekunden dauern. Für diese Zeit wird der Watchdog unterbrochen. In dieser Zeit werden weitere befehle ignoriert.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder grösser.
+Die Software wurde in BASCOM geschrieben [2]
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !!
+Ebenso muss möglicherweise Prozessortyp und Quarzfrequenz angepasst werden.
+
+
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+
+RS232 Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+
+USB Schnittstelle (ab Leiterplattenversion 2.0)
+
+Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt in Richtung der Steckverbinder. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP1 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ große Bauteile.
+
+Stromversorgung
+
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA max.
+Mit installiertem USB Modul erfolgt die Stromversorgung darüber.
+
+Bestückung der Leiterplatte
+
+Die Buchsen BU1 - Bu3 werden auf der Lötseite angebracht und nehmen die FS20 Module auf.
+Bu2 und Bu3 kann auch als 24 polige Buchsenleiste ausgeführt sein.
+Wenn das Interface nur den FS20 Sender aufnehmen soll, kann Bu3 entfallen. 
+Der FS20-Sender benötigt keine Batterie; die Stromversorgung kann dann über das Interface erfolgen: JP6, pin2 und pin3 des Interfaces verbinden.
+Beim Empfänger muss Jumper6, pin1 und pin2 des Interfaces verbunden sein
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+RS232
+5	GND
+2	TX - vom Interface zum Computer
+3	RX - vom Computer zum Interface
+
+II2C Stereo (2 x 3,5mm Klinke) ab LP Version 2.0
+Sleeve	GND
+Ring	SDA
+Tip	SCL
+
+I2C (LP/5pol DIN) (LP Version 1)
+2 GND
+1 SDA
+3 SCL
+4 12V
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion V01.1, ohne USB
+Bascom Version V03.1 für Sender und Empfänger 
+
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of thisdocumnet is on own risk, there is no warranty.
+
+Referenzen
+
+[1]	MYC_FS20_interface_eagle.zip
+[2]	MYC_FS20_interface_bascom.zip
+[3]	MYC.pdf
+[4]	MYC_FS20_interfaceV01.1_eagle.zip
