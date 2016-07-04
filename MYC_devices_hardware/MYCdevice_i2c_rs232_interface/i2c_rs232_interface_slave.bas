@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_slave.bas
-'Version V04.0, 20160418
+'Version V04.1, 20160702
 'purpose : I2C-RS232_interface Slave
 'This Programm workes as I2C slave
 'Can be used with hardware rs232_i2c_interface Version V03.0 by DK1RI
@@ -36,9 +36,9 @@
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-$regfile = "m88pdef.dat"
+'$regfile = "m88pdef.dat"
 ' for ATmega8P
-'$regfile = "m88def.dat"
+$regfile = "m88def.dat"
 ' for ATmega8
 $crystal = 20000000
 ' used crystal frequency
@@ -56,7 +56,6 @@ $framesize = 50
 '**************** libs
 'use byte library for smaller code
 '$lib "mcsbyte.lbx"
-$lib "i2c_twi.lbx"
 '
 '**************** Variables
 Const Lf = 10
@@ -143,10 +142,6 @@ Led4 Alias Portd.2
 Led3 Alias PortD.3
 'on if cmd activ, off, when cmd finished
 '
-Config Sda = Portc.4
-'must !!, otherwise error
-Config Scl = Portc.5
-'
 Config Watchdog = 2048
 '
 'Mega8 has fixed parameter, processor will hang here, if uncommented:
@@ -174,7 +169,7 @@ Gosub Init
 '
 Slave_loop:
 Start Watchdog
-'Loop must be less than 512 ms
+'Loop must be less than 2s
 '
 Gosub Blink_
 'for tests
@@ -350,11 +345,6 @@ End If
 Return
 '
 Command_finished:
-'i2c reset
-I2cinit
-'may be not neccessary
-Config Twi = 100000
-'100KHz
 Twsr = 0
 'status und Prescaler auf 0
 Twdr = &HFF
@@ -369,9 +359,11 @@ Commandpointer = 1
 Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
-Incr Command_no
 If Error_no <> 3 Then Set Led3
 'For Tests
+If Error_no < 255 Then Gosub Last_err
+Incr Command_no
+Gosub Command_finished
 Return
 '
 Sub_restore:
@@ -429,7 +421,7 @@ Else
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read to I2C
-'Data "0;m;DK1RI;Rs232_i2c_interface Slave;V03.3.0;170;3;8"
+'Data "0;m;DK1RI;Rs232_i2c_interface Slave;V04.1.0;170;3;8"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -490,13 +482,14 @@ Else
 'Data "240;an,ANNOUNCEMENTS;170;8"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-               Send_lines = 1
-               Number_of_lines = Command_b(3)
-               A_line = Command_b(2)
-               Gosub Sub_restore
+                If Command_b(3) > 0 Then
+                  Send_lines = 1
+                  Number_of_lines = Command_b(3)
+                  A_line = Command_b(2)
+                  Gosub Sub_restore
+               End If
             Else
-               Error_no = 0
-               Gosub Last_err
+               Error_no = 4
             End If
             Gosub Command_received
          Else
@@ -541,7 +534,7 @@ Else
          Gosub Command_received
 '
       Case 254
-'Befehl &HFE :
+'Befehl &HFE <0..3> <data>
 'eigene Individualisierung schreiben
 'write individualization
 'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
@@ -588,7 +581,6 @@ Else
                         I2C_active_eeram = I2C_active
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   End If
@@ -601,7 +593,6 @@ Else
                         Adress_eeram = Adress
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   Else
@@ -616,7 +607,7 @@ Else
          End If
 '
       Case 255
-'Befehl &HFF :
+'Befehl &HFF <0..3>:
 'eigene Individualisierung lesen
 'read individualization
 'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
@@ -643,7 +634,6 @@ Else
                Case Else
                   Error_no = 4
                   'ignore anything else
-                  Gosub Last_err
             End Select
             Gosub Command_received
          Else
@@ -669,7 +659,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read to I2C
-Data "0;m;DK1RI;Rs232_i2c_interface Slave;V03.3.0;170;3;8"
+Data "0;m;DK1RI;Rs232_i2c_interface Slave;V04.1.0;170;3;8"
 '
 Announce1:
 'Befehl &H01 <s>
@@ -702,13 +692,13 @@ Announce5:                                                  '
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
 Announce6:
-'Befehl &HFE :
+'Befehl &HFE <0..3> <data>
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
 '
 Announce7:
-'Befehl &HFF :
+'Befehl &HFF <0 .. 3> :
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"

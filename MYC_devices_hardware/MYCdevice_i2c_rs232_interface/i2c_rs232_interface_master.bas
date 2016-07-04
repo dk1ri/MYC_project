@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_master.bas
-'Version V04.0, 20160418
+'Version V04.1, 20160704
 'purpose : Programm for serial to i2c Interface for test of MYC devices
 'This Programm workes as I2C master
 'Can be used with hardware rs232_i2c_interface Version V03.0 by DK1RI
@@ -55,6 +55,8 @@ $framesize = 50
 ' $sim
 '
 '**************** libs
+'force HW I2C as Master:
+$lib "i2c_twi.lbx"
 'use byte library for smaller code
 '$lib "mcsbyte.lbx"
 '$lib "i2c_twi.lbx"
@@ -66,7 +68,7 @@ Const Stringlength = 252
 Const Cmd_watchdog_time = 65000
 'Number of main loop before command reset
 Const Blinktime = 3000
-Const No_of_announcelines = 19
+Const No_of_announcelines = 20
 'announcements start with 0 -> minus 1
 '
 Dim First_set As Eram Byte
@@ -124,6 +126,8 @@ Dim USB_active As Byte
 Dim Usb_active_eeram As Eram Byte
 Dim Radio_active As Byte
 Dim Radio_active_eeram As Eram Byte
+Dim Send_lines As Byte
+Dim Number_of_lines As Byte
 '
 Dim Myc_mode As Byte
 Dim Myc_mode_eeram As Eram Byte
@@ -143,10 +147,14 @@ Led3 Alias Portd.3
 Led4 Alias Portd.2
 'on if cmd activ, off, when cmd finished
 '
+'Use HW TWI
+Config Twi = 400000
 Config Sda = Portc.4
-'must !!, otherwise error
+'must for master
 Config Scl = Portc.5
+I2cinit
 '
+
 Config Watchdog = 2048
 '
 'Mega8 has fixed parameter, processor will hang here, if uncommented:
@@ -161,17 +169,7 @@ Config Watchdog = 2048
 '
 If Reset__ = 0 Then Gosub Reset_
 '
-If First_set <> 5 Then
-   Gosub Reset_
-Else
-   Dev_number = Dev_number_eeram
-   Dev_name = Dev_name_eeram
-   Adress = Adress_eeram
-   Myc_mode = Myc_mode_eeram
-   RS232_active = RS232_active_eeram
-   Usb_active = Usb_active_eeram
-   Radio_active = Radio_active_eeram
-End If
+If First_set <> 5 Then Gosub Reset_
 '
 Gosub Init
 ''
@@ -179,7 +177,7 @@ Master_loop:
 Gosub Blink_
 '
 Start Watchdog
-'Loop must be less than 1024 ms
+'Loop must be less than 2s
 '
 Gosub Cmd_watch
 '
@@ -227,6 +225,12 @@ Radio_active_eeram = Radio_active
 Return
 '
 Init:
+Dev_number = Dev_number_eeram
+Dev_name = Dev_name_eeram
+Adress = Adress_eeram
+RS232_active = RS232_active_eeram
+Usb_active = Usb_active_eeram
+Radio_active = Radio_active_eeram
 Portc.3 = 1
 Set Led3
 Set Led4
@@ -307,33 +311,27 @@ End If
 Return
 '
 Command_finished:
-I2cinit
-'Config Twi = 100000
-'twi 100KHz
-'Twcr = &B00000100
-'
-Command = String(stringlength , 0)
-Commandpointer = 1
-Buffer = String(stringlength , 0)
-Cmd_watchdog = 0
-L = 0
-If Error_no <> 3 Then Set Led3
-Incr Command_no
-'LED3 lits until next correct command
+Twsr = 0
+'status und Prescaler auf 0
+Twdr = &HFF
+'default
+Twar = Adress
+'Slaveadress
+Twcr = &B01000100
 Return
 '
 Command_received:
 Commandpointer = 1
-Command = String(Stringlength , 0)
+Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
-Incr Command_no
+Gosub Command_finished
 If Error_no <> 3 Then Set Led3
+If Error_no < 255 Then Gosub Last_err
+Incr Command_no
 Return
 '
 I2c_receive_string:
-Waitms 3
-'needed for i2creceive !?!
 I2creceive Adress , L
 If L <> 0 Then
    I2creceive Adress , Buffer_b(1) , 0 , L
@@ -342,6 +340,8 @@ If L <> 0 Then
       Gosub Last_err
    End If
    Gosub Print_line
+Else
+   Printbin 0
 End If
 Return
 '
@@ -394,6 +394,8 @@ Select Case A_line
       Restore Announce17
    Case 18
       Restore Announce18
+   Case 19
+      Restore Announce19
    Case Else
       Error_no = 0
       Gosub Last_err
@@ -412,7 +414,7 @@ Select Case Command_b(1)
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-'Data "0;m;DK1RI;RS232_I2C_interface Master;V04.0;1;170;12;19"
+'Data "0;m;DK1RI;RS232_I2C_interface Master;V04.1;1;170;12;20"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -441,11 +443,9 @@ Select Case Command_b(1)
                      I2csend Adress , Command_b(3) , L
                      If Err <> 0 Then
                         Error_no = 1
-                        Gosub Last_err
                      End If
                   Else
                      Error_no = 0
-                     Gosub Last_err
                   End If
                   Gosub Command_received
                Else
@@ -455,7 +455,7 @@ Select Case Command_b(1)
          End If
       Else
          Error_no = 0
-         Gosub Last_err
+         Gosub Command_received
       End If
 '
    Case 2
@@ -465,18 +465,12 @@ Select Case Command_b(1)
 'Data "2;aa,as1"
       If Myc_mode = 0 Then
          If Commandpointer = 2 Then
-            If Myc_mode = 0 Then
-               L = Command_b(2)
-               I2creceive Adress , Buffer_b(1) , 0 , L
-               If Err <> 0 Then
-                  Error_no = 1
-                  Gosub Last_err
-               Else
-                  Gosub Print_line
-               End If
+            L = Command_b(2)
+            I2creceive Adress , Buffer_b(1) , 0 , L
+            If Err <> 0 Then
+               Error_no = 1
             Else
-               Error_no = 0
-               Gosub Last_err
+               Gosub Print_line
             End If
             Gosub Command_received
          Else
@@ -484,9 +478,8 @@ Select Case Command_b(1)
          End If
       Else
          Error_no = 0
-         Gosub Last_err
+         Gosub Command_received
       End If
-
 '
    Case 16
 'Befehl &H10
@@ -498,7 +491,6 @@ Select Case Command_b(1)
          Gosub Sub_restore
       Else
          Error_no = 0
-         Gosub Last_err
       End If
       Gosub Command_received
 '
@@ -530,7 +522,6 @@ Select Case Command_b(1)
                   If Err <> 0 Then
                   'write command as 1st byte
                      Error_no = 1
-                     Gosub Last_err
                   End If
                   Gosub Command_received
                Else
@@ -540,7 +531,7 @@ Select Case Command_b(1)
          End If
       Else
          Error_no = 0
-         Gosub Last_err
+         Gosub Command_received
       End If
 '
    Case 18
@@ -552,6 +543,10 @@ Select Case Command_b(1)
          Tempb = 2
          'read command to slave
          I2csend Adress , Tempb
+         Stop Watchdog
+         Waitms 3
+         'needed for i2creceive !?!
+         Start Watchdog
          Gosub I2c_receive_string
       Else
           Error_no = 0
@@ -567,10 +562,9 @@ Select Case Command_b(1)
       If Myc_mode = 1 Then
          Tempc = 252
          I2csend Adress , Tempc , 1
-         Gosub I2c_receive_string
+         If Err <> 0 Then Error_no = 1
       Else
          Error_no = 0
-        Gosub Last_err
       End If
       Gosub Command_received
 '
@@ -582,25 +576,46 @@ Select Case Command_b(1)
       If Myc_mode = 1 Then
          Buffer_b(1) = 253
          I2csend Adress , Buffer_b(1)
-         Waitms 3
-         'i2creceive need this wait !?!
-         I2creceive Adress , Tempb , 0 , 1
-         If Err <> 0 Then
-            Error_no = 1
-            Gosub Last_err
-         Else
-            Printbin Tempb
-         End If
+         If Err <> 0 Then Error_no = 1
       Else
          Error_no = 0
-         Gosub Last_err
       End If
       Gosub Command_received
 '
+   Case 21
+'Befehl &H15 <n>
+'übersetzes 255 des slave Myc_mode = 1
+'translated 255 of slave,
+'Data "21;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
+'
+      If Commandpointer = 2 Then
+         Select Case Command_b(2)
+            Case 0
+                Buffer = Dev_name
+               L = Len(dev_name)
+               Gosub Print_line
+            Case 1
+               Tempb = 1
+               'Devicenumber
+               Printbin Tempb
+            Case 2
+               Tempb = 1
+               'I2cactiv
+               Printbin Tempb
+            Case 3
+               Tempb = 1
+               'Adress
+               Printbin Tempb
+            Case Else
+               Error_no = 4
+               'ignore anything else
+         End Select
+         Gosub Command_received
+      End If
    Case 236
-'Befehl &HEC
-'Adresse speichern
-'write adress
+'Befehl &HEC <0..127>
+'Adresse zum Senden speichern
+'write send adress
 'Data "236;oa;b,{0 to 127}"                                               '
       If Commandpointer = 1 Then
          Incr Commandpointer
@@ -610,18 +625,17 @@ Select Case Command_b(1)
             Adress_eeram = Adress
          Else
             Error_no = 4
-            Gosub Last_err
          End If
          Gosub Command_received
       End If
 '
    Case 237
 'Befehl &HED
-'Adresse lesen
-'read adress
+'Adresse zum Senden lesen
+'read send adress
 'Data "237;aa,as236"
       Tempb = Adress / 2
-      Printbin Tempb;
+      Printbin Tempb
       Gosub Command_received                                '
 '
    Case 238
@@ -641,7 +655,6 @@ Select Case Command_b(1)
                Myc_mode_eeram = 1
             Case Else
                Error_no = 4
-               Gosub Last_err
          End Select
          Gosub Command_received
       End If
@@ -651,36 +664,39 @@ Select Case Command_b(1)
 'MYC_mode lesen
 'read myc_mod
 'Data "239;aa,as238"
-      Printbin myc_mode;
+      Printbin myc_mode
       Gosub Command_received                                '
 '
-      Case 240
+   Case 240
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-'Data "240;an,ANNOUNCEMENTS;100;19"
+'Data "240;an,ANNOUNCEMENTS;100;20"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-               A_line = Command_b(2)
-               Gosub Sub_restore
-               Decr Command_b(3)
-               While  Command_b(3) > 0
-                  Decr Command_b(3)
-                  Incr A_line
-                  If A_line >= No_of_announcelines Then
-                     A_line = 0
-                  End If
+                If Command_b(3) > 0 Then
+                  Send_lines = 1
+                  Number_of_lines = Command_b(3)
+                  A_line = Command_b(2)
                   Gosub Sub_restore
-               Wend
+                  Decr Number_of_lines
+                  While  Number_of_lines > 0
+                     Decr Number_of_lines
+                     Incr A_line
+                     If A_line >= No_of_announcelines Then
+                        A_line = 0
+                     End If
+                     Gosub Sub_restore
+                  Wend
+               End If
             Else
-               Error_no = 0
-               Gosub Last_err
+               Error_no = 4
             End If
             Gosub Command_received
          Else
                Incr Commandpointer
          End If
-''
+'
       Case 252
 'Befehl &HFC
 'Liest letzten Fehler
@@ -719,10 +735,10 @@ Select Case Command_b(1)
          Gosub Command_received
 '
       Case 254
-'Befehl &HFE :
+'Befehl &HFE <n><data>:
 'eigene Individualisierung schreiben
 'write individualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1;a,RADIO,1"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -761,7 +777,7 @@ Select Case Command_b(1)
                      Incr Commandpointer
                   Else
                      If Command_b(3) > 1 Then Command_b(3) = 1
-                     RS232_active = Command_b(4)
+                     RS232_active = Command_b(3)
                      RS232_active_eeram = RS232_active
                      Gosub Command_received
                   End If
@@ -774,18 +790,8 @@ Select Case Command_b(1)
                      Usb_active_eeram = Usb_active
                      Gosub Command_received
                   End If
-               Case 4
-                  If Commandpointer < 3 Then
-                     Incr Commandpointer
-                  Else
-                     If Command_b(3) > 1 Then Command_b(3) = 1
-                     Radio_active = Command_b(3)
-                     Radio_active_eeram = Radio_active
-                     Gosub Command_received
-                  End If
                Case Else
                   Error_no = 4
-                  Gosub Last_err
                   Gosub Command_received
             End Select
          Else
@@ -793,10 +799,10 @@ Select Case Command_b(1)
          End If
 '
       Case 255
-'Befehl &HFF :
+'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1""
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
          If Commandpointer = 2 Then
             Buffer = String(stringlength , 0)
             'delete buffer and restart ponter
@@ -821,7 +827,6 @@ Select Case Command_b(1)
                Case Else
                   Error_no = 4
                   'ignore anything else
-                  Gosub Last_err
             End Select
             Gosub Command_received
          Else
@@ -831,7 +836,6 @@ Select Case Command_b(1)
       Case Else
          Error_no = 0
          'ignore anything else
-         Gosub Last_err
          Gosub Command_received
       End Select
 
@@ -847,7 +851,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RS232_I2C_interface Master;V04.0;1;170;12;19"
+Data "0;m;DK1RI;RS232_I2C_interface Master;V04.1;1;170;12;20"
 '
 Announce1:
 'Befehl &H01 <s>
@@ -882,7 +886,7 @@ Data "18,aa,as17"
 Announce6:
 'Befehl &H13
 'übersetzes 252 des slave Myc_mode = 1
-'ranslated 252 of slave,
+'translated 252 of slave,
 Data "19;aa,LAST ERROR;20,last_error"
 '
 Announce7:
@@ -892,57 +896,68 @@ Announce7:
 Data "20;aa,MYC INFO;b,ACTIVE"
 '
 Announce8:
-'Befehl &HEC
-'Adresse speichern
-'write adress
-Data "236;oa;b,{0 to 127}"                                               '
+'Befehl &H15 <n>
+'übersetzes 255 des slave Myc_mode = 1
+'translated 255 of slave,
+Data "21;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
 '
 Announce9:
-'Befehl &HED
-'Adresse lesen
-'read adress
-Data "237;aa,as236"
+'Befehl &HEC <0..127>
+'Adresse zum Senden speichern
+'write send adress
+Data "236;oa;b,{0 to 127}"                                               '
 '
 Announce10:
+'Befehl &HED
+'Adresse zum Senden lesen
+'read send adress
+Data "237;aa,as236"
+'
+Announce11:
 'Befehl &HEE 0|1
 'MYC_mode speichern
 'write myc_mod
 Data "238;oa;a"                                               '
 '
-Announce11:
+Announce12:
 'Befehl &HEF
 'MYC_mode lesen
 'read myc_mod
 Data "239;aa,as238"
 '
-Announce12:
+Announce13:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-'Data "240;an,ANNOUNCEMENTS;100;19"
+'Data "240;an,ANNOUNCEMENTS;100;20"
 '
-Announce13:                                                 '
+Announce14:                                                 '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
  '
-Announce14:                                                 '
+Announce15:                                                 '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce15:
-'Befehl &HFE :
+Announce16:
+'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1;a,RADIO,1"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1"
 '
-Announce16:
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;1,I2C,1;b,ADRESS,0;1,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;1,USB,1"
 Announce17:
-Data "R !($1 $2) IF $238=1"
+'Befehl &HFF <n> :
+'eigene Individualisierung lesen
+'read individualization
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'
 Announce18:
-Data "R !($16 $17 $18 $19 $20) IF $238=0"
+Data "R !($1 $2) IF $239=1"
+'
+Announce19:
+Data "R !($16 $17 $18 $19 $20) IF $239=0"
 '
