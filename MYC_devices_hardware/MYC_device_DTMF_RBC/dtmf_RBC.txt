@@ -1,7 +1,7 @@
 DTMF Sender für Remote Shack von MFJ (TM)
 
 Author: DK1RI
-Version V01.2  20160511
+Version V01.3 20160705
 This paper is published in github.com/dk1ri as well
 
 Einleitung
@@ -40,7 +40,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.0;1;160;57;66"
+Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.1;1;160;57;66"
 '
 Announce1:
 'Befehl &H01
@@ -531,7 +531,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V02.0  (ATMega 168 oder groesser) Die Leiterplattenversion 2.3 (40 poliger Prozessor) ist auch möglich.
-Bascom Version 02.0
+Bascom Version 02.1
 
 Copyright
 
