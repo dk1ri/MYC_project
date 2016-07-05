@@ -1,6 +1,6 @@
 Morse Sender
 
-Author DK1RI, Version V01.2, 20160513
+Author DK1RI, Version V01.3, 20160705
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
@@ -12,38 +12,39 @@ Beschreibung
 
 Es wird die gleiche Leiterplatte wie für das I2C_RS232_Interface verwendet.
 Die Eagle Datenstehen unter  [1].
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max oder über USB.
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max oder über USB.
 Das Programm ist nur das Framework, weitere MYC Befehle des Gerätes müssen nach Bedarf eingefügt werden. Man kann aber Strings direkt entsprechend den MYC Regeln eingeben, die dann in Morsesignale umgesetzt werden.
-Es gibt zwei Betriebsarten, der mode bleibt nach dem Ausschalten erhalten:
+Die Tonhöhe des Morsesignals ist von 100Hz bis 2kHz einstellbar, die Geschwindigkeit von 5 bis 100 Wpm. Diese Werte sind nicht sehr genau.
 
-MYC_mode, default
-Die Befehlsdaten müssen binär eingegeben werden; er erfolgt keine Wandlung, hier im HEX Format:
-010448495051
-01 ist der Befehl zur Morse  Ausgabe. 04 ist die Länge des nachfolgenden String (in ASCII Format).
-Die gesendeten Zeichen werden auch immer über die sereille Schnittstelle so ausgegeben.
+Es gibt mehrere Betriebsarten; die Betriebsart bleibt nach dem Ausschalten erhalten:
+
+MYC_mode, default  (&H0600)
+Die Befehlsdaten müssen binär eingegeben werden; er erfolgt keine Wandlung, hier als Beispiel im HEX Format:
+0104474657374
+01 ist der Befehl zur Morse  Ausgabe. 04 ist die Länge des nachfolgenden Strings test
+Die gesendeten Zeichen werden auch immer über die serielle Schnittstelle so ausgegeben.
 
 Es können 252 Zeichen maximal am Stück übertragen werden; die Länge des Strings wird mit einem Byte übertragen.
-Die Tonhöhe ist von 100Hz bis 2kHz einstellbar, die Geschwindigkeit von 5 bis 100 Wpm. Diese Werte sind nicht sehr genau.
 Nach Eingabe eines Strings muss man warten, bis die Morse Signale übertragen wurden. Andernfalls gehen Eingabedaten verloren. 
 Serieller Eingang und I2C können „gleichzeitig“ verwendet werden. Allerdings wird beim jedem Wechsel der Befehlspuffer gelöscht.
-Es gibt die Möglichkeit, 5er Gruppen mit verschiedenen Zeichensätzen auszugeben: &H06<1 -7>.
-Dies kann nur durch Eingabe von &H06 unterbrochen werden.
 
-Direkt_mode: einschaltbar mit &H08&H01:
-Alle erlaubten Morsezeichen, die an der seriellen Schnittstelle in ASCII eingegeben werden,werden  nach Empfang eines LF (&0A) in Morsezeichen umgesetzt.
-Eine Rückkehr zu MYC_mode erfolgt mit &H08.
-Die I2C Schnittstelle arbeitet immer nur im MYC_mode.
+Direkt_mode, nicht MYC Mode (&H0601):
+Alle erlaubten Morsezeichen, die an der seriellen Schnittstelle in ASCII eingegeben werden,werden   in Morsezeichen umgesetzt, sobald ein LF &H0A) empfangen wurde.
+Es können auch Befehle dazwischen geschoben werden, die, wenn sie gültig sind, auch ausgeführt werden.
+
+Verschiedene 5 er Gruppen (&H0602 bis &h0608):
+Es gibt die Möglichkeit, 5er Gruppen mit verschiedenen Zeichensätzen auszugeben
+Die Eingabe von Befehlen ist eingeschränkt möglich: Die Befehlsauswertung erfolgt nach jedem Morsezeichen. Auch hier ist zu beachten, dass während des Senden eines Morsezeichen nur 1 Byte gepuffert werden kann. Ein Wechsel des Modes zum Beispiel &H0600 funktioniert.
 
 Befehle
 
 Folgende Befehle werden von der I2C / RS232 /USB Schnittstelle akzeptiert:
 
-
 Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;morse sender;V02.0;1;170;10;17"
+Data "0;m;DK1RI;morse sender;V02.1;1;170;10;13"
 '
 Announce1:
 'Befehl  &H01 <s>
@@ -77,9 +78,9 @@ Data "5;ap,read morse frequency,as4"
 '
 Announce6:
 'Befehl  &H06
-'5-er Gruppen Mode einstellen
-'set mode for groups of 5
-Data "6;os,set mode;0,morse input;1,0 to 9;2,a to f;3,g to l;4,m to s;5,t to z;6,special;7,all"
+'Mode einstellen, Myc, direkteingabe, 5er Gruppen
+'set mode
+Data "6;os,set mode;0,myc mode;1,morse input;2,0 to 9;3,a to f;4,g to l;5,m to s;6,t to z;7,special;8,all"
 '
 Announce7:
 'Befehl  &H07
@@ -88,53 +89,34 @@ Announce7:
 Data "7;as,as6"
 '
 Announce8:
-'Befehl  &H08
-'no_myc schreiben
-'write no_myc
-Data "8;os,write 'no_myc;0,Myc;1;no myc"
-'
-Announce9:
-'Befehl  &H09           myc_mode lesen
-'                       read myc_mode
-Data "9;as,as8"
-'
-Announce10:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;170;17"
+Data "240;an,ANNOUNCEMENTS;170;13"
 '
-Announce11:                                                  '
+Announce9:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce12:                                          '
+Announce10:                                          '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce13:
+Announce11:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1;a,RADIO,1"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
 '
-Announce14:
+Announce12:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1""
-'
-Announce15:
-'groups of 5 activ
-Data "R !$* IF $7 > 0"
-'
-Announce16:
-'always
-Data "R $6"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
 
 I2C
@@ -149,6 +131,7 @@ Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 
+
 Reset
 
 Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
@@ -159,7 +142,7 @@ Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Die Software wurde in BASCOM geschrieben [2]
 
 Programmierung des Prozessors
@@ -172,11 +155,11 @@ RS232 Schnittstelle
 
 Schnittstellenparameter: 19k2 8N1
 Es muss bei Jumper JP7 und JP8 ist jeweils Pin1 und Pin2  überbrückt werden.
-I2C und RS232 / USB können nicht gleichzeitig verwendet. Der Befehlspuffer wird gelöscht, wenn die Schnittstelle gewechselt wird.
+I2C und RS232 / USB können zur Befehlseingabe nicht gleichzeitig verwendet. Der Befehlspuffer wird gelöscht, wenn die Schnittstelle gewechselt wird.
 
 USB Schnittstelle
 
-Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt seitlich nach außen. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP9 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden.
+Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite des Morse Senders verlötet: der USB Stecker zeigt seitlich nach außen. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP9 auf dem Interface zu verbinden.USB Platine und Morse Sender müssen voneinander isoliert werden.
 Die Stromversorgung erfolgt dann über USB.
 
 SMD
@@ -189,25 +172,25 @@ Das Morsesignal kann direkt herausgeführt werden (R7 =0 Ohm, C12 entfällt)  oder
 
 Stromversorgung
 
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
 
 Bestückung der Leiterplatte
 
 Da die Leiterplatte auch für andere Anwendungen eingesetzt werden kann, brauchen nur folgende Bauteile  bestückt werden:
-IC1, Q1, C3 – C6, JP1 (muss für Normalbetrieb überbrückt werden), ohne Tiefpass:R7=0
+IC1, Q1, C3 – C6, JP1 (muss für Normalbetrieb überbrückt werden), ohne Tiefpass: R7=0
 SL4
 
 Verwendung von ISP:
 JP6
 
-nur mit RS232 Schnittstelle:
+RS232 Schnittstelle:
 IC2, IC3, D1, C1, C2, C7 – C10, JP7, JP8 (jeweils Pin1 und Pin 2 überbrücken), X1, X4 (Buchse)
 
-nur mit USB
+USB (alternativ zu RS232)
 UM2102
 
-nur I2C
-R8, R9 nach Bedarf, X2, X3, IC3, D1, C1, C2
+I2C
+R8, R9 nach Bedarf, X2, X3, (ohne USB außerdem: X1,IC3, D1, C1, C2
 
 Weitere Bestückung erleichtert Tests..
 
@@ -231,11 +214,14 @@ Morsesignal (LP SL6)
 1	Morsesignal 
 5	GND
 
+
+
+
 Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 02.0
-Bascom Version 02.0
+Bascom Version 02.1
 
 Copyright
 

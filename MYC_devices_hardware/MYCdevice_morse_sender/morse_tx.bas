@@ -1,15 +1,12 @@
 '-----------------------------------------------------------------------
 'name : morse_tx.bas
-'Version V02.0, 20160419
-'purpose : Programm for sending MYC protocol as DTMF Signals
+'Version V02.1, 20160705
+'purpose : Programm for sending MYC protocol as Morse Signals
 'This Programm workes as I2C slave or can bei controlled by RS232 / USB
-'Can be used with hardware rs232_i2c_interface Version V03.0 by DK1RI
+'Can be used with hardware rs232_i2c_interface Version V02.0 by DK1RI
 'The Programm supports the MYC protocol
 'Slave max length of  I2C string is 252 Bytes.
 'Please modify clock frequncy and processor type, if necessary
-'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-'If crystal frequency is modified, also Const Crystal_factor must be changed !!!!
-'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 'micro : ATMega168 or higher
 'Fuse Bits :
@@ -31,19 +28,19 @@
 ' I2C
 '-----------------------------------------------------------------------
 ' Inputs Outputs: see below
-' DTMFout at OCA Timer1 pin
+' Morseout at OCA Timer1 pin
 '
 '-----------------------------------------------------------------------
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-'$regfile = "m88pdef.dat"'(for ATmega8P)
+'$regfile = "m88pdef.dat"
+' for ATmega8P
 'for ATMega8P
 '$regfile = "m88def.dat"
 'for ATMega8
 $regfile = "m328pdef.dat"
 $crystal = 20000000
-'DTMF need 10MHz max
 $baud = 19200
 'use baud rate
 $hwstack = 128
@@ -59,7 +56,6 @@ $framesize = 60
 '**************** libs
 'use byte library for smaller code
 '$lib "mcsbyte.lbx"
-$lib "i2c_twi.lbx"
 '
 '**************** Variables
 Const Lf = 10
@@ -68,7 +64,7 @@ Const Stringlength = 252
 Const Cmd_watchdog_time = 65000
 'Number of main loop before command reset
 Const Blinktime = 3000
-Const No_of_announcelines = 17
+Const No_of_announcelines = 13
 'announcements start with 0
 Const Cystal = 20000000
 '
@@ -133,8 +129,6 @@ Dim Dash_time_ms As Word
 Dim Word_space As Word
 Dim Command_mode As Byte
 '0: I2C input 1: seriell
-Dim no_myc as byte
-Dim no_myc_eeram as eram byte
 Dim Btmp As Byte
 Dim Number_of_loops As  Word
 Dim Frequ As Byte
@@ -146,6 +140,7 @@ Dim Dot_time_us As Single
 Dim Dot_time_ms As Word
 Dim Dot_number As Single
 Dim Morse_mode As Byte
+Dim Morse_mode_eeram As eram Byte
 Dim Group As Byte
 Dim Adder As Byte
 Dim Char_num As Byte
@@ -159,10 +154,14 @@ Dim RS232_active As Byte
 Dim RS232_active_eeram As Eram Byte
 Dim USB_active As Byte
 Dim Usb_active_eeram As Eram Byte
-Dim Radio_active As Byte
-Dim Radio_active_eeram As Eram Byte
 Dim Send_lines As Byte
 Dim Number_of_lines As Byte
+Dim Command_started As Bit
+Dim Last_morse As Byte
+Dim Morse_buffer As String * Stringlength
+Dim Morse_buffer_pointer As Byte
+Dim Morse_buffer_b(stringlength) As Byte At Morse_buffer Overlay
+
 '
 '**************** Config / Init
 Config PortB.2 = Input
@@ -179,18 +178,10 @@ Led3 Alias Portd.3
 Led4 Alias Portd.2
 'on if cmd activ, off, when cmd finished
 '
-Config Sda = Portc.4
- 'must !!, otherwise error
-Config Scl = Portc.5
-'
 Config Watchdog = 2048
-'
-'Mega8 has fixed parameter, processor will hang here, if uncommented:
-'Config Com1 = 19200 , Databits = 8 Parity = None , Stopbits = 1                                                '
 '
 '****************Interrupts
 'Enable Interrupts
-'Disable Pcint2
 ' serialin not buffered!!
 ' serialout not buffered!!!
 '
@@ -198,115 +189,77 @@ Config Watchdog = 2048
 '
 If Reset__ = 0 Then Gosub Reset_
 '
-If First_set <> 5 Then
-   Gosub Reset_
-Else
-   Dev_number = Dev_number_eeram
-   Dev_name = Dev_name_eeram
-   Adress = Adress_eeram
-   no_myc = no_myc_eeram
-   I2C_active = I2C_active_eeram
-   RS232_active = RS232_active_eeram
-   Usb_active = Usb_active_eeram
-   Radio_active = Radio_active_eeram
-End If
+If First_set <> 5 Then Gosub Reset_
 '
 Gosub Init
 '
 Slave_loop:
+Start Watchdog
+'Loop must be less than 2s
 '
 Gosub Blink_
 '
 Gosub Cmd_watch
 '
-'groups of 5
-Group = 1
-5erloop:
-If Morse_mode > 0 Then
-'endless,interrupted by &H06
-   Stop Watchdog
-   A = Ischarwaiting()
-   If A = 1 Then
-      A = Waitkey()
-      If A = 6 Then Morse_mode = 0
-   End If
-   If Twi_control = &H80 Then
-   'twsr 60 -> start, 80-> daten, A0 -> stop
-      Twi_status = Twsr
-      Twi_status = Twi_status And &HF8
-      If Twi_status = &H80 Or Twi_status = &H88 Then
-         Tempb = twdr
-         If Tempb = 6 Then  Morse_mode = 0
-         Twcr = &B11000100
-      End If
-   End If
-   If Morse_mode > 0 Then
-      Tempd = Rnd(char_num)
-      Tempb = Adder + Tempd
-      One_char = Mid(All_chars,Tempb,1)
-      Tempd = Asc(One_char)
-      Gosub Select_morse1
-      Waitms Dash_time_ms
-      Incr Group
-      If Group = 6 Then
-         Group = 1
-         Waitms Word_space
-         Waitms Word_space
-         Printbin 32
-      End If
-   End If
+If Last_morse > 0 Then
+   Tempd = Last_morse
+   Gosub Select_morse1
+   Last_morse = 0
 End If
-If Morse_mode > 0 Then Goto 5erloop
-
-Start Watchdog
 '
+If Morse_mode > 1 Then
+'groups of 5
+'send 1 character
+   Tempd = Rnd(char_num)
+   Tempb = Adder + Tempd
+   One_char = Mid(All_chars,Tempb,1)
+   Tempd = Asc(One_char)
+   Gosub Select_morse1
+   Stop Watchdog
+   Waitms Dash_time_ms
+   Incr Group
+   If Group = 6 Then
+      Group = 1
+      Waitms Word_space
+      Waitms Word_space
+      Printbin 32
+   End If
+   Start Watchdog
+End If
+
 'RS232 got data?
 A = Ischarwaiting()
 If A = 1 Then
-   A = Waitkey()
-   If no_myc = 1 Then
-      If A = 8 Then
-      'switch to myc mode again
-         no_myc=0
-         no_myc_eeram = no_myc
-         Gosub Command_received
-      Else
-         If Commandpointer = 1 Then Commandpointer = 3
-         'first character  use commandbuffer as well
-         If A = 10 Then
-            Stop Watchdog
-            Commandpointer = Commandpointer - 3
-            Command_b(2) = Commandpointer
-            Gosub Select_morse
-            'output morse
-            Start Watchdog
-            Gosub Command_received
+   A = inkey()
+   If Morse_mode = 1 Then
+   'out as morse
+      If Command_started = 0 Then
+      'commandtoken?
+         If A < 9 or A > 239 Then
+         'is command
+            Command_started = 1
+            Gosub Serial_command
          Else
-            Command_b(commandpointer) = A
-            If Commandpointer < Stringlength Then Incr Commandpointer
+            If A = LF Then
+               Gosub Select_morse2
+            Else
+               If Morse_buffer_pointer < Stringlength Then
+                  Morse_buffer_b(Morse_buffer_pointer) = A
+                  Incr Morse_buffer_pointer
+               End If
+            End If
          End If
+      Else
+      'may be any command parameter
+         Last_morse = A
+         'save if A is not a valid parameter
+         Gosub Serial_command
       End If
    Else
-      If Command_mode = 0 Then
-      'restart if i2cmode
-         Command_mode = 1
-         Gosub  Command_received
-      End If
-      If Commandpointer < Stringlength Then
-      'If Buffer is full, chars are ignored !!
-         Command_b(commandpointer) = A
-         If Cmd_watchdog = 0 Then
-            Cmd_watchdog = 1
-            ' start watchdog
-            Reset Led3
-            'LED on
-         End If
-         Gosub Slave_commandparser
-      End If
+      Gosub Serial_command
    End If
 End If
 '
-'I2C
 'I2C
 Twi_control = Twcr And &H80
 'twint set?
@@ -390,19 +343,24 @@ Dev_name = "Device 1"
 Dev_name_eeram = Dev_name
 Adress = 36
 Adress_eeram = Adress
-no_myc=0
-no_myc_eeram = no_myc
+Morse_mode=0
+Morse_mode_eeram = Morse_mode
 I2C_active = 1
 I2C_active_eeram = I2C_active
 RS232_active = 1
 RS232_active_eeram = RS232_active
 USB_active = 1
 Usb_active_eeram = Usb_active
-Radio_active = 1
-Radio_active_eeram = Radio_active
 Return
 '
 Init:
+Dev_number = Dev_number_eeram
+Dev_name = Dev_name_eeram
+Adress = Adress_eeram
+Morse_mode = Morse_mode_eeram
+I2C_active = I2C_active_eeram
+RS232_active = RS232_active_eeram
+Usb_active = Usb_active_eeram
 Led3 = 1
 Led4  = 1
 I = 0
@@ -417,6 +375,9 @@ Speed = 7
 Frequ = 6
 Morse_mode = 0
 All_chars = All_chars_
+Command_started = 0
+Last_morse = 0
+Morse_buffer_pointer = 1
 Gosub Set_speed_frequency
 'No Error
 Gosub Command_received
@@ -479,10 +440,6 @@ Return
 '
 Command_finished:
 'i2c reset
-I2cinit
-'may be not neccessary
-Config Twi = 100000
-'100KHz
 Twsr = 0
 'status und Prescaler auf 0
 Twdr = &HFF
@@ -497,8 +454,13 @@ Commandpointer = 1
 Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
+Command_started = 0
+If Error_no = 255 Then Last_morse = 0
+'deleted, it was a valid command (parameter)
+Gosub Command_finished
+If Error_no <> 3 Then Set Led3
+If Error_no < 255 Then Gosub Last_err
 Incr Command_no
-Set LED3
 Return
 '
 Sub_restore:
@@ -532,17 +494,8 @@ Select Case A_line
       Restore Announce11
    Case 12
       Restore Announce12
-   Case 13
-      Restore Announce13
-   Case 14
-      Restore Announce14
-   Case 15
-      Restore Announce15
-   Case 16
-      Restore Announce16
    Case Else
       Error_no = 0
-      Gosub Last_err
 End Select
 If Error_no = 255 Then
    Read I2c_tx
@@ -569,6 +522,25 @@ I2c_pointer = 1
 I2c_tx = String(Stringlength,0)
 Return
 '
+Serial_command:
+If Command_mode = 0 Then
+'restart if i2cmode
+   Command_mode = 1
+   Gosub  Command_received
+End If
+If Commandpointer < Stringlength Then
+'If Buffer is full, chars are ignored !!
+   Command_b(commandpointer) = A
+   If Cmd_watchdog = 0 Then
+      Cmd_watchdog = 1
+      ' start watchdog
+      Reset Led3
+      'LED on
+   End If
+   Gosub Slave_commandparser
+End If
+Return
+'
 Select_morse:
 Tempb = Command_b(2) + 2
 For Tempc = 3 to Tempb
@@ -576,6 +548,15 @@ For Tempc = 3 to Tempb
    Gosub Select_morse1
    If Tempc < Tempb Then Waitms Dash_time_ms
 Next Tempc
+Return
+'
+Select_morse2:
+For Tempc = 1 to Morse_buffer_pointer
+   Tempd = Morse_buffer_b(Tempc)
+   Gosub Select_morse1
+   If Tempc < Tempb Then Waitms Dash_time_ms
+Next Tempc
+Morse_buffer_pointer = 1
 Return
 '
 Select_morse1:
@@ -617,7 +598,9 @@ Select_morse1:
       morse_code = Tempd - 41
       'A-Z       24-
    Case 32
+      Stop Watchdog
       Waitms Word_space
+      Start Watchdog
       'space
    End Select
    If Morse_code < 255 Then
@@ -627,6 +610,7 @@ Select_morse1:
 Return
 '
 Send_morse:
+   Stop Watchdog
    Morse_string = Lookupstr(morse_code , Morse)
    Morse_length = Len(morse_string)
    For Morse_index = 1 To Morse_length
@@ -639,6 +623,7 @@ Send_morse:
        If Morse_index < Morse_length Then Waitms Dot_time_ms
    Next Morse_index
    Waitms Dash_time_ms
+   Start Watchdog
 Return
 '
 Set_speed_frequency:
@@ -690,7 +675,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;morse sender;V02.0;1;170;10;17"
+'Data "0;m;DK1RI;morse sender;V02.1;1;170;10;13"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -703,7 +688,6 @@ Else
         If Commandpointer = 2 Then
             L = Command_b(commandpointer)
             If L = 0 Then
-               Gosub Command_finished
                Gosub command_received
             End If
             Incr Commandpointer
@@ -712,9 +696,7 @@ Else
             'Length
             If Commandpointer = L Then
             'string finished
-               Stop Watchdog
                Gosub Select_morse
-               Start Watchdog
                Gosub Command_received
             Else
                Incr Commandpointer
@@ -732,7 +714,6 @@ Else
                Gosub Set_speed_frequency
             Else
                Error_no = 4
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -764,7 +745,6 @@ Else
                Gosub Set_speed_frequency
             Else
                Error_no = 4
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -787,38 +767,39 @@ Else
 '
       Case 6
 'Befehl  &H06
-'5-er Gruppen Mode einstellen
-'set mode for groups of 5
-'Data "6;os,set mode;0,morse input;1,0 to 9;2,a to f;3,g to l;4,m to s;5,t to z;6,special;7,all"
+'Mode einstellen, Myc, direkteingabe, 5er Gruppen
+'set mode
+'Data "6;os,set mode;0,myc mode;1,morse input;2,0 to 9;3,a to f;4,g to l;5,m to s;6,t to z;7,special;8,all"
          If Commandpointer = 2 Then
-            If Command_b(2) < 8 Then
+            If Command_b(2) < 9 Then
                Morse_mode = Command_b(2)
+               Group = 1
                Select Case Morse_mode
-                  Case 1 :
+                  Case 2 :
                      Char_num = 10
                      'figures
                      Adder = 0
-                  Case 2 :
+                  Case 3 :
                      Char_num = 6
                      'a-f
                      Adder = 10
-                  Case 3:
+                  Case 4:
                      Char_num = 6
                      'g-l
                     Adder = 15
-                  Case 4 :
+                  Case 5 :
                      Char_num = 7
                      'm-s
                      Adder = 21
-                  Case 5 :
+                  Case 6 :
                      Char_num = 7
                      't-z
                     Adder = 28
-                  Case 6 :
+                  Case 7 :
                      Char_num = 14
                      'special
                      Adder = 35
-                  Case 7 :
+                  Case 8 :
                      Char_num = 50
                      'all
                      Adder = 0
@@ -827,7 +808,6 @@ Else
                Gosub Command_received
             Else
                Error_no = 4
-               Gosub Last_err
             End If
          Else
             Incr Commandpointer
@@ -847,63 +827,32 @@ Else
          End If
          Gosub Command_received
 '
-      Case 8
-'Befehl  &H08
-'no_myc schreiben
-'write no_myc
-'Data "8;os,write 'no_myc;0,Myc;1;no myc"
-         If Commandpointer = 2 Then
-            If Command_b(2) < 2 Then
-               If No_myc = 1 Then Gosub Reset_i2c_tx
-               no_myc = Command_b(2)
-               no_myc_eeram = no_myc
-            Else
-               Error_no = 4
-               Gosub Last_err
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 9
-'Befehl  &H09
-'no_myc lesen
-'read no_myc
-'Data "9;as,as8"
-         If Command_mode = 1 Then
-            Printbin no_myc
-         Else
-            Gosub Reset_i2c_tx
-            I2c_tx_b(1) = no_myc
-            I2c_length = 1
-         End If
-         Gosub Command_received
-'
       Case 240
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-'Data "240;an,ANNOUNCEMENTS;170;17"
+'Data "240;an,ANNOUNCEMENTS;170;13"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-               Send_lines = 1
-               Number_of_lines = Command_b(3)
-               A_line = Command_b(2)
-               Gosub Sub_restore
-               If Command_mode = 1 Then
-                  Decr Number_of_lines
-                  While  Number_of_lines > 0
+                If Command_b(3) > 0 Then
+                  Send_lines = 1
+                  Number_of_lines = Command_b(3)
+                  A_line = Command_b(2)
+                  Gosub Sub_restore
+                  If Command_mode = 1 Then
                      Decr Number_of_lines
-                     Incr A_line
-                     If A_line >= No_of_announcelines Then
-                        A_line = 0
-                     End If
-                     Gosub Sub_restore
-                  Wend
+                     While  Number_of_lines > 0
+                        Decr Number_of_lines
+                        Incr A_line
+                        If A_line >= No_of_announcelines Then
+                           A_line = 0
+                        End If
+                        Gosub Sub_restore
+                     Wend
+                  End If
                End If
             Else
-               Error_no = 0
+               Error_no = 4
                Gosub Last_err
             End If
             Gosub Command_received
@@ -962,7 +911,7 @@ Else
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1;a,RADIO,1"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -1006,7 +955,6 @@ Else
                         I2C_active_eeram = I2C_active
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   End If
@@ -1019,7 +967,6 @@ Else
                         Adress_eeram = Adress
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   Else
@@ -1030,7 +977,7 @@ Else
                      Incr Commandpointer
                   Else
                      If Command_b(3) > 1 Then Command_b(3) = 1
-                     RS232_active = Command_b(4)
+                     RS232_active = Command_b(3)
                      RS232_active_eeram = RS232_active
                      Gosub Command_received
                   End If
@@ -1043,18 +990,8 @@ Else
                      Usb_active_eeram = Usb_active
                      Gosub Command_received
                   End If
-               Case 6
-                  If Commandpointer < 3 Then
-                     Incr Commandpointer
-                  Else
-                     If Command_b(3) > 1 Then Command_b(3) = 1
-                     Radio_active = Command_b(3)
-                     Radio_active_eeram = Radio_active
-                     Gosub Command_received
-                  End If
                Case Else
                   Error_no = 4
-                  Gosub Last_err
                   Gosub Command_received
             End Select
          Else
@@ -1065,7 +1002,7 @@ Else
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1""
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1""
          If Commandpointer = 2 Then
             Gosub Reset_i2c_tx
             Select Case Command_b(2)
@@ -1098,10 +1035,6 @@ Else
                Case 7
                   I2c_tx_b(1) = USB_active
                   I2c_length = 1
-              Case 8
-                  I2c_tx_b(1) = Radio_active
-                  I2c_length = 1
-                  printbin Radio_active
                Case Else
                   Error_no = 4
                   'ignore anything else
@@ -1120,7 +1053,6 @@ Else
       Case Else
          Error_no = 0
          'ignore anything else
-         Gosub Last_err
          Gosub Command_received
       End Select
 End If
@@ -1188,7 +1120,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;morse sender;V02.0;1;170;10;17"
+Data "0;m;DK1RI;morse sender;V02.1;1;170;10;13"
 '
 Announce1:
 'Befehl  &H01 <s>
@@ -1222,9 +1154,9 @@ Data "5;ap,read morse frequency,as4"
 '
 Announce6:
 'Befehl  &H06
-'5-er Gruppen Mode einstellen
-'set mode for groups of 5
-Data "6;os,set mode;0,morse input;1,0 to 9;2,a to f;3,g to l;4,m to s;5,t to z;6,special;7,all"
+'Mode einstellen, Myc, direkteingabe, 5er Gruppen
+'set mode
+Data "6;os,set mode;0,myc mode;1,morse input;2,0 to 9;3,a to f;4,g to l;5,m to s;6,t to z;7,special;8,all"
 '
 Announce7:
 'Befehl  &H07
@@ -1233,51 +1165,32 @@ Announce7:
 Data "7;as,as6"
 '
 Announce8:
-'Befehl  &H08
-'no_myc schreiben
-'write no_myc
-Data "8;os,write 'no_myc;0,Myc;1;no myc"
-'
-Announce9:
-'Befehl  &H09           myc_mode lesen
-'                       read myc_mode
-Data "9;as,as8"
-'
-Announce10:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;170;17"
+Data "240;an,ANNOUNCEMENTS;170;13"
 '
-Announce11:                                                  '
+Announce9:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce12:                                          '
+Announce10:                                          '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce13:
+Announce11:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1;a,RADIO,1"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
 '
-Announce14:
+Announce12:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1""
-'
-Announce15:
-'groups of 5 activ
-Data "R !$* IF $7 > 0"
-'
-Announce16:
-'always
-Data "R $6"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
