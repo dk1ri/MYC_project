@@ -1,9 +1,9 @@
 '-----------------------------------------------------------------------
 'name : dtmf_sender.bas
-'Version V03.1, 20160418
+'Version V03.2, 20160705
 'purpose : Programm for sending MYC protocol as DTMF Signals
 'This Programm workes as I2C slave or serial protocoll
-'Can be used with hardware rs232_i2c_interface Version V03.0 by DK1RI
+'Can be used with hardware rs232_i2c_interface Version V02.0 by DK1RI
 'The Programm supports the MYC protocol
 'Slave max length of string is 252 Bytes.
 'Please modify clock frequncy and processor type, if necessary
@@ -21,7 +21,7 @@
 'under GPL (Gnu public licence)
 '-----------------------------------------------------------------------
 'Templates:
-' I2C_slave_4.0
+' I2C_slave_4.1
 '-----------------------------------------------------------------------
 'Used Hardware:
 ' serial
@@ -125,8 +125,6 @@ Dim RS232_active As Byte
 Dim RS232_active_eeram As Eram Byte
 Dim USB_active As Byte
 Dim Usb_active_eeram As Eram Byte
-Dim Radio_active As Byte
-Dim Radio_active_eeram As Eram Byte
 Dim Send_lines As Byte
 Dim Number_of_lines As Byte
 '
@@ -155,45 +153,23 @@ Led3 Alias Portd.3
 Led4 Alias Portd.2
 'life LED
 '
-Config Sda = Portc.4
-'must !!, otherwise error
-Config Scl = Portc.5
-'
 Config Watchdog = 2048
-'
-'Mega8 has fixed parameter, processor will hang here, if uncommented:
-'Config Com1 = 19200 , Databits = 8 Parity = None , Stopbits = 1                                                '
 '
 '****************Interrupts
 Enable Interrupts
 'Disable Pcint2
-' serialin not buffered!!
-' serialout not buffered!!!
 '
 '**************** Main ***************************************************
 '
 If Reset__ = 0 Then Gosub Reset_
 '
-If First_set <> 5 Then
-   Gosub Reset_
-Else
-   Dev_number = Dev_number_eeram
-   Dev_name = Dev_name_eeram
-   Adress = Adress_eeram
-   Dtmf_duration = Dtmf_duration_eeram
-   Dtmf_pause = Dtmf_pause_eeram
-   no_myc = no_myc_eeram
-   I2C_active = I2C_active_eeram
-   RS232_active = RS232_active_eeram
-   Usb_active = Usb_active_eeram
-   Radio_active = Radio_active_eeram
-End If
+If First_set <> 5 Then Gosub Reset_
 '
 Gosub Init
 '
 Slave_loop:
 Start Watchdog
-'Loop must be less than 512 ms
+'Loop must be less than 2s
 '
 Gosub Blink_
 'for tests
@@ -325,16 +301,22 @@ no_myc = 0
 no_myc_eeram = no_myc
 I2C_active = 1
 I2C_active_eeram = I2C_active
-Waitms 100
 RS232_active = 1
 RS232_active_eeram = RS232_active
 USB_active = 1
 Usb_active_eeram = Usb_active
-Radio_active = 1
-Radio_active_eeram = Radio_active
 Return
 '
 Init:
+Dev_number = Dev_number_eeram
+Dev_name = Dev_name_eeram
+Adress = Adress_eeram
+Dtmf_duration = Dtmf_duration_eeram
+Dtmf_pause = Dtmf_pause_eeram
+no_myc = no_myc_eeram
+I2C_active = I2C_active_eeram
+RS232_active = RS232_active_eeram
+Usb_active = Usb_active_eeram
 Led3 = 1
 Led4  = 1
 DTMF = 0
@@ -405,11 +387,6 @@ End If
 Return
 '
 Command_finished:
-'i2c reset
-I2cinit
-'may be not neccessary
-Config Twi = 100000
-'100KHz
 Twsr = 0
 'status und Prescaler auf 0
 Twdr = &HFF
@@ -424,8 +401,10 @@ Commandpointer = 1
 Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
+Gosub Command_finished
+If Error_no <> 3 Then Set Led3
+If Error_no < 255 Then Gosub Last_err
 Incr Command_no
-Set LED3
 Return
 '
 Sub_restore:
@@ -460,7 +439,7 @@ Select Case A_line
    Case 12
       Restore Announce12
    Case Else
-      Error_no = 0
+      Error_no = 4
       Gosub Last_err
 End Select
 If Error_no = 255 Then
@@ -527,7 +506,7 @@ Else
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-'Data "0;m;DK1RI;DTMF_sender;V03.1;1;100;8"
+'Data "0;m;DK1RI;DTMF_sender;V03.2;1;100;8"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -628,7 +607,6 @@ Else
                no_myc_eeram = no_myc
             Else
                Error_no =0
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -657,24 +635,25 @@ Else
 'Data "240;an,ANNOUNCEMENTS;100;13"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-               Send_lines = 1
-               Number_of_lines = Command_b(3)
-               A_line = Command_b(2)
-               Gosub Sub_restore
-               If Command_mode = 1 Then
-                  Decr Number_of_lines
-                  While  Number_of_lines > 0
+                If Command_b(3) > 0 Then
+                  Send_lines = 1
+                  Number_of_lines = Command_b(3)
+                  A_line = Command_b(2)
+                  Gosub Sub_restore
+                  If Command_mode = 1 Then
                      Decr Number_of_lines
-                     Incr A_line
-                     If A_line >= No_of_announcelines Then
-                        A_line = 0
-                     End If
-                     Gosub Sub_restore
-                  Wend
+                     While  Number_of_lines > 0
+                        Decr Number_of_lines
+                        Incr A_line
+                        If A_line >= No_of_announcelines Then
+                           A_line = 0
+                        End If
+                        Gosub Sub_restore
+                     Wend
+                  End If
                End If
             Else
-               Error_no = 0
-               Gosub Last_err
+               Error_no = 4
             End If
             Gosub Command_received
          Else
@@ -713,7 +692,7 @@ Else
          End If
          Gosub Command_received
 '
-       Case 253
+      Case 253
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
@@ -732,7 +711,7 @@ Else
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1;a,RADIO,1"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;a,USB,1;a,RADIO,1"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -776,7 +755,6 @@ Else
                         I2C_active_eeram = I2C_active
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   End If
@@ -789,7 +767,6 @@ Else
                         Adress_eeram = Adress
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   Else
@@ -800,7 +777,7 @@ Else
                      Incr Commandpointer
                   Else
                      If Command_b(3) > 1 Then Command_b(3) = 1
-                     RS232_active = Command_b(4)
+                     RS232_active = Command_b(3)
                      RS232_active_eeram = RS232_active
                      Gosub Command_received
                   End If
@@ -813,18 +790,8 @@ Else
                      Usb_active_eeram = Usb_active
                      Gosub Command_received
                   End If
-               Case 6
-                  If Commandpointer < 3 Then
-                     Incr Commandpointer
-                  Else
-                     If Command_b(3) > 1 Then Command_b(3) = 1
-                     Radio_active = Command_b(3)
-                     Radio_active_eeram = Radio_active
-                     Gosub Command_received
-                  End If
                Case Else
                   Error_no = 4
-                  Gosub Last_err
                   Gosub Command_received
             End Select
          Else
@@ -835,7 +802,7 @@ Else
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1""
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1"
          If Commandpointer = 2 Then
             Gosub Reset_i2c_tx
             Select Case Command_b(2)
@@ -868,14 +835,9 @@ Else
                Case 7
                   I2c_tx_b(1) = USB_active
                   I2c_length = 1
-              Case 8
-                  I2c_tx_b(1) = Radio_active
-                  I2c_length = 1
-                  printbin Radio_active
                Case Else
                   Error_no = 4
                   'ignore anything else
-                  Gosub Last_err
             End Select
             If Command_mode = 1 Then
                For Tempb = 1 To I2c_length
@@ -892,7 +854,7 @@ Else
          'ignore anything else
          Gosub Last_err
          Gosub Command_received
-      End Select
+   End Select
 End If
 Return
 '
@@ -905,7 +867,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;DTMF_sender;V03.1;1;100;8"
+Data "0;m;DK1RI;DTMF_sender;V03.2;1;100;8"
 '
 Announce1:
 'Befehl &H01
@@ -971,11 +933,11 @@ Announce11:
 'Befehl &HFE <n> <n>
 'Individualisierung schreiben
 'write indivdualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1;a,RADIO,1"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;a,USB,1"
 '
 Announce12:
-'Befehl &HFE
+'Befehl &HFF
 'Individualisierung lesen
 'read indivdualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1""
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '

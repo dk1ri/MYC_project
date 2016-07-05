@@ -1,6 +1,6 @@
 DTMF Sender
 
-Author DK1RI, Version V02.2, 20160511
+Author DK1RI, Version V02.3, 20160705
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
@@ -37,7 +37,7 @@ Folgende Befehle werden von der I2C / RS232 /USB Schnittstelle akzeptiert:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;DTMF_sender;V03.1;1;100;8"
+Data "0;m;DK1RI;DTMF_sender;V03.2;1;100;8"
 '
 Announce1:
 'Befehl &H01
@@ -168,7 +168,7 @@ Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind 
 
 Stromversorgung
 
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
 
 Bestückung der Leiterplatte
 
@@ -181,14 +181,14 @@ R7, C12
 Verwendung von ISP:
 JP6
 
-nur mit RS232 Schnittstelle:
+RS232 Schnittstelle:
 IC2, IC3, D1, C1, C2, C7 – C10, JP7, JP8 (jeweils Pin1 und Pin 2 überbrücken), X1, X4 (Buchse)
 
-nur mit USB
+USB, alternativ zu RS232
 UM2102
 
 nur I2C
-R8, R9 nach Bedarf, X2, X3, IC3, D1, C1, C2
+R8, R9 nach Bedarf, X2, X3, (ohne USB außerdem: X1, IC3, D1, C1, C2)
 
 Weitere Bestückung erleichtert Tests..
 
@@ -217,7 +217,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 02.0
-Bascom Version 03.1
+Bascom Version 03.2
 
 Copyright
 
