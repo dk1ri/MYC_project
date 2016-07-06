@@ -1,10 +1,10 @@
 '-----------------------------------------------------------------------
 'name : rtc.bas
-'Version V01.1, 201605010
+'Version V01.2, 20160705
 'purpose : Programm as realtime clock using the ELV RTC-DCF module
 'The interface communicates with the module via SPI
 'This Programm can be controlled via I2C or serial
-'Can be used with hardware MYC_rtc Version V01.1 by DK1RI
+'Can be used with hardware MYC_rtc Version V01.2 by DK1RI
 'The Programm supports the MYC protocol
 'Please modify clock frequncy and processor type, if necessary
 '
@@ -26,22 +26,22 @@
 'Used Hardware:
 ' I2C
 ' MISO MOSI
-'-----------------------------------------------------------------------
 ' Inputs: Reset Outputs: see below
+'
+'-----------------------------------------------------------------------
 ' For announcements and rules see Data section at the end
 '
 '-----------------------------------------------------------------------
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-'$regfile = "m88pdef.dat"
+$regfile = "m88pdef.dat"
 ' for ATmega8P
 '$regfile = "m88def.dat"
 ' (for ATmega8)
-$regfile = "m328pdef.dat"
+'$regfile = "m328pdef.dat"
 'for ATmega328
 $crystal = 20000000
-' iR Background mode need 8MHz max
 $baud = 19200
 ' use baud rate
 $hwstack = 64
@@ -57,7 +57,6 @@ $framesize = 50
 '**************** libs
 'use byte library for smaller code
 '$lib "mcsbyte.lbx"
-$lib "i2c_twi.lbx"
 '
 '**************** Variables
 Const Stringlength = 160
@@ -165,9 +164,6 @@ Config PortB.2 = Output
 '
 Config Watchdog = 2048
 '
-'Mega8 has fixed parameter, processor will hang here, if uncommented:
-'Config Com1 = 19200 , Databits = 8 Parity = None , Stopbits = 1                                                '
-'
 '****************Interrupts
 'Enable Interrupts
 'serialin not buffered!!
@@ -177,15 +173,7 @@ Config Watchdog = 2048
 '
 If Reset__ = 0 Then Gosub Reset_
 '
-If First_set <> 5 Then
-   Gosub Reset_
-Else
-   Dev_number = Dev_number_eeram
-   Dev_name = Dev_name_eeram
-   Adress = Adress_eeram
-   I2C_active = I2C_active_eeram
-   Usb_active = Usb_active_eeram
-End If
+If First_set <> 5 Then Gosub Reset_
 '
 Gosub Init
 Spiinit
@@ -224,7 +212,7 @@ If Dcf_set = 0 Then
 End If
 '
 Start Watchdog
-'Loop must be less than 512 ms
+'Loop must be less than 2s
 '
 'commands are expected as a string arriving in short time.
 'this watchdog assures, that a wrong coomands will be deleted
@@ -345,6 +333,11 @@ Usb_active_eeram = Usb_active
 Return
 '
 Init:
+Dev_number = Dev_number_eeram
+Dev_name = Dev_name_eeram
+Adress = Adress_eeram
+I2C_active = I2C_active_eeram
+Usb_active = Usb_active_eeram
 J = 0
 Dcf_set = 0
 Command_no = 1
@@ -396,11 +389,6 @@ Next Tempd
 Return
 '
 Command_finished:
-'i2c reset
-I2cinit
-'may be not neccessary
-Config Twi = 100000
-'100KHz
 Twsr = 0
 'status und Prescaler auf 0
 Twdr = &HFF
@@ -415,6 +403,8 @@ Commandpointer = 1
 Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
+Gosub Command_finished
+If Error_no < 255 Then Gosub Last_err
 Incr Command_no
 Return
 '
@@ -593,7 +583,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;RTC;V01.1;1;100;4;9"
+'Data "0;m;DK1RI;RTC;V01.1;2;100;4;9"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -626,7 +616,7 @@ Else
          Gosub Command_received
 '
       Case 2
-'Befehl  &H02
+'Befehl  &H02 <0..14><m>
 'schreibt register
 'write register
 'Data "2;om,write register;b;15"
@@ -643,7 +633,6 @@ Else
                Set PortB.2
             Else
                Error_no = 4
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -651,7 +640,7 @@ Else
          End If
 '
       Case 3
-'Befehl  &H03
+'Befehl  &H03 <0..14>
 'liest register
 'read register
 'Data "3;am,read register;b,15"
@@ -672,7 +661,6 @@ Else
                If Command_mode = 1 Then Printbin Spi_buffer1
             Else
                Error_no = 4
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -686,24 +674,25 @@ Else
 'Data "240;an,ANNOUNCEMENTS;100;9"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-               Send_lines = 1
-               Number_of_lines = Command_b(3)
-               A_line = Command_b(2)
-               Gosub Sub_restore
-               If Command_mode = 1 Then
-                  Decr Number_of_lines
-                  While  Number_of_lines > 0
+                If Command_b(3) > 0 Then
+                  Send_lines = 1
+                  Number_of_lines = Command_b(3)
+                  A_line = Command_b(2)
+                  Gosub Sub_restore
+                  If Command_mode = 1 Then
                      Decr Number_of_lines
-                     Incr A_line
-                     If A_line >= No_of_announcelines Then
-                        A_line = 0
-                     End If
-                     Gosub Sub_restore
-                  Wend
+                     While  Number_of_lines > 0
+                        Decr Number_of_lines
+                        Incr A_line
+                        If A_line >= No_of_announcelines Then
+                           A_line = 0
+                        End If
+                        Gosub Sub_restore
+                     Wend
+                  End If
                End If
             Else
                Error_no = 4
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -805,7 +794,6 @@ Else
                         I2C_active_eeram = I2C_active
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   End If
@@ -818,7 +806,6 @@ Else
                         Adress_eeram = Adress
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   Else
@@ -835,7 +822,6 @@ Else
                   End If
                Case Else
                   Error_no = 4
-                  Gosub Last_err
                   Gosub Command_received
             End Select
          Else
@@ -873,7 +859,6 @@ Else
                Case Else
                   Error_no = 4
                   'ignore anything else
-                  Gosub Last_err
             End Select
             If Command_mode = 1 Then
                For Tempb = 1 To I2c_length
@@ -888,7 +873,6 @@ Else
       Case Else
          Error_no = 0
          'ignore anything else
-         Gosub Last_err
          Gosub Command_received
       End Select
 End If
@@ -903,7 +887,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;RTC;V01.1;1;100;4;9"
+Data "0;m;DK1RI;RTC;V01.2;1;100;4;9"
 '
 Announce1:
 'Befehl  &H01
@@ -912,13 +896,13 @@ Announce1:
 Data "1;aa,read time;t"
 '
 Announce2:
-'Befehl  &H02
+'Befehl  &H02 <0..14><m>
 'schreibt register
 'write register
 Data "2;om,write register;b;15"
 '
 Announce3:
-'Befehl  &H03
+'Befehl  &H03 <0..14>
 'liest register
 'read register
 Data "3;am,read register;b,15"

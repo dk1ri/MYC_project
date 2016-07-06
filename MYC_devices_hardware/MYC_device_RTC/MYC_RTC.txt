@@ -1,6 +1,6 @@
 MYC Realtime Clock mit DCF
 
-Author DK1RI, Version V01.1, 20160509
+Author DK1RI, Version V01.2, 20160705
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
@@ -13,11 +13,11 @@ Beschreibung
 Die Eagle Daten der Leiterplatte stehen unter  [1].
 Als Realtime Modul wird der RTC-DCF Modul von ELV verwendet.
 Das Modul wird als Arduino Shield verwendet, dadurch wird die Leiterplatte zwar etwas größer, aber so entfällt die Pegelwandlung.
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA mA oder über USB
+Die Stromversorgung ist 12V, Stromaufnahme ca. 20mA mA oder über USB
 Die Kommunikation mit dem Modul erfolgt über die SPI Schnittstelle. 
 Die MYC Befehle müssen binär über die I2C Schnittstelle oder über USB eingegeben werden.
-Die Details der Register müssen in der Original Dokumentation des RTC-DCF Moduls nachgelesen werden.
-Die Uhrzeit wird in MEZ angegeben und ist gültig. Sobald das DCF Signal erkannt wurde und die LED des Moduls an ist.
+Die Details zu den Registern des DCF Moduls müssen in der Original Dokumentation des RTC-DCF Moduls nachgelesen werden.
+Die Uhrzeit wird im Format 8 Byte Unixzeit angegeben; allerdings nicht in UTC sondern in ME(S)Z angegeben. Es werden also 3600  (7200) Sekunden mehr angezeigt als die „wahre“ Unixzeit. Die gelesene Zeit ist gültig, sobald das DCF Signal erkannt wurde und die LED des Moduls an ist.
 
 Befehle
 
@@ -27,7 +27,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;RTC;V01.1;1;100;4;9"
+Data "0;m;DK1RI;RTC;V01.2;1;100;4;9"
 '
 Announce1:
 'Befehl  &H01
@@ -36,13 +36,13 @@ Announce1:
 Data "1;aa,read time;t"
 '
 Announce2:
-'Befehl  &H02
+'Befehl  &H02 <0..14><m>
 'schreibt register
 'write register
 Data "2;om,write register;b;15"
 '
 Announce3:
-'Befehl  &H03
+'Befehl  &H03 <0..14>
 'liest register
 'read register
 Data "3;am,read register;b,15"
@@ -76,6 +76,7 @@ Announce8:
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,USB,1"
+'
 
 I2C
 
@@ -119,7 +120,7 @@ Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind 
 
 Stromversorgung
 
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max oder über den USB Modul.
+Die Stromversorgung ist 12V, Stromaufnahme ca. 20mA max oder über den USB Modul.
 
 RTC-DCF Modul
 
@@ -157,7 +158,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V01.2
-Bascom Version V01.1
+Bascom Version V01.2
 
 Copyright
 
