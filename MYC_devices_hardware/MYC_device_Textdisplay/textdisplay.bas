@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : textdisplay_20.bas
-'Version V02.0 20160519
+'Version V02.1 20160715
 'purpose : Textdisplay
 'This Programm workes as I2C slave
 'Can be used with hardware textdisplay V01.1 by DK1RI
@@ -61,7 +61,6 @@ $framesize = 50
 '**************** libs
 'use byte library for smaller code
 '$lib "mcsbyte.lbx"
-$lib "i2c_twi.lbx"
 '
 '**************** Variables
 Const Stringlength = 50
@@ -161,15 +160,13 @@ Enable Interrupts
 '
 If Reset__ = 0 Then Gosub Reset_
 '
-If First_set <> 5 Then
-   Gosub Reset_
-End If
+If First_set <> 5 Then Gosub Reset_
 '
 Gosub Init
 '
 Slave_loop:
 Start Watchdog
-'Loop must be less than 512 ms
+'Loop must be less than 2s
 '
 Gosub Cmd_watch
 '
@@ -316,7 +313,6 @@ Cmd_watch:
 'all buffers are reset
 If Cmd_watchdog > Cmd_watchdog_time Then
    Error_no = 3
-   Gosub Last_err
    Gosub Command_received
    'reset commandinput
    Gosub Reset_i2c_tx
@@ -345,14 +341,10 @@ For Tempd = 1 To Tempb
    Incr Tempc
    Insertchar Last_error , Tempc , Temps_b(tempd)
 Next Tempd
+Error_no = 255
 Return
 '
 Command_finished:
-'i2c reset
-I2cinit
-'may be not neccessary
-Config Twi = 100000
-'100KHz
 Twsr = 0
 'status und Prescaler auf 0
 Twdr = &HFF
@@ -367,6 +359,8 @@ Commandpointer = 1
 Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
+Gosub Command_finished
+If Error_no < 255 Then Gosub Last_err
 Incr Command_no
 Return
 '
@@ -470,7 +464,6 @@ LCD_write:
 If Commandpointer = 2 Then
    If Command_b(2) > Chars Then
       Error_no = 4
-      Gosub Last_err
       Gosub Command_received
    End If
    If Command_b(2) = 0 Then
@@ -578,7 +571,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;Textdisplay;V02.0;1;160;12;19"
+'Data "0;m;DK1RI;Textdisplay;V02.1;1;160;12;19"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -592,7 +585,6 @@ Else
             Gosub Lcd_write
          Else
             Error_no = 4
-            Gosub Last_err
             Gosub Command_received
          End If
 
@@ -606,7 +598,6 @@ Else
             Gosub LCD_locate_write
          Else
             Error_no = 4
-            Gosub Last_err
             Gosub Command_received
          End If
 '
@@ -619,7 +610,6 @@ Else
             Gosub LCD_pos
          Else
             Error_no = 4
-            Gosub Last_err
             Gosub Command_received
          End If
 '
@@ -632,7 +622,6 @@ Else
             Gosub LCD_write
          Else
             Error_no = 4
-            Gosub Last_err
             Gosub Command_received
          End If
 
@@ -641,12 +630,11 @@ Else
 'Befehl &H05
 'an position schreiben
 'goto position and write
-'Data "5;on,w6ite to position;b;40"
+'Data "5;on,write to position;b;40"
          If Chars = 40 Then
             Gosub LCD_locate_write
          Else
             Error_no = 4
-            Gosub Last_err
             Gosub Command_received
          End If
 '
@@ -659,7 +647,6 @@ Else
             Gosub LCD_pos
          Else
             Error_no = 4
-            Gosub Last_err
             Gosub Command_received
          End If
 '
@@ -736,24 +723,25 @@ Else
 'Data "240;an,ANNOUNCEMENTS;100;19"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-               Send_lines = 1
-               Number_of_lines = Command_b(3)
-               A_line = Command_b(2)
-               Gosub Sub_restore
-               If Command_mode = 1 Then
-                  Decr Number_of_lines
-                  While  Number_of_lines > 0
+                If Command_b(3) > 0 Then
+                  Send_lines = 1
+                  Number_of_lines = Command_b(3)
+                  A_line = Command_b(2)
+                  Gosub Sub_restore
+                  If Command_mode = 1 Then
                      Decr Number_of_lines
-                     Incr A_line
-                     If A_line >= No_of_announcelines Then
-                        A_line = 0
-                     End If
-                     Gosub Sub_restore
-                  Wend
+                     While  Number_of_lines > 0
+                        Decr Number_of_lines
+                        Incr A_line
+                        If A_line >= No_of_announcelines Then
+                           A_line = 0
+                        End If
+                        Gosub Sub_restore
+                     Wend
+                  End If
                End If
             Else
                Error_no = 4
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -811,7 +799,7 @@ Else
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;DISPLAYSIZE,0,{16x2,20x2}"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;a,DISPLAYSIZE,0,{16x2,20x2}"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -855,8 +843,7 @@ Else
                         I2C_active_eeram = I2C_active
                      Else
                         Error_no = 4
-                        Gosub Last_err
-                     End If
+                    End If
                      Gosub Command_received
                   End If
                Case 3
@@ -868,7 +855,6 @@ Else
                         Adress_eeram = Adress
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   Else
@@ -894,8 +880,7 @@ Else
                            Chars = 40
                         Else
                            Error_no = 4
-                           Gosub Last_err
-                        End If
+                       End If
                      End If
                      Chars_eeram = Chars
                      Chars2 = Chars / 2
@@ -904,7 +889,6 @@ Else
                   End If
                Case Else
                   Error_no = 4
-                  Gosub Last_err
                   Gosub Command_received
             End Select
          Else
@@ -915,7 +899,7 @@ Else
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1,DISPLAYSIZE,0,{16x2,20x2}"
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;a,DISPLAYSIZE,0,{16x2,20x2}"
          If Commandpointer = 2 Then
             Gosub Reset_i2c_tx
             Select Case Command_b(2)
@@ -966,7 +950,6 @@ Else
       Case Else
          Error_no = 0
          'ignore anything else
-         Gosub Last_err
          Gosub Command_received
       End Select
 End If
@@ -981,7 +964,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Textdisplay;V02.0;1;160;12;19"
+Data "0;m;DK1RI;Textdisplay;V02.1;1;160;12;19"
 '
 Announce1:
 'Befehl &H01
@@ -1011,7 +994,7 @@ Announce5:
 'Befehl &H05
 'an position schreiben
 'goto position and write
-Data "5;on,w6ite to position;b;40"
+Data "5;on,write to position;b;40"
 '
 Announce6:
 'Befehl  &H06
@@ -1071,16 +1054,16 @@ Announce15:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;DISPLAYSIZE,0,{16x2,20x2}"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;a,DISPLAYSIZE,0,{16x2,20x2}"
  '
 Announce16:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1,DISPLAYSIZE,0,{16x2,20x2}"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1,a,DISPLAYSIZE,0,{16x2,20x2}"
 '
 Announce17:
-Data "R !($1 $2 $3) IF $8 &5 = 1"
+Data "R !($1 $2 $3) IF $255&5 = 1"
 '
 Announce18:
-Data "R !($4 $5 $6) IF $8 &5 = 0"
+Data "R !($4 $5 $6) IF $255&5 = 0"
