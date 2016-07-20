@@ -1,0 +1,248 @@
+Klimasensor mit MYC Protokoll
+
+Author DK1RI, Version V01.0, 20160719
+This project can be found in https://www.github.com/dk1ri
+
+Einleitung
+
+Dies ist die Beschreibung eines Klimasensors mit dem Sensor BME280
+Das Gerät wird mit dem MYC Protokoll über den I2C Bus oder RS232 /USB gesteuert.
+ 
+Beschreibung
+
+Die Schaltung verwendet das Sparkfun BM280 Hookup Modul (TM).
+Es gibt zwei Versionen der Leiterplatte: die kleine Version hat nur eine USB Schnittstelle, die größere kann auch mit I2C bestückt werden.
+
+Hinweise zur Bedienung
+
+Neben dem Auslesen von Temperatur, Feuchte und Luftdruck können auch die Parameter des BME280 geändert werden. Die genauen Auswirkungen müssen im Datenblatt nachgelesen werden.
+Die Default - Einstellung sollte für viele Anwendungen passen.
+Ein Reset liest auch die Korrekturdaten. Dies ist nötig, wenn der Sensormodul gewechselt wird.
+
+Befehle
+
+Folgende Befehle werden von der I2C / RS232 /USB Schnittstelle akzeptiert:
+	
+Announce0:
+'Befehl &H00
+'basic annoumement wird gelesen
+'basic announcement is read
+Data "0;m;DK1RI;Klimasensor;V01.0;1;100;15"
+'
+Announce1:
+'Befehl &H01
+'liest Temperatur
+'read temperature
+Data "1;aa,read temperature;w,{-40.00 to 84.99},DegC"
+'
+Announce2:
+'Befehl &H02
+'liest Feuchtigkeit
+'read humidity
+Data "2;aa,read humidity;L,{0.000 to 100.000},%"
+'
+Announce3:
+'Befehl &H03
+'liest Druck
+'read pressure
+Data "3;aa,read pressure;L,{300.000 to 1100.000},hPa"
+'
+Announce4:
+'Befehl &H04 0 to 5
+'schreibt Oversampling Feuchte
+'write Oversampling humidity
+Data "4;oa,oversampling humidity;b,{0,1,2,4,8,16}"
+'
+Announce5:
+'Befehl &H05
+'liest Oversampling Feuchte
+'read Oversampling humidity
+Data "5;aa,as4"
+'
+Announce6:
+'Befehl &H06 0 to 5
+'schreibt Oversampling Druck
+'write Oversampling pressure
+Data "6;oa,oversampling pressure;b,{0,1,2,4,8,16}"
+'
+Announce7:
+'Befehl &H07
+'liest Oversampling Druck
+'read Oversampling pressure
+Data "7;aa,as6"
+'
+Announce8:
+'Befehl &H08
+'schreibt Oversampling Temperatur
+'write Oversampling Temperature
+Data "8;oa,oversampling Temperatur;b,{0,1,2,4,8,16}"
+'
+Announce9:
+'Befehl &H09
+'liest Oversampling Temperatur
+'read Oversampling Temperatur
+Data "1;aa,as8"
+'
+Announce10:
+'Befehl &H0A
+'schreibt Pause Zeit
+'write non active time
+Data "10;oa,non activ time;b,{0,5,62.5,125,500,1000,10,20},ms"
+'
+Announce11:
+'Befehl &H0B
+'liest Pause Zeit
+'readnon active time
+Data "11;aa,as10"
+'
+Announce12:
+'Befehl &H0C
+'schreibt Filter
+'write Filter
+Data "12;oa,filter;b,{0,2,4,8,16}"
+'
+Announce13:
+'Befehl &H0D
+'liest Filter
+'read Filter
+Data "13;aa,as12"
+'
+Announce14:
+'Befehl &H0E
+'liest ID
+'read ID
+Data "14;aa,read ID;b"
+'
+Announce15:
+'Befehl &H0F
+'Reset
+'Reset
+'Data "15;ot,reset;0"
+'
+Announce16:
+'Befehl &HF0<n><m>
+'liest announcements
+'read n announcement lines
+Data "240;an,ANNOUNCEMENTS;100;21"
+'
+Announce17:
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;20,last_error"
+'
+Announce18:
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+Announce19:
+'Befehl &HFE <n><data>
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
+'
+Announce20:
+'Befehl &HFF <n>
+'eigene Individualisierung lesen
+'read individualization
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1"
+'
+
+I2C
+
+Die Default Adresse ist 22 (&H16).
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
+Pullup Widerstände für den I2C Bus (R8/R9) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. Die Schaltung arbeitet mit 3.3V, daher liefert der I2C Ausgang nur diese Spannung. Der Eingang ist aber 5V kompatibel.
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler – letzte Befehlsnummer vor Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+
+Reset
+
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+
+Watchdog
+
+Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
+Die Software wurde in BASCOM geschrieben [2]
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker (JP6) vorhanden.
+Die Programmierung darf nur mit entferntem Sensor durchgeführt werden.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+
+USB Schnittstelle
+
+Die Schaltung kann mit der USB Platine UM2102 von ELV bestückt werden. Diese liefert 5V und 3.3V
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt, außer Prozessor in der „kleinen“ Version nur recht große  Bauteile (1206).
+
+Stromversorgung
+
+Die Stromversorgung ist 11 - 12V, Stromaufnahme ca. 20mA ohne USB oder über USB
+
+Bestückung der Leiterplatte
+
+Bei Verwendung von ISP muss JP6 bestückt werden.
+
+Folgende Bauteile sind abhängig vom verwendeten Interface zu bestücken:
+
+Bei beiden Versionen wird der USB Modul auf der Bestückungsseite angebracht, der Sensor auf der Unterseite.
+
+„große“ Version:
+
+mit USB:
+UM2102
+es entfällt: X1, X3, D1, C1, DC1, IC2 
+Der USB Modul wird plan auf der Oberseite der Platine angelötet. USB Modul und Leiterplatte müssen voneinander isoliert werden.
+Der Sensormodul wird mit einer Stiftleiste versehen. Die 6 loige Buchsenleiste ist auf der Unterseite. Nach dem Aufstecken des Sensormoduls liegt der Modul unter der Leiterplatte, zeigt also zu Mitte hin. Der Sensor der Sensorplatine liegt außen, also unten.
+
+mit I2C: 
+R8, R9: nach Bedarf. R8, R9, Q2, Q3 nur für 5V Kompatibilität. X2, X3
+Hat der I2C Bus nur 3.3V, kann auch eine Drahtbrücke zwischen Drain und Source von Q2, Q3 eingelötet werden 
+
+„kleine“ Version:
+alle Teile müssen bestückt werden.
+Der Quarz muss eine kleine Version sein (HC48/U-S).
+Diese Version wurde noch nicht getestet.
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion 01.1
+Bascom Version 01.0
+
+
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Referenzen
+
+[[1]	MYC_Klimasensor_eagle.zip
+[2]	MYC_Klimasensor_bascom.zip
+[3]	MYC.pdf
+[4]
+[5]
