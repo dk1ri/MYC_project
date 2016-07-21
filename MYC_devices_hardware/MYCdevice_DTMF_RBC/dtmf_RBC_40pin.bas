@@ -1,11 +1,11 @@
 '-----------------------------------------------------------------------
-'name : dtmf_rbc_28pin.bas
-'Version V02.1, 20160705
-'for 28pin processor
-'difference to 40pin version: pins only
+'name : dtmf_rbc_40pin.bas
+'Version V02.1, 20160722
+'for 40pin processor
+'difference to 28pin version: pins only
 'purpose : Programm for sending MYC protocol as DTMF Signals for romote Shack of MFJ (TM)
 'This Programm workes as I2C slave
-'Can be used with hardware rs232_i2c_interface Version V02.0 by DK1RI with atmega328 (or 168)
+'Can be used with hardware rs232_i2c_interface Version V02.3 by DK1RI with atmega32 (or 16)
 'The Programm supports the MYC protocol
 'Slave max length of RS232 string is 252 Bytes.
 'Please modify clock frequncy and processor type, if necessary
@@ -39,8 +39,8 @@
 '
 '-----------------------------------------------------------------------
 'following line depends on the processor used!!!!
-$regfile = "m328pdef.dat"
-' (for ATmega328)
+$regfile = "m644def.dat"
+'for ATmega644
 $crystal = 10000000
 'DTMF need 8 - 10MHz
 $baud = 19200
@@ -71,8 +71,6 @@ Const No_of_announcelines = 66
 Dim First_set As Eram Byte
 'first run after reset
 Dim L As Byte
-Dim L1 As Byte
-Dim L2 As Byte
 Dim Tempb As Byte
 Dim Tempc As Byte
 Dim Tempd As Byte
@@ -154,19 +152,19 @@ Dim I2C_name As Byte
 Dim I2C_name_eeram As Eram Byte
 '**************** Config / Init
 '
-Config PinB.2 = Input
-PortB.2 = 1
-Reset__ Alias PinB.2
-Config  PORTB.1 = Output
-DTMF_ Alias PortB.1
+Config PinB.0 = Input
+PortB.0 = 1
+Reset__ Alias PinB.0
+Config  PORTD.5 = Output
+DTMF_ Alias Portd.5
 '
 ' Life LED:
 Config Portd.2 = Output
 Config Portd.3 = Output
 Led3 Alias Portd.3
-'on if cmd activ, off, when cmd finished
-Led4 Alias Portd.2
 'life LED
+Led4 Alias Portd.2
+'on if cmd activ, off, when cmd finished
 '
 Config Watchdog = 2048
 '
@@ -185,7 +183,7 @@ Gosub Init
 '
 Slave_loop:
 Start Watchdog
-'Loop must be less than 2 s
+'Loop must be less than 2s
 '
 Gosub Blink_
 '
@@ -367,6 +365,7 @@ For Tempd = 1 To Tempb
    Incr Tempc
    Insertchar Last_error , Tempc , Temps_b(tempd)
 Next Tempd
+Error_no = 255
 Return
 '
 Blink_:
@@ -386,7 +385,6 @@ End If
 Return
 '
 Command_finished:
-'i2c reset
 Twsr = 0
 'status und Prescaler auf 0
 Twdr = &HFF
@@ -405,6 +403,7 @@ Gosub Command_finished
 If Error_no <> 3 Then Set Led3
 If Error_no < 255 Then Gosub Last_err
 Incr Command_no
+If Command_no = 255 Then Command_no = 0
 Return
 '
 Sub_restore:
@@ -803,7 +802,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.1;1;160;57;66"
+'Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.0;1;160;57;66"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -1654,7 +1653,7 @@ Else
                         Adress = Tempb
                         Adress_eeram = Adress
                      Else
-                        Error_no = 4
+                        Gosub Last_err
                      End If
                      Gosub Command_received
                   Else
@@ -1755,7 +1754,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.1;1;160;57;66"
+Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.2;1;160;57;66"
 '
 Announce1:
 'Befehl &H01

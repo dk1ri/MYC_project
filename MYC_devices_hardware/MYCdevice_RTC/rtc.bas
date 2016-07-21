@@ -1,18 +1,14 @@
 '-----------------------------------------------------------------------
-'name : textdisplay_20.bas
-'Version V02.1 20160715
-'purpose : Textdisplay
-'This Programm workes as I2C slave
-'Can be used with hardware textdisplay V01.1 by DK1RI
+'name : rtc.bas
+'Version V01.2, 20160722
+'purpose : Programm as realtime clock using the ELV RTC-DCF module
+'The interface communicates with the module via SPI
+'This Programm can be controlled via I2C or serial
+'Can be used with hardware MYC_rtc Version V01.2 by DK1RI
 'The Programm supports the MYC protocol
-'uses LCD 4 Bit Mode, 116x2 and 20x2 displays
-'This Programm workes as I2C slave or serial protocoll
-'Can be used with hardware rs232_i2c_interface Version V03.0 by DK1RI
-'The Programm supports the MYC protocol
-'Slave max length of string is 252 Bytes.
 'Please modify clock frequncy and processor type, if necessary
 '
-'micro : ATMega88
+'micro : ATMega88 or higher
 'Fuse Bits :
 'External Crystal, high frequency
 'clock output disabled
@@ -25,36 +21,36 @@
 'under GPL (Gnu public licence)
 '-----------------------------------------------------------------------
 'Templates:
-' DTMF sender V03.1
+' DTMF_sender V03.1
 '-----------------------------------------------------------------------
 'Used Hardware:
-' serial
 ' I2C
+' MISO MOSI
+' Inputs: Reset Outputs: see below
+'
 '-----------------------------------------------------------------------
-' Inputs: see below
-' Outputs : see below
 ' For announcements and rules see Data section at the end
 '
 '-----------------------------------------------------------------------
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-'$regfile = "m88pdef.dat"
+$regfile = "m88pdef.dat"
 ' for ATmega8P
 '$regfile = "m88def.dat"
 ' (for ATmega8)
-$regfile = "m328pdef.dat"
-' (for ATmega328)
+'$regfile = "m328pdef.dat"
+'for ATmega328
 $crystal = 20000000
-' DTMF need 10MHz max
 $baud = 19200
 ' use baud rate
 $hwstack = 64
-' default use 32 for the hardware stack
+' default use 32 for the hardware stack .
 $swstack = 20
 ' default use 10 for the SW stack
 $framesize = 50
 ' default use 40 for the frame space
+'
 ' Simulation!!!!
 ' $sim
 '
@@ -63,10 +59,11 @@ $framesize = 50
 '$lib "mcsbyte.lbx"
 '
 '**************** Variables
-Const Stringlength = 50
+Const Stringlength = 160
+Const Length_spi = 9
 Const Cmd_watchdog_time = 65000
 'Number of main loop before command reset
-Const No_of_announcelines = 19
+Const No_of_announcelines = 9
 'announcements start with 0 -> minus 1
 '
 Dim First_set As Eram Byte
@@ -76,7 +73,10 @@ Dim Tempb As Byte
 Dim Tempc As Byte
 Dim Tempd As Byte
 Dim Temps As String * 20
+Dim Tempdw As Dword
+Dim J As Word
 Dim Temps_b(20) As Byte At Temps Overlay
+'
 Dim A As Byte
 Dim Announceline As Byte
 'notifier for multiple announcelines
@@ -90,7 +90,6 @@ Dim Dev_number_eeram As Eram Byte
 Dim Adress As Byte
 'I2C adress
 Dim Adress_eeram As Eram Byte
-'I2C Buffer
 Dim I2c_tx As String * Stringlength
 Dim I2c_tx_b(stringlength) As Byte At I2c_tx Overlay
 Dim I2c_pointer As Byte
@@ -109,52 +108,66 @@ Dim Last_error_b(30) As Byte At Last_error Overlay
 Dim Error_no As Byte
 Dim Cmd_watchdog As Word
 'Watchdog notifier
+Dim Send_lines As Byte
+Dim Number_of_lines As Byte
+'
+Dim Command_mode As Byte
+'0: I2C input, 1: serial input
 Dim I2C_active As Byte
 Dim I2C_active_eeram As Eram Byte
 Dim USB_active As Byte
 Dim Usb_active_eeram As Eram Byte
-Dim Send_lines As Byte
-Dim Number_of_lines As Byte
-Dim CMP1 as Byte
-Dim Cmp1_eeram As Eram Byte
-Dim CMP2 as Byte
-Dim Cmp2_eeram As Eram Byte
-Dim Command_mode As Byte
-'0: I2C input 1: seriell
-Dim Row As Byte
-Dim Col As Byte
-Dim Chars As Byte
-Dim Chars2 As Byte
-'1/2 Char
-Dim Chars_eeram As Eram Byte
-'1: 2* 16, 2: 2*20 Display
+'
+Dim Year As Dword
+Dim Day As Dword
+Dim Month As Byte
+Dim Unixtime As Dword
+Dim Unixtime0 As Byte At Unixtime Overlay
+Dim Unixtime1 As Byte At Unixtime + 1 Overlay
+Dim Unixtime2 As Byte At Unixtime + 2 Overlay
+Dim Unixtime3 As Byte At Unixtime + 3 Overlay
+Dim Tage_seit_ja(12) As Word
+Tage_seit_JA(1) = 31
+'days since start of year at end of month without leap days
+Tage_seit_JA(2) = 59
+Tage_seit_JA(3) = 90
+Tage_seit_JA(4) = 120
+Tage_seit_JA(5) = 151
+Tage_seit_JA(6) = 181
+Tage_seit_JA(7) = 212
+Tage_seit_JA(8) = 243
+Tage_seit_JA(9) = 273
+Tage_seit_JA(10) = 304
+Tage_seit_JA(11) = 334
+Dim Schaltjahre As Dword
+Dim Value as Byte
+Dim Spi_buffer(Length_spi) As Byte
+Dim Spi_buffer1 As Byte At Spi_buffer Overlay
+Dim Spi_bytes as Byte
+Dim Dcf_set as Byte
 '
 '**************** Config / Init
-' Jumper:
-Config PinB.3 = Input
-PortB.3 = 1
-Reset__ Alias PinB.3
-Config  PORTC.2 = Output
-RW Alias PortC.2
+'
+Config PinD.7 = Input
+PortD.7 = 1
+'Pullup
+Reset__ Alias PinD.7
 '
 Config Sda = Portc.4
 'must !!, otherwise error
 Config Scl = Portc.5
 '
+Config Spi = Hard, Interrupt = Off, Data Order = Msb, Master = Yes, Polarity = Low, Phase = 1, Clockrate = 64, Noss = 1
+'20MHz / 64 = 312KHz ; max is 500KHz
+Config PortB.2 = Output
+'SS pin for SPI
+'
 Config Watchdog = 2048
 '
-Config Lcdpin = Pin, Db4 = PortD.4, Db5 = PortD.5, Db6 = PortD.6, Db7 =PortD.7, E = PortB.0, Rs = PortC.3
-'
-'Mega8 has fixed parameter, processor will hang here, if uncommented:
-'Config Com1 = 19200 , Databits = 8 Parity = None , Stopbits = 1                                                '
-'
-Config Timer1 = Pwm , Pwm = 8 , Compare_A_Pwm = Clear_Up , Compare_B_Pwm = Clear_Up , Prescale = 1
-
 '****************Interrupts
-Enable Interrupts
-'Disable Pcint2
-' serialin not buffered!!
-' serialout not buffered!!!
+'Enable Interrupts
+'serialin not buffered!!
+'serialout not buffered!!!
 '
 '**************** Main ***************************************************
 '
@@ -163,12 +176,54 @@ If Reset__ = 0 Then Gosub Reset_
 If First_set <> 5 Then Gosub Reset_
 '
 Gosub Init
+Spiinit
 '
-Slave_loop:
+Do
+'
+If Dcf_set = 0 Then
+'It takes a while, before the modul accept commands
+   If J = 60000 Then
+   'check register D
+      Tempb = 192 + 13
+      tempc = 0
+      Reset PortB.2
+      Spiout Tempb,1
+      Waitus 70
+      Spiin Tempc, 1
+      Set PortB.2
+      If Tempc <> 5 Then
+      'register D not set -> set it
+         Waitus 70
+         Tempb = 128 + 13
+         Reset PortB.2
+         Spiout Tempb,1
+         Waitus 70
+         Tempb = 5
+         Spiout Tempb,1
+         Set PortB.2
+      Else
+         'register D now set at start
+         Dcf_set = 1
+      End if
+      J = 0
+   Else
+      Incr J
+   End If
+End If
+'
 Start Watchdog
 'Loop must be less than 2s
 '
-Gosub Cmd_watch
+'commands are expected as a string arriving in short time.
+'this watchdog assures, that a wrong coomands will be deleted
+If Cmd_watchdog > Cmd_watchdog_time Then
+   Error_no = 3
+   Gosub Last_err
+   Gosub Command_received
+   'reset commandinput
+Else
+   If Cmd_watchdog <> 0 Then Incr Cmd_watchdog
+End If
 '
 'RS232 got data?
 A = Ischarwaiting()
@@ -258,50 +313,39 @@ If Twi_status = &HA8 Or Twi_status = &HB8 Then
    Twcr = &B11000100
 End If
 Stop Watchdog                                               '
-Goto Slave_loop
+Loop
 '
 '===========================================
 '
 Reset_:
 First_set = 5
 Dev_number = 1
+'unsigned , set at first use
 Dev_number_eeram = Dev_number
 Dev_name = "Device 1"
 Dev_name_eeram = Dev_name
-Adress = 16
+Adress = 38
 Adress_eeram = Adress
 I2C_active = 1
 I2C_active_eeram = I2C_active
 USB_active = 1
 Usb_active_eeram = Usb_active
-Chars = 32
-Chars_eeram = Chars
-Cmp1 = 20
-Cmp1_eeram = Cmp1
-Cmp2 = 128
-Cmp2_eeram = Cmp2
 Return
 '
 Init:
+Dev_number = Dev_number_eeram
+Dev_name = Dev_name_eeram
+Adress = Adress_eeram
+I2C_active = I2C_active_eeram
+Usb_active = Usb_active_eeram
+J = 0
+Dcf_set = 0
 Command_no = 1
 Command_mode = 0
 Announceline = 255
 Last_error = " No Error"
 Error_no = 255
 'No Error
-Dev_number = Dev_number_eeram
-Dev_name = Dev_name_eeram
-Adress = Adress_eeram
-I2C_active = I2C_active_eeram
-Usb_active = Usb_active_eeram
-Chars = Chars_eeram
-Chars2 = Chars / 2
-Cmp1 = Cmp1_eeram
-Pwm1a = Cmp1
-Cmp2 = Cmp2_eeram
-Pwm1b = 255 - Cmp2
-Reset RW
-Gosub Config_lcd
 Gosub Command_received
 Gosub Command_finished
 Gosub Reset_i2c_tx
@@ -313,6 +357,7 @@ Cmd_watch:
 'all buffers are reset
 If Cmd_watchdog > Cmd_watchdog_time Then
    Error_no = 3
+   Gosub Last_err
    Gosub Command_received
    'reset commandinput
    Gosub Reset_i2c_tx
@@ -362,6 +407,7 @@ Cmd_watchdog = 0
 Gosub Command_finished
 If Error_no < 255 Then Gosub Last_err
 Incr Command_no
+If Command_no = 255 Then Command_no = 0
 Return
 '
 Sub_restore:
@@ -387,26 +433,6 @@ Select Case A_line
       Restore Announce7
    Case 8
       Restore Announce8
-   Case 9
-      Restore Announce9
-   Case 10
-      Restore Announce10
-   Case 11
-      Restore Announce11
-   Case 12
-      Restore Announce12
-   Case 13
-      Restore Announce13
-   Case 14
-      Restore Announce14
-   Case 15
-      Restore Announce15
-   Case 16
-      Restore Announce16
-   Case 17
-      Restore Announce17
-   Case 18
-      Restore Announce18
    Case Else
       Error_no = 4
       Gosub Last_err
@@ -426,7 +452,6 @@ If Error_no = 255 Then
          Printbin Tempc
       Next Tempb
    End If
-   'complete length of string
 End If
 Return
 '
@@ -436,128 +461,117 @@ I2c_pointer = 1
 I2c_tx = String(Stringlength,0)
 Return
 '
-LCD_pos:
-If Commandpointer = 2 Then
-   If Command_b(2) < Chars Then
-   'Command_b(2): 0 ... Chars - 1
-      If Command_b(2) >= Chars2 Then
-         Row = 2
-      Else
-         Row = 1
-      End If
-      Tempc= Row - 1
-      Tempc = Tempc * Chars2
-      Col = Command_b(2) - Tempc
-      Incr Col
-      Locate Row , Col
-   Else
-      Error_no = 4
-      Gosub Last_err
-   End If
-   Gosub Command_received
-Else
-   Incr Commandpointer
-End If
+Reset_spi:
+For Tempb = 0 To Length_spi
+   Spi_buffer(Tempb) = 0
+Next Tempb
 Return
 '
-LCD_write:
-If Commandpointer = 2 Then
-   If Command_b(2) > Chars Then
-      Error_no = 4
-      Gosub Command_received
-   End If
-   If Command_b(2) = 0 Then
-      Gosub Command_received
-   End If
-End If
-If Commandpointer > 2 Then
-   Tempc = Command_b(2) + 2
-   If Commandpointer >= Tempc Then
-      For Tempb = 3 To Commandpointer
-         LCD Chr(Command_b(Tempb))
-         Incr Col
-         If Col > Chars2 Then
-            If Row = 2 Then
-               Row = 1
-               Home Upper
-            Else
-               Row = 2
-               Home Lower
-            End If
-            Col = 1
-         End If
-      Next Tempb
-      Gosub Command_received
-   Else
-      Incr Commandpointer
-   End If
-Else
-   Incr Commandpointer
-End If
-Return
+Calculate_unix_time:
+   Value = Spi_buffer(1)
+   Tempb = Value AND &B01110000
+   'seconds
+   Shift Tempb ,Right , 4
+   Tempb = Tempb * 10
+   Tempc = Value AND &B00001111
+   Tempc = Tempb + Tempc
+   Unixtime = Tempc
 '
-LCD_locate_write:
-If Commandpointer >= 3 Then
-   If Commandpointer = 3 Then
-      If Command_b(2) >= Chars Or Command_b(3) >= Chars Then
-         Error_no = 4
-         Gosub Last_err
-         Gosub Command_received
-         Return
-      End If
-      If Command_b(3) = 0 Then
-         Gosub Command_received
-         Return
-      End If
-   End If
-   Tempb = Command_b(3) + 3
-   If Commandpointer >= Tempb Then
-      If Command_b(2) >= Chars2 Then
-         Row = 2
-      Else
-         Row = 1
-      End If
-      Tempc= Row - 1
-      Tempc = Tempc * Chars2
-      Col = Command_b(2) - Tempc
-      Incr Col
-      'Command_b(2) is 0 based, Col 1 based
-      Locate Row , Col
-      For Tempb = 4 To Commandpointer
-         LCD Chr(Command_b(Tempb))
-         Incr Col
-         If Col > Chars2 Then
-            If Row = 2 Then
-               Row = 1
-               Home Upper
-            Else
-               Row = 2
-               Home Lower
-            End If
-            Col = 1
-         End If
-      Next Tempb
-      Gosub Command_received
-   Else
-      Incr Commandpointer
-   End If
-Else
-   Incr Commandpointer
-End If
-Return
+   Value = Spi_buffer(2)
+   'minutes
+   Tempb = Value AND &B01110000
+   Shift Tempb ,Right , 4
+   Tempb = Tempb * 10
+   Tempc = Value AND &B00001111
+   Tempc = Tempc + Tempb
+   Tempdw = Tempc
+   Tempdw   = Tempdw * 60
+   Unixtime = Unixtime + Tempdw
 '
-Config_lcd:
-If Chars = 32 Then
-   Config LCD = 16*2
-Else
-   Config LCD = 20*2
-End If
-Initlcd
-Home upper
-CLS
-Cursor on blink
-Row = 1
-COl = 1
+   Value = Spi_buffer(3)
+   'hours
+   Tempb = Value AND &B00110000
+   Shift Tempb ,Right , 4
+   Tempb = Tempb * 10
+   Tempc = Value AND &B00001111
+   Tempc = Tempc + Tempb
+   Tempdw = Tempc
+   Tempdw = Tempdw * 3600
+   Unixtime = Unixtime + Tempdw
+   'seconds of actual day
+'
+ 'day of week, not used
+'
+   Value = Spi_buffer(5)
+   'day
+   Tempb = Value AND &B00110000
+   Shift Tempb , Right , 4
+   Tempb = Tempb * 10
+   Tempc = Value AND &B00001111
+   Tempc = Tempc + Tempb
+   Decr Tempc
+   Day = Tempc
+   'without actual day
+'
+   Value = Spi_buffer(6)
+   'month
+   Tempb = Value AND &B00010000
+   Shift Tempb , Right , 4
+   Tempb = Tempb * 10
+   Tempc = Value AND &B00001111
+   Month = Tempc + Tempb
+   Decr Month
+   'without actual month
+   If Month = 0 Then
+      Tempdw = Day
+   Else
+      Tempdw = Tage_seit_ja(Month)
+      Tempdw = Tempdw + Day
+      'all days since start of year without actual day
+   End If
+   Tempdw = Tempdw * 86400
+   '60*60*24  seonds
+   Unixtime = Unixtime + Tempdw
+   'all seconds since start of year
+'
+   Value = Spi_buffer(7)
+   'year: 2 octetts !!!
+   Tempb = Value AND &B11110000
+   Shift Tempb , Right , 4
+   Tempb = Tempb * 10
+   Tempc = Value AND &B00001111
+   Tempc = Tempc + Tempb
+   Year = Tempc  + 30
+   'complete years since 1. 1. 1970 (without actual year) (31 -1)
+   Tempdw = 365 *  Year
+   'alle Tage
+'
+   Schaltjahre = Tempc / 4
+   'since 2001: Schaltjahre (leapyear)
+   Schaltjahre = Schaltjahre + 8
+   '8 leapyears from 1970  - 2000 inclusive
+'
+   Tempdw = Tempdw + Schaltjahre
+   'one day per leapyear
+   Tempdw = Tempdw * 86400
+   '60*60*24   second of the past years
+   Unixtime = Unixtime + Tempdw
+'
+   Tempc= Year Mod 4
+   'actual year is leapear? This work ok unitil 28.2.2100 :)
+   Tempb = Tempc Mod 4
+   If Tempb = 0 Then
+      If Month > 2 Then
+         Unixtime = Unixtime + 86400
+      End If
+   End If
+'
+   I2C_tx_b(5) = Unixtime3
+   'first 4 byte are 0  little endian -> big endian
+   I2C_tx_b(6) = Unixtime2
+   I2C_tx_b(7) = Unixtime1
+   I2C_tx_b(8) = Unixtime0
+   I2c_length = 8
 Return
 '
 Slave_commandparser:
@@ -571,156 +585,95 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;Textdisplay;V02.1;1;160;12;19"
+'Data "0;m;DK1RI;RTC;V01.1;2;100;4;9"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
 '
       Case 1
-'Befehl &H01
-'LCD schreiben
-'write LCD
-'Data "1;oa,write text;32"
-         If Chars = 32 Then
-            Gosub Lcd_write
-         Else
-            Error_no = 4
-            Gosub Command_received
+'Befehl  &H01
+'liest Uhrzeit
+'read time
+'Data "1;aa,read time;t"
+         Gosub Reset_i2c_tx
+         Gosub Reset_spi
+         Reset PortB.2
+         For Tempb = 1 To 7
+            Tempc = Tempb + 192
+            Decr Tempc
+            'read register 0 to 6
+            Spiout Tempc, 1
+            Waitus 70
+            Spiin Spi_buffer(Tempb), 1
+            Waitus 70
+         Next Tempb
+         Set PortB.2
+         Gosub Calculate_unix_time
+         If Command_mode = 1 Then
+            For Tempb = 1 to 8
+               Tempc = I2C_tx_b(Tempb)
+               Printbin Tempc
+            Next Tempb
          End If
-
+         Gosub Command_received
 '
       Case 2
-'Befehl &H02
-'an position schreiben
-'goto position and write
-'Data "2;on,write to position;b;32"
-         If Chars = 32 Then
-            Gosub LCD_locate_write
-         Else
-            Error_no = 4
+'Befehl  &H02 <0..14><m>
+'schreibt register
+'write register
+'Data "2;om,write register;b;15"
+         If Commandpointer >= 3 Then
+            If Command_b(2) < 15 Then
+               Gosub Reset_spi
+               Spi_buffer(1) = Command_b(2) + 128
+               Spi_buffer(2) =  Command_b(3)
+               Reset PortB.2
+               Spiout Spi_buffer(1), 1
+               Waitus 70
+               Spiout Spi_buffer(2), 1
+               Waitus 70
+               Set PortB.2
+            Else
+               Error_no = 4
+            End If
             Gosub Command_received
+         Else
+            Incr Commandpointer
          End If
 '
       Case 3
-'Befehl  &H03
-'gehe zu Cursorposition
-' go to Cursorposition
-'Data "3;op,Cursorposition;32;lin;-"
-         If Chars = 32 Then
-            Gosub LCD_pos
-         Else
-            Error_no = 4
-            Gosub Command_received
-         End If
-'
-      Case 4
-'Befehl &H04
-'LCD schreiben
-'write LCD
-'Data "4;oa,write text;40"
-         If Chars = 40 Then
-            Gosub LCD_write
-         Else
-            Error_no = 4
-            Gosub Command_received
-         End If
-
-'
-      Case 5
-'Befehl &H05
-'an position schreiben
-'goto position and write
-'Data "5;on,write to position;b;40"
-         If Chars = 40 Then
-            Gosub LCD_locate_write
-         Else
-            Error_no = 4
-            Gosub Command_received
-         End If
-'
-      Case 6
-'Befehl  &H06
-'gehe zu Cursorposition
-' go to Cursorposition
-'Data "6;op,Cursorposition;40;lin;-"
-         If Chars = 40 Then
-            Gosub LCD_pos
-         Else
-            Error_no = 4
-            Gosub Command_received
-         End If
-'
-      Case 7
-'Befehl &H07
-'Anzeige löschen
-'clear screen
-'Data "7;ou,CLS;0,CLS"
-         CLS
-         Col = 1
-         Row = 1
-         Gosub Command_received
-'
-      Case 8
-'Befehl &H08
-'Kontrast schreiben
-'write Contrast
-'Data "8;oa,contrast;b"
-         If Commandpointer = 2 Then
-            Cmp1 = Command_b(2)
-            Cmp1_eeram = Cmp1
-            Pwm1a = Cmp1
+'Befehl  &H03 <0..14>
+'liest register
+'read register
+'Data "3;am,read register;b,15"
+         If Commandpointer >= 2 Then
+            If Command_b(2) < 15 Then
+               Gosub Reset_spi
+               Spi_buffer(1) = Command_b(2) + 192
+               Reset PortB.2
+               Spiout Spi_buffer(1), 1
+               Waitus 70
+               Gosub Reset_spi
+               Spiin Spi_buffer(1), 1
+               Waitus 70
+               Set PortB.2
+               Gosub Reset_i2c_tx
+               I2c_tx_b(1) = Spi_buffer(1)
+               I2c_length = 1
+               If Command_mode = 1 Then Printbin Spi_buffer1
+            Else
+               Error_no = 4
+            End If
             Gosub Command_received
          Else
             Incr Commandpointer
          End If
-'
-      Case 9
-'Befehl &H09
-'Kontrast lesen
-'read Contrast
-'Data "9;oa,contrast;b"
-         Gosub Reset_i2c_tx
-         If Command_mode = 1 Then
-            Printbin Cmp1
-         Else
-            I2c_tx_b(1) = Cmp1
-            I2c_length = 1
-         End If
-         Gosub Command_received
-'
-      Case 10
-'Befehl &H0A
-'Helligkeit schreiben
-'write brightness
-'Data "10;oa,brightness;b"
-         If Commandpointer = 2 Then
-            Cmp2 = Command_b(2)
-            Cmp2_eeram = Cmp2
-            Pwm1b = 255 - Cmp2
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 11
-'Befehl &H0B
-'Helligkeit lesen
-'read brightness
-'Data "11;oa,brightness;b"
-         Gosub Reset_i2c_tx
-         If Command_mode = 1 Then
-            Printbin Cmp2
-         Else
-            I2c_tx_b(1) = Cmp2
-            I2c_length = 1
-         End If
-         Gosub Command_received
 '
       Case 240
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-'Data "240;an,ANNOUNCEMENTS;100;19"
+'Data "240;an,ANNOUNCEMENTS;100;9"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
                 If Command_b(3) > 0 Then
@@ -799,7 +752,7 @@ Else
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;a,DISPLAYSIZE,0,{16x2,20x2}"
+'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,USB,1"
          If Commandpointer >= 2 Then
             Select Case Command_b(2)
                Case 0
@@ -843,7 +796,7 @@ Else
                         I2C_active_eeram = I2C_active
                      Else
                         Error_no = 4
-                    End If
+                     End If
                      Gosub Command_received
                   End If
                Case 3
@@ -869,24 +822,6 @@ Else
                      Usb_active_eeram = Usb_active
                      Gosub Command_received
                   End If
-               Case 5
-                  If Commandpointer < 3 Then
-                     Incr Commandpointer
-                  Else
-                     If Command_b(3) = 0 Then
-                        Chars = 32
-                     Else
-                        If Command_b(3) = 1 Then
-                           Chars = 40
-                        Else
-                           Error_no = 4
-                       End If
-                     End If
-                     Chars_eeram = Chars
-                     Chars2 = Chars / 2
-                     Gosub Config_lcd
-                     Gosub Command_received
-                  End If
                Case Else
                   Error_no = 4
                   Gosub Command_received
@@ -899,7 +834,7 @@ Else
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;a,DISPLAYSIZE,0,{16x2,20x2}"
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,USB,1"
          If Commandpointer = 2 Then
             Gosub Reset_i2c_tx
             Select Case Command_b(2)
@@ -920,22 +855,12 @@ Else
                   Tempb = Adress / 2
                   I2c_tx_b(1) = Tempb
                   I2c_length = 1
-                  I2c_length = 3
                Case 4
                   I2c_tx_b(1) = USB_active
-                  I2c_length = 1
-               Case 5
-                  If Chars = 32 Then
-                     Tempb = 0
-                  Else
-                     Tempb = 1
-                  End If
-                  I2c_tx_b(1) = Tempb
                   I2c_length = 1
                Case Else
                   Error_no = 4
                   'ignore anything else
-                  Gosub Last_err
             End Select
             If Command_mode = 1 Then
                For Tempb = 1 To I2c_length
@@ -964,106 +889,52 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Textdisplay;V02.1;1;160;12;19"
+Data "0;m;DK1RI;RTC;V01.2;1;100;4;9"
 '
 Announce1:
-'Befehl &H01
-'LCD schreiben
-'write LCD
-Data "1;oa,write text;32"
+'Befehl  &H01
+'liest Uhrzeit
+'read time
+Data "1;aa,read time;t"
 '
 Announce2:
-'Befehl &H02
-'an position schreiben
-'goto position and write
-Data "2;on,write to position;b;32"
+'Befehl  &H02 <0..14><m>
+'schreibt register
+'write register
+Data "2;om,write register;b;15"
 '
 Announce3:
-'Befehl  &H03
-'gehe zu Cursorposition
-' go to Cursorposition
-Data "3;op,Cursorposition;32;lin;-"
+'Befehl  &H03 <0..14>
+'liest register
+'read register
+Data "3;am,read register;b,15"
 '
 Announce4:
-'Befehl &H04
-'LCD schreiben
-'write LCD
-Data "4;oa,write text;40"
-'
-Announce5:
-'Befehl &H05
-'an position schreiben
-'goto position and write
-Data "5;on,write to position;b;40"
-'
-Announce6:
-'Befehl  &H06
-'gehe zu Cursorposition
-' go to Cursorposition
-Data "6;op,Cursorposition;40;lin;-"
-'
-Announce7:
-'Befehl &H07
-'Anzeige löschen
-'clear screen
-Data "7;ou,CLS;0,CLS"
-'
-Announce8:
-'Befehl &H08
-'Kontrast schreiben
-'write Contrast
-Data "8;oa,contrast;b"
-'
-Announce9:
-'Befehl &H09
-'Kontrast lesen
-'read Contrast
-Data "9;oa,contrast;b"
-'
-Announce10:
-'Befehl &H0A
-'Helligkeit schreiben
-'write brightness
-Data "10;oa,brightness;b"
-'
-Announce11:
-'Befehl &H0B
-'Helligkeit lesen
-'read brightness
-Data "11;oa,brightness;b"
-'
-Announce12:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;100;19"
+Data "240;an,ANNOUNCEMENTS;100;9"
 '
-Announce13:                                                  '
+Announce5:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce14:                                                  '
+Announce6:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce15:
+Announce7:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;a,DISPLAYSIZE,0,{16x2,20x2}"
- '
-Announce16:
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,USB,1"
+'
+Announce8:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1,a,DISPLAYSIZE,0,{16x2,20x2}"
-'
-Announce17:
-Data "R !($1 $2 $3) IF $255&5 = 1"
-'
-Announce18:
-Data "R !($4 $5 $6) IF $255&5 = 0"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,USB,1"

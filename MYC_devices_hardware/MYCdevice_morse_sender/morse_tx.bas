@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : morse_tx.bas
-'Version V02.1, 20160705
+'Version V02.1, 20160722
 'purpose : Programm for sending MYC protocol as Morse Signals
 'This Programm workes as I2C slave or can bei controlled by RS232 / USB
 'Can be used with hardware rs232_i2c_interface Version V02.0 by DK1RI
@@ -72,8 +72,6 @@ Const Cystal = 20000000
 Dim First_set As Eram Byte
 'first run after reset
 Dim L As Byte
-Dim L1 As Byte
-Dim L2 As Byte
 Dim Tempb As Byte
 Dim Tempc As Byte
 Dim Tempd As Byte
@@ -455,12 +453,12 @@ Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
 Command_started = 0
-If Error_no = 255 Then Last_morse = 0
 'deleted, it was a valid command (parameter)
 Gosub Command_finished
 If Error_no <> 3 Then Set Led3
 If Error_no < 255 Then Gosub Last_err
 Incr Command_no
+If Command_no = 255 Then Command_no = 0
 Return
 '
 Sub_restore:

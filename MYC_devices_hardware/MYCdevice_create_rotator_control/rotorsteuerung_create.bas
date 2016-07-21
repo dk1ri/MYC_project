@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rotorsteuerung_create.bas
-'Version V04.0, 20160713
+'Version V04.0, 20160722
 'purpose : Programm for control a Create RC5 Rotator
 'Can be used with hardware rotorsteuerung_create V03.1 by DK1RI
 'The Programm supports the MYC protocol
@@ -415,6 +415,7 @@ For Tempd = 1 To Tempb
    Incr Tempc
    Insertchar Last_error , Tempc , Temps_b(tempd)
 Next Tempd
+Error_no = 255
 Return
 '
 Command_finished:
@@ -435,6 +436,7 @@ Cmd_watchdog = 0
 Gosub Command_finished
 If Error_no < 255 Then Gosub Last_err
 Incr Command_no
+If Command_no = 255 Then Command_no = 0
 Return
 '
 Sub_restore:
