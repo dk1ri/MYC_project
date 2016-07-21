@@ -32,7 +32,6 @@ Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert:
 Zu Details zum MYC Protokoll und zur Bedienung siehe [3]
 Dies ist  eine Kopie aus dem Bascom Programm:
 
-Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
@@ -40,11 +39,9 @@ Data "0;m;DK1RI;Infrared (RC5) receiver;V03.1;1;160;7;11"
 '
 Announce1:
 'Befehl  &H01
-'definiert den DTMF-Lesespeicher
-'keine Funktion im I2C mode, seriell: liefert &HFF
-'defines the read buffer
-'no function in I2C mode, serial: &HFF
-Data "1;af,RC5 buffer;b,{&H00 to &H3F"
+'kopiert RC5 Daten in den Ausgang
+'copies RC5 data to output
+Data "1;aa,RC5 buffer;252,{&H00 to &H3F}"
 '
 Announce2:
 'Befehl &H02   0-31
@@ -155,7 +152,6 @@ Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind 
 Stromversorgung
 
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 30mA. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber. Die RS232 Buchse, die Stromversorgungsbuchse und der Spannungsregler dürfen dann nicht bestückt werden.
-
 
 LEDs
 

@@ -31,6 +31,7 @@
 'Used Hardware:
 ' RS232
 ' I2C
+' Timer0
 '-----------------------------------------------------------------------
 ' Inputs Outputs :see below
 '
@@ -152,14 +153,6 @@ Led4 Alias Portd.2
 'life LED
 '
 Config Watchdog = 2048
-'
-'Mega8 has fixed parameter, processor will hang here, if uncommented:
-'Config Com1 = 19200 , Databits = 8 Parity = None , Stopbits = 1                                                '
-'
-'****************Interrupts
-'Enable Interrupts
-'serialin not buffered!!
-'serialout not buffered!!!
 '
 '**************** Main ***************************************************
 '
@@ -856,11 +849,9 @@ Data "0;m;DK1RI;Infrared (RC5) receiver;V03.1;1;160;7;11"
 '
 Announce1:
 'Befehl  &H01
-'definiert den DTMF-Lesespeicher
-'keine Funktion im I2C mode, seriell: liefert &HFF
-'defines the read buffer
-'no function in I2C mode, serial: &HFF
-Data "1;af,RC5 buffer;b,{&H00 to &H3F"
+'kopiert RC5 Daten in den Ausgang
+'copies RC5 data to output
+Data "1;aa,RC5 buffer;252,{&H00 to &H3F}"
 '
 Announce2:
 'Befehl &H02   0-31

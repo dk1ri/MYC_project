@@ -1,5 +1,5 @@
 'name : infrarot_tx _philips_tv_2908.bas
-'Version V03.1, 20160720
+'Version V03.1, 20160722
 'purpose : Programm to send RC5 Codes to Philips TV 2908
 'This Programm workes as I2C slave or serial interface
 'Can be used with hardware rs232_i2c_interface Version V02.0 by DK1RI
@@ -137,6 +137,7 @@ Config PinB.2 = Input
 PortB.2 = 1
 Reset__ Alias PinB.2
 Config  PORTB.1 = Output
+Ir_led Alias PORTB.1
 '
 ' Life LED:
 Config Portd.2 = Output
@@ -290,6 +291,7 @@ no_myc=no_myc_eeram
 I2C_active = I2C_active_eeram
 RS232_active = RS232_active_eeram
 Usb_active = Usb_active_eeram
+Set Ir_led
 Led3 = 1
 Led4  = 1
 I = 0
@@ -514,6 +516,8 @@ Return
 Send_rc5:
 printbin Tempb
 Rc5send Togglebit , Rc5_adress , Tempb
+Set Ir_led
+'Switch of IR LED
 Return
 '
 Slave_commandparser:

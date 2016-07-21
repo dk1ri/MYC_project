@@ -42,6 +42,8 @@
 'for ATmega8P
 $regfile = "m88def.dat"
 'for ATmega8
+'$regfile = "m328pdef.dat"
+'for ATMega328
 $crystal = 10000000
 'used crystal frequency
 $baud = 19200
@@ -137,6 +139,7 @@ Config PinB.2 = Input
 PortB.2 = 1
 Reset__ Alias PinB.2
 Config  PORTB.1 = Output
+Ir_led Alias PORTB.1
 '
 ' Life LED:
 Config Portd.2 = Output
@@ -314,6 +317,7 @@ no_myc=no_myc_eeram
 I2C_active = I2C_active_eeram
 RS232_active = RS232_active_eeram
 Usb_active = Usb_active_eeram
+set Ir_led
 Led3 = 1
 Led4  = 1
 I = 0
@@ -499,6 +503,8 @@ Else
                   Togglebit = 0
                End If
                Rc5send Togglebit , Rc5_adress , Command_b(commandpointer)
+               Set Ir_led
+               'Switch of IR LED
             End If
             Gosub Command_received
          Else
@@ -517,6 +523,8 @@ Else
                   Togglebit = 0
             End If
             Rc6send Togglebit , Rc6_adress , Command_b(commandpointer)
+            Set Ir_led
+            'Switch of IR LED
             Gosub Command_received
          Else
             Incr Commandpointer
