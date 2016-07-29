@@ -1,0 +1,197 @@
+DTMF Sende - Empfänger
+
+Author: DK1RI
+Version V01.1  20160729
+This paper is published in github.com/dk1ri as well
+
+Einleitung
+
+Dieses Interface ist eine Konverter von DTMF Signalen auf MYC Protokoll über I2C (Slave) /  / seriell / USB
+Das Interface kann DTMF Signale senden und empfangen.
+Im „no_myc“ Mode arbeitet das Interface als einfacher DTMF - ASCII – DTMF Wandler.
+
+Beschreibung
+
+Die Eagle Datenstehen unter  [1].
+
+Die Befehle zur Steuerung müssen binär eingegeben werden; er erfolgt keine Wandlung; die DTMF Werte aber als ASCII Werte
+Die ausgegebenen DTMF Signale sind 50ms lang mit ca 100ms Pause (Burst Mode)
+Im MYC Mode sind die eingegebenen DTMF Daten ein String, beginnend mit der (binären) Stringlänge.
+&H01&H04ABCD		DTMF Ausgabe: &H04: 4 Bytes: ABCD
+Die Dateneingabe ist bis 251 DTMF-Zeichen gepuffert, sowohl im MYC als auch im nicht MYC Mode.
+Nach dem MYC Protokoll kopiert der Lesebefehl die empfangenen DTMF Daten in den Lese - Puffer, von dem die Daten (im I2C Mode) ausgelesen werden können. Das Interface puffert 251 DTMF Zeichen, danach werden die ältesten überschrieben. Werden mehr Zeichen ausgelesen als vorhanden sind, wird &H00 ausgegeben.
+Im nicht_MYC mode werden die Ziffern 0 -9 *, # und A - D direkt ohne Stringlänge ein- und ausgegeben
+Die Rückkehr in den MYC Mode erfolgt mit Space (&H20)
+
+Befehle
+
+Folgende Befehle werden von der I2C / USB Schnittstelle akzeptiert:
+Dies ist eine Kopie aus dem Bascom Programm:
+
+Befehl 	
+
+Announce0:
+'Befehl &H00
+'eigenes basic announcement lesen
+'basic announcement is read to I2C or output
+Data "0;m;DK1RI;DTMF_transceiver;V02.1;1;110;5;10"
+'
+Announce1:
+'Befehl  &H01 <s>
+'liest den DTMF-Lesespeicher
+'read the read DTMF buffer
+Data "1;aa,DTMF buffer;252,{0 to 9,*,#,A to D}"
+'
+Announce2:
+'Befehl  &H02
+'gibt DTMF Signal aus
+'send DTMF tones
+Data "2;oa,send dtmf;252,{0 to 9,*,#,A to D"
+'
+Announce3:
+'Befehl  &HEE 0|1
+'schaltet MYC / no_MYC mode
+'switches MYC / no_MYC mode
+Data "238;oa,no_myc;a"
+'
+Announce4:
+'Befehl  &HEF
+'liest MYC / no_MYC mode
+'read MYC / no_MYC mode
+Data "239;aa,as238"
+':
+Announce5:
+'Befehl &HF0<n><m>
+'liest announcements
+'read n announcement lines
+Data "240;an,ANNOUNCEMENTS;110;10"
+'
+Announce6:
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;20,last_error"
+'
+Announce7:
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+Announce8:
+'Befehl &HFE :
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,USB,1"
+'
+Announce9:
+'Befehl &HFF :
+'eigene Individualisierung lesen
+'read individualization
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,USB,1"
+'
+
+I2C
+
+Die Default Adresse ist 17.
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
+Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+
+Reset
+
+Ist der Reset Jumper JP2 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+
+Watchdog
+
+Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer
+Die Software wurde in BASCOM geschrieben [2]
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
+Um der Prozessor von der Stromversorgung der übrigen Schaltung zu trennen, muss der Jumper JP3 entfernt werden.
+Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+
+DTMF
+
+Die DTMF Signale entsprechen der Norm.
+Der DTMF Ausgang ist nicht nicht gleichspannungsfrei und nicht kapazitiv entkoppelt, der Eingang ist entkoppelt.
+
+USB Schnittstelle
+
+Das Interface kann mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird auf der Unterseite der Interfaces verlötet: der USB Stecker zeigt vorne. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP1 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden oder mit Hilfe einer Stiftleiste mit etwas Abstand voneinander zu befestigen. Die Bauteileseite des USB Moduls zeigt nach unten.
+Die Stromversorgung erfolgt dann über USB.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur zwei relativ großen Kondensatoren (1206) und optional die SOT23 LED.
+
+Stromversorgung
+
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 30mA. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
+
+LEDs
+
+Die LED muss nicht bestückt werden. LED1 zeigt nur, dass der Prozessor läuft und blinkt.
+
+Bestückung der Leiterplatte
+
+LED1, R3 sind nur für Tests und brauchen nicht bestückt werden.
+R7 / R8 sollen zusammen 374 Ohm ergeben. Eine Möglichkeit, diesen Wert zu erreichen, ist die Verwendung von 390Ohm und 10k . Dies ergibt 375,3 Ohm
+Je nach gewünschter Schnittstelle müssen nur folgende Bauteile bestückt werden:
+
+Mit USB
+UM2102 (siehe USB); X1, D1, IC1, C1, C2 entfallen
+
+mit  I2C
+X2, X3
+R1, R2 I2C Pullups nach Bedarf:
+ 
+Verwendung von ISP:
+JP5
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+I2C Stereo (2 x 3,5mm Klinke)
+Sleeve	GND
+Ring	SDA
+Tip	SCL
+
+DTMF (LP SL4)
+1	DTMF Eingang
+2	DTMF Ausgang
+5	GND
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion 01.2
+Bascom Version 02.1
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Referenzen
+
+[[1]	dtmf_trx_eagle.zip
+[2]	dtmf_trx_bascom.zip
+[3]	MYC.pdf
+

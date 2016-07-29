@@ -1,7 +1,7 @@
 DTMF Empfänger
 
 Author: DK1RI
-Version V01.1  20160511
+Version V01.1  20160729
 This paper is published in github.com/dk1ri as well
 
 Einleitung
@@ -176,8 +176,8 @@ DTMF (LP SL4)
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V01.0
-Bascom Version V02.0
+Leiterplattenversion V01.1
+Bascom Version V02.1
 
 Copyright
 

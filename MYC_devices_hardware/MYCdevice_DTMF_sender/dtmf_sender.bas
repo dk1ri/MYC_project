@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : dtmf_sender.bas
-'Version V03.2, 20160705
+'Version V03.2, 20160729
 'purpose : Programm for sending MYC protocol as DTMF Signals
 'This Programm workes as I2C slave or serial protocoll
 'Can be used with hardware rs232_i2c_interface Version V02.0 by DK1RI
@@ -75,8 +75,6 @@ Dim First_set As Eram Byte
 'first run after reset
 Dim L As Byte
 'Temps and local
-Dim L1 As Byte
-Dim L2 As Byte
 Dim Tempb As Byte
 Dim Tempc As Byte
 Dim Tempd As Byte
@@ -219,62 +217,64 @@ If Twi_control = &H80 Then
    Twi_status = Twsr
    Twi_status = Twi_status And &HF8
 'slave send:
-If Twi_status = &HA8 Or Twi_status = &HB8 Then
-      If I2c_pointer <= I2c_length Then
-         Twdr = I2c_tx_b(i2c_pointer)
-         Incr I2c_pointer
-      Else
-      'last Byte, String finished
-         If Send_lines = 1 Then
-         'lines to send
-            If Number_of_lines > 1 Then
-               Tempb = No_of_announcelines - 1
-               'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
-               If A_line < Tempb Then
-                  Cmd_watchdog = 0
-                  Decr Number_of_lines
-                  Incr A_line
-                  Gosub Sub_restore
-                  Twdr = I2c_tx_b(i2c_pointer)
-                  Incr I2c_pointer
+   If Command_mode = 0 Then
+   'slave send only in I2C mode
+      If Twi_status = &HA8 Or Twi_status = &HB8 Then
+         If I2c_pointer <= I2c_length Then
+            Twdr = I2c_tx_b(i2c_pointer)
+            Incr I2c_pointer
+         Else
+         'last Byte, String finished
+            If Send_lines = 1 Then
+            'lines to send
+               If Number_of_lines > 1 Then
+                  Tempb = No_of_announcelines - 1
+                  'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
+                  If A_line < Tempb Then
+                     Cmd_watchdog = 0
+                     Decr Number_of_lines
+                     Incr A_line
+                     Gosub Sub_restore
+                     Twdr = I2c_tx_b(i2c_pointer)
+                     Incr I2c_pointer
+                  Else
+                     Cmd_watchdog = 0
+                     Decr Number_of_lines
+                     A_line = 0
+                     Gosub Sub_restore
+                     Twdr = I2c_tx_b(i2c_pointer)
+                     Incr I2c_pointer
+                  End If
                Else
-                  Cmd_watchdog = 0
-                  Decr Number_of_lines
-                  A_line = 0
-                  Gosub Sub_restore
-                  Twdr = I2c_tx_b(i2c_pointer)
-                  Incr I2c_pointer
+                  Twdr =&H00
+                  Send_lines = 0
+                  I2c_length = 0
                End If
             Else
                Twdr =&H00
                Send_lines = 0
                I2c_length = 0
             End If
-         Else
-            Twdr =&H00
-            Send_lines = 0
-            I2c_length = 0
          End If
       End If
    End If
+'
 'I2C receives data and and interpet as commands.
 'slave receive:
    If Twi_status = &H80 Or Twi_status = &H88 Then
+      Tempb = Twdr
       If Command_mode = 1 Then
       'restart if rs232mode
          Command_mode = 0
          'i2c mode
          Gosub  Command_received
       End If
-      Tempb = Twdr
       If Commandpointer <= Stringlength Then
          Command_b(commandpointer) = Tempb
-         If Cmd_watchdog = 0 Then
-            Cmd_watchdog = 1
-            'start watchdog
-            Reset Led3
-            'LED on  for tests
-         End If                                             '
+         If Cmd_watchdog = 0 Then Cmd_watchdog = 1
+         'start watchdog
+         Reset Led3
+         'LED on  for tests
          Gosub Slave_commandparser
       End If
    End If
@@ -329,7 +329,6 @@ Last_error = " No Error"
 Error_no = 255
 'No Error
 Gosub Command_received
-Gosub Command_finished
 Gosub Reset_i2c_tx
 Return
 '
@@ -369,6 +368,7 @@ For Tempd = 1 To Tempb
    Insertchar Last_error , Tempc , Temps_b(tempd)
 Next Tempd
 Return
+Error_no = 255
 '
 Blink_:
 'for tests
@@ -405,6 +405,7 @@ Gosub Command_finished
 If Error_no <> 3 Then Set Led3
 If Error_no < 255 Then Gosub Last_err
 Incr Command_no
+If Command_no = 255 Then Command_no = 0
 Return
 '
 Sub_restore:
@@ -761,7 +762,7 @@ Else
                Case 3
                   If Commandpointer = 3 Then
                      Tempb = Command_b(3)
-                     If Tempb < 129 Then
+                     If Tempb < 128 Then
                         Tempb = Tempb * 2
                         Adress = Tempb
                         Adress_eeram = Adress
