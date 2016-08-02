@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : FS20_8Kanal_rx.bas
-'Version V03.1, 20160523
+'Version V03.2, 20160729
 'purpose : Programm for receiving FS20 Signals
 'This Programm workes as I2C slave, or serial
 'Can be used with hardware FS20_interface Version V02.0 by DK1RI
@@ -185,8 +185,6 @@ Config Portb.2 = Output
 Portb.2 = 1
 Sch8 Alias Portb.2
 '
-'Use HW TWI
-Config Twi = 400000
 '
 Config Watchdog = 2048
 '
@@ -204,13 +202,12 @@ Config Watchdog = 2048
 If Reset__ = 0 Then Gosub Reset_
 '
 If First_set <> 5 Then Gosub Reset_
-   Gosub Reset_
 '
 Gosub Init
 '
 Slave_loop:
 Start Watchdog
-'Loop must be less than 512 ms
+'Loop must be less than 2s
 '
 Gosub Cmd_watch
 '
@@ -247,62 +244,62 @@ If Twi_control = &H80 Then
    Twi_status = Twsr
    Twi_status = Twi_status And &HF8
 'slave send:
-If Twi_status = &HA8 Or Twi_status = &HB8 Then
-      If I2c_pointer <= I2c_length Then
-         Twdr = I2c_tx_b(i2c_pointer)
-         Incr I2c_pointer
-      Else
-      'last Byte, String finished
-         If Send_lines = 1 Then
-         'lines to send
-            If Number_of_lines > 1 Then
-               Tempb = No_of_announcelines - 1
-               'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
-               If A_line < Tempb Then
-                  Cmd_watchdog = 0
-                  Decr Number_of_lines
-                  Incr A_line
-                  Gosub Sub_restore
-                  Twdr = I2c_tx_b(i2c_pointer)
-                  Incr I2c_pointer
+   If Command_mode = 0 Then
+   'slave send only in I2C mode
+      If Twi_status = &HA8 Or Twi_status = &HB8 Then
+         If I2c_pointer <= I2c_length Then
+            Twdr = I2c_tx_b(i2c_pointer)
+            Incr I2c_pointer
+         Else
+         'last Byte, String finished
+            If Send_lines = 1 Then
+            'lines to send
+               If Number_of_lines > 1 Then
+                  Tempb = No_of_announcelines - 1
+                  'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
+                  If A_line < Tempb Then
+                     Cmd_watchdog = 0
+                     Decr Number_of_lines
+                     Incr A_line
+                     Gosub Sub_restore
+                     Twdr = I2c_tx_b(i2c_pointer)
+                     Incr I2c_pointer
+                  Else
+                     Cmd_watchdog = 0
+                     Decr Number_of_lines
+                     A_line = 0
+                     Gosub Sub_restore
+                     Twdr = I2c_tx_b(i2c_pointer)
+                     Incr I2c_pointer
+                  End If
                Else
-                  Cmd_watchdog = 0
-                  Decr Number_of_lines
-                  A_line = 0
-                  Gosub Sub_restore
-                  Twdr = I2c_tx_b(i2c_pointer)
-                  Incr I2c_pointer
+                  Twdr =&H00
+                  Send_lines = 0
+                  I2c_length = 0
                End If
             Else
                Twdr =&H00
                Send_lines = 0
                I2c_length = 0
             End If
-         Else
-            Twdr =&H00
-            Send_lines = 0
-            I2c_length = 0
-            Stop_info = 0
          End If
       End If
    End If
+'
 'I2C receives data and and interpet as commands.
 'slave receive:
    If Twi_status = &H80 Or Twi_status = &H88 Then
+      Tempb = Twdr
       If Command_mode = 1 Then
       'restart if rs232mode
          Command_mode = 0
-         Stop_info = 0
          'i2c mode
          Gosub  Command_received
       End If
-      Tempb = Twdr
       If Commandpointer <= Stringlength Then
          Command_b(commandpointer) = Tempb
-         If Cmd_watchdog = 0 Then
-            Cmd_watchdog = 1
-            'start watchdog
-         End If                                             '
+         If Cmd_watchdog = 0 Then Cmd_watchdog = 1
+         'start watchdog
          Gosub Slave_commandparser
       End If
    End If
@@ -394,6 +391,7 @@ For Tempd = 1 To Tempb
    Incr Tempc
    Insertchar Last_error , Tempc , Temps_b(tempd)
 Next Tempd
+Error_no = 255
 Return
 '
 Command_finished:
@@ -411,8 +409,10 @@ Commandpointer = 1
 Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
-Incr Command_no
 Gosub Command_finished
+If Error_no < 255 Then Gosub Last_err
+Incr Command_no
+If Command_no = 255 Then Command_no = 0
 Return
 '
 Sub_restore:
@@ -560,7 +560,6 @@ Else
             If Commandpointer >= 2 Then
                If Command_b(2) > 7 Then
                   Error_no = 4
-                  Gosub Last_err
                Else
                   Select Case Command_b(2)
                      Case 0
@@ -595,7 +594,6 @@ Else
             End If
          Else
             Error_no = 0
-            Gosub Last_err
             Gosub Command_received
          End If
 '
@@ -624,7 +622,6 @@ Else
             End If
          Else
             Error_no = 0
-            Gosub Last_err
             Gosub Command_received
          End If
 '
@@ -639,7 +636,6 @@ Else
                Scan_mode_eeram = Scan_mode
             Else
                Error_no = 4
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -668,24 +664,25 @@ Else
 'Data "240;an,ANNOUNCEMENTS;100;11"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-               Send_lines = 1
-               Number_of_lines = Command_b(3)
-               A_line = Command_b(2)
-               Gosub Sub_restore
-               If Command_mode = 1 Then
-                  Decr Number_of_lines
-                  While  Number_of_lines > 0
+                If Command_b(3) > 0 Then
+                  Send_lines = 1
+                  Number_of_lines = Command_b(3)
+                  A_line = Command_b(2)
+                  Gosub Sub_restore
+                  If Command_mode = 1 Then
                      Decr Number_of_lines
-                     Incr A_line
-                     If A_line >= No_of_announcelines Then
-                        A_line = 0
-                     End If
-                     Gosub Sub_restore
-                  Wend
+                     While  Number_of_lines > 0
+                        Decr Number_of_lines
+                        Incr A_line
+                        If A_line >= No_of_announcelines Then
+                           A_line = 0
+                        End If
+                        Gosub Sub_restore
+                     Wend
+                  End If
                End If
             Else
                Error_no = 4
-               Gosub Last_err
             End If
             Gosub Command_received
          Else
@@ -790,20 +787,18 @@ Else
                         I2C_active_eeram = I2C_active
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
                      Tempb = Command_b(3)
-                     If Tempb < 129 Then
+                     If Tempb < 128 Then
                         Tempb = Tempb * 2
                         Adress = Tempb
                         Adress_eeram = Adress
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   Else
@@ -814,7 +809,7 @@ Else
                      Incr Commandpointer
                   Else
                      If Command_b(3) > 1 Then Command_b(3) = 1
-                     RS232_active = Command_b(4)
+                     RS232_active = Command_b(3)
                      RS232_active_eeram = RS232_active
                      Gosub Command_received
                   End If
@@ -829,7 +824,6 @@ Else
                   End If
                Case Else
                   Error_no = 4
-                  Gosub Last_err
                   Gosub Command_received
             End Select
          Else
@@ -876,7 +870,6 @@ Else
                Case Else
                   Error_no = 4
                   'ignore anything else
-                  Gosub Last_err
             End Select
             If Command_mode = 1 Then
                For Tempb = 1 To I2c_length
@@ -893,7 +886,6 @@ Else
       Case Else
          Error_no = 0
          'ignore anything else
-         Gosub Last_err
          Gosub Command_received
       End Select
 End If

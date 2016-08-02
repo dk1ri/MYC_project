@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_master.bas
-'Version V04.1, 20160704
+'Version V04.1, 20160730
 'purpose : Programm for serial to i2c Interface for test of MYC devices
 'This Programm workes as I2C master
 'Can be used with hardware rs232_i2c_interface Version V03.0 by DK1RI
@@ -616,11 +616,11 @@ Select Case Command_b(1)
 'Befehl &HEC <0..127>
 'Adresse zum Senden speichern
 'write send adress
-'Data "236;oa;b,{0 to 127}"                                               '
+'Data "236;oa,I2C adress;b,{0 to 127}"                                               '
       If Commandpointer = 1 Then
          Incr Commandpointer
       Else
-         If Command_b(2) < 127 Then
+         If Command_b(2) < 128 Then
             Adress = Command_b(2) * 2
             Adress_eeram = Adress
          Else
@@ -642,7 +642,7 @@ Select Case Command_b(1)
 'Befehl &HEE 0|1
 'MYC_mode speichern
 'write myc_mod
-'Data "238;oa;a"                                               '
+'Data "238;oa,MYC Mode;a"                                               '
       If Commandpointer = 1 Then
          Incr Commandpointer
       Else
@@ -905,7 +905,7 @@ Announce9:
 'Befehl &HEC <0..127>
 'Adresse zum Senden speichern
 'write send adress
-Data "236;oa;b,{0 to 127}"                                               '
+Data "236;oa,I2C adress;b,{0 to 127}"                                               '
 '
 Announce10:
 'Befehl &HED
@@ -916,13 +916,13 @@ Data "237;aa,as236"
 Announce11:
 'Befehl &HEE 0|1
 'MYC_mode speichern
-'write myc_mod
-Data "238;oa;a"                                               '
+'write myc_mode
+Data "238;oa,MYC mode;a"                                               '
 '
 Announce12:
 'Befehl &HEF
 'MYC_mode lesen
-'read myc_mod
+'read myc_mode
 Data "239;aa,as238"
 '
 Announce13:

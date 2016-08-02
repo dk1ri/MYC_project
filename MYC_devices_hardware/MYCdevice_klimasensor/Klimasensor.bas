@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : Klimasensor.bas
-'Version V01.0, 20160719
+'Version V01.0, 20160730
 'purpose : Programm for mesuring temperature, humidity and pressure with the BME280 sensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware Klimasensor Version V01.1 by DK1RI
@@ -276,60 +276,62 @@ If Twi_control = &H80 Then
    Twi_status = Twsr
    Twi_status = Twi_status And &HF8
 'slave send:
-If Twi_status = &HA8 Or Twi_status = &HB8 Then
-      If I2c_pointer <= I2c_length Then
-         Twdr = I2c_tx_b(i2c_pointer)
-         Incr I2c_pointer
-      Else
-      'last Byte, String finished
-         If Send_lines = 1 Then
-         'lines to send
-            If Number_of_lines > 1 Then
-               Tempb = No_of_announcelines - 1
-               'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
-               If A_line < Tempb Then
-                  Cmd_watchdog = 0
-                  Decr Number_of_lines
-                  Incr A_line
-                  Gosub Sub_restore
-                  Twdr = I2c_tx_b(i2c_pointer)
-                  Incr I2c_pointer
+   If Command_mode = 0 Then
+   'slave send only in I2C mode
+      If Twi_status = &HA8 Or Twi_status = &HB8 Then
+         If I2c_pointer <= I2c_length Then
+            Twdr = I2c_tx_b(i2c_pointer)
+            Incr I2c_pointer
+         Else
+         'last Byte, String finished
+            If Send_lines = 1 Then
+            'lines to send
+               If Number_of_lines > 1 Then
+                  Tempb = No_of_announcelines - 1
+                  'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
+                  If A_line < Tempb Then
+                     Cmd_watchdog = 0
+                     Decr Number_of_lines
+                     Incr A_line
+                     Gosub Sub_restore
+                     Twdr = I2c_tx_b(i2c_pointer)
+                     Incr I2c_pointer
+                  Else
+                     Cmd_watchdog = 0
+                     Decr Number_of_lines
+                     A_line = 0
+                     Gosub Sub_restore
+                     Twdr = I2c_tx_b(i2c_pointer)
+                     Incr I2c_pointer
+                  End If
                Else
-                  Cmd_watchdog = 0
-                  Decr Number_of_lines
-                  A_line = 0
-                  Gosub Sub_restore
-                  Twdr = I2c_tx_b(i2c_pointer)
-                  Incr I2c_pointer
+                  Twdr =&H00
+                  Send_lines = 0
+                  I2c_length = 0
                End If
             Else
                Twdr =&H00
                Send_lines = 0
                I2c_length = 0
             End If
-         Else
-            Twdr =&H00
-            Send_lines = 0
-            I2c_length = 0
          End If
       End If
    End If
+'
 'I2C receives data and and interpet as commands.
 'slave receive:
    If Twi_status = &H80 Or Twi_status = &H88 Then
+      Tempb = Twdr
       If Command_mode = 1 Then
       'restart if rs232mode
          Command_mode = 0
          'i2c mode
          Gosub  Command_received
       End If
-      Tempb = Twdr
       If Commandpointer <= Stringlength Then
          Command_b(commandpointer) = Tempb
-         If Cmd_watchdog = 0 Then
-            Cmd_watchdog = 1
-            'start watchdog
-         End If                                             '
+         If Cmd_watchdog = 0 Then Cmd_watchdog = 1
+         'start watchdog
          Gosub Slave_commandparser
       End If
    End If
@@ -1293,7 +1295,7 @@ Else
                Case 3
                   If Commandpointer = 3 Then
                      Tempb = Command_b(3)
-                     If Tempb < 129 Then
+                     If Tempb < 128 Then
                         Tempb = Tempb * 2
                         Adress = Tempb
                         Adress_eeram = Adress

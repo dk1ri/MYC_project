@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : relaisteuerung.bas
-'Version V03.2, 20160419
+'Version V03.2, 20160730
 'purpose : Control of a board with 4 Relais and 11 Inputs
 'This Programm workes as I2C slave
 'Can be used with hardware relaisteuerunge Version V02.0 by DK1RI
@@ -175,32 +175,18 @@ Config Adc = Single , Prescaler = Auto , Reference = Avcc
 '
 Config Watchdog = 2048
 '
-'Mega8 has fixed parameter, processor will hang here, if uncommented:
-'Config Com1 = 19200 , Databits = 8 Parity = None , Stopbits = 1                                                '
-'
-'****************Interrupts
-'Enable INTERRUPTS
-' serialin not buffered!!
-' serialout not buffered!!!
 '
 '**************** Main ***************************************************
 If Reset__ = 0 Then Gosub Reset_
 '
-If First_set <> 5 Then
-   Gosub Reset_
-Else
-   Dev_number = Dev_number_eeram
-   Dev_name = Dev_name_eeram
-   Adress = Adress_eeram
-   I2c_active = I2c_active_eeram
-   Adc_reference = Adc_reference_eeram
-End If
+If First_set <> 5 Then Gosub Reset_
+
 '
 Gosub Init
 '
 Slave_loop:
 Start Watchdog
-'Loop must be less than 512 ms
+'Loop must be less than 2s
 '
 Gosub Cmd_watch
 '
@@ -212,60 +198,59 @@ If Twi_control = &H80 Then
    Twi_status = Twsr
    Twi_status = Twi_status And &HF8
 'slave send:
-   If Twi_status = &HA8 Or Twi_status = &HB8 Then
-      If I2c_pointer <= I2c_length Then
-         Twdr = I2c_tx_b(i2c_pointer)
-         Incr I2c_pointer
-      Else
-      'last Byte, String finished
-         If Send_lines = 1 Then
-         'lines to send
-            If Number_of_lines > 1 Then
-               Tempb = No_of_announcelines - 1
-               'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
-               If A_line < Tempb Then
-                  Cmd_watchdog = 0
-                  Decr Number_of_lines
-                  Incr A_line
-                  Gosub Sub_restore
-                  Twdr = I2c_tx_b(i2c_pointer)
-                  Incr I2c_pointer
+      If Twi_status = &HA8 Or Twi_status = &HB8 Then
+         If I2c_pointer <= I2c_length Then
+            Twdr = I2c_tx_b(i2c_pointer)
+            Incr I2c_pointer
+         Else
+         'last Byte, String finished
+            If Send_lines = 1 Then
+            'lines to send
+               If Number_of_lines > 1 Then
+                  Tempb = No_of_announcelines - 1
+                  'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
+                  If A_line < Tempb Then
+                     Cmd_watchdog = 0
+                     Decr Number_of_lines
+                     Incr A_line
+                     Gosub Sub_restore
+                     Twdr = I2c_tx_b(i2c_pointer)
+                     Incr I2c_pointer
+                  Else
+                     Cmd_watchdog = 0
+                     Decr Number_of_lines
+                     A_line = 0
+                     Gosub Sub_restore
+                     Twdr = I2c_tx_b(i2c_pointer)
+                     Incr I2c_pointer
+                  End If
                Else
-                  Cmd_watchdog = 0
-                  Decr Number_of_lines
-                  A_line = 0
-                  Gosub Sub_restore
-                  Twdr = I2c_tx_b(i2c_pointer)
-                  Incr I2c_pointer
+                  Twdr =&H00
+                  Send_lines = 0
+                  I2c_length = 0
                End If
             Else
                Twdr =&H00
                Send_lines = 0
                I2c_length = 0
             End If
-         Else
-            Twdr =&H00
-            Send_lines = 0
-            I2c_length = 0
          End If
       End If
-   End If
+'
 'I2C receives data and and interpet as commands.
 'slave receive:
    If Twi_status = &H80 Or Twi_status = &H88 Then
       Tempb = Twdr
       If Commandpointer <= Stringlength Then
          Command_b(commandpointer) = Tempb
-         If Cmd_watchdog = 0 Then
-            Cmd_watchdog = 1
-            ' start watchdog
-         End If
+         If Cmd_watchdog = 0 Then Cmd_watchdog = 1
+         'start watchdog
          Gosub Slave_commandparser
       End If
    End If
    Twcr = &B11000100
 End If
-Stop Watchdog
+Stop Watchdog                                               '
 Goto Slave_loop
 '
 '===========================================
@@ -286,6 +271,11 @@ Adc_reference_eeram = Adc_reference
 Return
 '
 Init:
+Dev_number = Dev_number_eeram
+Dev_name = Dev_name_eeram
+Adress = Adress_eeram
+I2c_active = I2c_active_eeram
+Adc_reference = Adc_reference_eeram
 Portc.3 = 1
 Command_no = 1
 Announceline = 255
@@ -343,17 +333,12 @@ Error_no = 255
 Return
 '
 Command_finished:
-'i2c reset, only after error, at start and multiple announcements
-'I2cinit
-'may be not neccessary
-'Config Twi = 100000
-' 100KHz
 Twsr = 0
-' status und Prescaler auf 0
+'status und Prescaler auf 0
 Twdr = &HFF
-' default
+'default
 Twar = Adress
-' Slaveadress
+'Slaveadress
 Twcr = &B01000100
 Return
 '
@@ -362,7 +347,10 @@ Commandpointer = 1
 Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
+Gosub Command_finished
+If Error_no < 255 Then Gosub Last_err
 Incr Command_no
+If Command_no = 255 Then Command_no = 0
 Return
 '
 Sub_restore:
@@ -794,7 +782,6 @@ Else
                Config Adc = Single , Prescaler = Auto , Reference = Internal
             Case Else
                Error_no = 0
-               Gosub Last_err
          End Select
          Gosub Command_received
       End If
@@ -816,13 +803,14 @@ Else
 'Data "240;an,ANNOUNCEMENTS;100;32"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-               Send_lines = 1
-               Number_of_lines = Command_b(3)
-               A_line = Command_b(2)
-               Gosub Sub_restore
+                If Command_b(3) > 0 Then
+                  Send_lines = 1
+                  Number_of_lines = Command_b(3)
+                  A_line = Command_b(2)
+                  Gosub Sub_restore
+               End If
             Else
-               Error_no = 0
-               Gosub Last_err
+               Error_no = 4
             End If
             Gosub Command_received
          Else
@@ -914,20 +902,18 @@ Else
                         I2C_active_eeram = I2C_active
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   End If
                Case 3
                   If Commandpointer = 3 Then
                      Tempb = Command_b(3)
-                     If Tempb < 129 Then
+                     If Tempb < 128 Then
                         Tempb = Tempb * 2
                         Adress = Tempb
                         Adress_eeram = Adress
                      Else
                         Error_no = 4
-                        Gosub Last_err
                      End If
                      Gosub Command_received
                   Else
@@ -935,7 +921,6 @@ Else
                   End If
                Case Else
                   Error_no = 0
-                  Gosub Last_err
             End Select
          Else
            Incr Commandpointer
@@ -969,7 +954,6 @@ Else
                Case Else
                   Error_no = 4
                   'ignore anything else
-                  Gosub Last_err
             End Select
             Gosub Command_received
          Else
@@ -977,8 +961,8 @@ Else
          End If
 '
       Case Else
-         Error_no = 0                                       'ignore anything else
-         Gosub Last_err
+         Error_no = 0
+         'ignore anything else
       End Select
 End If
 Return

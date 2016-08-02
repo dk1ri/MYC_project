@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_slave.bas
-'Version V04.1, 20160702
+'Version V04.1, 20160730
 'purpose : I2C-RS232_interface Slave
 'This Programm workes as I2C slave
 'Can be used with hardware rs232_i2c_interface Version V03.0 by DK1RI
@@ -36,9 +36,9 @@
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-'$regfile = "m88pdef.dat"
+$regfile = "m88pdef.dat"
 ' for ATmega8P
-$regfile = "m88def.dat"
+'$regfile = "m88def.dat"
 ' for ATmega8
 $crystal = 20000000
 ' used crystal frequency
@@ -73,8 +73,6 @@ Dim First_set As Eram Byte
 'first run after reset
 Dim L As Byte
 'Temps and local
-Dim L1 As Byte
-Dim L2 As Byte
 Dim Tempb As Byte
 Dim Tempc As Byte
 Dim Tempd As Byte
@@ -156,14 +154,7 @@ Config Watchdog = 2048
 '
 If Reset__ = 0 Then Gosub Reset_
 '
-If First_set <> 5 Then
-   Gosub Reset_
-Else
-   Dev_number = Dev_number_eeram
-   Dev_name = Dev_name_eeram
-   Adress = Adress_eeram
-   I2C_active = I2C_active_eeram
-End If
+If First_set <> 5 Then Gosub Reset_
 '
 Gosub Init
 '
@@ -241,13 +232,10 @@ If Twi_control = &H80 Then
       Tempb = Twdr
       If Commandpointer <= Stringlength Then
          Command_b(commandpointer) = Tempb
-         If Cmd_watchdog = 0 Then
-            Cmd_watchdog = 1
-            'start watchdog
-            Reset Led3
-            'LED on  for tests
-         End If                                             '
-         Gosub Slave_commandparser
+         If Cmd_watchdog = 0 Then Cmd_watchdog = 1
+         'start watchdog
+         Reset Led3
+         'LED on  for tests
       End If
    End If
    Twcr = &B11000100
@@ -272,6 +260,10 @@ I2C_active_eeram = I2C_active
 Return
 '
 Init:
+Dev_number = Dev_number_eeram
+Dev_name = Dev_name_eeram
+Adress = Adress_eeram
+I2C_active = I2C_active_eeram
 Set Led3
 'for tests
 Set Led4
@@ -359,11 +351,12 @@ Commandpointer = 1
 Command = String(stringlength , 0)
 'no multiple announcelines, if not finished
 Cmd_watchdog = 0
+Gosub Command_finished
 If Error_no <> 3 Then Set Led3
 'For Tests
 If Error_no < 255 Then Gosub Last_err
 Incr Command_no
-Gosub Command_finished
+If Command_no = 255 Then Command_no = 0
 Return
 '
 Sub_restore:
@@ -587,7 +580,7 @@ Else
                Case 3
                   If Commandpointer = 3 Then
                      Tempb = Command_b(3)
-                     If Tempb < 129 Then
+                     If Tempb < 128 Then
                         Tempb = Tempb * 2
                         Adress = Tempb
                         Adress_eeram = Adress

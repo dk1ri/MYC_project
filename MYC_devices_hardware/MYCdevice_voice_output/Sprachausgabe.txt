@@ -1,6 +1,6 @@
 Sprachausgabe
 
-Author DK1RI, Version V01.2, 20160502
+Author DK1RI, Version V01.2, 20160731
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
@@ -162,7 +162,7 @@ Versionen
 
 Diese Beschreibung gilt für die 
 Leiterplattenversion 01.0
-Bascom Version 02.0
+Bascom Version 02.1
 
 Copyright
 

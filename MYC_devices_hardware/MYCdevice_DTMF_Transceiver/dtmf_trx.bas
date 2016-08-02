@@ -573,8 +573,6 @@ If Error_no = 255 Then
       Next Tempb
    End If
 End If
-print I2c_pointer
-      print I2c_length
 Return
 '
 Reset_i2c_tx:
