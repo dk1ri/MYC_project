@@ -1,0 +1,158 @@
+MYC Rules
+
+Author: DK1RI
+Version V01.8 20161102
+This project can be found in https://github.com/dk1ri  also.
+
+Preliminary !!!!!
+
+Definitions and formats
+
+see http://dk1ri.de/myc/Definitions.pdf
+
+Introduction
+
+This paper describes the the syntax of rules of the MYC system.
+For more details of the MYC system please check the reference.
+
+“R”-rules
+
+“R” rules start with “R”.
+A “R” rule may have one of these functions:
+By default all commands are working. A rules will show, when  a command is not working, if other commands created a specific status.
+By default commands are not executed by change of an status of another command. A rule can initiate this: eg the device can be switched off under special conditions.
+
+R-rules are used by the LD, which have the complete status of the system at any time and all rules and modify / initiate commands accordingly.
+
+Limitation within a command should be described within the announcement of that command by <des>.
+
+A FU will have “R” rule announcements to inform about dependencies, which exist between the commands and status within the FU.
+
+If there are dependencies between different devices,  a special rules-device RU will provide the rules.
+The rule will define, whether one or more commands are active or not, or that another command is executed.
+
+The syntax of the rules should be very simple, Most probably the rules will be generated automatic, so the focus should be the effectiveness of handling the rules by a computer. Up to now rules lines are readable, because they must be easily programmed as a part of the announcements of FUs.
+
+All “R” rules are always handled by the LD in the sequence it get the rules, starting with rules of FU.
+
+The SK should understand the rules as well. This avoids sending not valid commands.
+"Q"-Rules
+
+“Q” rules are produced by the RU only and sent to the CR only and are not forwarded. They are used for user management. The CR block commands, if necessary, for a specific user who logged in.
+"Q"-rules are handled by the CR.
+"Q"-rules are the answer of a login request and describe the command-token to be used and not used.
+The basic command-token means all token of the device.
+A * means all commands are allowed.
+A empty string means all commands are forbidden.
+TO notation is possible
+Commands are separated by space.
+Syntax is similar to "R" rules.
+
+General Rules behavior
+
+Each rule is one announcement line (for FU) or an (MYC string) answer or info of a “an” command (for RU).
+By default all commands are working. If a command should be disabled, there must be a rule. The rule  is R !<c> …
+Enabling is done by R !!<c> …
+If a command should be executed use R ?<c> ...
+
+Definitions for the rules syntax
+
+<c>			command-token
+<n>	:		numeric
+<s> 	:		string, any character, preceded by the length.
+<s”>			string starting and ending with “, used within rules. inline “ is escaped by “
+<p>			parameter
+separator:	 	one or more spaces or tabs
+compare operators	= < >
+logic operator		AND OR 
+right side operators:	! (not) = < > <= >= AND OR ( ) 
+!$<c>			command disabled
+!!$<c>			command enabled
+?<c>			command to execute
+&			followed by a parameter (usually a sequence number) or <s”> without separator 
+			parameters are transmitted parameters, not those of <des> of announcements
+
+Special rules 
+
+These rules are send as info of memory element 0. The answer when reading this element will show a empty element always.
+
+type is <s>
+R <d<n> <n>..>	delete rules, sent by RU; * for all. This is an abbreviation, if many empty rules 
+			must be sent. The memory elements must be empty.
+R * !*			send at startup, if required; login required for all. 
+			Default is, that all commands are allowed for all
+R <* *>		allow all users all commands (default) 
+
+Rules syntax
+
+<left side> IF|UNLESS <right side>
+<left side>					as “Q” rules only
+
+left side:
+[![!]$<c>][ ?<c>[&<p>=<n>|<s>]] ...
+Bracketing like: !($<c>...<c>) allowed
+
+right side:
+This describes the status which a answer commands would get.
+
+[!]$<c>[&<p> <logic operator> <n>|<s>] ... |
+[!]$<c>[&<p> <logic operator> <n> [TO <n>] ...
+
+All words / tokens separated by a separator
+
+Reserved characters / words
+
+( )			Bracketing
+!			right side:negation, left side: not active
+&
+?
+IF
+UNLESS
+AND
+OR
+<
+>
+=			left side: operator, right side: equal
+TO
+.			delimiter for parameter 
+
+Examples
+
+R !$2 IF $5 = 0			means: Command 2 will not work if status of command 5 is 0
+				command 5 may be a power switch
+
+R !$4 UNLESS $7 = 3500000 TO 3799999 OR 7000000 TO 7199999
+				means: Command 4 will work only if state 7 is in the range of .............
+				This would be used if the transceiver will transmit in amateur radio band 					only
+				The values are transmitted values, not values of the description
+
+R 2 $252 &"wrong address" IF $8 &3 < 16	
+				rule 2 of RU
+				$252 is an answer command and handled as info:
+				error-message if fourth parameter (3) of command 8 is < 16
+
+Q !* 1 30 TO 50		all commands forbidden except 1 and 30 to 50 allowed
+Q 0 TO 100 !*			0 to 100 allowed others forbidden.
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Reference
+
+[1]	http://dk1ri.de/myc/MYC.pdf  (german)
+[2]	http://dk1ri.de/myc/MYC_en.pdf
+[3]	http://dk1ri.de/myc/Description.pdf
+[4]	http://dk1ri.de/myc/commands.pdf
+[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	http://dk1ri.de/myc/Rules.pdf
+[7]	http://dk1ri.de/myc/commandrouter.pdf
+[8]	http://dk1ri.de/myc/Rules_device.pdf
+[9]	http://dk1ri.de/myc/skin.pdf
+[10]	http://dk1ri.de/myc/logicdevice.pdf
+[11]	http://dk1ri.de/myc/Definitions.pdf

@@ -1,0 +1,147 @@
+MYC Description, Handling and Environment
+Author: DK1RI
+Version V01.3 20161030
+This paper is published in https://github.com/dk1ri  as well
+
+Introduction
+
+This paper describes the basics of a MYC system
+For more details of the MYC system please check the reference.
+
+Definitions and formats
+
+see http://dk1ri.de/myc/Definitions.pdf
+
+Some explanation
+
+The MYC protocol is used to control electronic devices as radio, TV, home automation and also control robotics and other mechanical devices.
+It can control data stream devices and also handle very simple streams, but this is not the intention of the MYC protocol.
+The MYC protocol is a pure semantic protocol.
+It has no acknowledge, error correction, encryption, routing, connecting and sequencing. This must be done in the communication layers. But it can control devices with this function.
+MYC data packets have no header, no end marker. All data packets have a well defined length; so begin and end can be found.
+There are commands with or without answer and infos, which are sent without command.
+There are some meta commands to control the system and for simplification.
+All commands  with its parameters a device can handle are described by command-announcements of the device.
+The announcement commands and the individualization command are mandatory command for any MYC device. 
+Any device will ignore unknown  or non-valid data immediately after detection. The next byte is handled as a start of a new data packet.
+A MYC system can be part of another MYC system.
+
+A MYC system contains a set of devices with a MYC protocol interface. Controlling and controlled device can be a hardware or programs. Controlled devices are called a “func”. Controlling devices are called “skins”.
+There are three more devices in a system,which exist only once in a MYC system.
+Skin devices SK, can be multiple in a MYC system:
+The skin device initiate commands.
+A skin can be human interface device or something like a simple switch as well.
+The implementation of the human interface is not decided. It can be a simple terminal program or a Web Server / Browser.
+
+Functions Func FU, can be multiple in a MYC system:
+A func will respond to commands with a action or with sending a answer back. 
+Info can be sent by a func without a command and is routed to the LD and  / or SK. This may be useful for metering info eg, or if a device is operated manually. A info informs the LD about changed values or errors.
+Because some transmission protocols (like I2C in normal mode) do not allow slave devices to send by themselves, the command-router must poll the devices in this case with special command and forward info to the LD / SK.
+
+Command-router CR, one in a system:
+This device connects each device and collect their individual announcements, translate the commands to a  announcement-list with all (unique) commands and send them on request to other devices.
+If it get a command out of the complete list, it will translate it back and route to the appropriate device.
+The command-router do not accept any command except own reserved commands. All other valid commands are routed (or ignored).
+The command-router must know all devices belonging to its system and have the connect information.
+Depending on the implementation of the CR, it get the connect information from a device (ie some database), or it knows the connect info by itself.
+As an option the CR do not send the list of all commands of all devices but will only send the basic announcements. The requesting device calculate the tokens of the missing commands, if it knows the commands already. If these devices do not know the the details of the individual devices, it will send a command for details or ask for the complete list.
+SK with a limited predefined command set (as switches) will get a reduced announcement-list only.
+The CR also checks for new devices and devices not active anymore from time to time.
+
+Rules-device RU
+This device defines the rules between the different FUs and other system-wide rules and send them to the LD.
+It also handles the user login.
+
+Logic device LD, one a MYC system
+Most commands of devices will be received via the CR by the LD, which modifies them if necessary and send them via the CR to the destination devices to do the action.
+The logic device collects the rules of the individual devices and the rules of the system from the RU.
+The LD knows the state of the complete system at any time.
+The LD should know, what to do, if a device fails.
+The LD understand a command to answer with its state.
+It is not decided, how the logic device is implemented. In principle it is a configurable state machine.
+
+Start up behavior
+
+Any device may start up and shut down at any time.
+As long as the CR is down, all data are lost. Devices except FU will send busy commands to the CR and  will detect, that there is no answer, go to a startup mode and stop sending. The system wide timeout is 2 seconds.
+At start up, the CR will find a list of all known devices. It will communicate with those only and check this list later from time to time.
+The CR may have the announcements of all devices from previous connections.
+If a announcement for a FU is missing, it will ask for this by sending a &HxxF0 command. 
+It will ask the actual announce-list of lower level CR as well by sending a &H00 and a &HxxF0 command. 
+Then it will build the complete announcement-list. Announcements of SK are not included and no command can be send to a higher level CR.
+For 2 seconds after starting, the CR will have no other communication.  This ensures, that SK, LD and RU fall to startup mode.
+To inform the device, that the CR is ready, it send a &HFD&HFD04 ready info to SK, RU, LD and higher level CR.
+All devices except FU and LD require the complete announcement-list and will send a &H00 command and after getting the answer send the &HxxF0 command.
+The CR will answer actual  full list. 
+The rules device will send all actual rules to the LD, if necessary.
+The LD must get the actual state of the complete system and will ask the devices, or set a default as defined by the rules. 
+The LD will send the state as info to SK.
+This ends the system startup procedure.
+
+For FU there is nothing special at startup, it will start working immediately
+SK and higher level CR at startup check, weather CR is ready and the send the HH000 and &HxxF0 command. It also will ask the LD for the actual status of the system.
+The RU at start up will check, weather the CR is active and send a set of rules to LD.
+The LD at start up will check, weather the CR is active and ask for the rules, check the system status for all devices and send the status to SK and higher level CR by info.
+
+When necessary the CR will create a new full command-list.  At that time there is no renumbering of existing command-token, Then the CR sends a &HxxFD info to RU and LD. If  RU and LD got their new list, CR  send the HxxFD info to SK and higher level CR. So during the meantime dropped commands are ignored by the LD, added are not known yet.
+
+Data transfer
+
+The MYC protocol send commands / properties with a defined length. The length is defined by the used command-token and the corresponding announcement.
+If a answer is sent, the length is defined as well. So the receiver of data can easily detect the begin  and end of data packets.
+This has the consequence, that a FU only can receive commands and send answers (but not send infos). A SK will send commands and receive answers (but not receive commands or infos). In case of a FU the CR would not be able to differentiate between answers and infos. In case of the SK it would not be able to differentiate between an answer and a command / info from the CR.
+To overcome this, answers are sent as infos.  Higher level CR never send answers. 
+FU will send answers as info only, if it send info at all and will announce this by the &HxxFA announcement. . See &FxxFA announcement in http://dk1ri.de/myc/Reserved_tokens.pdf . 
+All other communication of CR use answers with the info format.
+
+The CR will  communicate with FU using the origin command-token of the FU. Communication with other devices use the translated token. This is valid for command-token used in infos and rules as well.
+
+Security
+
+Security is one of the most important aspects of a control system.
+The MYC is a OSI layer 7 protocol and defines the commands and their methods only. Nothing about security is defined. Nevertheless there are some aspects: 
+There is no readable text (except when strings are transmitted), all data are binary and someone reading the transmitted data, must know the connected device and their announcements as well. 
+The system is hirarchical: Because a FU checks any byte and discard any unknown data, it is not easy to insert bad code. The FU should be designed in a way, that the configured interface is active only. So the CR is the only interface and the CR will discard any unknown answers.
+The other OSI layers can be chosen by demand and they will define the system security.
+The following should give some rules how to increase system security.
+Funcs, RU, LD
+Funcs are designed to accept their valid command with their valid parameters only. Any other data are ignored immediately and may produce a error message.
+This is also valid for subsystems as FS20, ZWAVE and others connected via a  MYC interface.
+The devices are connected to the CR (up to now) by cables. It it assumed, that this system works in a save environment. 
+If this cannot be guaranteed modified devices with built in encryption must be used (not available yet). The command-router also must communicate with this format. The same is valid for wireless devices.
+For RU and LD the same apply.
+If these devices run as programms on the same computer as the  secure message transfer usually is no problem. Otherwise encryption is recommended.
+
+Command-router CR and skin SK
+The CR communicates with the SK usually via internet. So at this point ssh and login processes must be provided. The MYC protocol define a command for login but says nothing about the implementation.  The CR also communicate by MYC commands only and ignore all non valid commands and parameters. 
+The login to lower level systems can also be used.
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+
+
+
+
+
+
+
+Reference
+
+[1]	http://dk1ri.de/myc/MYC.pdf  (german)
+[2]	http://dk1ri.de/myc/MYC_en.pdf
+[3]	http://dk1ri.de/myc/Description.pdf
+[4]	http://dk1ri.de/myc/commands.pdf
+[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	http://dk1ri.de/myc/Rules.pdf
+[7]	http://dk1ri.de/myc/commandrouter.pdf
+[8]	http://dk1ri.de/myc/Rules_device.pdf
+[9]	http://dk1ri.de/myc/skin.pdf
+[10]	http://dk1ri.de/myc/logicdevice.pdf
+[11]	http://dk1ri.de/myc/Definitions.pdf

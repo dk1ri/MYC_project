@@ -1,0 +1,73 @@
+MYC Skins
+
+Very preliminary
+
+Author: DK1RI
+Version V01.3 20161103
+This paper is published in  https://github.com/dk1ri  as well
+
+Introduction
+
+This paper describes the principles of skins of a MYC system.
+This is a description of possible skin and their environment. Nothing is ready or programmed yet.
+For more details of the MYC system please check the reference.
+
+Definitions and formats
+
+see http://dk1ri.de/myc/Definitions.pdf
+
+Some explanation
+
+Skins are used to control a MYC system.
+A skin in a MYC System may be one of the following:
+-	a simple terminal program 
+-	a simple switch
+-	a third party control program
+-	a full control program
+
+Terminal program
+A simple terminal  can be used to connect the CR. You must know the MYC syntax and find out the accepted commands. It is not comfortable but working. If there is no CR, you can use the I2C – RS232 converter to control FU with I2C interface. It is a restricted simulation of a CR. See  http://dk1ri.de/dhw/i2c_rs232_interface.pdf
+
+Simple switch
+A simple simple or in general a device with a limited number of predefined functions has “r” (require to operate) and “s” (require to answer) announcements  only. Before initialization it is not defined, which function in a system a “r” or “s” command will have.
+Additionally a simple switch has the announcement of reserved commands only.
+It will find out the translated token for its “r” and “s” commands and react on infos for new announce-lists. It will get a reduced list with the own announcements and the CR announcements.
+“r” and “s” announcements  are not added to the full announcement-list sent to other devices.
+The rules-device will provide the rules to translate the “r” and “s” commands to commands of FU. It may be, that not all “r” and “s” commands result in an action of a FU. 
+
+Third party control program
+A third party control program usually require a MYC interface. For this interface the same apply as for a simple switch described above.
+
+Full control program
+A full control program can use all function delivered by the system via the full announce-list.
+The idea is to use a web-server. The user calls his own individual web site and get his personal web layout.
+Because functions may disappear when a device disappears, the page will be completely dynamic. The labels of those functions may disappear or be grayed out.
+The user should find a knob to switch to an edit mode.
+In this mode the web page behaves like a web editor. The user can modify those functions defined by the full announcement-list. The result is stored in a user individual config file or data base.
+For simple usage preconfigured files (skins) can be used.
+For normal mode the web-server build the page by using the config file and the announce-list.
+Using this method allows to control a MYC system worldwide using a browser and there is no need for any GUI programming. Simple WYSIWYG configuration is sufficient and every user will get want he want.
+As mentioned  before, this is an idea, other solutions are welcome.
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Reference
+
+[1]	http://dk1ri.de/myc/MYC.pdf  (german)
+[2]	http://dk1ri.de/myc/MYC_en.pdf
+[3]	http://dk1ri.de/myc/Description.pdf
+[4]	http://dk1ri.de/myc/commands.pdf
+[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	http://dk1ri.de/myc/Rules.pdf
+[7]	http://dk1ri.de/myc/commandrouter.pdf
+[8]	http://dk1ri.de/myc/Rules_device.pdf
+[9]	http://dk1ri.de/myc/skin.pdf
+[10]	http://dk1ri.de/myc/logicdevice.pdf
+[11]	http://dk1ri.de/myc/Definitions.pdf

@@ -1,0 +1,59 @@
+MYC Logicdevice
+
+Preliminary
+
+Author: DK1RI
+Version V01.0 20161104
+This paper is published in https://github.com/dk1ri  as well
+
+Introduction
+
+This paper describes some ideas for the logic-device
+For more details of the MYC system please check the reference.
+
+Definitions and formats
+
+see http://dk1ri.de/myc/Definitions.pdf
+
+The Idea
+
+The advertisement for a smart home is usually similar to this: all devices are talking together and as an example for the intelligence of the system  something similar as this is given: when you leave the house and you did not switch off the oven, you get message to your smartphone... 
+But is this really smart?
+There are a lot of other things to calculate. Is someone else in the house? sleeping, so that no movement sensor would detect this. Children without smartphone? Otherwise, when the system remembers you to everything, you have to click all the messages. This may be quite uncomfortable, you ignore them or overview important messages.
+The consequence is, that a standard rules system (in MYC terminology) provided by a manufacturer would never work and the customer will not be content. You need a system which can be easily adapted with a simple to use UI (graphical or voice ) which can be supported by a self learning system.
+
+In a MYC system I think the best solution is to separate the LD and RU.
+The task of the LD is to realize the rules. 
+The RU must generate rules and send them to the LD.
+
+Description
+
+The LD can be described as a state-machine. It gets inputs (command with parameters), handles them using a defined  algorithm and the internal state, and send the result back to the CR. 
+The algorithm is defined by the rules from the RU.
+The internal state reflect the state of the MYC system. If a state of a FU change without a command, the LD get a info, which will modify the internal state of the LD.
+The LD get commands, rules and infos with translated token. So there is no need to have the full announce-list.
+The LD will have the basic &H00 &HFD announcement only. This is used by the CR to check that the LD is alive: The CR answers with <c>&H04. The answer is sent as info with the translated &HFD.
+
+The LD will provide some special functions as providing time data. This is not yet defined.
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Reference
+
+[1]	http://dk1ri.de/myc/MYC.pdf  (german)
+[2]	http://dk1ri.de/myc/MYC_en.pdf
+[3]	http://dk1ri.de/myc/Description.pdf
+[4]	http://dk1ri.de/myc/commands.pdf
+[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	http://dk1ri.de/myc/Rules.pdf
+[7]	http://dk1ri.de/myc/commandrouter.pdf
+[8]	http://dk1ri.de/myc/Rules_device.pdf
+[9]	http://dk1ri.de/myc/skin.pdf
+[10]	http://dk1ri.de/myc/logicdevice.pdf
+[11]	http://dk1ri.de/myc/Definitions.pdf

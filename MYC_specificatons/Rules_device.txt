@@ -1,0 +1,89 @@
+Rules-device
+Preliminary
+
+Author: DK1RI
+Version V01.1 20161102
+This paper is published in https://github.com/dk1ri as well
+
+Introduction
+
+This paper describes some ideas for the rules-device
+For more details of the MYC system please check the reference.
+
+Definitions and formats
+
+see http://dk1ri.de/myc/Definitions.pdf
+
+Some explanation
+
+For details of rules see http://dk1ri.de/myc/Rules.pdf.
+The Rules-device should do the following:
+Provide “R”-rules for dependencies between different devices The rules are created via a appropriate user interface.
+Provide a user management: create “Q” rules, if user management is used.
+Provide system wide commands 
+
+The internal storage of rules uses “full commands”. 
+These “full commands” consist of the I-line of the device and the relative count of the command-token within the device. This is usually the original, not translated command-token of the device. So commands can be identified even if command-token numbering changes.
+If a rule is sent, the RU translates the full commands to actual translated command-token.
+
+“R” rules 
+
+“R” rules describe the dependencies between different devices and system wide commands.
+
+“Q” rules 
+
+Q rules are used for user management.
+They are handled by the CR, because the CR knows the interface of the user.
+As default the command-router allow all commands on all interfaces but can be changed to disallow all.
+The RU has a login command 251;ob,LOGON[,<des>];<b>,mode;<s>,name;<s>,password
+If username and password is accepted, RU send the rules data from the
+<c>;on,LOGIN_DATA;l;3 memory for that user to CR with the translated command-token. The CR will block or allow commands accordingly.
+If a user log in with a valid admin user name and password the user management is switched on for that device and the admin user can modify user access.
+For that the RU provides a operate / answer string memory for each user to store the user names passwords and rules for access of commands. 
+The admin user must use the “full commands”. This is very error-prone; therefore this is not recommended.
+For details of the login command see http://dk1ri.de/myc/Reserved_tokens.pdf.
+User management may be done via a GUI more easy.
+
+System wide commands
+
+These are commands like “switch on all lights in a room “ with one command.
+The RU provide these commands by announcement 
+
+Others
+
+The RU has the required reserved announcements and three other:
+<c>;ob,LOGIN_DATA;l,name;l,password;l,rules
+This is a tree element string memory with string-length l. Usually written by the GUI but can be written in the admin mode as well.
+Command-token send in the admin mode are translated.
+<c>;ab,as<c>		is the corresponding read command.
+<c>;an,RULES;l;m
+This is a m element memory, which hold the rule. L and m should be large enough for a varying number of rules.
+Element 0 is used for sending special rules as info, but empty as answer always.
+“R”rules can be deleted which result in an empty memory element, and replaced.
+The RU will send answer as infos always.
+Rules are send request or as infos to the LD and SK (not yet decided) and use the tokens of the actual announce-list. 
+If the command-tokens are modified the RU must delete the affected rules and replace them. For  details see http://dk1ri.de/myc/Rules.pdf
+Editing the rules and user-management should be done by a GUI. Nothing defined yet. Perhaps something like IFTTT can be used.
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Reference
+
+[1]	http://dk1ri.de/myc/MYC.pdf  (german)
+[2]	http://dk1ri.de/myc/MYC_en.pdf
+[3]	http://dk1ri.de/myc/Description.pdf
+[4]	http://dk1ri.de/myc/commands.pdf
+[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	http://dk1ri.de/myc/Rules.pdf
+[7]	http://dk1ri.de/myc/commandrouter.pdf
+[8]	http://dk1ri.de/myc/Rules_device.pdf
+[9]	http://dk1ri.de/myc/skin.pdf
+[10]	http://dk1ri.de/myc/logicdevice.pdf
+[11]	http://dk1ri.de/myc/Definitions.pdf

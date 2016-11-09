@@ -1,0 +1,110 @@
+MYC Commandrouter
+
+Author: DK1RI
+Version V01.6 20161102
+This paper is published in https://github.com/dk1ri  as well
+
+Introduction
+
+This paper describes my principles when writing the program. I hope,that the documentation within program is sufficient.
+Nevertheless for understanding the program you must understand the MYC principles and the protocol details. Description of working conditions for the command-router are distributed in the other documentation as well.
+For more details of the MYC system please check the reference.
+
+Definitions and formats
+
+see http://dk1ri.de/myc/Definitions.pdf
+
+Some limitations
+
+This is my first python program, so enhancements are necessary.
+Coding is done quite basic, so object oriented programming is rarely used.
+The program is not ready and cannot be used as a command-router yet.
+The code is developed using pycharm under windows and not tested completely on a raspberry yet.
+
+Main missing topics
+
+amendments as per documentation of 201610
+handling of commands only, no answer and info handling
+no device interfaces
+no lower level CR
+keyboard and one ethernet interface only for user interface
+non blocking ethernet and keyboard handling for win and linux
+using interrupts?
+no logicdevice and rulesdevice support
+very limited errorhandling
+
+Programming principles
+
+The programm uses polling. After initialization following functions are polled:
+read keyboard to inputbuffer
+read network input to inputbuffer
+check inputbuffer ; one character per call and translate commandtoken
+transmit command to device when ready
+output answers to inputbuffer  to userinterface
+read device answer 
+send answer buffer to inputbuffer 
+handle timeout if no answer for a command 
+
+The program should run on a raspberry pi with limited cpu resources.
+Because the commandrouter must analyze any incoming byte, many lists and arrays are created during initialization. I am not sure, whether the used data structure is  the most effective (in terms of speed). So enhancements may be necessary.
+Sometimes the program lines are quite long and subarrays are hard to read. So I sometimes introduces variables with a “lifetime” over a few lines. This enhances the readability, but may reduce speed.
+
+Usage
+
+The usage of the program now is suitable for tests only.
+Input can be done by keyboard or via telnet by sending numbers 0... 255 followed by a space.
+Data, which should be send to the device, are send to the console.
+
+Implementation of the Hardware
+
+The CR should be implemented on a raspberry PI. A Raspberry has ethernet access and a complete operating system. Power consumption an price is also acceptable.
+May be that a web server for the SK can also run on the same machine..
+not yet tested
+
+Hierarchical MYC System
+
+In a hierarchical system the CR resolves the announcements of lower level CR but otherwise keep the sequence. So only the actual CR  delivers the announce-list with the basic announcemen at start and the reserved tokens and the I-line of the CR at the end (tabs for clarification only):
+<0>;c;...						#CR
+	<c><m>...					#normal device 
+	...
+	<c>;ia; ..					# I-line
+	...
+	<c>;c;...					#lower level CR start
+		<c><m>...				#normal device 
+		...
+		<c>;ia, M..				# I-line
+		<c><m>...
+		...
+	<c>;ia;...					# I-line, end of lower level CR
+	…
+	<c><m>...					#other device 
+	<c>;ia;...					# I-line
+	...
+<c>;ia;	...						# I-line
+
+Identical device-types with identical individualization are not allowed within a CR but for CR in different levels. 
+
+
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Reference
+
+[1]	http://dk1ri.de/myc/MYC.pdf  (german)
+[2]	http://dk1ri.de/myc/MYC_en.pdf
+[3]	http://dk1ri.de/myc/Description.pdf
+[4]	http://dk1ri.de/myc/commands.pdf
+[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	http://dk1ri.de/myc/Rules.pdf
+[7]	http://dk1ri.de/myc/commandrouter.pdf
+[8]	http://dk1ri.de/myc/Rules_device.pdf
+[9]	http://dk1ri.de/myc/skin.pdf
+[10]	http://dk1ri.de/myc/logicdevice.pdf
+[11]	http://dk1ri.de/myc/Definitions.pdf
