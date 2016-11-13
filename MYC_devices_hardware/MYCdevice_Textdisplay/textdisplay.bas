@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : textdisplay_20.bas
-'Version V02.1 20160731
+'Version V02.2 20161110
 'purpose : Textdisplay
 'This Programm workes as I2C slave
 'Can be used with hardware textdisplay V01.1 by DK1RI
@@ -186,7 +186,16 @@ If A = 1 Then
          Cmd_watchdog = 1
          'start watchdog
       End If
-      Gosub Slave_commandparser
+      If Usb_active = 0 Then
+      'allow &HFE only
+         If Command_b(1) = 254 Then
+            Gosub Slave_commandparser
+         Else
+            Gosub  Command_received
+         End If
+      Else
+         Gosub Slave_commandparser
+      End If
    End If
 End If
 '
@@ -254,7 +263,16 @@ If Twi_control = &H80 Then
          Command_b(commandpointer) = Tempb
          If Cmd_watchdog = 0 Then Cmd_watchdog = 1
          'start watchdog
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -574,7 +592,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;Textdisplay;V02.1;1;160;12;19"
+'Data "0;m;DK1RI;Textdisplay;V02.2;1;160;1;19"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -967,7 +985,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Textdisplay;V02.1;1;160;12;19"
+Data "0;m;DK1RI;Textdisplay;V02.2;1;160;1;19"
 '
 Announce1:
 'Befehl &H01

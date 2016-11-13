@@ -1,8 +1,8 @@
 DTMF Empfänger
 
 Author: DK1RI
-Version V01.1  20160729
-This paper is published in github.com/dk1ri as well
+Version V01.2  20161110
+This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
@@ -17,18 +17,19 @@ Die Befehle zur Steuerung müssen binär eingegeben werden; er erfolgt keine Wandl
 Die Daten werden als normale Zeichen ausgegeben.
 Im Nicht MYC Mode und immer auf der I2C Schnittstelle werden die  DTMF Codes als String ausgegeben, der mit der Länge des Strings beginnt.
 Zur Rückkehr vom nicht-MYC mode in den MYC mode muss an der seriellen Schnittstelle &H14 oder an der I2C Schnittstelle &H1400 eingegeben werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Befehle
 
 Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert:
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3]
+Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4].
 Dies ist eine Kopie aus dem Bascom Programm:
 
 Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;DTMF receiver;V02.0;1;160;4;9"
+Data "0;m;DK1RI;DTMF receiver;V02.2;1;160;1;9"
 '
 Announce1:
 'Befehl  &H01
@@ -77,7 +78,6 @@ Announce8:
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
-'
 
 I2C
 
@@ -177,7 +177,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V01.1
-Bascom Version V02.1
+Bascom Version V02.2
 
 Copyright
 
@@ -188,7 +188,7 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[[1]	dtmf_rx_eagle.zip
-[2]	dtmf_rx_bascom.zip
-[3]	MYC.pdf
-
+[1]	dk1ri.de/dhw/dtmf_rx_eagle.zip
+[2]	dk1ri.de/dhw/dtmf_rx_bascom.zip
+[3]	dk1ri.de/myc/MYC.pdf 
+[4]	dk1ri.de/myc/Description.pdf (englisch)

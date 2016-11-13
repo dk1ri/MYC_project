@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : morse_tx.bas
-'Version V02.1, 20160729
+'Version V02.2, 20161110
 'purpose : Programm for sending MYC protocol as Morse Signals
 'This Programm workes as I2C slave or can bei controlled by RS232 / USB
 'Can be used with hardware rs232_i2c_interface Version V02.0 by DK1RI
@@ -324,7 +324,16 @@ If Twi_control = &H80 Then
          'start watchdog
          Reset Led3
          'LED on  for tests
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -537,7 +546,16 @@ If Commandpointer < Stringlength Then
       Reset Led3
       'LED on
    End If
-   Gosub Slave_commandparser
+   If Rs232_active = 0 And Usb_active = 0 Then
+   'allow &HFE only
+      If Command_b(1) = 254 Then
+         Gosub Slave_commandparser
+      Else
+         Gosub  Command_received
+      End If
+   Else
+      Gosub Slave_commandparser
+   End If
 End If
 Return
 '
@@ -675,7 +693,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;morse sender;V02.1;1;170;10;13"
+'Data "0;m;DK1RI;morse sender;V02.2;1;170;1;13"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -1120,7 +1138,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;morse sender;V02.1;1;170;10;13"
+Data "0;m;DK1RI;morse sender;V02.2;1;170;1;13"
 '
 Announce1:
 'Befehl  &H01 <s>

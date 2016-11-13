@@ -1,7 +1,7 @@
 Eine elektronische Last mit MYC Protokoll
 
-Author DK1RI, Version V01.1, 20160903
-This project can be found in https://www.github.com/dk1ri
+Author DK1RI, Version V01.2, 20161111
+This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
@@ -15,7 +15,7 @@ Due to possible high voltages and high temperature the usage of this device is a
 
 Beschreibung
 
-Die Schaltung besteht aus der Steuerungsplatine [1] und der äußeren Beschaltung mit den FETs und den Shuntwiderständen [5].
+Die Schaltung besteht aus der Steuerungsplatine [1] und der äußeren Beschaltung mit den FETs und den Shuntwiderständen [6].
 Die elektrischen Daten der elektronischen Last hängen von der äußeren Beschaltung ab. Die Leiterplatte kann maximal sieben FETs getrennt steuern und maximal 7 Shuntwiderstände zur Messung des Stroms verwenden. Eine Teilbestückung ist möglich.
 Für andere Shuntwiderstände und Strombereiche müssen einige Widerstände geändert werden. Eine Berechnungsvorlage steht in [4]. Für diese unterschiedlichen Versionen muss die Firmware geändert werden. Bei einer Verwendung im MYC System müssen dann auch die Befehlsbeschreibungen (announcements) geändert werden, wenn sich die Wertebereiche ändern.
 Die vorliegende  Beschreibung und Schaltung bezieht sich auf eine Version mit IRFP150 FETs (100V, 30A und ca 200W maximale Verlustleistung pro FET) mit 10mOhm Shunt.
@@ -25,7 +25,10 @@ Pro Messwiderstand soll ein FET verwendet werden. Das Parallelschalten von FETs 
 Man kann den gewünschten Strom, Widerstand oder die gewünschte Leistung für die Last vorgeben.
 Bei Überlast, auch einzelner FETs, schaltet die Last sofort hochohmig.
 Beim Wechsellastbetrieb wird wird die Last aus und eingeschaltet. Dies Schaltzeit ist einstellbar. Die Spannung kann dann mit einen Oszillographen gemessen werden.
-Das Gerät versteht das MYC Protokoll; die Befehle und Parameter müssen binär eingegeben werden. Für Details zum MYC Protokoll siehe [3]
+Das Gerät versteht das MYC Protokoll; die Befehle und Parameter müssen binär eingegeben werden. Für Details zum MYC Protokoll siehe [3] und [4] (aktuell)
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+
+
 
 Aufbau
 
@@ -62,13 +65,14 @@ Mit dem Befehl &H15 kann ein Prozentwert eingegeben werden, auf den der Wert zur
 
 Befehle
 
-Folgende Befehle werden von der I2C / RS232 /USB Schnittstelle akzeptiert:
+Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
+Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
 	
 Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;electronic load for 7 IRFP150;V01.1;1;120;26;33"
+Data "0;m;DK1RI;electronic load for 7 IRFP150;V01.3;1;120;1;33"
 '
 Announce1:
 'Befehl &H01
@@ -120,13 +124,13 @@ Data "8;ap,as7"
 '
 Announce9:
 'Befehl &H09 0 - 65535
-'gewuenschter Leistung (20mW resolution)
+'gewuenschte Leistung (20mW resolution)
 'required power  (20mW resolution)
 Data "9;op,required power;65536,{0 to 1310700};lin;mW"
 '
 Announce10:
 'Befehl &H0A
-'gewuenschter Leistung  (20mW resolution) lesen
+'gewuenschte Leistung  (20mW resolution) lesen
 'required power  (20mW resolution)
 Data "10;ap,as9"
 '
@@ -223,7 +227,7 @@ Data "25;om,set resistance;6;w,{0 to 4095}"
 Announce26:
 'Befehl &H1A
 'für Tests: Alle AD Wanler lesen
-'for tests: read all DA outputs
+'for tests: read all AD outputs
 Data "26;am,read AD values;6;w,{0 to 1023}"
 '
 Announce27:                                             '
@@ -292,8 +296,6 @@ Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler – letzte Befehlsnummer vor Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 
-
-
 Reset
 
 Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
@@ -324,6 +326,8 @@ Die Schaltung kann alternativ zu RS232 mit der USB Platine UM2102 von ELV bestüc
 SMD
 
 Die Leiterplatte ist teilweise mit SMD bestückt, außer den 5/6 poligen Operationsverstärkern nur recht große  Bauteile (1206)
+
+
 
 Stromversorgung
 
@@ -400,7 +404,7 @@ U/Iin SL6
 Die äußere Beschaltung
 
 Ich habe 7 FETS IRFP150 aus der Bastelkiste verwendet. Dies ergibt als Grenzbelastung 90V, ca 210A (bei 175 Grad) und eine Verlustleistung von ca 350W. Mehr Wärme kann der vorhandenen Kühlkörper nicht abführen.
-Direkt am Gate der FETs wurden 10kOhm Widerstände angelötet (siehe [5]).
+Direkt am Gate der FETs wurden 10kOhm Widerstände angelötet (siehe [6]).
 Als Shunt wurde ein 10mOhm, 10W Shunt von Isabellenhütte verwendet.
 
 Die Messspannung darf nicht direkt angeschlossen werden, sondern nur über einen extern Widerstand (51kOhm bei 90V)
@@ -409,7 +413,15 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 01.2
-Bascom Version 01.1
+Bascom Version 01.3
+
+
+
+
+
+
+
+
 
 Copyright
 
@@ -420,8 +432,9 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[[1]	electronic_load_eagle.zip
-[2]	electronic_load_bascom.zip
-[3]	MYC.pdf
-[4]	Berechnung der Widerstände
-[5]	Äußere Beschaltungexternal_ciruit.png
+[[1]	dk1ri.de/dhw/electronic_load_eagle.zip
+[2]	dk1ri.de/dhw/electronic_load_bascom.zip
+[3]	dk1ri.de/myc/MYC.pdf 
+[4]	dk1ri.de/myc/Description.pdf (englisch)
+[5]	dk1ri.de/dhw/electronic_load_calculation.pdf
+[6]	dk1ri.de/dhw/electronic_load_external_ciruit.png

@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rotorsteuerung_create.bas
-'Version V04.0, 20160730
+'Version V04.1, 20161112
 'purpose : Programm for control a Create RC5 Rotator
 'Can be used with hardware rotorsteuerung_create V03.1 by DK1RI
 'The Programm supports the MYC protocol
@@ -236,7 +236,16 @@ If A = 1 Then
       Command_b(Commandpointer) = A
       If Cmd_watchdog = 0 Then Cmd_watchdog = 1
       'start watchdog
-      Gosub Slave_commandparser
+      If Usb_active = 0 Then
+      'allow &HFE only
+         If Command_b(1) = 254 Then
+            Gosub Slave_commandparser
+         Else
+            Gosub  Command_received
+         End If
+      Else
+         Gosub Slave_commandparser
+      End If
    End If
 End if
 '
@@ -304,7 +313,16 @@ If Twi_control = &H80 Then
          Command_b(commandpointer) = Tempb
          If Cmd_watchdog = 0 Then Cmd_watchdog = 1
          'start watchdog
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -745,7 +763,7 @@ Slave_commandparser:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-'Data "0;m;DK1RI;RC5 rotator control;V04.0;1;120;16;24"
+'Data "0;m;DK1RI;RC5 rotator control;V04.1;1;120;1;24"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -1269,7 +1287,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RC5 rotator control;V04.0;1;120;16;24"
+Data "0;m;DK1RI;RC5 rotator control;V04.1;1;120;1;24"
 '
 Announce1:
 'Befehl &H01 0|1

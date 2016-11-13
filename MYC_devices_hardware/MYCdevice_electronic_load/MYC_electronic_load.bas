@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
-'name : electronic_load.as
-'Version V01.1, 20160909
+'name : electronic_load.bas
+'Version V01.3, 20161109
 'purpose : This is a electronic load for 7 fets IRFP150
 'This Programm workes as I2C slave or serial protocol
 'Can be used with hardware  electronic_load V01.2 by DK1RI
@@ -117,9 +117,11 @@ Const No_of_announcelines = 37
 'el load specific:
 Const Calibrate_i_factor_default = 5
 '100% is 30A, used if 30A is not available
-Const Correction_u_default = 90000 / 900
+Const Correction_u_default = 90
+'must be a simple figure : 90000 / 1000
 '10 bit AD converter, has 1023 steps for 90V, Resolution ~ 90mV
-Const Correction_i_default = 30000 / 850
+Const Correction_i_default = 30
+'must be a simple figure : 30000 / 1000
 '
 Const On_off_time_default = 128
 Const Minimum_voltage = 400
@@ -357,8 +359,8 @@ If On_off_mode = 0 And Calibrate_i_started = 0 Then Gosub Blink_
 '
 Gosub Cmd_watch
 '
-Temp_dw = Getadc(0)
-Voltage = Temp_dw * Correction_u
+Temp_w = Getadc(0)
+Voltage = Temp_w * Correction_u
 'mV
 If Voltage < Minimum_voltage Then
    'switched off
@@ -373,9 +375,9 @@ Else
          Wait 1
          Start Watchdog
          'wait 1 Second for voltage to settle
-         Temp_dw = Getadc(0)
+         Temp_w = Getadc(0)
          'measure voltage again
-         Voltage = Temp_dw * Correction_u
+         Voltage = Temp_w * Correction_u
          'mV
          If Calibrate_i_started = 0 Then Gosub Calculate_Number_of_fets_to_use
          'no need in calbrate mode (use 1 Fet only)
@@ -408,7 +410,20 @@ If A = 1 Then
           Cmd_watchdog = 1
           'start watchdog
        End If
-       Gosub Slave_commandparser
+      If Cmd_watchdog = 0 Then
+            Cmd_watchdog = 1
+            'start watchdog
+         End If
+         If Rs232_active = 0 And Usb_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
    End If
 End If
 '
@@ -474,7 +489,16 @@ If Twi_status = &HA8 Or Twi_status = &HB8 Then
             Cmd_watchdog = 1
             'start watchdog
          End If                                             '
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -1248,7 +1272,7 @@ Else
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-'Data "0;m;DK1RI;electronic load for 7 IRFP150;V01.1;1;120;26;33"
+'Data "0;m;DK1RI;electronic load for 7 IRFP150;V01.3;1;120;1;33"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -1475,7 +1499,7 @@ Else
 '
       Case 9
 'Befehl &H09 0 - 65535
-'gewuenschter Leistung (20mW resolution)
+'gewuenschte Leistung (20mW resolution)
 'required power  (20mW resolution)
 'Data "9;op,required power;65536,{0 to 1310700};lin;mW"
          If Commandpointer >= 3 Then
@@ -1499,7 +1523,7 @@ Else
 '
       Case 10
 'Befehl &H0A
-'gewuenschter Leistung  (20mW resolution) lesen
+'gewuenschte Leistung  (20mW resolution) lesen
 'required power  (20mW resolution)
 'Data "10;ap,as9"
          Temp_single = Required_p / 20
@@ -2180,7 +2204,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;electronic load for 7 IRFP150;V01.1;1;120;26;33"
+Data "0;m;DK1RI;electronic load for 7 IRFP150;V01.3;1;120;1;33"
 '
 Announce1:
 'Befehl &H01
@@ -2232,13 +2256,13 @@ Data "8;ap,as7"
 '
 Announce9:
 'Befehl &H09 0 - 65535
-'gewuenschter Leistung (20mW resolution)
+'gewuenschte Leistung (20mW resolution)
 'required power  (20mW resolution)
 Data "9;op,required power;65536,{0 to 1310700};lin;mW"
 '
 Announce10:
 'Befehl &H0A
-'gewuenschter Leistung  (20mW resolution) lesen
+'gewuenschte Leistung  (20mW resolution) lesen
 'required power  (20mW resolution)
 Data "10;ap,as9"
 '

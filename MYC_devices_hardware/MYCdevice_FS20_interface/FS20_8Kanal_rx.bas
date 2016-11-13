@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : FS20_8Kanal_rx.bas
-'Version V03.2, 20160729
+'Version V04.1, 20161109
 'purpose : Programm for receiving FS20 Signals
 'This Programm workes as I2C slave, or serial
 'Can be used with hardware FS20_interface Version V02.0 by DK1RI
@@ -8,7 +8,7 @@
 'Please modify clock frequncy and processor type, if necessary
 '
 '
-'micro : ATMega88 ore higher
+'micro : ATMega16 or higher
 'Fuse Bits :
 'External Crystal, high frequency
 'clock output disabled
@@ -26,7 +26,6 @@
 'Used Hardware:
 ' serial
 ' I2C
-' SPI
 '-----------------------------------------------------------------------
 ' Inputs: see below
 ' Outputs : see below
@@ -36,12 +35,8 @@
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-'$regfile = "m88pdef.dat"
-' for ATmega8P
-'$regfile = "m88def.dat"
-' (for ATmega8)
-$regfile = "m328pdef.dat"
-' (for ATmega328)
+$regfile = "m644pdef.dat"
+' (for ATmega644)
 $crystal = 20000000
 $baud = 19200
 ' use baud rate
@@ -131,59 +126,60 @@ Dim Stop_info As BYte
 'Eventmode: stop info for output of other answers
 '
 '**************** Config / Init
+'The labels match the naming of the the ELV documentation, but not the eagle circuit !!
 Config Portb.0 = Input
 Portb.0 = 1
-Reset__ Alias Pinb.1
+Reset__ Alias Pinb.0
 '
-Config Portd.2 = Input
-Portd.2 = 1
-In1 Alias Pind.2
-Config Portd.3 = Input
-Portd.3 = 1
-In2 Alias Pind.3
-Config Portd.4 = Input
-Portd.4 = 1
-In3 Alias Pind.4
-Config Portd.5 = Input
-Portd.5 = 1
-In4 Alias Pind.5
-Config Portd.6 = Input
-Portd.6 = 1
-In5 Alias Pind.6
-Config Portd.7 = Input
-Portd.7 = 1
-In6 Alias Pind.7
-Config Portb.0 = Input
-Portb.0 = 1
-In7 Alias Pinb.0
-Config Portb.1 = Input
-Portb.1 = 1
-In8 Alias Pinb.1
+Config PinA.7 = Input
+PortA.7 = 1
+In1 Alias PinA.7
+Config PinA.6 = Input
+PortA.6 = 1
+In2 Alias PinA.6
+Config PinA.5 = Input
+PortA.5 = 1
+In3 Alias PinA.4
+Config PinA.4 = Input
+PortA.4 = 1
+In4 Alias PinA.4
+Config PinA.3 = Input
+PortA.3 = 1
+In5 Alias PinA.3
+Config PinA.2 = Input
+PortA.2 = 1
+In6 Alias PinA.2
+Config PinA.1 = Input
+PortA.1 = 1
+In7 Alias PinA.1
+Config PinA.0 = Input
+PortA.0 = 1
+In8 Alias PinA.0
 '
-Config Portc.3 = Output
+Config PinC.7 = Output
+PortC.7 = 1
+Sch1 Alias Portc.7
+Config PinC.6 = Output
+PortC.6 = 1
+Sch2 Alias Portc.6
+Config PinC.6 = Output
+PortC.6 = 1
+Sch3 Alias Portc.5
+Config PinC.5 = Output
+PortC.5 = 1
+Sch4 Alias PortC.3
+Config PinC.3 = Output
 Portc.3 = 1
-Sch1 Alias Portc.3
-Config Portc.2 = Output
+Sch5 Alias Portc.2
+Config Pinc.2 = Output
 Portc.2 = 1
-Sch2 Alias Portc.2
-Config Portc.1 = Output
-Portc.1 = 1
-Sch3 Alias Portc.1
-Config Portc.0 = Output
-Portc.0 = 1
-Sch4 Alias Portc.0
-Config Portb.5 = Output
-Portb.5 = 1
-Sch5 Alias Portb.5
-Config Portb.4 = Output
-Portb.4 = 1
-Sch6 Alias Portb.4
-Config Portb.3 = Output
-Portb.3 = 1
-Sch7 Alias Portb.3
-Config Portb.2 = Output
-Portb.2 = 1
-Sch8 Alias Portb.2
+Sch6 Alias Portd.7
+Config Pind.7 = Output
+Portd.7 = 1
+Sch7 Alias Portd.7
+Config Pind.6 = Output
+Portd.6 = 1
+Sch8 Alias Portd.6
 '
 '
 Config Watchdog = 2048
@@ -232,7 +228,16 @@ If A = 1 Then
          Cmd_watchdog = 1
          'start watchdog
       End If
-      Gosub Slave_commandparser
+      If Rs232_active = 0 And Usb_active = 0 Then
+      'allow &HFE only
+         If Command_b(1) = 254 Then
+            Gosub Slave_commandparser
+         Else
+            Gosub  Command_received
+         End If
+      Else
+         Gosub Slave_commandparser
+      End If
    End If
 End If
 '
@@ -300,7 +305,16 @@ If Twi_control = &H80 Then
          Command_b(commandpointer) = Tempb
          If Cmd_watchdog = 0 Then Cmd_watchdog = 1
          'start watchdog
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -545,7 +559,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read
-'Data "0;m;DK1RI;FS20_receiver;V03.1;1;170;5;11"
+'Data "0;m;DK1RI;FS20_receiver;V04.1;1;170;1;11"
          Gosub Reset_i2c_tx
          A_line = 0
          Gosub Sub_restore
@@ -900,7 +914,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read
-Data "0;m;DK1RI;FS20_receiver;V03.1;1;170;5;11"
+Data "0;m;DK1RI;FS20_receiver;V04.1;1;170;1;11"
 '
 Announce1:
 'Befehl  &H01

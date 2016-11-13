@@ -1,7 +1,7 @@
 MYC - FS20 Sender und Empfänger
 
-Author DK1RI, Version V02.2, 201625
-This project can be found in https://www.github.com/dk1ri
+Author DK1RI, Version V02.3, 20161111
+This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
@@ -17,8 +17,9 @@ Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA max.
 Als Interface zum MYC System ist eine I2C und eine serielle / USB Schnittstelle vorgesehen.
 Beide Schnittstellen könne nicht gleichzeitig verwendet werden. Wird die Schnittstelle gewechselt, wird der Befehlspuffer gelöscht.
 An der seriellen Schnittstelle kann ein Rechner mit Terminalprogramm (19,2kB, 8N1) angeschlossen werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Die FS20 Adressen müssen über die Tasten der Module eingeben werden.
-Das FS20 System selbst liefert keine Rückmeldung, ob ein Befehl ausgeführt wurde. Deshalb gibt es beim Sender auch keine Abfrage des Status. Es gibt daher auch keine Möglichkeit, abzufragen, wann ein Befehl ausgeführt ist. Die Dimmbefehle duaern bis zu 1,5Sekunden. In dieser Zeit werden andere Befehle ignoriert. Einige Befehle duaern sehr lange und können daher nur mit den Tasten ausgeführt werden.
+Das FS20 System selbst liefert keine Rückmeldung, ob ein Befehl ausgeführt wurde. Deshalb gibt es beim Sender auch keine Abfrage des Status. Es gibt daher auch keine Möglichkeit, abzufragen, wann ein Befehl ausgeführt ist. Die Dimmbefehle duaern bis zu 1,5Sekunden. In dieser Zeit werden andere Befehle ignoriert. Einige Befehle dauern sehr lange und können daher nur mit den Tasten ausgeführt werden.
 
 FS20-Empfänger 
 Das Empfängerinterface kann verwendet werden, um mit einem FS20 Sender beliebige (Schalt)funktionen im MYC System durchzuführen – also nicht nur FS20 Komponenten zu steuern.
@@ -57,13 +58,14 @@ Es wurden keine Befehle zur Änderung der Adressen der Module vorgesehen. Dies mu
 
 FS20 Empfänger
 
-Folgende Befehle werden akzeptiert:
+Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
+Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
 
 Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read
-Data "0;m;DK1RI;FS20_receiver;V03.1;1;170;5;11"
+Data "0;m;DK1RI;FS20_receiver;V04.1;1;170;1;11"
 '
 Announce1:
 'Befehl  &H01
@@ -124,13 +126,11 @@ Data "R !($1 $2) IF $4 = 0"
 
 FS20 Sender
 
-Folgende Befehle werden akzeptiert:
-
 Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;FS20 8 chanal sender;V03.1;1;170;12;18"
+Data "0;m;DK1RI;FS20 8 chanal sender;V04.1;1;170;1;18"
 '
 Announce1:
 'Befehl &H01
@@ -223,9 +223,9 @@ Announce15:
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
 Announce16:
-Data "R !$1 !$2 !$4 !$5 !$7 If $9 = 1"
+Data "R !$1 !$2 !$4 !$5 !$7 If $10 = 1"
 Announce17:
-Data "R !$3 !$6 !$8 IF $9 = 0"
+Data "R !$3 !$6 !$8 IF $10 = 0"
 
 I2C Adresse 
 
@@ -268,9 +268,9 @@ RS232 Schnittstelle
 
 Schnittstellenparameter: 19k2 8N1
 
-USB Schnittstelle (ab Leiterplattenversion 2.0)
+USB Schnittstelle
 
-Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt in Richtung der Steckverbinder. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP1 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden.
+Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird direkt plan auf der Oberseite der Interfaces mit JP3, JP4 verlötet: der USB Stecker zeigt zur Seite. USB Platine und Interface müssen voneinander isoliert werden.
 Die Stromversorgung erfolgt dann über USB.
 
 SMD
@@ -279,16 +279,32 @@ Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind 
 
 Stromversorgung
 
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA max.
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 30mA max.
 Mit installiertem USB Modul erfolgt die Stromversorgung darüber.
 
 Bestückung der Leiterplatte
 
-Die Buchsen BU1 - Bu3 werden auf der Lötseite angebracht und nehmen die FS20 Module auf.
+Die Buchsen BU1 - Bu3 werden auf der Bauteileseite angebracht und nehmen die FS20 Module auf.
 Bu2 und Bu3 kann auch als 24 polige Buchsenleiste ausgeführt sein.
-Wenn das Interface nur den FS20 Sender aufnehmen soll, kann Bu3 entfallen. 
-Der FS20-Sender benötigt keine Batterie; die Stromversorgung kann dann über das Interface erfolgen: JP6, pin2 und pin3 des Interfaces verbinden.
-Beim Empfänger muss Jumper6, pin1 und pin2 des Interfaces verbunden sein
+Wenn das Interface nur den FS20 Sender aufnehmen soll, kann Bu2 / Bu3 entfallen. 
+Der FS20-Sender benötigt keine Batterie; die Stromversorgung kann dann über das Interface erfolgen: JP2, pin2 und pin3 des Interfaces verbinden.
+Beim Empfänger muss JP2, pin1 und pin2 des Interfaces verbunden sein.
+Die Leiterplatte kann auch Homematic Module aufnehmen. Daher müssen folgende Bauteile nicht bestückt werden: DC1, C2, C7, SL1, SL2, Q2, Q3, Q4, R1, R2, R3, R4.
+Bei Q4, muss Drain und Source mit überbrückt werden.
+
+Die Schaltung wird mit 5V versorgt; Jumper JP1  pin 1und 2 verbinden  (5)
+
+mit RS232 Schnittstelle:
+IC2, IC3 (7805 oder pinkompatible Schaltregler), D1, C1, C2, C78– C11,  X1 (Buchse für Hohlstecker), X4 (DB9 Buchse)
+
+Mit USB Schnittstelle (alternativ zu RS232):
+UM2102, (JP3, JP4)
+
+Verwendung von ISP:
+JP6
+
+mit I2C:
+X5, X6, R7, R8 nach Bedarf. Bei Q2 oder Q3 muss Drain und Source überbrückt werden.
 
 Anschlüsse
 
@@ -306,17 +322,11 @@ Sleeve	GND
 Ring	SDA
 Tip	SCL
 
-I2C (LP/5pol DIN) (LP Version 1)
-2 GND
-1 SDA
-3 SCL
-4 12V
-
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V01.1, ohne USB
-Bascom Version V03.1 für Sender und Empfänger 
+Leiterplattenversion V02.0
+Bascom Version V04.1 für Sender und Empfänger 
 
 
 Copyright
@@ -328,7 +338,7 @@ The usage of thisdocumnet is on own risk, there is no warranty.
 
 Referenzen
 
-[1]	MYC_FS20_interface_eagle.zip
-[2]	MYC_FS20_interface_bascom.zip
-[3]	MYC.pdf
-[4]	MYC_FS20_interfaceV01.1_eagle.zip
+[1]	dk1ri.de/dhw/FS20_interface_eagle.zip
+[2]	dk1ri.de/dhw/FS20_interface_bascom.zip
+[3]	dk1ri.de/myc/MYC.pdf 
+[4]	dk1ri.de/myc/Description.pdf (englisch)

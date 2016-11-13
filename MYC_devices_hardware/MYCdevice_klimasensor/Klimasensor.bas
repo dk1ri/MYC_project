@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : Klimasensor.bas
-'Version V01.0, 20160730
+'Version V01.1, 20161110
 'purpose : Programm for mesuring temperature, humidity and pressure with the BME280 sensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware Klimasensor Version V01.1 by DK1RI
@@ -43,8 +43,10 @@
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-$regfile = "m328pdef.dat"
+'$regfile = "m328pdef.dat"
 ' for ATmega328P
+$regfile = "m168def.dat"
+' for ATmega168
 $crystal = 10000000
 $baud = 19200
 ' used baud rate
@@ -264,7 +266,16 @@ If A = 1 Then
          Cmd_watchdog = 1
          'start watchdog
       End If
-      Gosub Slave_commandparser
+      If Rs232_active = 0 And Usb_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
    End If
 End If
 '
@@ -332,7 +343,16 @@ If Twi_control = &H80 Then
          Command_b(commandpointer) = Tempb
          If Cmd_watchdog = 0 Then Cmd_watchdog = 1
          'start watchdog
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -871,7 +891,7 @@ Else
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-'Data "0;m;DK1RI;Klimasensor;V01.0;1;100;15"
+'Data "0;m;DK1RI;Klimasensor;V01.1;1;100;1;21"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -1336,7 +1356,7 @@ Else
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1"
+'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
          If Commandpointer = 2 Then
             Gosub Reset_i2c_tx
             Select Case Command_b(2)
@@ -1400,7 +1420,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Klimasensor;V01.0;1;100;15"
+Data "0;m;DK1RI;Klimasensor;V01.1;1;100;1;21"
 '
 Announce1:
 'Befehl &H01
@@ -1520,5 +1540,5 @@ Announce20:
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '

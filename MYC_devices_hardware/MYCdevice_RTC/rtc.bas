@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rtc.bas
-'Version V01.2, 20160802
+'Version V01.3, 20161110
 'purpose : Programm as realtime clock using the ELV RTC-DCF module
 'The interface communicates with the module via SPI
 'This Programm can be controlled via I2C or serial
@@ -241,7 +241,16 @@ If A = 1 Then
          Cmd_watchdog = 1
          'start watchdog
       End If
-      Gosub Slave_commandparser
+      If Usb_active = 0 Then
+      'allow &HFE only
+         If Command_b(1) = 254 Then
+            Gosub Slave_commandparser
+         Else
+            Gosub  Command_received
+         End If
+       Else
+         Gosub Slave_commandparser
+       End If
    End If
 End If
 '
@@ -309,7 +318,16 @@ If Twi_control = &H80 Then
          Command_b(commandpointer) = Tempb
          If Cmd_watchdog = 0 Then Cmd_watchdog = 1
          'start watchdog
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -587,7 +605,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;RTC;V01.1;2;100;4;9"
+'Data "0;m;DK1RI;RTC;V01.3;1;100;1;9"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -891,7 +909,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;RTC;V01.2;1;100;4;9"
+Data "0;m;DK1RI;RTC;V01.3;1;100;1;9"
 '
 Announce1:
 'Befehl  &H01

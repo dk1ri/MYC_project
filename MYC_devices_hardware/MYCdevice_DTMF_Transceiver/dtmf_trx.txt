@@ -1,8 +1,8 @@
 DTMF Sende - Empfänger
 
 Author: DK1RI
-Version V01.1  20160729
-This paper is published in github.com/dk1ri as well
+Version V01.2  20161111
+This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
@@ -22,9 +22,12 @@ Die Dateneingabe ist bis 251 DTMF-Zeichen gepuffert, sowohl im MYC als auch im n
 Nach dem MYC Protokoll kopiert der Lesebefehl die empfangenen DTMF Daten in den Lese - Puffer, von dem die Daten (im I2C Mode) ausgelesen werden können. Das Interface puffert 251 DTMF Zeichen, danach werden die ältesten überschrieben. Werden mehr Zeichen ausgelesen als vorhanden sind, wird &H00 ausgegeben.
 Im nicht_MYC mode werden die Ziffern 0 -9 *, # und A - D direkt ohne Stringlänge ein- und ausgegeben
 Die Rückkehr in den MYC Mode erfolgt mit Space (&H20)
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+
 
 Befehle
 
+Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
 Folgende Befehle werden von der I2C / USB Schnittstelle akzeptiert:
 Dies ist eine Kopie aus dem Bascom Programm:
 
@@ -34,7 +37,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;DTMF_transceiver;V02.1;1;110;5;10"
+Data "0;m;DK1RI;DTMF_transceiver;V02.2;1;110;1;10"
 '
 Announce1:
 'Befehl  &H01 <s>
@@ -89,7 +92,6 @@ Announce9:
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,USB,1"
-'
 
 I2C
 
@@ -180,7 +182,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 01.2
-Bascom Version 02.1
+Bascom Version 02.2
 
 Copyright
 
@@ -191,7 +193,7 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[[1]	dtmf_trx_eagle.zip
-[2]	dtmf_trx_bascom.zip
-[3]	MYC.pdf
-
+[1]	dk1ri.de/dhw/dtmf_trx_eagle.zip
+[2]	dk1ri.de/dhw/dtmf_trx_bascom.zip
+[3]	dk1ri.de/myc/MYC.pdf 
+[4]	dk1ri.de/myc/Description.pdf (englisch)

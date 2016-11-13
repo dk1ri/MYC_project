@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_master.bas
-'Version V04.1, 20160730
+'Version V04.2, 20161110
 'purpose : Programm for serial to i2c Interface for test of MYC devices
 'This Programm workes as I2C master
 'Can be used with hardware rs232_i2c_interface Version V03.0 by DK1RI
@@ -414,7 +414,7 @@ Select Case Command_b(1)
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-'Data "0;m;DK1RI;RS232_I2C_interface Master;V04.1;1;170;12;20"
+'Data "0;m;DK1RI;RS232_I2C_interface Master;V04.2;1;170;1;20"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -851,7 +851,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RS232_I2C_interface Master;V04.1;1;170;12;20"
+Data "0;m;DK1RI;RS232_I2C_interface Master;V04.2;1;170;1;20"
 '
 Announce1:
 'Befehl &H01 <s>

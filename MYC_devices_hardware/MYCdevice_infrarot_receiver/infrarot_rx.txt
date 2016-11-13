@@ -1,6 +1,6 @@
 Infrarot (RC5) Empfänger
 
-Author DK1RI, Version V02.2, 20160720
+Author DK1RI, Version V02.3, 20161111
 This project can be found in https://github.com/dk1ri also.
 
 Einleitung
@@ -11,8 +11,6 @@ Im „no_myc“ Mode arbeitet das Interface als einfacher RC5 - ASCII Wandler.
 Beschreibung
 
 Die Eagle Daten stehen unter  [1].
-Details zum MYC Protokoll stehen in [3]
-
 Die Befehle zur Steuerung müssen binär eingegeben werden; er erfolgt keine Wandlung.
 MYC mode (default oder mit Befehl &H14H00):
 Im MYC mode erfolgt die Ausgabe der empfangenen RC5 Signale als Antwort auf den Befehl &H01:
@@ -25,17 +23,18 @@ Nicht MYC mode (mit Befehl &H14&H01):
 Im nicht_MYC mode werden RC5 Adresse und RC5 Befehl dezimal zweistellig auf die serielle Schnittstelle ausgegeben.
 Die MYC Befehle funktionieren nicht. Zur Rückkehr in den MYC mode muss an der seriellen Schnittstelle &H14 oder an der I2C Schnittstelle &H14&H00 eingegeben werden.
 Der nicht MYC mode funktioniert nur mit der seriellen Schnittstelle.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Befehle
 
-Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert:
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3]
-Dies ist  eine Kopie aus dem Bascom Programm:
+Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
+Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
 
+Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Infrared (RC5) receiver;V03.1;1;160;7;11"
+Data "0;m;DK1RI;Infrared (RC5) receiver;V03.2;1;160;1;11"
 '
 Announce1:
 'Befehl  &H01
@@ -96,7 +95,6 @@ Announce10:
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
-'
 
 I2C
 
@@ -204,7 +202,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 02.0
-Bascom Version 03.1
+Bascom Version 03.2
 
 Copyright
 
@@ -213,9 +211,11 @@ Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Gara
 The ideas of this document can be used under GPL (Gnu Public License) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
+
 Referenzen
 
-[[1]	i2_rs232_interface_eagle.zip
-[2]	infrarot_rx_bascom.zip
-[3]	MYC.pdf
+[1]	dk1ri.de/dhw/i2c_rs232_interface_eagle.zip
+[2]	dk1ri.de/dhw/infrarot_rx_bascom.zip
+[3]	dk1ri.de/myc/MYC.pdf 
+[4]	dk1ri.de/myc/Description.pdf (englisch)
 

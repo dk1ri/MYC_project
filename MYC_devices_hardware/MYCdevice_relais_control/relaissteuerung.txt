@@ -1,7 +1,7 @@
 Relaissteuerung
 
-Author DK1RI, Version V03.2, 20160419
-This project can be found in https://www.github.com/dk1ri
+Author DK1RI, Version V03.3, 20161112
+This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
@@ -18,14 +18,14 @@ Der Eingangsspannungsbereich wird im EERAM gespeichert.
 
 Befehle
 
-Die Befehle müssen binär eingegeben werden; siehe [3]
-Folgende Befehle werden erkannt:
+Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
+Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
 
 Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI; 4 Relais Bord;V03.2;1;100;27;32"
+Data "0;m;DK1RI; 4 Relais Bord;V03.3;1;100;1;32"
 '
 Announce1:
 'Befehl &H01
@@ -212,7 +212,6 @@ Announce31:
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,4,{0 to 127}"
-'
 
 I2C
 
@@ -305,7 +304,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 02.0
-Bascom Version 03.2
+Bascom Version 03.3
 
 Copyright
 
@@ -316,6 +315,8 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-1]	relaissteuerung_eagle.zip
-[2] 	relaissteuerung_bascom.zip
-[3]	MYC.pdf
+1]	dk1ri.de/dhw/relaissteuerung_eagle.zip
+[2] 	dk1ri.de/dhw/relaissteuerung_bascom.zip
+[3]	dk1ri.de/myc/MYC.pdf 
+[4]	dk1ri.de/myc/Description.pdf (englisch)
+

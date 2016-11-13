@@ -1,8 +1,8 @@
 DTMF Sender für Remote Shack von MFJ (TM)
 
 Author: DK1RI
-Version V01.3 20160705
-This paper is published in github.com/dk1ri as well
+Version V01.4 20161110
+This paper is published in https://github.com/dk1ri as well
 
 Einleitung
 
@@ -11,10 +11,11 @@ So kann ein Remote Shack in ein MYC System eingebunden werden.
 Dies ist ein Beispiel für die Verwendung des DTMF Senders als Template durch einfache Ergänzungen.
 Das Interface arbeitet als Slave am I2C Bus.
 Das Interface kann auch bei entsprechender Bestückung der Leiterplatte Eingaben an der RS232 Schnittstelle oder USB Schnittstelle in Remote Shack Signale umsetzten.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung
 
-Die Eagle Daten der Leiterplatte stehen unter  [1] und [2].
+Die Eagle Daten der Leiterplatte stehen unter  [1].
 Es gibt eine (ältere) Version mit 40-poligem Prozessor und eine für 28-poligen
 Die Bedienung und Funktion ist identisch; die Firmware unterscheidet sich nur in der Belegung der pins.
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max  oder über USB.
@@ -33,14 +34,14 @@ Die Initialisierung dauert ca 10 Sekunden, da der RBC erst eingeschaltet wird un
 Befehle / Announcements
 
 Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert:
-Zu Details zum MYC Protokoll und zur Bedienung siehe [4]
+Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell)
 Dies ist eine Kopie aus dem Bascom Programm:
 
 Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.1;1;160;57;66"
+Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.1;2;160;1;66"
 '
 Announce1:
 'Befehl &H01
@@ -423,13 +424,13 @@ Announce64:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,14,{0 to 127};a,RS232,1;a,USB,1;a,RADIO,1"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,14,{0 to 127};a,RS232,1;a,USB,1"
 '
 Announce65:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,14,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1""
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,14,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 
 I2C
 
@@ -540,8 +541,8 @@ Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Gara
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
-Referenzen
-[[1]	i2c_rs232_interface_eagle.zip
-[2]	dtmf_rbc_bascom.zip
-[3]	MYC.pdf
-
+Referenzen:
+[1]	dk1ri.de/dhw/i2c_rs232_interface_eagle.zip
+[2]	dk1ri.de/dhw/dtmf_rbc_bascom.zip
+[3]	dk1ri.de/myc/MYC.pdf 
+[4]	dk1ri.de/myc/Description.pdf (englisch)

@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : relaisteuerung.bas
-'Version V03.2, 20160730
+'Version V03.3, 20161110
 'purpose : Control of a board with 4 Relais and 11 Inputs
 'This Programm workes as I2C slave
 'Can be used with hardware relaisteuerunge Version V02.0 by DK1RI
@@ -245,7 +245,16 @@ If Twi_control = &H80 Then
          Command_b(commandpointer) = Tempb
          If Cmd_watchdog = 0 Then Cmd_watchdog = 1
          'start watchdog
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -456,7 +465,7 @@ Else
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-'Data "0;m;DK1RI; 4 Relais Bord;V03.2;1;100;27;32"
+'Data "0;m;DK1RI; 4 Relais Bord;V03.3;1;100;1;32"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -975,7 +984,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI; 4 Relais Bord;V03.2;1;100;27;32"
+Data "0;m;DK1RI; 4 Relais Bord;V03.3;1;100;1;32"
 '
 Announce1:
 'Befehl &H01

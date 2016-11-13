@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : sprachausgabe.bas
-'Version V02.1, 20160731
+'Version V02.2, 20161110
 'purpose : Play 10 voice/music amples from ELV MSM2 module
 'This Programm workes as I2C slave or using RS232
 'Can be used with  sprachausgabe Version V01.0 by DK1RI
@@ -62,7 +62,7 @@ Const Stringlength = 254
 'that is maximum
 Const Cmd_watchdog_time = 65000
 'Number of main loop before command reset
-Const No_of_announcelines = 8
+Const No_of_announcelines = 9
 'announcements start with 0 -> minus 1
 '
 Dim First_set As Eram Byte
@@ -123,6 +123,7 @@ Dim USB_active As Byte
 Dim Usb_active_eeram As Eram Byte
 '
 Dim Wait_long As Bit
+Dim Modus As Bit
 '
 '**************** Config / Init
 ' Jumper:
@@ -208,7 +209,16 @@ If A = 1 Then
       Command_b(commandpointer) = A
       If Cmd_watchdog = 0 Then Cmd_watchdog = 1
       ' start watchdog
-      Gosub Slave_commandparser
+      If Rs232_active = 0 And Usb_active = 0 Then
+      'allow &HFE only
+          If Command_b(1) = 254 Then
+            Gosub Slave_commandparser
+         Else
+            Gosub  Command_received
+         End If
+      Else
+         Gosub Slave_commandparser
+      End If
    End If
 End If
 '
@@ -276,7 +286,16 @@ If Twi_control = &H80 Then
          Command_b(commandpointer) = Tempb
          If Cmd_watchdog = 0 Then Cmd_watchdog = 1
          'start watchdog
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -318,6 +337,7 @@ Command_mode = 0
 Announceline = 255
 Last_error = " No Error"
 Error_no = 255
+Modus = 0
 'No Error
 Gosub Command_received
 Gosub Command_finished
@@ -404,6 +424,8 @@ Select Case A_line
       Restore Announce6
    Case 7
       Restore Announce7
+   Case 8
+      Restore Announce8
    Case Else
       Error_no = 0
       Gosub Last_err
@@ -434,6 +456,10 @@ I2c_tx = String(Stringlength,0)
 Return
 '
 Control_sound:
+   If Modus = 1 Then
+      Incr Command_b(Commandpointer)
+      Reset Voice1
+   End If
                Select Case Command_b(Commandpointer)
                   Case 0
                      Reset Voice1
@@ -458,6 +484,8 @@ Control_sound:
                End Select
                Waitms 100
                If Wait_long = 1 Then Waitms 2300
+               If Modus = 1 Then Wait 10
+               Set Voice1
                Select Case Command_b(Commandpointer)
                   Case 1
                      Set Voice1
@@ -494,7 +522,7 @@ Else
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-'Data "0;m;DK1RI;Sprachausgabe;V02.0;1;170;3;8"
+'Data "0;m;DK1RI;Sprachausgabe;V02.2;1;170;1;9"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -519,7 +547,7 @@ Else
          End If
 '
       Case 2
-'Befehl &H01 0 to 9
+'Befehl &H02 0 to 9
 'spielt Playliste
 'play playlist
 'Data "2;os,playlist;0;1;2;3;4;5;6;7;8;9"
@@ -537,11 +565,33 @@ Else
             Incr Commandpointer
          End If
 '
+      Case 3
+'Befehl &H03 0 to 8
+'Modi
+'set modes
+'Data "3;os,modi;0,2;1,3;2.4;3,5;4,6;5,7;6,8;7,9;8,10"
+         If Commandpointer >= 2 Then
+            If Command_b(2) < 9 Then
+               Stop Watchdog
+               Wait_long = 0
+               Modus = 1
+               Gosub control_sound
+               Modus = 0
+               Start  Watchdog
+            Else
+               Error_no = 4
+            End If
+            Gosub Command_received
+         Else
+            Incr Commandpointer
+         End If
+'
+
       Case 240
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-'Data "240;an,ANNOUNCEMENTS;100;8"
+'Data "240;an,ANNOUNCEMENTS;100;9"
          If Commandpointer = 3 Then
             If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
                 If Command_b(3) > 0 Then
@@ -775,7 +825,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Sprachausgabe;V02.0;1;170;3;8"
+Data "0;m;DK1RI;Sprachausgabe;V02.2;1;170;1;9"
 '
 Announce1:
 'Befehl &H01 0 to 9
@@ -784,36 +834,41 @@ Announce1:
 Data "1;os,,sound;0;1;2;3;4;5;6;7;8;9"
 '
 Announce2:
-'Befehl &H01 0 to 9
+'Befehl &H02 0 to 9
 'spielt Playliste
 'play playlist
 Data "2;os,playlist;0;1;2;3;4;5;6;7;8;9"
 '
 Announce3:
+'Befehl &H03 0 to 8
+'Modi
+'set modes
+'Data "3;os,modi;0,2;1,3;2.4;3,5;4,6;5,7;6,8;7,9;8,10"
+Announce4:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;100;8"
+Data "240;an,ANNOUNCEMENTS;100;9"
 '
-Announce4:                                                  '
+Announce5:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce5:                                                  '
+Announce6:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce6:
+Announce7:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
 '
-Announce7:
+Announce8:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization

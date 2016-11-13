@@ -804,7 +804,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.0;1;160;57;66"
+'Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.0;1;160;1;66"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -1756,7 +1756,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.2;1;160;57;66"
+Data "0;m;DK1RI;MFJ RBC Interface(TM);V02.2;1;160;1;66"
 '
 Announce1:
 'Befehl &H01

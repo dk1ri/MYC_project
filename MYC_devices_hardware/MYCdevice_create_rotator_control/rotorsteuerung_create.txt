@@ -1,6 +1,6 @@
  MYC Interface für RC5A3 Rotorsteuerung von Create
 
-Author DK1RI, Version V03.2 20160711
+Author DK1RI, Version V03.3 20161112
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -11,7 +11,8 @@ Es gibt unterschiedliche Varianten der Elektronik der Originalsteuerung. Das vor
 
 Der Änderungsaufwand an der Originalschaltung sollte so gering als möglich sein; allerdings sind doch einige Eingriffe in die Originalschaltung nötig.
 Das Interface soll in das Originalgehäuse passen.
-Das Steuerung erfolgt über I2C Bus oder USB mit MYC Protokoll [3].
+Das Steuerung erfolgt über I2C Bus oder USB mit MYC Protokoll
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung und Bedienungshinweise
 
@@ -77,18 +78,19 @@ Besser als die Ablesung der Antennenrichtung mit der Kompassanzeige ist die Über
 Genauigkeit
 
 Der AD Wandler selbst hat eine Genauigkeit von ca. 0,4 Grad. Da die 360 Grad aber nicht einer vollen Drehung des Potentiometer entsprechen und auch die Temperaturtoleranzen zu berücksichtigen sind, ist die erreichbare Genauigkeit aber geringer. 
-Außerdem gibt es einen systembedingten Linearitätsfehler (<1 %) durch die Art der Messschaltung, da der schaltungstechnische Ersatzwiderstand des  Rotor-Potentiometers nicht konstant ist. Durch die hohen Werte von R9 - R11, Ry wird der Effekt verringert. Dieser Fehler wird auch weitestgehend durch die Firmware kompensiert. Bei Verwendung anderer Widerstände muss diese Korrektur neu berechnet werden. Wer das rechnen will, kann zum Beispiel das LTSpice (TM) Modell und die Tabelle verwenden [4]. 
+Außerdem gibt es einen systembedingten Linearitätsfehler (<1 %) durch die Art der Messschaltung, da der schaltungstechnische Ersatzwiderstand des  Rotor-Potentiometers nicht konstant ist. Durch die hohen Werte von R9 - R11, Ry wird der Effekt verringert. Dieser Fehler wird auch weitestgehend durch die Firmware kompensiert. Bei Verwendung anderer Widerstände muss diese Korrektur neu berechnet werden. Wer das rechnen will, kann zum Beispiel das LTSpice (TM) Modell und die Tabelle verwenden [5]. 
 Der größte Fehler dürfte aber durch die Nichtlinearität des Potentiometers entstehen. Die Genauigkeit des Interface ist also nicht viel besser als die des Originalgeräts.
 
 Befehle
 
-Folgende Befehle werden von der I2C Schnittelle akzeptiert:
+Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
+Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
 
 Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RC5 rotator control;V04.0;1;120;16;24"
+Data "0;m;DK1RI;RC5 rotator control;V04.1;1;120;1;24"
 '
 Announce1:
 'Befehl &H01 0|1
@@ -313,15 +315,11 @@ SL5 Motor
 
 
 
-
-
-
-
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 3.1
-Bascom Version V04.0 
+Leiterplattenversion 3.2
+Bascom Version V04.1 
 
 Copyright
 
@@ -332,8 +330,9 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[[1]	rotorsteuerung_create_eagle.zip
-[2]	rotorsteuerung_create_bascom.zip
-[3]	MYC.pdf
-[4]	Widerstandsberechnung
+[[1]	dk1ri.de/dhw/rotorsteuerung_create_eagle.zip
+[2]	dk1ri.de/dhw/rotorsteuerung_create_bascom.zip
+[3]	dk1ri.de/myc/MYC.pdf 
+[4]	dk1ri.de/myc/Description.pdf (englisch)
+[5]	dk1ri.de/dhw/rotorsteuerung_widerstandsberechnung.zip
 

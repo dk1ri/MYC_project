@@ -1,9 +1,9 @@
 '-----------------------------------------------------------------------
 'name : Fs20_8_kanal_tx.bas
-'Version V03.2, 20160729
+'Version V04.1, 20161109
 'purpose : Programm for sending FS20 Signals
 'This Programm workes as I2C slave and with RS232
-'Can be used with hardware FS20_interface Version V01.2 by DK1RI
+'Can be used with hardware FS20_interface Version V02.0 by DK1RI
 'The Programm supports the MYC protocol
 'Please modify clock frequncy and processor type, if necessary
 '
@@ -37,11 +37,8 @@
 'Therefore config commands of the moduls are not used.
 'No solution found
 '-----------------------------------------------------------------------
-'$regfile = "m88pdef.dat"
-' for ATmega8P
-'$regfile = "m88def.dat"
-' (for ATmega8)
-$regfile = "m328pdef.dat"
+$regfile = "m644pdef.dat"
+' (for ATmega644)
 $crystal = 20000000
 $baud = 19200
 ' use baud rate
@@ -132,29 +129,30 @@ Config PortB.0 = Input
 PortB.0 = 1
 Reset__ Alias PinB.1
 '
-Config Pind.2 = Output
-Por1 Alias Portd.2
+'The labels match the naming of the the ELV documentation, but not the eagle circuit !!
+Config Pinc.7 = Output
+Por1 Alias Portc.7
 Set Por1
-Config Pind.3 = Output
-Por2 Alias Portd.3
+Config Pinc.6 = Output
+Por2 Alias Portc.6
 Set Por2
-Config Pind.4 = Output
-Por3 Alias Portd.4
+Config Pinc.5 = Output
+Por3 Alias Portc.5
 Set Por3
-Config PIND.5 = Output
-Por4 Alias Portd.5
+Config PINc.4 = Output
+Por4 Alias Portc.4
 Set Por4
-Config Pind.6 = Output
-Por5 Alias Portd.6
+Config Pinc.3 = Output
+Por5 Alias Portc.3
 Set Por5
-Config Pind.7 = Output
-Por6 Alias Portd.7
+Config Pinc.2 = Output
+Por6 Alias Portc.2
 Set Por6
-Config PinB.0 = Output
-Por7 Alias Portb.0
+Config Pind.7 = Output
+Por7 Alias Portd.7
 Set Por7
-Config Pinb.1 = Output
-Por8 Alias Portb.1
+Config Pind.6 = Output
+Por8 Alias Portd.6
 Set Por8
 '
 Config Watchdog = 2048
@@ -189,7 +187,16 @@ If A = 1 Then
       Command_b(commandpointer) = A
       If Cmd_watchdog = 0 Then Cmd_watchdog = 1
       ' start watchdog
-      Gosub Slave_commandparser
+      If Rs232_active = 0 And Usb_active = 0 Then
+      'allow &HFE only
+         If Command_b(1) = 254 Then
+            Gosub Slave_commandparser
+         Else
+            Gosub  Command_received
+         End If
+      Else
+         Gosub Slave_commandparser
+      End If
    End If
 End If
 '
@@ -257,7 +264,16 @@ If Twi_control = &H80 Then
          Command_b(commandpointer) = Tempb
          If Cmd_watchdog = 0 Then Cmd_watchdog = 1
          'start watchdog
-         Gosub Slave_commandparser
+         If I2c_active = 0 Then
+         'allow &HFE only
+            If Command_b(1) = 254 Then
+               Gosub Slave_commandparser
+            Else
+               Gosub  Command_received
+            End If
+         Else
+            Gosub Slave_commandparser
+         End If
       End If
    End If
    Twcr = &B11000100
@@ -692,7 +708,7 @@ Else
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;FS20 8 chanal sender;V03.2;1;170;12;18"
+'Data "0;m;DK1RI;FS20 8 chanal sender;V04.1;1;170;1;18"
          A_line = 0
          Gosub Sub_restore
          Gosub Command_received
@@ -1210,7 +1226,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;FS20 8 chanal sender;V03.2;1;170;12;18"
+Data "0;m;DK1RI;FS20 8 chanal sender;V04.1;1;170;1;18"
 '
 Announce1:
 'Befehl &H01
