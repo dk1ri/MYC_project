@@ -1,6 +1,6 @@
 MYC Announcements and  Commands
 Author: DK1RI
-Version V02.9 20170216
+Version V02.10 20170301
 This paper is published in  https://github.com/dk1ri as well
 
 Introduction
@@ -30,25 +30,25 @@ Each command belongs to a command-type. Command-types have two letters: the firs
 Operation type
 Active operating is denoted by “o”, requesting an answer by “a”  as the first letter. If a function can operate and answer, the descriptions in the other announcement should be identical. For example a memory, which can be written and read, must have the same unique description, to allow other devices to identify, that it is the same memory. Alternatively the description can be "as5" eg, where 5 is the command-token of the other command (see also announcement / command optimizing below). The command type may also have the description ext5, which shows the relationship. The CR will resolve the “as” line using a “ext” notation.
 The operation type “i” denotes information only. They have no data traffic.
-The “r” and “s” types is identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by some SK  to denote what they can or want to send. For details see http://dk1ri.de/myc/skin.pdf .
+The “r” and “s” types is identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by simple SK  to denote what they can or want to send. For details see http://dk1ri.de/myc/skin.pdf .
 
 Operating object / function
-Each operating object denotes a general function like “s” for a switch and exactly defines the number and type of the properties. From this other devices will know the details of the devices function and the length of a properties and therefore the length of a command.. The list below show the announcement templates, corresponding command, answer and info for all allowed command-types.
+Each operating object denotes a general function like “s” for a switch and exactly defines the number and type of the properties. From this other devices will know the details of the devices function and the length of a properties and therefore the length of a command.. The list below show the announcement templates, corresponding command, answer / info for all allowed command-types.
 In some cases, different  operating objects can be chosen. A frequency control will obviously get a range “p” type, because it covers a range of values, which can be easily defined with a min and max value. But what about an address ranging from 1  to 10? This can also be realized as a switch with 10 positions or a range type command. The command will act identical; the display on the SK may be different. If the real values are not a range  or each position need an individual label the switch must be used in any case.
 A rule of thumb is, that the range, p command-type will be used, if there are "many" equal distance values in a range.
 Optional properties are defined for some command-types and are optional for an announcement. If they are defined in an announcement, they must be given in a command as defined.
 
-In general a FU is a very simple construction with limited communication bandwidth. So command communication should be simple and short, but announcements are communicated rarely or never, so they can be longer and descriptive in a readable format.
+In general a FU and simple SK is a very simple construction with limited communication bandwidth. So command communication should be simple and short, but announcements are communicated rarely or never, so they can be longer and descriptive in a readable format.
 Announcements are stored in the devices, They are unique to a hardware / firmware combination and will never change. Therefore they can be stored also in a database or with the CR.
 The CR may find the details of the attached devices somewhere and probably will not ask the devices for detailed announcements.
-The CR, LD, RU should have more computer power. They should be able to build up a complete MYC System by reading the announcements without operator interaction also in a varying environment. To ensure this, the description in the announcement should be sufficient and not too short.  This is valid for for some SK as well. If not – as for simple switches - they can be handled in a special manner.
+The CR, LD, RU should have more computer power. They should be able to build up a complete MYC System by reading the announcements without operator interaction also in a varying environment. To ensure this, the description in the announcement should be sufficient and not too short.  This is valid for for SK as well. If not – as for simple SK – they will be handled in a special manner.
 
 For security reasons the CR will connect known devices only. So it must know a place, where all "its" possible devices are listed.
 May be, that not all devices are active every time, but the CR, LD, RU and SK must be able to handle this situation. So, the answer of a (announcement) 0xxxf0 command to a command-router is not static.  It may vary, when devices disappear.
 
 All devices must have announcements for the mandatory reserved commands. Additional announcements depend on the device.
-All FU and some SK belong to a unique device-group. This device-group has a unique name and has a not changeable set of announcements and firmware.
-The CR collect the announcements of all device and concatenate the list to a full list, excluding controlling devices (SK and higher level CR). It also drops the announcement of individualization and some other lines but add its own lines for reserved commands (0 and 0xxxf0 – 0xxxfd). Additional 16 token are used for communication with the controlling devices, so that 0xxxe0 - 0xxxff is reserved.
+All FU and simple SK belong to a unique device-group. This device-group has a unique name and has a not changeable set of announcements and firmware.
+The CR collect the announcements of all device and concatenate the lists to a full list, excluding controlling devices (all SK and higher level CR). It also drops the announcement of individualization and some other lines but add its own lines for reserved commands (0 and 0xxxf0 – 0xxxfd). Additional 16 token are used for communication with the controlling devices, so that 0xxxe0 - 0xxxff are reserved.
 How announcements can be called by the commands 0x00 and  0xxxf0 is described in [5]
 
 General syntax for a command-announcement
@@ -58,10 +58,10 @@ General syntax for a command-announcement
 Commands and properties
 
 The command tokens use numeric n byte format.  The shortest format possible is always used.
-For properties the same  rules apply. For memory type commands a string and time format is allowed as property as well.
-So if a device has less than 239 (0, 240- 255 is reserved,) commands, the communication with the CR should use one byte format for the command token. The number of bytes used is given in the basic announcement-line and may be higher but not lower.
+For properties the same  rules apply. For memory content a string and time format is allowed as property as well.
+If a device has less than 239 (0, 240- 255 is reserved,) commands, the communication with the CR should use one byte format for the command token. The number of bytes used is given in the basic announcement-line and may be higher but not lower.
 If the CR has more than 223 commands (0, 240- 255 is reserved, 16 for SK communication), it will communicate SK with 2 or more bytes. In this case, the first byte of translated command-tokens must not be 0 (but can be 1), because one byte 0x00 is reserved for the basic announcement.
-Shortest possible format is used for properties as well. The CR, LD,RU and SK know the format by the announcements.
+Shortest possible format must be used for properties in any case. So the CR, LD,RU and SK know the format by the announcements.
 A command consist of a command-token and properties (parameters) depending on the command-type.
 The number and type of the properties of a command must match the announcement. If the announcement describe a min and max property and unit, the command will obviously have one property only for the value. For details see List of Standardized Command-types below.
 
@@ -71,7 +71,7 @@ The CR will include 0x00 of other devices into the complete command-list but  an
 A announce-list from a lower level CR will have the own (CR)  basic announcements at the beginning and the I-announcement the end. The CR will not change the sequence, so that the hierarchical structure is visible.
 The reserved tokens of the individual devices – if forwarded - are translated by the CR as well; the own (reserved) tokens of the CR are 0xxxF0 ...
 
-All devices except FU must interact with the CR with translated tokens.
+All devices except FU and simple SK must interact with the CR with translated tokens.
 The CR will translate the inline command-tokens of the content of commands and announcements as well.
 
 General syntax for a command
@@ -82,17 +82,14 @@ Info
 
 Some  devices can send answers without a corresponding command as info. Not all devices will send infos.
 The are no infos for operating commands.
-If a FU will send info, it must send answers with info format as well. All other answer communication uses the info format as well.. See Data transfer in http://dk1ri.de/myc/Description.pdf for explanation.
+Infos and answers use the same format.
 A device cannot send infos via a polled interface. The polling device must use a answer command. If a device want to send info for many different commands, it may provide a read FIFO with the <des> INFOPOLL, which delivers actual command-token of the info as a string.
 The CR translates the command-tokens as necessary. It sends all translated infos to the LD and to the SK.
-Infos are not sent to FU.
-For some commands the format of info (of an answer command) is different from the corresponding operating command. 
+Infos are not sent to FU and simple SK.
 
 General syntax for info
 
 <c>[<p>]...[<p>]
-
-
 
 Announcement / Command optimizing
 
@@ -143,8 +140,7 @@ info commands:
 
 Announce:	<c>;ix;...		ix commands have the same syntax as ox commands. They are for information only and no data transfer.
 command:	-
-answer:	-
-info:		-
+answer / info:	-
 
 Other metacommands:
 
@@ -174,8 +170,8 @@ announce:	<c>;ar[,<des>]...[,<des>];pos0[,<des>].[;posn,[<des>]][;<OPTION>...]
 												read reset or set of position
 command:	<c>										simple switch  (pos0 in announcement only)
 		<c><n>									read set or reset of position <n>
-answer:	0|1
-info:		<c><n>0|1									<n> omitted if one position only
+answer / info:	<c>0|1
+		<c><n>0|1									<n> omitted if one position only
 
 announce:	<c>;os[,<des>]...[,<des>];pos0[,<des>];...posn[.<des>][;<n>,<OPTION>[,<des>]...	]
 												set one out of n positions active,  reset other
@@ -184,26 +180,19 @@ command:	<c><n>									set position <n>, reset the others, <n> needed always
 announce:	<c>;as[,<des>]...[,<des>];pos0[,<des>];...posn[.<des>][;<n>,<OPTION>[,<des>]...	]
 												read active position; one out of n 
 command:	<c>
-answer:	<n>										position <n> is active
-info:		<c><n>
+answer:	<c><n>									position <n> is active
 
 announce:	<c>;ot[,<des>]...[,<des>];[pos0[,<des>];...posn[,<des>][;<OPTION>...]
 												set one of n positions active toggling one position to the next
 												one active at a time, can be an extension of a os command.
 command:	<c>
 
-announce:	<c>;at[,<des>]...[,<des>];[pos0[,<des>];...posn[,<des>][;<OPTION>...]
-												read active position; one out of n 
-												not used, if this is an extension of a as command
-command:	<c>
-answer:	<n>										position <n> is active
-info:		<c><n>
+The at command is no longer supportes; use as intead with ext: <c>;as,ext<c>;...
 
 announce:	<c>;ou[,<des>]...[<,des>];pos0[,<des>];...;posn[,<des>][;<OPTION>...]
 												set one of n positions momentary active, pos0 is idle
 command:	<c>										push button switch,  no parameter, if there is pos0 and pos1 
-												only 
-		<c><n>
+		<c><n>									only 
 This command may change the internal state of the device. The device must inform the SK by appropriate info about this. There is no answer command.
 
 Range controlled functions
@@ -231,9 +220,8 @@ If the displayed step would vary with ranges, a additional announcement with ext
 announce:	<c>;ap[,<des>]...;number_of_valuesx,<des>;lin|log,<des>;unitx,<des>;number_of_valuesy,..																		read position
 												details see op command 
 command:	<c>
-answer:	<n>										one dimensional (n is “0” based)
-answer:	<n><n><n>									three dimensional
-info:		<c><n>									one dimensional
+answer /info:	<c><n>									one dimensional (n is “0” based)
+		<c><n><n><n>								three dimensional
 
 announce:	<c>;oo,ext<c>,[<des>]...;number_of_steps[,<des>];steptime,<des>;steptime-unit;stepsize[,<des>];<ty>,<des>...
 												move position stepwise 
@@ -243,7 +231,7 @@ If not, SK knows nothing about the real ranges. Information announcement ip can 
 Stepsize is the size of the change of number_of_values of the op command; not related to its <des>. If the real stepsize is modified by <des> of stepsize, the real change depend on both <des>. This may be error-prone and is not recommended.
 Real ranges for stepsize are given in <des>. The unit of steptime is for information of the SK and not transmitted
 A number_of_steps of “0x00” at transmission in a dimension will stop this dimension.
-2 + multiple of 5 parameters means more than one dimension 
+2 + multiple of 5 parameters means more than one dimension, dimensions must match the dimensions if the related command.
 Value of 0 for  steptime or stepsize announcement mean fixed  value as per <des> and values are  not transmitted
 With the <ty> field something like a,0,down,1,up is possible. It may be defined here, for which dimension the command should work. If  <ty> is z, this value will be not transmitted. String is not supported.
 
@@ -263,7 +251,7 @@ Command has a data destination like memory, data channel or text field
 
 It is not intended to replace data streams with these command, but it is not defined clearly, where simple data transmission ends and streaming is starting. So some of these commands can be used for simple data streams as well.
 There is no “undefined” value, when reading a memory. For details see [11] http://dk1ri.de/myc/Definitions.pdf
-The content of the memory has the full range of the defined properties, if not restricted by <des>: so “0” as first byte is allowed as answer. The position of the memory cell is “0” based as well.
+The content of the memory has the full range of the defined properties, if not restricted by <des> The position of the memory cell is “0” based.
 The number of elements of a memory are defined in the announcement. Any number is allowed. The length of the transmitted element-number depend on this. If a memory has 300 cell e.g., the 5th cell will be addressed by 0x000x04
 
 A device may have some internal memory, which stores the state of another command. This state may be the content of another memory as well. The write and restore to these memories two ou commands can be used. Because the restore command will change the state of device, the device must send appropriate infos.
@@ -277,16 +265,14 @@ announce:	<c>;om[<,des>]...[,<des>]; <ty>[,<des>]... [,<des>];m_cols[,<des>]...[
 												any dimension is possible; 
 												position z of a element is x+y*(m_rows)  +...
 												fixed type <ty>
+command:	<c><n><data>								write to position n
 
 announce:	<c>;am[<,des>]...[,<des>]; <ty>[,<des>]... [,<des>];n_rows[,<des>]...[,<des>];[<n_cols[,<des>]...[,<des>]]...
 												m_cols, … is the number of columns .. the device can handle
 												position z of a element is x+y*(m_row-1 +...
 												fixed type
 command:	<c><n>									read position <n> (“0” based)
-answer:	<data>
-info:		<c><n><data>
-
-command:	<c><z><data>								write to position z
+answer / info:	<c><n><data>
 
 announce:	<c>;on,[,ext<c>]...[,<des>]; <ty>[,<des>]... [,<des>];m_cols[,<des>]...[,<des>];[<m_row[,<des>]...[,<des>]]...
 												sequential access mode for memory 
@@ -302,8 +288,7 @@ announce:	<c>;an[<,des>]...[,<des>]; <ty>[,<des>]... [,<des>];n_rows[,<des>]...[
 												may work as extension to a am command 	
 												one element allowed, but make no sense
 command:	<c><n><m>									read m elements from memory, start at position n (“0” based)
-answer:	<data>	
-info:		<c><n><m><data>								If end of memory is reached next element is read from pos1
+answer / info:	<c><n><m><data>								If end of memory is reached next element is read from pos1
 
 announce:	<c>;of[,<des>]...[,<des>];<ty>[,<des>];<m>,<des>				FIFO, stack, stream or similar functions for <ty> with optional 												restrictions as given in <des> of  <ty>
 												<m> is number of data elements, which can be sent with one 
@@ -314,8 +299,7 @@ command:	<c><m><data>								FIFO stack.. send m data to stack
 
 announce:	<c>;af[,<des>]...[,<des>];<n>,<des>;<ty>[,<des>]				FIFO, stack, stream or similar functions
 command:	<c><m>									read m elements
-answer:	<data>										pop stack
-info:		<c><m><data>								pop stack m times
+answer / info:	<c><m><data>								pop stack
 
 announce:	<c>;oa[,<des>]...[,<des>];<ty>[,<des>]...[;<ty>[,<des>]]			array 	
 												types <ty> with optional restrictions 
@@ -327,8 +311,7 @@ announce:	<c>,aa[,<des>]...[,<des>];<ty>[,<des>];<ty>[,<des>]...			array
 												OPTION syntax for Individualization command, see [6]
 command:	<c><n>									array, n is the nth element (“0” based)
 												<n> must be omitted for 1 element array.
-answer:	<data>	
-info:		<c><n><data>								array, nth element (“0” based)  
+answer /info:	<c><n><data>								array, nth element (“0” based)  
 
 announce:	<c>;ob[,<des>]...[,<des>];<ty>[,<des>]...[;<ty>[,<des>]]			sequential access mode for memory 
 												can work as extension to a oa command 
@@ -340,8 +323,7 @@ announce:	<c>;ab[,<des>]...[,<des>];<ty>[,<des>]...[;<ty>[,<des>]...			sequentia
 												can work as extension to a aa command
 												one element allowed, but make no sense
 command:	<c><n><m>									read m elements from memory, start at position n (“0” based)
-answer:	<data>	
-info:		<c><n><m><data>								if end of memory is reached next element is read from n=0
+answer / info:	<c><n><m><data>								if end of memory is reached next element is read from n=0
 
 More about Descriptions
 
@@ -362,7 +344,6 @@ The number of values is given by the properties. So this labeling information is
 If the labeling for different ranges has different spacing, the following is used:
 10,{5{1 to 5},lin,5{10 to 50},lin}	labels are 1 2 3 4 5 10 20 30 40 50
 lin is optional in this case
-
 
 Descriptions for memory type commands:
 There are three optional kinds of descriptions. 

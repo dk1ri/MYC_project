@@ -1,6 +1,6 @@
 MYC System Description, Handling and Environment
 Author: DK1RI
-Version V01.4 20170226
+Version V01.5 20170301
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -19,12 +19,12 @@ It also can control any program, which has a MYC protocol interface.
 It can control data stream devices and also handle streams in a very simple manner, but this is not the intention of the MYC protocol.
 The MYC protocol is a pure semantic protocol.
 It has no acknowledge, error correction, encryption, routing, connecting and sequencing and user management, This must be done in the other communication layers. But it can control devices with this function.
-MYC data packets have no header, no end marker. All data packets have a well defined length; so begin and end can be found. There are some restrictions, which are described in the other documentation.
+MYC data packets have no header, no end marker. All data packets have a well defined length; so begin and end can be found.
 There are commands with or without answer and infos, which are sent without command.
 There are some meta commands to control the system and for simplification.
 All commands  with its parameters a device can handle are described by command-announcements of the device.
 The announcement commands and the individualization commands are mandatory command for any MYC device. 
-Any device will ignore unknown or non-valid data immediately after detection. The next byte is handled as a start of a new command /answer.
+Any device will ignore unknown or non-valid data immediately after detection. The next byte is handled as a start of a new command /answer / info.
 All devices are  connected together via the CR, which routes the data to other devices or handles them by itself.
 A MYC system can be part of another MYC system.
 
@@ -33,7 +33,8 @@ There are three more devices in a system,which exist only once in a MYC system.
 
 Skin devices, SK, can be multiple in a MYC system:
 The skin device initiate commands.
-A skin can be human interface device, or something like a simple switch as well.
+A normal skin devices can handle multiple user, it may be a human interface.
+A simple skins have a single user mode only and is handled in a different way than normal skins. Those devices are simple switches or actors.
 The implementation of the human interface is not decided. It can be a simple terminal program or a Web Server / Browser.
 Announcements of SK are not shown in the full announcement list. So only the CR may send commands to SK
 
@@ -49,7 +50,7 @@ The command-router do not accept any command except own reserved commands. All o
 The command-router must know all devices belonging to its system and have the connect information.
 Depending on the implementation of the CR, it get the connect information from a device (ie some database), or it knows the connect info by itself.
 As an option the CR do not send the list of all commands of all devices but will only send the basic announcements. A requesting SK calculate the tokens of the missing commands, if it knows the commands already. If these devices do not know the details of the individual devices, it will send a command for details or ask for the complete list.
-SK with a limited predefined command set (as switches) will not ask for a full list.
+Simple SK with a limited predefined command set (as switches) will not ask for a full list.
 The CR also checks for new devices and check for devices not active anymore from time to time.
 
 Rules-device, RU, one a MYC system
@@ -71,21 +72,21 @@ As long as the CR is down, all data are lost. Devices except FU will send busy c
 At start up, the CR will find a list of all known devices. It will communicate with those only and check this list later from time to time.
 The CR may have the announcements of all devices from previous connections.
 If a announcement for a FU is missing, it will ask for this by sending a 0xxxf0 command. 
-It will ask the actual announce-list of lower level CR as well by sending a 0x00 and a 0xxxf0 command. 
+It will ask the actual announce-list of lower level CR as well by sending a 0x00, will get the 0x00<announcement> answer with correct commandtokenlength and then send a 0xxxf0 command. 
 Then it will build the full announcement-list. Announcements of SK and higher level CR are not included and so no device can be send to them except the CR.
 For 2 seconds after starting, the CR will have no other communication.  This ensures, that SK, LD and RU fall to startup mode.
 To inform the device, that the CR is ready, it send a 3 byte 0xfd0x010x04 ready info to SK channel , RU, LD and higher level CR.
-All devices, which require the complete announcement-list and will send a 0x00 command and after getting the answer send the 0xxxf0 or 0xxxf1 command.
+All devices, which require the complete announcement-list and will send a 0x00 command and after getting the answer with correct commandtokenlength send the 0xxxf0 or 0xxxf1 command.
 The CR will answer actual list. 
-At that time, the SK channel is a single user channel. If the SK want multiple user access the next command must be a request of a new channel: 0xxxfd<n>. n is the position of <USERNUMBER> . The answer is a channel number, which is closed immediately, but the channel 0 will be open until timeout. All communication is now done by preceding the channel-number for this interface. In single user mode there is no user-number.
-The SK can now ask for a individual user channel number via the channel 0. By default it will now get all answers and infos; also those of answers of other SK. Otherwise it will get the sytem infos via channel 0 only.
+At that time, the SK channel is a single user channel. If the SK want multiple user access the next command must be a request of multiple channel: 0xxxfd<n>. n is the position of <USERNUMBER> . The answer is a channel number, which is closed immediately, but the channel 0 will be open until timeout. All communication is now done by preceding the channel-number for this interface. In single user mode there is no user-number.
+The SK can now ask for a individual user channel number via the channel 0. By default it will now get all answers and infos; also those of answers of other SK. Otherwise it will get the system infos via channel 0 only.
 The rules device will send all actual rules to the LD, if necessary.
 The LD must get the actual state of the complete system and will ask the devices, or set a default as defined by the rules. 
 Because all answers are sent to SK as well as default,  SK has the actual state as well.
 This ends the system startup procedure.
 
 For FU there is nothing special at startup, it will start working immediately
-SK and higher level CR can check, whether CR is ready by sending a 0xxxfd01 command. This also avoid their timeout. If the CR do not answer, or after a SK startup, the SK will send a 0 (CR basic command) and then the 0xxxf0 command and then the initialization as described above.
+SK and higher level CR can check, whether CR is ready by sending a 0xxxfd01 command. This also avoid their timeout. If the CR do not answer, or after a SK startup, the SK will send a 0x00 (CR basic command) and then the 0xxxf0 command and then the initialization as described above.
 The RU at start up will check, weather the CR is active and send a set of rules to LD.
 The LD at start up will check, weather the CR is active and ask for the rules, check the system status for all devices and send the status to SK and higher level CR by info.
 
@@ -95,9 +96,8 @@ When the CR create a new command-list, with added or removed devices without ren
 Data transfer and data flow
 
 The MYC protocol send commands / properties with a defined length. The length is defined by the used command-token and the corresponding announcement.
-If a answer is sent by a FU, the length is defined as well, because the sender of the corresponding command (CR) wait for a defined length of the answer. So the CR can easily detect the begin and end of data packets.
-A FU, which can send infos, will not send any info, if it detects the first byte of a command. The CR will not send commands, if it detect the start of a info. For fast data transfer there may be a racing problem. In this case another method is, that the FU will send answers as info only, and will announce this by the 0xxxfa announcement. . See 0xxxfa announcement in http://dk1ri.de/myc/Reserved_tokens.pdf . The CR will detect the info and wait for additional answer.
-A SK will send  commands and answers and receive commands, info and answers. To be able to differenciate infos from answers,  answers are sent as infos in both directions.
+If a answer is sent by a FU, the length is defined as well, because the answer is preceded by the command-token.
+It is not necessary, that the CR wait for answers, because any answers and info can be associated to a command.
 If the SK is in multi user mode, command, answers and info are preceded by the one byte channel number,: 0 is the administrative channel for the SK interface and 0xff the answer / info channel to all. The SK can decide to distribute the answers and info by itself and use a single user channel to CR. By default all answers and infos are sent via channel 0xff. A 0xxxf900 via channel 0 inform the CR to distribute answers and commands individually and send answers and commands as given by the individual commands 0xxxf9 (default is to send all).
 Higher level CR will send commands and receive info and answer as info. They can request multi user as well.
 SK and higher level CR will not wait for answers.
@@ -126,7 +126,6 @@ If these devices run as programs on the same computer as the secure message tran
 Command-router CR and skin SK
 The CR communicates with the SK usually via internet. So at this point ssh and login processes must be provided. The MYC protocol define a command for login but says nothing about the implementation.  The CR also communicate by MYC commands only and ignore all non valid commands and parameters. 
 The login to lower level systems can also be used.
-
 Copyright
 
 Dieses Dokument darf unverändert kopiert werden.

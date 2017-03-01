@@ -1,7 +1,7 @@
 MYC Reserved Commands
 
 Author: DK1RI
-Version V01.16 20170227
+Version V01.17 20170301
 This paper is published in  https://github.com/dk1ri as well
 
 Introduction
@@ -28,12 +28,10 @@ The basic announcement is called with the one byte command 0x00.
 announce:	0;<dt>;MANUFACTURER;DEVICEDESCRIPTION;VERSION;NUMBER_OF_DEVICES;LINELENGTH; COMMAND_BYTES;NUMBER_OF_ANNOUNCELINES
 
 command:	0x00
-answer:	<basic announcement line>		as string <s>				
-info:		-
+answer / info:	0x00<basic announcement line>	<basic announcement line> as string <s>,.number of 0x00 depends on COMMAND_BYTES		
 
-There is no info. The device can use the 0xxxf0 info instead.
 The announcement is fixed and therefore the announce-line do not describe the format of the command but is the content, which is transmitted as answer of the command 0x00.
-The first byte of the answer  is the one byte string-length. The 0x00 announcement is limited therefore to 255 Bytes.
+The length of the string is a one byte string-length. The 0x00 announcement is limited therefore to 255 Bytes.
 
 MANUFACTURER DEVICEDESCRIPTION and VERSION are combined to a devicegroupname and are used in file names, so not all character are allowed. Preferred is a-z, A-Z, 0-9 _		
 These devicegroupnames are unique to a device and its firmware. A (published) device / firmware combination with a devicegroupname must not be changed. If changes are necessary, a new version must be used. Each device with it individualization belongs to a devicegroup. So, this is valid also for controlled programs, but not for controlled CR and and not for all controlling devices.
@@ -47,15 +45,13 @@ Announcement Command 0xxxf0
 
 The 0xxxF0 announcement command is mandatory for all MYC devices.  ANNOUNCEMENTS must be the 1st <des>.
 
-announce:	240;an,ANNOUNCEMENTS,<des>...<des>;<ty>;<NUMBER_OF_ANNOUNCELINES>	240 for 1 byte command-token
-command:	0xxxF0<n><m>											ask for m announcement lines starting at 
+announce:	240;an,ANNOUNCEMENTS,<des>...<des>;<LINELENGTH>;<NUMBER_OF_ANNOUNCELINES>	
+															240 for 1 byte command-token
+command:	0xxxf0<n><m>											ask for m announcement lines starting at 
 															position n
-answer:	<s>[<s>...]
-info:		0xxxf0<n><m><announce line 0>
+answer / info:	0xxxf0<n><m><data>
 
 <n> is a positional parameter of the memory. The number of bytes for <m> and <n> must not exceed <NUMBER_OF_ANNOUNCELINES>.
-<l> is the same as for the basic announcement; it is the maximum length of the string of the memory.  The number of bytes for the string-length 
-depends on this.
 < NUMBER_OF_ANNOUNCELINES> is the number of the announcement lines including those for the reserved commands, rules and for the  CR the I-lines. (Same as in the 0x00 command).
 
 The CR will ask for the announce-lists of all devices using the 0xxxf0 command, if it do not have other sources. It will drop the 0xxxf0 command of other devices when building the complete list. The command-router answers all announcement commands by itself using the full list with translated command-token. The CR will  not forward 0xxxf0 infos.
@@ -67,36 +63,33 @@ Announcement Command 0xxxf1
 
 The 0xxxf1 announcement command is used by the CR only.  BASIC ANNOUNCEMENTS must be the 1st <des>
 
-announce:	241;an,BASIC ANNOUNCEMENTS,<des>...<des>;<n>					241 for 1 byte command-token
+announce:	241;an,BASIC ANNOUNCEMENTS,<des>...<des>;<LINELENGTH><NUMBER_OF_DEVICES>
+														241 for 1 byte command-token
 command:	0xxxf1<n><m>										ask for basic m announcement lines
 														start at n (“0” based) <m> and <n> must
 														not exceed <NUMBER_OF_DEVICES>
-answer:	<s><s>...
-info:		-
+answer / info:	0xxxf1<n><m><data>
 
 Feature for SK 0xxxf9
 
 This command is used by the CR only. The CR can store individual features for a device.  SK-FEATURE must be the 1st <des>
 
-Announce: 252;oa;SK-FEATURE;[;<des>]...;<OPTION><des>...
+Announce: 249;oa;SK-FEATURE;[;<des>]...;<OPTION><des>...
 command;	0xxxf9<n><data>
-answer:	-
-info:		-
+answer / info:	-
 
 defined <OPTION>s
 <s>,ANSWERS				<s> is a list of (binary) token of basic announcements of devices, for which the SK want answers and 
 						infos.  * means all.
-
 Features Command 0xxxfa
 
 This is not a command but a description announcement of optional additional feature and properties of a device-group, which cannot be modified.
 This line is optional and not forwarded by the CR, if all <OPTION> are used by the CR only.
 The command announcement has the 1st <des> "FEATURE".
 
-announce:	253;ia,FEATURE[,<des>]...[,<des>];<ty>,<OPTION>,[<des>..][;...]
+announce:	250;ia,FEATURE[,<des>]...[,<des>];<ty>,<OPTION>,[<des>..][;...]
 command:	-
-Answer	-
-info:		-
+answer / info	-
 
 Defined <OPTION> are:
 b,ANSWERTIME,<DEFAULT><,des>	Time (ms) for the CR to wait before asking for an answer, if the CR must poll for a answer (for I2C eg).
@@ -112,8 +105,7 @@ b,INFO,<DEFAULT>				FU only. to be used, if infos are send; must not be defined 
 						For details see Data transfer in http://dk1ri.de/myc/Description.pdf.
 
 
-
-Log on Command 0xxxFB
+Log on Command 0xxxfb
 
 This command is used by the RU only. Used, if the system requires a log on for users to allow all or a subset of commands. The RU will then send a string with “Q” rules to the CR. From this the CR will use a individual list of commands for this user and block all other commands.
 For more details see 	http://dk1ri.de/myc/Rules_device.pdf
@@ -125,22 +117,20 @@ mode:	1	log out							password: any <s>
 	3	switch on user management (admin only)
 	4	switch off user management (admin only)		password: any <s>
 command:	0xxxfb0x000x03<mode><name><password>
-answer		-
-info		-
+answer	/ info	-
 
-Last Error Command 0xxxFC
+Last Error Command 0xxxfc
 
 This command is mandatory for FU and delivers the last error the device detected. 
 The command announcement has the 1st <des>  "LAST ERROR" to identify them in a list with the translated command-token, which is sent by the command-router.
 announce:	252;aa,LAST ERROR[,<des>];<s><,des>
 command	0xxxfc
-answer		<s>
-info		0xxxFC<s>
+answer / info:	0xxxfc<s>
 Devices may send error infos. CR do checks on positional and string overflow for data from SK and may send error infos if applicable.
 Out of range		sent by CR in case of  positional and string overflow of SK
 Other messages to be defined.
 
-Administrative Data Command 0xxxFD
+Administrative Data Command 0xxxfd
 
 This command deliver administrative data of the device.
 Multiple <OPTION> are addressed by position.
@@ -148,8 +138,7 @@ The command announcement has the 1st <des>  "MYC INFO".
 
 announce:	253;aa,MYC INFO[,<des>]...[,<des>];<ty>,<OPTION>,[<des>..][;...}
 command:	0xxxfd<n><data>		<n> omitted for one element array
-Answer	<s>|<n>			example
-info:		253<n><s>|<n>		send info of position m
+answer / info:	253<n><s>|<n>		send info of position m
 
 defined <OPTION>s		Values:
 b,ACTIVE					mandatory as first element
@@ -178,12 +167,11 @@ At start up the CR must know the individual communication properties for the dev
 
 announce:	254;oa,INDIVIDUALISATION[,des];<ty>,<OPTION>,<DEFAULT>[,<des>]..	
 command	254<m><data>							<m> is the sequence number of the OPTION (0 based)
-answer		-
-info:		-
+answer	/ info:	-
+
 announce:	255;aa,INDIVIDUALISATION[,des];<ty>,<OPTION>,<DEFAULT>[,<des>]..	
 command	255<m>								<m> is the sequence number of the OPTION (0 based))
-answer		<data>
-info:		255<m><data>							parameter <m>
+answer / info:	255<m><data>							parameter <m>
 
 The following is a list of defined command-properties and values; This list is not complete; updates may follow.
 Because there may be hardware variations, many keywords may appear. Please try to use standardized, english, names,
@@ -238,13 +226,14 @@ b,ADRESS,<DEFAULT>,{1 to 64}				mandatory
 I-announcements
 
 I-announcements are created by the CR and used in the full announce-list.
-They are appended after the announcements of each device.
+They are appended after the announcements of each device. The I-announcement of a lower level CR is replaced by the own.
 The format is:
-I;command-router_name;device_type;device_name;device_number
+( fullname = device_type;device_name;device_number )
+I;full_name_of_command-router; full_name_of_device
 
-command-router_name is the name of the  command-route, where the device is located. The name must be unique in a multi level MYC system
-Name and number of the device are defined during individualization or are default. 
-The device-type is the combination of MANUFACTURER DEVICEDESCRIPTION VERSION. Together with name and number it must be unique with each MYC subsystem.
+Fullname_of_command-router must be unique in a multi level MYC system, fullname_of_device must be unique in a subsystem
+Device-name and device-number of the device are defined during individualization or are default. 
+The device-type is MANUFACTURER;DEVICEDESCRIPTION;VERSION
 
 Copyright	
 
@@ -254,15 +243,6 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 This document can be copied without changes.
 The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
-
-
-
-
-
-
-
-
-
 
 Reference
 

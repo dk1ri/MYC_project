@@ -1,7 +1,7 @@
 MYC Definitions, Abbreviations and Formats
 
 Author: DK1RI
-Version V01.1 20170226
+Version V01.2 20170301
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -12,11 +12,12 @@ For more details of the MYC system please check the reference.
 Definitions, abbreviations  and formats
 
 FU			func, function, normal device or controlled program, device-type m
-SK			skin, human interface or controlling program, device-type h
+SK			skin, human interface or controlling program, send, a / o commands only, device-type h
+SS			simple skin as switches, send r / s commands only, device-type s
 CR			command-router, device-type c
 LD			logic-device, device-type l
 RU			rules device, device-type r
-<dt>			device-type: m, h, c, l,  r
+<dt>			device-type: m, h, s, c, l,  r
 <dg>			device-group; devices with identical hardware and firmware
 <c>			unique (per device) command token; one number (unsigned n bytes). 0 (one byte always) is reserved for the basic
 			announcement. 0xxxf0 - 0xxxff are also reserved
@@ -84,7 +85,6 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 This document can be copied without changes.
 The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
-
 
 
 
