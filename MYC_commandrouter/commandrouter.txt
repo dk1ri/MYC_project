@@ -1,0 +1,142 @@
+MYC Command-router
+
+Author: DK1RI
+Version V01.8 20170313
+This paper is published in https://github.com/dk1ri  as well
+
+Introduction
+
+This paper describes the command-router and my principles when writing the program. I hope,that the documentation within program is sufficient.
+Nevertheless for understanding the program you must understand the MYC principles and the protocol details. Description of working conditions for the command-router are distributed in the other documentation as well.
+For more details of the MYC system please check the reference.
+
+The program [12] is written in python and is developed using pycharm under windows
+
+Definitions and formats
+
+see http://dk1ri.de/myc/Definitions.pdf
+
+Some limitations
+
+This is my first python program, so enhancements are necessary.
+Coding is done quite basic, so object oriented programming is rarely used.
+The program is not ready and cannot be used as a command-router yet.
+The code is not tested on a raspberry yet.
+
+Main missing topics
+
+see _still_missing in the program directory
+
+
+Programming principles
+
+The program uses polling. After initialization following functions are polled:
+time-dependent task
+read input devices (keyboard or network input)
+check SK-input-buffer
+send to LD
+check LD-input-buffer
+transmit command to device
+read devices
+check device-inputbuffer (answer or info)
+send answers to SK-buffer
+output to SK
+
+The program should run on a raspberry pi with limited cpu resources.
+Because the CR must analyze any incoming byte, many lists and arrays are created during initialization. They are defined as v_xxx.py global variables. I am not sure, whether the used data structure is  the most effective (in terms of speed). So enhancements may be necessary.
+Sometimes the program lines are quite long and subarrays are hard to read. So I sometimes introduces variables like temp with a “lifetime” over a few lines. This enhances the readability, but may reduce speed. I also used those variables, when they are needed a few times, because a call of a variable may be faster than an element of a subarray.
+There are 3 input parser subprograms: SK-buffer, LD buffer for commands and infos and device buffer for answer and info. These subprograms are quite bulky and very similar. Nevertheless I used different subprograms to avoid unnecessary if – then selections. I hope, that this is the most speed effective solution. But I know, that servicing these lines is not comfortable.
+
+Usage
+
+The routing kernel is working for all commands and answers defined now.
+Nevertheless the usage of the program now is suitable for tests only.
+Input can be done by keyboard or via telnet by sending the ASCII numbers 0... 255 followed by a space.
+A file can be used to send multiple commands.
+Data, which should be send to the device, are send to the console.
+
+Testing
+
+For program testing the following is implemented:
+
+Some tables generated at initialization are available as files in the check_output directory. So the created full announce-list can be checked easily.
+There is a set of command-files. These are used to check the routing kernel and should check all command-types with different parameters. Files to check the error behavior will follow. These checks are initiated by a<n><SPACE> from the terminal. <n> is the number of the checkfile in the checkfiles directory 
+
+Implementation of the Hardware
+
+The CR should be implemented on a Raspberry PI. A Raspberry has ethernet access and a complete operating system. Power consumption an price is also acceptable.
+May be that a web server for the SK can also run on the same machine..
+not yet tested
+
+Hierarchical MYC System
+
+In a hierarchical system the CR resolves the announcements of lower level CR but otherwise keep the sequence. So only the actual CR  delivers the announce-list with the basic announcement at start and the reserved tokens and the I-line of the CR at the end (tabs for clarification only):
+<0>;c;...						#CR
+	<c><m>...					#normal device 
+	...
+	I; ..						# I-line
+	...
+	<c>;c;...					#lower level CR start
+		<c><m>...				#normal device 
+		...
+		I;...					# I-line
+		<c><m>...
+		...
+	I;...						# I-line, end of lower level CR
+	…
+	<c><m>..
+	I;...						# I-line
+	...
+I;...	...						# I-line of  CR
+
+Identical device-types with identical individualization are not allowed within a CR but for CR in different levels. 
+
+Error handling
+
+The routing kernel of the CR uses bytearray. Any character is allowed as input.
+The CR do some checks on the inputs:
+command-token
+positional parameters and element number lower than maximum 
+length of string
+<data> fields are not checked, especially restriction of <ty> given in <des>
+error messages are sent to logfile only
+
+Following messages are defined now:
+
+re-read my devices	sent to log
+SK timeout...		data missing, data ignored, info to SK
+dev timeout		data missing, data ignored
+new announcelist	sent to log
+value too high		data ignored, if command from SK: info to SK; if in info from dev: -
+non valid token	data ignored, if command from SK: info to SK; if in info from dev: -
+stringlength overflow	data ignored, if command from SK: info to SK; if in info from dev: -
+
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+
+
+
+
+
+Reference
+
+[1]	http://dk1ri.de/myc/MYC.pdf  (german)
+[2]	http://dk1ri.de/myc/MYC_en.pdf
+[3]	http://dk1ri.de/myc/Description.pdf
+[4]	http://dk1ri.de/myc/commands.pdf
+[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	http://dk1ri.de/myc/Rules.pdf
+[7]	http://dk1ri.de/myc/commandrouter.pdf
+[8]	http://dk1ri.de/myc/Rules_device.pdf
+[9]	http://dk1ri.de/myc/skin.pdf
+[10]	http://dk1ri.de/myc/logicdevice.pdf
+[11]	http://dk1ri.de/myc/Definitions.pdf
+[12]	http://dk1ri.de/myc/commandrouter.zip
