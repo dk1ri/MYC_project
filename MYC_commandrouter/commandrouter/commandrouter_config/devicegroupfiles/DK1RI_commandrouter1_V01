@@ -1,0 +1,14 @@
+#some values aremodified at real time
+0;c;DK1RI;commandrouter1;V01;1;81;1;9
+240;an,ANNOUNCEMENTS;81;9
+241;an,BASIC ANNOUNCEMENTS;37;1
+249;oa,SK-FEATURE;255,ANSWERS
+251;ob,LOGON;b,mode;20,name;20,password
+252;aa,LAST ERROR;20
+253;aa,MYC INFO;b,BUSY;b,USERNUMBER
+#commandrouter parameters must be modified by this file only!!
+#The CR uses the 255 line to find its parameters
+#All interfaces for devices, which can send commands, must be listed here!!!
+#(so all SK and higher level CR)
+#number of bytes limited  to 255 (one byte)
+255;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,TERMINAL,1;a,TELNET,1;w,PORT,23

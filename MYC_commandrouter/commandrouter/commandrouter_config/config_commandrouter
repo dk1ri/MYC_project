@@ -1,0 +1,25 @@
+#sequence must not be changed !!!
+#line 0 filename for my_devices (home: commandrouter_config/my_devices)
+home
+#line 1: directory for local devicegroupfiles (home: commandrouter_config/)
+commandrouter_config/devicegroupfiles/
+#line 2: time in sec for checking weather a device is active (0:  no search)
+100
+#line 3: time in sec for searching for new and deleted my_devices (should be higher than line 4)
+100
+#line 4: time in sec for command / answer timeout
+10
+# line 5 filename for logfile (home: commandrouter_config/logile)
+home
+# line 6: time in second for check of logtime length
+100
+# line 7: length of logfile; all lines are purged then
+100
+# line 8: maximum length of a command (length of 4 byte)
+4294967295
+# line 9 lengthof ringbuffer to device
+20
+# line 10 system timeout (ms)
+2000
+# line 11 user timeout (s)
+120

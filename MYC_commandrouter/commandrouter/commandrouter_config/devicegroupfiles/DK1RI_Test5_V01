@@ -1,0 +1,27 @@
+0;m;DK1RI;Test5;V01;1;100;1;26
+1;on;a;3
+2;on;b;3,yyy
+3;on;i;3;456
+4;on;w;3;1034;65789
+5;on;e;3
+6;on;L;256
+7;on;s;66000
+8;on;d;3,xxx;400,yyy
+9;on;t;270
+10;on;127;2;3;4;5
+11;an;a;3
+12;an;b;3,yyy
+13;an;i;3;456
+14;an;w;3;1034;65789
+15;an;e;3
+16;an;L;256
+17;an;s;66000
+18;an;d;3,xxx;400,yyy
+19;an;t;270
+20;an;127;2;3;4;5
+240;an,ANNOUNCEMENTS;100;20
+252;aa,LAST ERROR;20,last_error
+253;aa,MYC INFO;b,BUSY
+254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
+255;aa,as254
+R w

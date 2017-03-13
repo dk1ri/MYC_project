@@ -1,63 +1,79 @@
+command = []                # command: list for length of command, the length contain length of tok (of full list);
+answer = []				    # answer / info: list for length of answer, the length do contain length of commandtoken
+                            # this will be the the length of the device_token
+
 """
-lists for lrngth of commands, answers and infos
-lists per CR commandtoken (of full announcelist)
-All of the parameters are are set at at (re-)initialiization.
-The corresponding temporary values are stored in des devices_buffer or input_buffer
-All values without length of commandtoken
+The intention of these lists is simpliffy the parsing of commands, answers and info
+The announcelines are translated to these list used for parsing
+One entry per commandtoken of full announcelist
+Index to these lists are identical to the commandtoken; this simplyfies lookup. exception: &HxxFx (CR own) commands;
+these use a lookup table
+The lists are set at (re-)initialiization.
 
-within these three lists:
-   0 type: 	b: no properties
-            e: error or nor applicable
-            n: one numeric property;
-            m: numeric parameter for sequential memory or fifo
-            s: string;
-            t: string for sequential memory access or fifo
-            v: variable number of elements; t: for oa/aa command; u: for ob/ab command; c: for some metacommands,
-for:
-         b: no other elements
-           1: 0
-         e: error
-           1: 0
-         n: simple numeric
-           1 length of parameter + commandtokenlength for commmand
-         m: for on /an and of / af command: numeric
-           1 length of number of elements + length of start
-           2 length of number of elements
-           4 length of start
-           3 length of <ty>
-         s: for  m / om / am command: length_of_string + string
-           1 length of elementnumber + length of stringlength
-           2 length of elementnumber
-           3 length of stringlength
-         t: for on /an and of / af command: length_of_string + string
-           1 length of number of elements + length of start
-           2 length of number of elements
-           3 length of stringlength
-           4 added real time: number of actual element
-           5 added real time; length of string
-          a: for arrays
-           1 length_of_number_of_elements
-           2 added real time: actual element in work
-           3 added real time: position for next analize action
+Some parameters are modified in real time. these are handled in v_sk.xx and v_dev.xx, because
+they must be reset at timeout.
 
-           4 ... x array for "n" or "s"
-               0 "n" or "s"
-               1 length of number or length of string
-           c:	as s, but require a inline commandtoken backtranslation
-           t:
-           1 command: length of commandtoken + length of position parameter
-           2 [] "s" or "n" as above, one array per type
-           3 []  ...
-          r: string for sequential access (on and of command)
-           1: length of (commandtoken + 2 parameters)
-           2 first parameter end
-           3 length of parameter
-           4 length of stringlength
-           5 pos of next action (wait unit this)
-           6 number of parameters left
-           7 actual stringlength
+Index 0: type: 	0: error or not applicable
+                1:   switches, range commands and numeric om, am; no real time length calculation
+                2:   om / am with string
+                3:   on / an; of / af: transmission like on / an, expcept that there is no startpostion
+                4:   oa / aa
+                6:   ob / ab
+
+for all:
+in v_inputbuffer and v_devicebuffer added real time:
+                    linelength_len                      # actual number of bytes to wait for next action
+                    linelength_actual_call              # call number, start with 0
+                    linelength_other                    # needed for some commands
+                    linelength_othe1                    # dito
+
+for:    0:
+            -
+
+        1:
+            1 length for 1st loop: (length_of_commandtoken +) length of parameters
+            2 number of following paramters (2 entries each) (will be > 1 for op commands onky)
+            3 maxpos: maximum number for 1st parameter, 0: no check
+            4 length of this
+            5 maxpos: maximum number for 2nd parameter,..
+            6 length of this
+            ...
+
+        2:
+            1 length for 1st call: (length_of_commandtoken +) length of length of cellnumber (+ length of stringlength)
+            2 number of following paramters (2 entries each) (fixed: 2)
+            3 maxpos: maximum number for 1st parameter (memorycell)
+            4 length of this
+            5 maxpos: maximum number for 2nd parameter (stringlength)
+            6 length of this
+
+        3:
+            1 length for 1st call: (length_of_commandtoken +) length of cellnumber + number of elements
+            2 maxpos: number for memory cells
+            3 length of this
+            4 maxstring: maximum length of string, 0 for numeric <ty>
+            5 length of this, length of <ty>
+            6 0: numeric / 1: string
+            7 0: on / an  1: of / af
+
+        4:
+            1 length for 1st call:  (length_of_commandtoken +) length of cellnumber
+            2 maxpos: number for memory cells
+            3 length of this (transmitted bytes)
+            4 ... x 3 lines per array element
+            4 maxstring: maximum length of string, 0 for numeric <ty>
+            5 length of this, length of <ty>
+            6 0: numeric / 1: string
+            7 ...
+
+        5:
+            1 length for 1st call:  (length_of_commandtoken +) length of cellnumber
+            2 maxpos: number for memory cells
+            3 length of this
+            4 ... x 3 lines per array element
+            4 maxstring: maximum length of string, 0 for numeric <ty>
+            5 length of this, length of <ty>
+            6 0: numeric / 1: string
+            7 ...
 """
 
-command = []                #command: list for length of command
-answer = []				    #answer: list for length of answer, the length do not contain length of commandtoken
-info = []					#info: list for length of info, the length do not contain length of commandtoken; is different from Answer only for memory commands

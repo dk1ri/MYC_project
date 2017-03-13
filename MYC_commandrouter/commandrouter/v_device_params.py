@@ -1,1 +1,0 @@
-a=[]                                            #a: per device list with new commandtoken / original token

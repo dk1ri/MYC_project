@@ -1,0 +1,227 @@
+# command input file (to check commands)
+# ======================================
+#
+# test2: check of switch commands
+#
+# info lines must follow command or answer lines of the same device!
+# the program will not detect the correct device otherwise!!!!!
+# comments (line starting with #) are allowed
+# requires same syntax as for inputs (ASCII values separated by space)
+# blank lines mean no I/O, numbers > 255 will crah the programm
+# there must be 7 lines for each command:
+# - announceline
+# - command from SK
+# - output to device
+# - answer from device
+# - info /command to CR from LD (lines before should be empty)
+# - output to SK; no string
+# - output to SK; number and string mixed, string encloded by \\str\\
+#
+# parameters with more than one byte are not checked!!
+#
+0201 6;m;DK1RI;Test2;V01;1;100;1;31
+6
+6
+
+
+
+6 30 xxstr 6;m;DK1RI;Test2;V01;1;100;1;31 xxstr
+#
+0202 7;or;0,on off
+7 0
+1 0
+
+
+
+
+#
+0203 8;or;0,on;1,aus
+8 0 1
+2 0 1
+
+
+
+
+#
+0204 9;or;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+9 3 1
+3 3 1
+
+
+
+
+#
+0205 10;os;0,on
+10 0
+4 0
+
+
+
+
+#
+0206 11;os;0,on;1,aus
+11 1
+5 1
+
+
+
+
+#
+0207 12;os;0,on;1,aus;2,idle;3,other;b,DIMENSION,21X;b,DIMENSION,2,Y
+12 3
+6 3
+
+
+
+
+#
+0208 13;ot;0,on off
+13
+7
+
+
+
+
+#
+0209 14;ot;0,on;1,aus
+14
+8
+
+
+
+
+#
+0210 15;ot;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+15
+9
+
+
+
+
+#
+0211 16;ou;0,idle;1,on
+16
+10
+
+
+
+
+#
+0212 17;ou;0,idle;1,on;2,off;3,other
+17 2
+11 2
+
+
+
+
+#
+0213 18;ou;0.idle;1,off;2,on;3,other;4,down;b,DIMENSION,2,X;b,DIMENSION,2,Y
+18 4
+12 4
+
+
+
+
+#
+0214 19;ar;0,on off
+19
+13
+13 1
+
+19 1
+
+#
+# info
+0215 19;ar;0,on off
+
+
+13 1
+
+19 1
+
+#
+0216 20;ar;0,on;1,aus
+20 0
+14 0
+14 0 1
+
+20 0 1
+
+#
+# info
+0217 20;ar;0,on;1,aus
+
+
+14 1 1
+
+20 1 1
+
+#
+0218 21;ar;0,on;1,aus;2,idle;3,other
+21 3
+15 3
+15 1 1
+
+21 1 1
+
+#
+# info
+0219 21;ar;0,on;1,aus;2,idle;3,other
+
+
+15 1 1
+
+21 1 1
+
+#
+0220 22;as;0,on
+22
+16
+16 0
+
+22 0
+
+#
+# info
+0221 22;as;0,on
+
+
+16 0
+
+22 0
+
+#
+0222 23;as;0,on;1,aus
+23
+17
+17 3
+
+23 3
+
+#
+# info
+0223 23;as;0,on;1,aus
+
+
+17 3
+
+23 3
+
+#
+0224 24;as;0,on;1,aus;2,idle;3,other
+24
+18
+18 1
+
+24 1
+
+#
+# info
+0225 24;as;0,on;1,aus;2,idle;3,other
+
+
+18 1
+
+24 1
+
+#

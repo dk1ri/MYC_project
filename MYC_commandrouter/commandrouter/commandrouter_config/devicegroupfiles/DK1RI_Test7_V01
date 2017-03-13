@@ -1,0 +1,10 @@
+0;m;DK1RI;Test7;V01;1;100;1;15
+1;oa;a
+2;oa;a;b;i;w;e;L;s;d;t;127;500;a
+3;aa;a
+4;aa;a;b;i;w;e;L;s;d;t;127;500;a
+240;an,ANNOUNCEMENTS;100;20
+252;aa,LAST ERROR;20,last_error
+253;aa,MYC INFO;b,BUSY
+254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
+255;aa,as254

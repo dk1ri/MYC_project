@@ -1,0 +1,148 @@
+# command input file (to check commands)
+# ======================================
+#
+# test3: Range commands
+#
+# info lines must follow command or answer lines of the same device!
+# the program will not detect the correct device otherwise!!!!!
+# comments (line starting with #) are allowed
+# requires same syntax as for inputs (ASCII values separated by space)
+# blank lines mean no I/O, numbers > 255 will crah the programm
+# there must be 7 lines for each command:
+# - announceline
+# - command from SK
+# - output to device
+# - answer from device
+# - info /command to CR from LD (lines before should be empty)
+# - output to SK; no string
+# - output to SK; number and string mixed, string encloded by \\str\\
+#
+# parameters with more than one byte are not checked!!
+#
+3001 27;m;DK1RI;Test3;V01;1;100;1;15
+27
+27
+
+
+
+27 31 xxstr 27;m;DK1RI;Test3;V01;1;100;1;15 xxstr
+#
+3002 28;op;10;lin;Hz,unit;300;lin;Hz
+28 5 01 02
+1 5 01 02
+
+
+
+
+#
+3003 29;op;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+# 3 dimensions 1, 2 and 4 byte
+29 98 3 20 0 4 5 6
+2 98 3 20 0 4 5 6
+
+
+
+
+#
+3004 30;oo;255,steps;100,time;s;100,stepsize;a,up,down
+# steps 1 byte, time 1 byte, size 1 byte, up down 1 byte
+30 31 30 4 0
+3 31 30 4 0
+
+
+
+
+#
+3005 31;oo;256,steps;1000,time;s;1000,stepsize;z
+#steps 2 byte, time 2 byte size 2 byte
+31 0 129 1 2 1 2
+4 0 129 1 2 1 2
+
+
+
+
+#
+3006 32;oo;255;100;s;0;z
+#2 dimensions 2 times : steps 1 byte, time 1 byte
+32 1 1
+5 1 1
+
+
+
+
+#
+3007 33;oo;256;0;s;0;z;255;100;s;0;b
+#steps 2 + 0 + 0 + 0   + 1 + 1 + 0 + 1 byte ( 2 dimensions)
+33 0 22 1 1 1
+6 0 22 1 1 1
+
+
+
+
+#
+3008 34;oq;100
+34
+7
+
+
+
+
+#
+3009 35;oq;68000
+35
+8
+
+
+
+
+#
+3010 36;oq;100;100
+36
+9
+
+
+
+
+#
+3011 37;oq;68000;1000
+37
+10
+
+
+
+
+#
+3012 38;ap;10;lin;Hz;100,100;lin;Hz
+38
+11
+11 4 10
+
+38 4 10
+
+#
+#info
+3013 38;ap;10;lin;Hz;100,100;lin;Hz
+
+
+11 2 10
+
+38 2 10
+
+#
+3014 39;ap;1000;lin;Hz;10000000;lin;Hz
+39
+12
+12 1 2 1 2 3
+
+39 1 2 1 2 3
+
+#
+#info
+3015 39;ap;1000;lin;Hz;10000000;lin;Hz
+
+
+12 1 2 1 2 3
+
+39 1 2 1 2 3
+
+#

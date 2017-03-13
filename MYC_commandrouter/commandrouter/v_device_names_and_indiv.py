@@ -1,4 +1,4 @@
 # devicegroup and indiv strings
-active_and_last = []    # all
-activ = []				# activ
-last = []				# last
+name = []               # name: a name means, that divce is read
+activ = []				# activ 0|0
+last = []				# value befor re-read_divices
