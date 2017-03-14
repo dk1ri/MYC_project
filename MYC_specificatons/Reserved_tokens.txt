@@ -1,7 +1,7 @@
 MYC Reserved Commands
 
 Author: DK1RI
-Version V01.17 20170301
+Version V01.18 20170318
 This paper is published in  https://github.com/dk1ri as well
 
 Introduction
@@ -55,9 +55,7 @@ answer / info:	0xxxf0<n><m><data>
 < NUMBER_OF_ANNOUNCELINES> is the number of the announcement lines including those for the reserved commands, rules and for the  CR the I-lines. (Same as in the 0x00 command).
 
 The CR will ask for the announce-lists of all devices using the 0xxxf0 command, if it do not have other sources. It will drop the 0xxxf0 command of other devices when building the complete list. The command-router answers all announcement commands by itself using the full list with translated command-token. The CR will  not forward 0xxxf0 infos.
-
-Devices may be added or may disappear. It is assumed, that this will rarely happen, so that the CR will send a 0xxxfd info if the announcement-list changes. Or initiate a startup: see Startup behavior in http://dk1ri.de/myc/Description.pdf.
-The CR will not renumber the command-token without startup.
+The CR will not include “r” and “s” commands in the full list but deliver empty lines instead. The command-token are reserved for the delivering devices. The LD will get the list with “r” and “s” commands.
 
 Announcement Command 0xxxf1
 
@@ -79,8 +77,10 @@ command;	0xxxf9<n><data>
 answer / info:	-
 
 defined <OPTION>s
-<s>,ANSWERS				<s> is a list of (binary) token of basic announcements of devices, for which the SK want answers and 
-						infos.  * means all.
+<l>,ANSWERS				<l> is the maximum length of a list of (binary) token of basic announcements of devices, for which the SK
+ 						want answers and infos, no spaces -  or:  * means all (default) (do not mix * and command-token).
+
+
 Features Command 0xxxfa
 
 This is not a command but a description announcement of optional additional feature and properties of a device-group, which cannot be modified.
@@ -92,18 +92,9 @@ command:	-
 answer / info	-
 
 Defined <OPTION> are:
-b,ANSWERTIME,<DEFAULT><,des>	Time (ms) for the CR to wait before asking for an answer, if the CR must poll for a answer (for I2C eg).
-						If applicable but not given the default ANSWERTIME is 100ms. For CR only.
-						Either option ANSWERTIME or ADDXX can be used 
-b,ADDXX,<DEFAULT>			Non-valid character during polling. <DEFAULT> is 0xff, which is also the escape character for valid data
-						0xff.
-						Either option ANSWERTIME or ADDXX can be used.  For CR only.
- 						For details see http://dk1ri.de/myc/Definitions.pdf 
-b,INFO,<DEFAULT>				FU only. to be used, if infos are send; must not be defined otherwise
+b,INFO,<DEFAULT>				FU only. Optional, can be used, if infos are send; must not be defined otherwise
 						0:	info used, but no polled interface
 						other:	info polling time in 10ms. <DEFAULT> is 10 (means 100ms)
-						For details see Data transfer in http://dk1ri.de/myc/Description.pdf.
-
 
 Log on Command 0xxxfb
 
@@ -111,13 +102,15 @@ This command is used by the RU only. Used, if the system requires a log on for u
 For more details see 	http://dk1ri.de/myc/Rules_device.pdf
 The command announcement has the first command-type description  "LOGON"
 
-announce:	251;ob,LOGON[,<des>];<b>,mode;<s>,name;<s>,password
+announce:	251;ob,LOGON[,<des>];<b>,mode;<l>,name;<l>,password
 mode:	1	log out							password: any <s>
 	2	log on
 	3	switch on user management (admin only)
 	4	switch off user management (admin only)		password: any <s>
 command:	0xxxfb0x000x03<mode><name><password>
 answer	/ info	-
+
+
 
 Last Error Command 0xxxfc
 
@@ -148,6 +141,7 @@ b,ACTIVE					mandatory as first element
 b,ANNOUNCELIST		<n>		(new) list <n> available; for CR only
 b,USERNUMBER		<n>		ask to allocate a user-number (mandatory for CR) for details see [3]		
 more  to be defined.
+
 
 Individualization Commands 0xxxfe and 0xxxff
 
@@ -222,7 +216,7 @@ b,ADRESS,<DEFAULT>,{1 to 64}				mandatory
  b,ADRESS,<DEFAULT>
 
 <a>RADIO,<DEFAULT>					Wireless interface
-;
+
 I-announcements
 
 I-announcements are created by the CR and used in the full announce-list.
@@ -234,6 +228,10 @@ I;full_name_of_command-router; full_name_of_device
 Fullname_of_command-router must be unique in a multi level MYC system, fullname_of_device must be unique in a subsystem
 Device-name and device-number of the device are defined during individualization or are default. 
 The device-type is MANUFACTURER;DEVICEDESCRIPTION;VERSION
+
+
+
+
 
 Copyright	
 

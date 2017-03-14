@@ -1,6 +1,6 @@
 MYC System Description, Handling and Environment
 Author: DK1RI
-Version V01.5 20170301
+Version V01.6 20170318
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -98,6 +98,7 @@ Data transfer and data flow
 The MYC protocol send commands / properties with a defined length. The length is defined by the used command-token and the corresponding announcement.
 If a answer is sent by a FU, the length is defined as well, because the answer is preceded by the command-token.
 It is not necessary, that the CR wait for answers, because any answers and info can be associated to a command.
+Multiuser mode for the SK is not part of the MYC protocol but implemented in this way by the CR.
 If the SK is in multi user mode, command, answers and info are preceded by the one byte channel number,: 0 is the administrative channel for the SK interface and 0xff the answer / info channel to all. The SK can decide to distribute the answers and info by itself and use a single user channel to CR. By default all answers and infos are sent via channel 0xff. A 0xxxf900 via channel 0 inform the CR to distribute answers and commands individually and send answers and commands as given by the individual commands 0xxxf9 (default is to send all).
 Higher level CR will send commands and receive info and answer as info. They can request multi user as well.
 SK and higher level CR will not wait for answers.
@@ -126,6 +127,7 @@ If these devices run as programs on the same computer as the secure message tran
 Command-router CR and skin SK
 The CR communicates with the SK usually via internet. So at this point ssh and login processes must be provided. The MYC protocol define a command for login but says nothing about the implementation.  The CR also communicate by MYC commands only and ignore all non valid commands and parameters. 
 The login to lower level systems can also be used.
+
 Copyright
 
 Dieses Dokument darf unverändert kopiert werden.
