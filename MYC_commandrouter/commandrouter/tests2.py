@@ -1,6 +1,7 @@
 #
 
 import time
+import random
 
 from device_handling import *
 from buffer_handling import *
@@ -76,6 +77,9 @@ def handle_check():
             # line 3: check data to dev
             if v_time_values.data == v_time_values.to_dev[v_time_values.check_number]:
                 print(v_time_values.check_number, "to_dev ok: ", v_time_values.data)
+                for lines in v_sk.inputline:
+                    if lines != bytearray([]):
+                        print("too many data: ", lines)
                 # next: send data from device
                 v_time_values.part = 3
             else:
@@ -84,7 +88,7 @@ def handle_check():
                 v_time_values.number_of_nok += 1
                 # stop
                 # may be, that timeout is not reset:
-                v_sk.starttime[v_time_values.terminal] = 0
+                v_sk.starttime[v_time_values.terminal][0] = 0
                 v_sk.inputline[v_time_values.terminal] = bytearray([])
                 v_time_values.part = 0
                 v_time_values.check_number += 1
@@ -123,12 +127,53 @@ def handle_check():
             v_time_values.auto = 0
             v_time_values.part = 0
             v_configparameter.time_for_command_timeout = v_configparameter.time_for_command_timeout * 10
-            print ("commands from file finished. Number of error:",v_time_values.number_of_nok)
+            print("commands from file finished. Number of error:", v_time_values.number_of_nok)
     else:
         # stop
         v_time_values.auto = 0
         v_time_values.part = 0
         v_configparameter.time_for_command_timeout = v_configparameter.time_for_command_timeout * 10
-        print ("commands from file finished. Number of error:",v_time_values.number_of_nok)
+        print("commands from file finished. Number of error:", v_time_values.number_of_nok)
 
+    return
+
+
+def random_data():
+    if v_time_values.terminal == 255:
+        # find terminal
+        j = 0
+        while j < len(v_sk.interface_type):
+            j += 1
+            if v_sk.interface_type[j - 1] == "TERMINAL":
+                v_time_values.terminal = j
+    if v_time_values.terminal == 255:
+        v_time_values.auto = 0
+        v_time_values.part = 0
+        print("no Terminal found")
+        return
+    v_sk.inputline[v_time_values.terminal] = bytearray([])
+    l = random.randint(1, v_time_values.random_k)
+    direction = random.randint(0, 1)
+    device = random.randint(0, 6)
+    j = 0
+    while j < l:
+        ran_int = random.randint(0, 255)
+        if direction == 0:
+            v_sk.inputline[v_time_values.terminal].extend([ran_int])
+        else:
+            v_dev.data_to_CR[device] = bytearray([ran_int])
+        j += 1
+    if direction == 0:
+        print("random: SK", v_sk.inputline[v_time_values.terminal])
+    else:
+        print("random; device:", device, v_dev.data_to_CR[device])
+    v_time_values.random_time = time.time()
+    v_time_values.random_i += 1
+    if v_time_values.random_i == 500:
+        v_time_values.random_i = 0
+        v_time_values.random_k += 1
+    if v_time_values.random_k == 20:
+        v_time_values.auto = 0
+        v_time_values.random_time = 0
+        v_configparameter.time_for_command_timeout = v_time_values.random_timeout_temp
     return

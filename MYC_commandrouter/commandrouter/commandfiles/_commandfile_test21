@@ -20,13 +20,16 @@
 # parameters with more than one byte are not checked!!
 #
 # CR basic, to_sk is not fixed, depends on actual number of commands:
-0 0;c;DK1RI;commandrouter1;V01;16;93;1;93
+#!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#    These line should produce a error
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+0 0;c;DK1RI;commandrouter1;V01;15;93;1;187
 0
 0
 
 
 
-0 xxstr (0;c;DK1RI;commandrouter1;V01;16;93;1;193 xxstr
+0 xxstr (0;c;DK1RI;commandrouter1;V01;15;93;1;18 xxstr
 #
 1 1;m;DK1RI;Test1,metacommands;V01;1;100;1;8
 1
@@ -39,14 +42,14 @@
 #
 2 2;is;1
 2
-
-
-
-
-
+1
+1
+1
+1
+1
 #
 3 3;iy
-3
+3 2
 
 
 
@@ -66,7 +69,7 @@
 4
 252
 # one memory only -> no positinal paramter
-252 3 1 2 3
+252 4 1 2 3
 
 4 3 1 2 3
 
@@ -75,7 +78,7 @@
 6 4;aa,LAST ERROR;20,last_error
 
 
-252 3 1 2 3
+252 2 1 2 3
 
 4 3 1 2 3
 
@@ -85,21 +88,21 @@
 253
 253 4
 
-5 4
+4 4
 
 #
 # info:
 8 5;aa,MYC INFO;b,BUSY
 
 
-253 4
+253 4 5
 
 5 4
 
 #
 9 240;an,ANNOUNCEMENTS;70;34
-240 4 2
-240 4 2
+240 71 2
+240 71 2
 
 
 
@@ -108,8 +111,8 @@
 # no info for announcement
 #
 10 241;an,BASIC ANNOUNCEMENTS;1;100
-241 1 1
-241 1 1
+241 1 20
+241 1 20
 
 
 
@@ -118,8 +121,8 @@
 # no info for basic announcements
 #
 11 249;oa,SK-FEATURE;255,ANSWERS
-249 2 1 6
-249 2 1 6
+249 2 2 6
+249 2 2 
 
 
 
@@ -127,16 +130,16 @@
 #
 12 251;ob,LOGON;b,mode;20,name;20,password251;ob,LOGON;b,mode;20,name;20,password
 # mode 1
-251 0 3 0 2 4 5 2 7 8
-251 0 3 0 2 4 5 2 7 8
+251 1 3 0 2 4 5 2 7 8
+251 1 3 0 2 4 5 2 7 8
 
 
 
 
 #
 13 252;aa,LAST ERROR;20
-252 
-252
+252 1
+252 1
 
 
 
@@ -145,8 +148,8 @@
 # info is directly send by CR; no check
 #
 15 253;aa,MYC INFO;b,BUSY;b,USERNUMBER
-253 0
-253 0
+253 2
+253 2
 
 
 253 0 4

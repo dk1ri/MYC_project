@@ -20,4 +20,10 @@ part = 0
 out_device = 0
 number_of_nok = 0
 data = bytearray([])            #store intermediate data
-command_file = ""
+command_file = 0
+# for random test
+random_i = 0
+random_k = 4
+random_time = 0
+random_timeout_temp = 0
+random_s_d = 0

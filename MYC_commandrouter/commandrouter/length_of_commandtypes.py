@@ -1,12 +1,10 @@
 """
 name : commandrouterlength_of_commandtypes.py
 calculate the length of transmitted data for command, answer / info
-# the answer lines of answer commands are idental than those of the corresppinding operating commands
 called at initialization
 ct_xx :xx is the commmandtyp, for detailed description see MYC documentation
 for details see description of variable v_linelength
 These list are used for incoming data to CR. The CR will forward accepted data only
-The sencond  element for any _linelength.info[tok][0] = "0" element must be the the length of the token to be deleted
 """
 
 import misc_functions
@@ -17,18 +15,16 @@ import v_dev
 
 def ct_m(announcement, tok, device):
     # basic lines
-    # are handled similar to aa commands with 1 string elemet
-    v_linelength.command[tok].append("4")
+    # are handled similar to aa commands with 1 string element
+    v_linelength.command[tok].append("1")
     v_linelength.command[tok].append(1)
-    v_linelength.command[tok].append(1)
-    v_linelength.command[tok].append(1)
-    v_linelength.command[tok].append(255)
-    v_linelength.command[tok].append(1)
-    v_linelength.command[tok].append(1)
-    v_linelength.answer[tok].append("4")
+    v_linelength.command[tok].append(0)
+    v_linelength.command[tok].append(0)
+    v_linelength.answer[tok].append("7")
     v_linelength.answer[tok].append(0)
-    v_linelength.answer[tok].append(1)
-    v_linelength.answer[tok].append(1)
+    # no position parameter
+    v_linelength.answer[tok].append(0)
+    v_linelength.answer[tok].append(0)
     v_linelength.answer[tok].append(255)
     v_linelength.answer[tok].append(1)
     v_linelength.answer[tok].append(1)
@@ -48,29 +44,34 @@ def ct_or(announcement, tok, device):
     # n on / off switches
     # <c>;or[,<des>]...[,<des>];pos0[,<des>]...[;posn,[<des>]][;<OPTION>[,<des>]...	]
     # <c>0|1
-    # <c><n>0|1  info
     number_of_items = misc_functions.strip_dimension(announcement)
     # must be more than 2
     if number_of_items > 2:
         v_linelength.command[tok].append("1")
         if number_of_items == 3:
-            v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-            # number of positions
+            v_linelength.command[tok].append(v_cr_params.length_commandtoken + 1)
+            # number of following paramters (3 entries each)
             v_linelength.command[tok].append(1)
+            v_linelength.command[tok].append(0)
             # 0|1
             v_linelength.command[tok].append(1)
             v_linelength.command[tok].append(1)
-        if number_of_items > 3:
-            v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-            # number of positions
+            # check !
             v_linelength.command[tok].append(2)
-            # maxpos: example number_of_items: 5, maxpos: 3, position 0, 1, 2  < 3
-            v_linelength.command[tok].append(number_of_items - 2)
+        if number_of_items > 3:
+            v_linelength.command[tok].append(v_cr_params.length_commandtoken + misc_functions.length_of_int(number_of_items - 3))
+            # number of loops (3 entries each)
+            v_linelength.command[tok].append(2)
+            v_linelength.command[tok].append(0)
+            # maxpos: example number_of_items: 5, number of positions: 3, maxpos: 2, (positions 0, 1, 2 )
+            v_linelength.command[tok].append(number_of_items - 3)
             # length of maxpos
-            v_linelength.command[tok].append(misc_functions.length_of_int(number_of_items - 2))
+            v_linelength.command[tok].append(misc_functions.length_of_int(number_of_items - 3))
+            v_linelength.command[tok].append(2)
             #0|1
             v_linelength.command[tok].append(1)
             v_linelength.command[tok].append(1)
+            v_linelength.command[tok].append(2)
     else:
         v_linelength.command[tok].append("0")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken)
@@ -91,31 +92,44 @@ def ct_ar(announcement, tok, device):
         v_linelength.command[tok].append("1")
         if number_of_items == 3:
             v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-            # number of positions
+            # number of loops
             v_linelength.command[tok].append(0)
         else:
-            v_linelength.command[tok].append(v_cr_params.length_commandtoken + misc_functions.length_of_int(number_of_items))
-            # number of followng positions
+            v_linelength.command[tok].append(v_cr_params.length_commandtoken + misc_functions.length_of_int(number_of_items - 3))
+            # number of loops
             v_linelength.command[tok].append(1)
-            # maxpos: example number_of_items: 5, maxpos: 3, position 0, 1, 2  < 3
-            v_linelength.command[tok].append(number_of_items - 2)
+            v_linelength.command[tok].append(0)
+            # maxpos: example number_of_items: 5, number of positions: 3, maxpos: 2, (positions 0, 1, 2 )
+            v_linelength.command[tok].append(number_of_items - 3)
             # length of maxpos
-            v_linelength.command[tok].append(misc_functions.length_of_int(number_of_items - 2))
+            v_linelength.command[tok].append(misc_functions.length_of_int(number_of_items - 3))
+            # check !
+            v_linelength.command[tok].append(2)
 
         v_linelength.answer[tok].append("1")
         if number_of_items == 3:
-            # + 1 due to "0|1"
+            # number of loops
             v_linelength.answer[tok].append(1)
-            # number of positions
             v_linelength.answer[tok].append(0)
-        if number_of_items > 3:
-            v_linelength.answer[tok].append(misc_functions.length_of_int(number_of_items) + 1)
-            # number of positions
+            # 0|1
             v_linelength.answer[tok].append(1)
-            # maxpos: example number_of_items: 5, maxpos: 3, position 0, 1, 2  < 3
-            v_linelength.answer[tok].append(number_of_items - 2)
+            v_linelength.answer[tok].append(1)
+            # check !
+            v_linelength.answer[tok].append(2)
+        if number_of_items > 3:
+            v_linelength.answer[tok].append(misc_functions.length_of_int(number_of_items - 3))
+            # number of loops
+            v_linelength.answer[tok].append(2)
+            v_linelength.answer[tok].append(0)
+            # maxpos: example number_of_items: 5, number of positions: 3, maxpos: 2, (positions 0, 1, 2 )
+            v_linelength.answer[tok].append(number_of_items - 3)
             # length of maxpos
-            v_linelength.answer[tok].append(misc_functions.length_of_int(number_of_items - 2))
+            v_linelength.answer[tok].append(misc_functions.length_of_int(number_of_items - 3))
+            v_linelength.answer[tok].append(2)
+            # 0|1
+            v_linelength.answer[tok].append(1)
+            v_linelength.answer[tok].append(1)
+            v_linelength.answer[tok].append(2)
     else:
         # incorrect announceline
         v_linelength.command[tok][0] = "0"
@@ -133,13 +147,16 @@ def ct_os(announcement, tok, device):
     # must be more than 2
     if number_of_items > 2:
         v_linelength.command[tok].append("1")
-        v_linelength.command[tok].append(v_cr_params.length_commandtoken )
-        # number of positions
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken + misc_functions.length_of_int(number_of_items - 3))
+        # number of loops
         v_linelength.command[tok].append(1)
-        # maxpos: example number_of_items: 5, maxpos: 3, position 0, 1, 2  < 3
-        v_linelength.command[tok].append(number_of_items - 2)
-        # length of nmaxpos
-        v_linelength.command[tok].append(misc_functions.length_of_int(number_of_items - 2))
+        v_linelength.command[tok].append(0)
+        # maxpos: example number_of_items: 5, number of positions: 3, maxpos: 2, (positions 0, 1, 2 )
+        v_linelength.command[tok].append(number_of_items - 3)
+        # length of maxpos
+        v_linelength.command[tok].append(misc_functions.length_of_int(number_of_items - 3))
+        # check!
+        v_linelength.command[tok].append(2)
     else:
         v_linelength.command[tok].append("0")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken)
@@ -156,17 +173,21 @@ def ct_as(announcement, tok, device):
     if number_of_items > 2:
         v_linelength.command[tok].append("1")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-        # number of positions
+        # number of loops
+        v_linelength.command[tok].append(0)
         v_linelength.command[tok].append(0)
 
         v_linelength.answer[tok].append("1")
-        v_linelength.answer[tok].append(misc_functions.length_of_int(number_of_items - 2))
-        # number of positions
+        v_linelength.answer[tok].append(misc_functions.length_of_int(number_of_items - 3))
+        # number of loops
         v_linelength.answer[tok].append(1)
+        v_linelength.answer[tok].append(0)
         # maxpos: example number_of_items: 5, maxpos: 3, position 0, 1, 2  < 3
-        v_linelength.answer[tok].append(number_of_items - 2)
+        v_linelength.answer[tok].append(number_of_items - 3)
         # length of nmaxpos
-        v_linelength.answer[tok].append(misc_functions.length_of_int(number_of_items - 2))
+        v_linelength.answer[tok].append(misc_functions.length_of_int(number_of_items - 3))
+        # check!
+        v_linelength.answer[tok].append(2)
     else:
         # incorrect announceline
         v_linelength.command[tok][0] = "0"
@@ -180,9 +201,11 @@ def ct_ot(announcement, tok, device):
     # toggling switch
     # <c>;ot[,<des>]...[,<des>];[pos0[,<des>];...posn[,<des>][;<OPTION>[,<des>]...	]
     # <c>
+    # no difference, if announceline has not enaugh elements
     v_linelength.command[tok].append("1")
     v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-    # number of positions
+    # number of loops
+    v_linelength.command[tok].append(0)
     v_linelength.command[tok].append(0)
     v_linelength.answer[tok].append("0")
     v_linelength.answer[tok].append(0)
@@ -200,17 +223,21 @@ def ct_ou(announcement, tok, device):
         if number_of_items == 4:
             v_linelength.command[tok].append("1")
             v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-            # number of positions
+            # number of loops
+            v_linelength.command[tok].append(0)
             v_linelength.command[tok].append(0)
         if number_of_items > 4:
             v_linelength.command[tok].append("1")
-            v_linelength.command[tok].append(v_dev.length_commandtoken[device] + misc_functions.length_of_int(number_of_items))
-            # number of positions
+            v_linelength.command[tok].append(v_dev.length_commandtoken[device] + misc_functions.length_of_int(number_of_items - 3))
+            # number of loops
             v_linelength.command[tok].append(1)
+            v_linelength.command[tok].append(0)
             # maxpos: example number_of_items: 5, maxpos: 3, position 0, 1, 2  < 3
-            v_linelength.command[tok].append(number_of_items - 2)
+            v_linelength.command[tok].append(number_of_items - 3)
             # length of nmaxpos
-            v_linelength.command[tok].append(misc_functions.length_of_int(number_of_items - 2))
+            v_linelength.command[tok].append(misc_functions.length_of_int(number_of_items - 3))
+            # check!
+            v_linelength.command[tok].append(2)
     else:
         v_linelength.command[tok].append("0")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken)
@@ -223,26 +250,35 @@ def ct_op(announcement, tok, device):
     # <c>;op[,<des>]...;number_of_valuesx,<des>;lin|log,<des>;unitx,<des>;number_of_valuesy,...
     # <c><n>
     # <c><n><n>
-    v_linelength.command[tok].append("1")
-    v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-    # updated later
-    v_linelength.command[tok].append(0)
     item1 = announcement.split(";")
-    length = 0
-    i = 2
-    j = 0
-    # elements 2, 5, 8,... have to be calculated for each dimension
-    while i < len(item1):
-        item = item1[i].split(",")
-        length = misc_functions.length_of_int(int(item[0]))
-        # value for this dimension
-        v_linelength.command[tok].append(int(item[0]))
-        # length of value
-        v_linelength.command[tok].append(length)
-        i += 3
-        j += 1
-    # number of following parameters
-    v_linelength.command[tok][2] = j
+    if len(item1) > 4:
+        v_linelength.command[tok].append("1")
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken)
+        # number of loops: updated later
+        v_linelength.command[tok].append(0)
+        v_linelength.command[tok].append(0)
+        length = 0
+        i = 2
+        j = 0
+        # elements 2, 5, 8,... have to be calculated for each dimension
+        while i < len(item1):
+            item = item1[i].split(",")
+            length = misc_functions.length_of_int(int(item[0]))
+            if i == 2:
+                v_linelength.command[tok][1] += length
+            # value for this dimension
+            v_linelength.command[tok].append(int(item[0]))
+            # length of value
+            v_linelength.command[tok].append(length)
+            # check!
+            v_linelength.command[tok].append(2)
+            i += 3
+            j += 1
+        # number of following parameters
+        v_linelength.command[tok][2] = j
+    else:
+        v_linelength.command[tok].append("0")
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken)
     v_linelength.answer[tok].append("0")
     v_linelength.answer[tok].append(0)
     return
@@ -252,35 +288,48 @@ def ct_ap(announcement, tok, device):
     # <c>;ap[,<des>]...;number_of_valuesx,<des>;lin|log,<des>;unitx,<des>;number_of_valuesy,..
     # <c>
     # <c><n>    answer / info 1 dimension
-    v_linelength.command[tok].append("1")
-    # for 1st loop
-    v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-    v_linelength.command[tok].append(0)
-
-    v_linelength.answer[tok].append("1")
-    # updated later
-    v_linelength.answer[tok].append(0)
-    # updated later
-    v_linelength.answer[tok].append(0)
     item1 = announcement.split(";")
-    length = 0
-    i = 2
-    j = 0
-    first = 1
-    # elements 2, 5, 8,... have to be calculated for each dimension
-    while i < len(item1):
-        item = item1[i].split(",")
-        temp = misc_functions.length_of_int(int(item[0]))
-        # value of dimension
-        v_linelength.answer[tok].append(int(item[0]))
-        # length of value
-        v_linelength.answer[tok].append(temp)
-        length += temp
-        i += 3
-        j += 1
-    # for 1st loop
-    # number of following parameters
-    v_linelength.answer[tok][2] = j
+    if len(item1) > 4:
+        v_linelength.command[tok].append("1")
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken)
+        # number of loops
+        v_linelength.command[tok].append(0)
+        v_linelength.command[tok].append(0)
+
+        v_linelength.answer[tok].append("1")
+        # updated later
+        v_linelength.answer[tok].append(0)
+        # number of loopsupdated later
+        v_linelength.answer[tok].append(0)
+        v_linelength.answer[tok].append(0)
+        item1 = announcement.split(";")
+        length = 0
+        i = 2
+        j = 0
+        first = 1
+        # elements 2, 5, 8,... have to be calculated for each dimension
+        while i < len(item1):
+            item = item1[i].split(",")
+            temp = misc_functions.length_of_int(int(item[0]))
+            if i == 2:
+                v_linelength.answer[tok][1] += temp
+            # value of dimension
+            v_linelength.answer[tok].append(int(item[0]))
+            # length of value
+            v_linelength.answer[tok].append(temp)
+            # check!
+            v_linelength.answer[tok].append(2)
+            length += temp
+            i += 3
+            j += 1
+        # for 1st loop
+        # number of following parameters
+        v_linelength.answer[tok][2] = j
+    else:
+        v_linelength.command[tok].append("0")
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken)
+        v_linelength.answer[tok].append("0")
+        v_linelength.answer[tok].append(0)
     return
 
 
@@ -290,8 +339,10 @@ def ct_oo(announcement, tok, device):
     # <c><n><n><n><n><n><n><n><n><n>   2 dimension
     # length is calculated for the 1st loop only, so no check of values is done
     v_linelength.command[tok].append("1")
-    # for 1st loop
+    # for 1st loop, updated later
     v_linelength.command[tok].append(v_cr_params.length_commandtoken)
+    # number of loops: updated later
+    v_linelength.command[tok].append(0)
     v_linelength.command[tok].append(0)
     item = announcement.split(";")
     error = 0
@@ -308,9 +359,12 @@ def ct_oo(announcement, tok, device):
         # number_of steps
         temp = int(item[i - 4].split(",")[0])
         length += misc_functions.length_of_int(temp)
+        if i == 6:
+            v_linelength.command[tok][1] += length
         length_all += length
         v_linelength.command[tok].append(temp)
         v_linelength.command[tok].append(length)
+        v_linelength.command[tok].append(2)
         j += 1
         # steptime
         temp = int(item[i - 3].split(",")[0])
@@ -320,6 +374,7 @@ def ct_oo(announcement, tok, device):
             length_all += length
             v_linelength.command[tok].append(temp)
             v_linelength.command[tok].append(length)
+            v_linelength.command[tok].append(2)
             j += 1
         # stepsize
         temp = int(item[i - 1].split(",")[0])
@@ -329,6 +384,7 @@ def ct_oo(announcement, tok, device):
             length_all += length
             v_linelength.command[tok].append(temp)
             v_linelength.command[tok].append(length)
+            v_linelength.command[tok].append(2)
             j += 1
         # <ty>
         temp = misc_functions.ba_to_str(item[i].split(",")[0])
@@ -342,6 +398,7 @@ def ct_oo(announcement, tok, device):
                 # not checked
                 v_linelength.command[tok].append(0)
                 v_linelength.command[tok].append(length)
+                v_linelength.command[tok].append(1)
                 j += 1
         i += 5
     # for 1st loop
@@ -350,6 +407,7 @@ def ct_oo(announcement, tok, device):
         v_linelength.command[tok][2] = j
     else:
         v_linelength.command[tok][0] = "0"
+        v_linelength.command.append(0)
     v_linelength.answer[tok].append("0")
     v_linelength.answer[tok].append(0)
     return
@@ -360,7 +418,8 @@ def ct_oq(announcement, tok, device):
     # <c>
     v_linelength.command[tok].append("1")
     v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-    # number of positions
+    # number of loops
+    v_linelength.command[tok].append(0)
     v_linelength.command[tok].append(0)
     v_linelength.answer[tok].append("0")
     v_linelength.answer[tok].append(0)
@@ -377,26 +436,43 @@ def ct_om(announcement, tok, device):
         if multi[0] == "n":
             # numeric
             v_linelength.command[tok].append("1")
-            v_linelength.command[tok].append(multi[1] + positionlength + v_cr_params.length_commandtoken)
-            # number of positions
-            v_linelength.command[tok].append(1)
+            v_linelength.command[tok].append( v_cr_params.length_commandtoken + positionlength)
+            # number of loops
+            v_linelength.command[tok].append(2)
+            v_linelength.command[tok].append(0)
             v_linelength.command[tok].append(positions)
             v_linelength.command[tok].append(positionlength)
+            # check!
+            v_linelength.command[tok].append(2)
+            #
+            v_linelength.command[tok].append(0)
+            v_linelength.command[tok].append(multi[1])
+            # no check
+            v_linelength.command[tok].append(1)
         else:
             # string
             v_linelength.command[tok].append("2")
-            # length for 1st loop: (length_of_commandtoken +) length of length of cellnumber + length of stringlength
-            v_linelength.command[tok].append(multi[1] + positionlength + v_cr_params.length_commandtoken)
-            # number of following positions (2 member each)
-            v_linelength.command[tok].append(2)
+            v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
+            # number of loops
+            v_linelength.command[tok].append(3)
+            v_linelength.command[tok].append(0)
             # max of memorycells
             v_linelength.command[tok].append(positions)
             # length of this
             v_linelength.command[tok].append(positionlength)
+            # check!
+            v_linelength.command[tok].append(2)
             # max stringlength
             v_linelength.command[tok].append(int(item[2].split(",")[0]))
             # length of this
             v_linelength.command[tok].append(multi[1])
+            # check!
+            v_linelength.command[tok].append(2)
+            # string itself, noch check
+            v_linelength.command[tok].append(0)
+            v_linelength.command[tok].append(0)
+            # check!
+            v_linelength.command[tok].append(1)
     else:
         # error
         v_linelength.command[tok].append("0")
@@ -416,33 +492,55 @@ def ct_am(announcement, tok, device):
         positionlength, positions = calc_positionlength(item)
         v_linelength.command[tok].append("1")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
+        # number of loops
         v_linelength.command[tok].append(1)
+        v_linelength.command[tok].append(0)
         v_linelength.command[tok].append(positions)
         v_linelength.command[tok].append(positionlength)
+        # check !
+        v_linelength.command[tok].append(2)
 
         if multi[0] == "n":
             # numeric
             v_linelength.answer[tok].append("1")
-            v_linelength.answer[tok].append(multi[1] + positionlength)
-            # number of positions
-            v_linelength.answer[tok].append(1)
+            v_linelength.answer[tok].append(positionlength)
+            # number of loops
+            v_linelength.answer[tok].append(2)
+            v_linelength.answer[tok].append(0)
             v_linelength.answer[tok].append(positions)
             v_linelength.answer[tok].append(positionlength)
+            # check!
+            v_linelength.answer[tok].append(2)
+            #
+            v_linelength.answer[tok].append(0)
+            v_linelength.answer[tok].append(multi[1])
+            # no check
+            v_linelength.answer[tok].append(1)
         else:
             # string
             v_linelength.answer[tok].append("2")
-            # length for 1st loop: (length_of_commandtoken +) length of length of cellnumber + length of stringlength
-            v_linelength.answer[tok].append(multi[1] + positionlength)
-            # number of following positions (2 member each)
-            v_linelength.answer[tok].append(2)
+            # length for 1st loop: length of length of cellnumber
+            v_linelength.answer[tok].append(positionlength)
+            # number of loops
+            v_linelength.answer[tok].append(3)
+            v_linelength.answer[tok].append(0)
             # max of memorycells
             v_linelength.answer[tok].append(positions)
             # length of this
             v_linelength.answer[tok].append(positionlength)
+            # check!
+            v_linelength.answer[tok].append(2)
             # max stringlength
             v_linelength.answer[tok].append(int(item[2].split(",")[0]))
             # length of this
             v_linelength.answer[tok].append(multi[1])
+            # check"
+            v_linelength.answer[tok].append(2)
+            # string itself
+            v_linelength.answer[tok].append(0)
+            v_linelength.answer[tok].append(0)
+            # check"
+            v_linelength.answer[tok].append(1)
     else:
         # error
         v_linelength.command[tok].append("0")
@@ -460,7 +558,8 @@ def calc_positionlength(item):
         item1 = item[i].split(",")
         positions *= int(item1[0])
         i += 1
-    # positionlength
+    # positions "0" based:
+    positions -= 1
     return misc_functions.length_of_int(positions), positions
 
 
@@ -473,27 +572,44 @@ def ct_on(announcement, tok, device):
         positionlength, positions = calc_positionlength(item)
         v_linelength.command[tok].append("3")
         # length for 1st loop: length_of_commandtoken + length of startcell * length of length of cellnumber
-        v_linelength.command[tok].append(v_cr_params.length_commandtoken + 2 * positionlength)
-        # number of memorycells
-        v_linelength.command[tok].append(positions)
-        # length of this
-        v_linelength.command[tok].append(positionlength)
-        # max stringlength / length of cell
-        if multi[0] == "n":
-            v_linelength.command[tok].append(0)
-        else:
-            # "s"
-            v_linelength.command[tok].append(int(item[2].split(",")[0]))
-        # length of this
-        v_linelength.command[tok].append(multi[1])
-        if multi[0] == "n":
-            # numeric
-            v_linelength.command[tok].append(0)
-        else:
-            # string
-            v_linelength.command[tok].append(1)
-        # on /an command
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
+
+        # number of loops, updated later
         v_linelength.command[tok].append(0)
+        v_linelength.command[tok].append(0)
+        # startposition for transfer
+        v_linelength.command[tok].append(positions)
+        v_linelength.command[tok].append(positionlength)
+        # check!
+        v_linelength.command[tok].append(2)
+        # number of elements to transfer
+        v_linelength.command[tok].append(positions)
+        v_linelength.command[tok].append(positionlength)
+        # check!
+        v_linelength.command[tok].append(2)
+
+        if multi[0] == "n":
+            v_linelength.command[tok][2] = 3
+            v_linelength.command[tok].append(0)
+            v_linelength.command[tok].append(multi[1])
+            # no check!
+            v_linelength.command[tok].append(1)
+        elif multi[0] == "s":
+            # string
+            v_linelength.command[tok][0] = "4"
+            v_linelength.command[tok][2] = 4
+            v_linelength.command[tok].append(int(item[2].split(",")[0]))
+            v_linelength.command[tok].append(multi[1])
+            # check!
+            v_linelength.command[tok].append(2)
+            # string itself
+            v_linelength.command[tok].append(0)
+            v_linelength.command[tok].append(multi[1])
+            # nop check!
+            v_linelength.command[tok].append(1)
+        else:
+            v_linelength.command[tok].append("0")
+            v_linelength.command[tok].append(v_cr_params.length_commandtoken)
     else:
         # error
         v_linelength.command[tok].append("0")
@@ -506,60 +622,74 @@ def ct_on(announcement, tok, device):
 def ct_an(announcement, tok, device):
     # c>;an[<,des>]...[,<des>]; <ty>[,<des>]... [,<des>];n_rows[,<des>]...[,<des>];[<n_cols[,<des>]...[,<des>]]...
     # <c><n><m>
-    # <data>
-    # <c><n><m><data> info
+    # <c><n><m><data> abswere / info
     item = announcement.split(";")
     multi = misc_functions.length_of_typ(item[2].split(",")[0])
     if multi[0] != "0":
         positionlength, positions = calc_positionlength(item)
-        v_linelength.command[tok].append("3")
-        v_linelength.command[tok].append(v_cr_params.length_commandtoken + 2 * positionlength)
-        # number of memorycells
-        v_linelength.command[tok].append(positions)
-        # length of this
-        v_linelength.command[tok].append(positionlength)
-        # max stringlength / length of cell
-        if multi[0] == "n":
-            v_linelength.command[tok].append(0)
-        else:
-            # "s"
-            v_linelength.command[tok].append(int(item[2].split(",")[0]))
-        # length of this
-        v_linelength.command[tok].append(multi[1])
-        if multi[0] == "n":
-            # numeric
-            v_linelength.command[tok].append(0)
-        else:
-            # string
-            v_linelength.command[tok].append(1)
-        # on /an - of / af command
-        v_linelength.command[tok].append(0)
+        v_linelength.command[tok].append("1")
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
 
+        v_linelength.command[tok].append(2)
+        v_linelength.command[tok].append(0)
+        # startposition for transfer
+        v_linelength.command[tok].append(positions)
+        v_linelength.command[tok].append(positionlength)
+        # check!
+        v_linelength.command[tok].append(2)
+        # number of elements to transfer
+        v_linelength.command[tok].append(positions)
+        v_linelength.command[tok].append(positionlength)
+        # check!
+        v_linelength.command[tok].append(2)
 
         v_linelength.answer[tok].append("3")
-        # length for 1st loop: length_of_commandtoken + length of startcell * length of length of cellnumber
-        v_linelength.answer[tok].append(2 * positionlength)
-        # number of memorycells
-        v_linelength.answer[tok].append(positions)
-        # length of this
         v_linelength.answer[tok].append(positionlength)
-        # max stringlength / length of cell
-        if multi[0] == "n":
-            v_linelength.answer[tok].append(0)
-        else:
-            # "s"
-            v_linelength.answer[tok].append(int(item[2].split(",")[0]))
-        # length of this
-        v_linelength.answer[tok].append(multi[1])
-        if multi[0] == "n":
-            # numeric
-            v_linelength.answer[tok].append(0)
-        else:
-            # string
-            v_linelength.answer[tok].append(1)
-        # on /an answer
+        # updated later
         v_linelength.answer[tok].append(0)
-
+        v_linelength.answer[tok].append(0)
+        # startposition for transfer
+        v_linelength.answer[tok].append(positions)
+        v_linelength.answer[tok].append(positionlength)
+        # check!
+        v_linelength.answer[tok].append(2)
+        # number of elements to transfer
+        v_linelength.answer[tok].append(positions)
+        v_linelength.answer[tok].append(positionlength)
+        # check!
+        v_linelength.answer[tok].append(2)
+        if multi[0] == "n":
+            v_linelength.answer[tok][2] = 3
+            v_linelength.answer[tok].append(0)
+            v_linelength.answer[tok].append(multi[1])
+            # no check!
+            v_linelength.answer[tok].append(1)
+        elif multi[0] == "s":
+            # string
+            v_linelength.answer[tok][0] = "4"
+            v_linelength.answer[tok][2] = 6
+            v_linelength.answer[tok].append(int(item[2].split(",")[0]))
+            v_linelength.answer[tok].append(multi[1])
+            # check!
+            v_linelength.answer[tok].append(2)
+            # string itself
+            v_linelength.answer[tok].append(0)
+            v_linelength.answer[tok].append(multi[1])
+            # nop check!
+            v_linelength.answer[tok].append(1)
+            # 2 previous blocks must be repeated due to simpler analyze program
+            v_linelength.answer[tok].append(int(item[2].split(",")[0]))
+            v_linelength.answer[tok].append(multi[1])
+            # check!
+            v_linelength.answer[tok].append(2)
+            # string itself
+            v_linelength.answer[tok].append(0)
+            v_linelength.answer[tok].append(multi[1])
+            # nop check!
+            v_linelength.answer[tok].append(1)
+        else:
+            v_linelength.answer[tok].append("0")
+            v_linelength.answer[tok].append(0)
     else:
         # error
         v_linelength.command[tok].append("0")
@@ -576,34 +706,56 @@ def ct_of(announcement, tok, device):
     multi = misc_functions.length_of_typ(item[2].split(",")[0])
     if multi[0] != "0":
         positionlength, positions = calc_positionlength(item)
-        v_linelength.command[tok].append("3")
-        # length for 1st loop: length_of_commandtoken + length of startcell * length of length of cellnumber
+        v_linelength.command[tok].append("5")
+        # length for 1st loop: length_of_commandtoken + length of startcell
         v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
-        # number of memorycells
+
+        # number of loops, updated later
+        v_linelength.command[tok].append(0)
+        v_linelength.command[tok].append(0)
+
+        # number of elements to transfer
         v_linelength.command[tok].append(positions)
-        # length of this
         v_linelength.command[tok].append(positionlength)
-        # max stringlength / length of cell
+        # check!
+        v_linelength.command[tok].append(2)
+
         if multi[0] == "n":
+            v_linelength.command[tok][2] = 2
             v_linelength.command[tok].append(0)
-        else:
-            # "s"
-            v_linelength.command[tok].append(int(item[2].split(",")[0]))
-        # length of this
-        v_linelength.command[tok].append(multi[1])
-        if multi[0] == "n":
-            # numeric
-            v_linelength.command[tok].append(0)
-        else:
-            # string
+            v_linelength.command[tok].append(multi[1])
+            # no check!
             v_linelength.command[tok].append(1)
-        # on / an  - of / af command
-        v_linelength.command[tok].append(1)
+        elif multi[0] == "s":
+            # string
+            v_linelength.command[tok][0] = "6"
+            v_linelength.command[tok][2] = 5
+            v_linelength.command[tok].append(int(item[2].split(",")[0]))
+            v_linelength.command[tok].append(multi[1])
+            # check!
+            v_linelength.command[tok].append(2)
+            # string itself
+            v_linelength.command[tok].append(0)
+            v_linelength.command[tok].append(multi[1])
+            # nop check!
+            v_linelength.command[tok].append(1)
+            # 2 previous blocks must be repeated due to simpler analyze program
+            v_linelength.command[tok].append(int(item[2].split(",")[0]))
+            v_linelength.command[tok].append(multi[1])
+            # check!
+            v_linelength.command[tok].append(2)
+            # string itself
+            v_linelength.command[tok].append(0)
+            v_linelength.command[tok].append(multi[1])
+            # nop check!
+            v_linelength.command[tok].append(1)
+        else:
+            v_linelength.command[tok].append("0")
+            v_linelength.command[tok].append(v_cr_params.length_commandtoken)
     else:
         # error
         v_linelength.command[tok].append("0")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-    # must not have 2 parameters
     v_linelength.answer[tok].append("0")
     v_linelength.answer[tok].append(0)
     return
@@ -612,66 +764,71 @@ def ct_of(announcement, tok, device):
 def ct_af(announcement, tok, device):
     # c>;an[<,des>]...[,<des>]; <ty>[,<des>]... [,<des>];n_rows[,<des>]...[,<des>]
     # <c><m>
-    # <data>
-    # <c><m><data>     info
+    # <c><m><data>     answer / info
     item = announcement.split(";")
     multi = misc_functions.length_of_typ(item[2].split(",")[0])
     if multi[0] != "0":
         positionlength, positions = calc_positionlength(item)
-        v_linelength.command[tok].append("3")
+        v_linelength.command[tok].append("1")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
-        # number of memorycells
-        v_linelength.command[tok].append(positions)
-        # length of this
-        v_linelength.command[tok].append(positionlength)
-        # max stringlength / length of cell
-        if multi[0] == "n":
-            v_linelength.command[tok].append(0)
-        else:
-            # "s"
-            v_linelength.command[tok].append(int(item[2].split(",")[0]))
-        # length of this
-        v_linelength.command[tok].append(multi[1])
-        if multi[0] == "n":
-            # numeric
-            v_linelength.command[tok].append(0)
-        else:
-            # string
-            v_linelength.command[tok].append(1)
-        # on /an - of / af command
-        v_linelength.command[tok].append(1)
 
-        v_linelength.answer[tok].append("3")
-        # length for 1st loop: length_of_commandtoken + length of startcell * length of length of cellnumber
+        v_linelength.command[tok].append(1)
+        v_linelength.command[tok].append(0)
+        # number of elements to transfer
+        v_linelength.command[tok].append(positions)
+        v_linelength.command[tok].append(positionlength)
+        # check!
+        v_linelength.command[tok].append(2)
+
+        v_linelength.answer[tok].append("5")
         v_linelength.answer[tok].append(positionlength)
-        # number of memorycells
+        # updated later
+        v_linelength.answer[tok].append(0)
+        v_linelength.answer[tok].append(0)
+
+        # number of elements to transfer
         v_linelength.answer[tok].append(positions)
-        # length of this
         v_linelength.answer[tok].append(positionlength)
-        # max stringlength / length of cell
+        # check!
+        v_linelength.answer[tok].append(2)
         if multi[0] == "n":
+            v_linelength.answer[tok][2] = 2
             v_linelength.answer[tok].append(0)
-        else:
-            # "s"
-            v_linelength.answer[tok].append(int(item[2].split(",")[0]))
-        # length of this
-        v_linelength.answer[tok].append(multi[1])
-        if multi[0] == "n":
-            # numeric
-            v_linelength.answer[tok].append(0)
-        else:
-            # string
+            v_linelength.answer[tok].append(multi[1])
+            # no check!
             v_linelength.answer[tok].append(1)
-        # on / an  - of / af answer
-        v_linelength.answer[tok].append(1)
+        elif multi[0] == "s":
+            # string
+            v_linelength.answer[tok][0] = "6"
+            v_linelength.answer[tok][2] = 5
+            v_linelength.answer[tok].append(int(item[2].split(",")[0]))
+            v_linelength.answer[tok].append(multi[1])
+            # check!
+            v_linelength.answer[tok].append(2)
+            # string itself
+            v_linelength.answer[tok].append(0)
+            v_linelength.answer[tok].append(multi[1])
+            # nop check!
+            v_linelength.answer[tok].append(1)
+            # 2 previous blocks must be repeated due to simpler analyze program
+            v_linelength.answer[tok].append(int(item[2].split(",")[0]))
+            v_linelength.answer[tok].append(multi[1])
+            # check!
+            v_linelength.answer[tok].append(2)
+            # string itself
+            v_linelength.answer[tok].append(0)
+            v_linelength.answer[tok].append(multi[1])
+            # nop check!
+            v_linelength.answer[tok].append(1)
+        else:
+            v_linelength.answer[tok].append("0")
+            v_linelength.answer[tok].append(0)
     else:
         # error
         v_linelength.command[tok].append("0")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken)
         v_linelength.answer[tok].append("0")
-        v_linelength.answer[tok].append(v_cr_params.length_commandtoken)
-        v_linelength.info[tok].append("0")
-        v_linelength.info[tok].append(v_cr_params.length_commandtoken)
+        v_linelength.answer[tok].append(0)
     return
 
 
@@ -683,43 +840,63 @@ def ct_oa(announcement, tok, device):
     positionlength = misc_functions.length_of_int(positions)
     if positions < 3:
         # no data for memory, announcementerror
-        v_linelength.command[tok] = "0"
+        v_linelength.command[tok].append("0")
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken)
     else:
-        v_linelength.command[tok].append("4")
-        positions -= 2
-        if positions == 1:
-            # 1st loop
-            v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-            # number of memorycells
-            v_linelength.command[tok].append(positions)
-            # not transmitted
+        v_linelength.command[tok].append("7")
+        if positions == 3:
+            item1 = item[2].split(",")[0]
+            # updated later
             v_linelength.command[tok].append(0)
-        else:
-            # wait 1st loop
-            v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
-            # number of memorycells
-            v_linelength.command[tok].append(positions)
-            # length_of_number_of_elements
-            v_linelength.command[tok].append(positionlength)
-        i = 0
-        # first <ty>
-        while i < positions:
-            item1 = item[i + 2].split(",")
-            # type is string / numeric ?
-            if str.isnumeric(item1[0]):
+            # number of loops
+            v_linelength.command[tok].append(0)
+            v_linelength.command[tok].append(0)
+            if str.isnumeric(item1):
                 # string
-                # maxstring: maximum length of string, 0 for numeric <ty>
-                v_linelength.command[tok].append(int(item1[0]))
-                # length of this, length of <ty>
-                v_linelength.command[tok].append(misc_functions.length_of_int(int(item1[0])))
-                # 0: numeric / 1: string
-                v_linelength.command[tok].append(1)
+                v_linelength.command[tok][1] = v_cr_params.length_commandtoken + misc_functions.length_of_int(int(item1))
+                v_linelength.command[tok].append(int(item1))
+                v_linelength.command[tok].append(misc_functions.length_of_int(int(item1)))
+                # length of string
+                v_linelength.command[tok].append(3)
             else:
                 # numeric
+                v_linelength.command[tok][1] = v_cr_params.length_commandtoken + v_cr_params.length_of_par[item1]
                 v_linelength.command[tok].append(0)
-                v_linelength.command[tok].append(v_cr_params.length_of_par[item1[0]])
-                v_linelength.command[tok].append(0)
-            i += 1
+                v_linelength.command[tok].append(v_cr_params.length_of_par[item1])
+                # no check!
+                v_linelength.command[tok].append(1)
+        else:
+            # number of positions, not index
+            positions -= 2
+            # length for 1st loop: length_of_commandtoken + length of startcell
+            v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
+            # number of loops (minimum)
+            v_linelength.command[tok].append(1)
+            v_linelength.command[tok].append(0)
+
+            # elementposition
+            v_linelength.command[tok].append(positions)
+            v_linelength.command[tok].append(positionlength)
+            # check!
+            v_linelength.command[tok].append(2)
+
+            i = 0
+            while i < positions:
+                item1 = item[i + 2].split(",")[0]
+                # type is string / numeric ?
+                if str.isnumeric(item1):
+                    # string
+                    v_linelength.command[tok].append(int(item1))
+                    v_linelength.command[tok].append(misc_functions.length_of_int(int(item1)))
+                    # check!
+                    v_linelength.command[tok].append(3)
+                else:
+                    # numeric
+                    v_linelength.command[tok].append(0)
+                    v_linelength.command[tok].append(v_cr_params.length_of_par[item1])
+                    # no check!
+                    v_linelength.command[tok].append(1)
+                i += 1
     v_linelength.answer[tok].append("0")
     v_linelength.answer[tok].append(0)
     return
@@ -735,74 +912,82 @@ def ct_aa(announcement, tok, device):
     if positions < 3:
         # no data for memory, announcementerror
         v_linelength.command[tok].append("0")
-        v_linelength.command[tok].append(v_cr_params.length_commandtoken)
+        v_linelength.command[tok].append(0)
+        v_linelength.answer[tok].append("0")
+        v_linelength.answer[tok].append(0)
     else:
-        positions -= 2
-        v_linelength.command[tok].append("4")
-        if positions == 1:
+        v_linelength.command[tok].append("1")
+        if positions == 3:
             # 1st loop
             v_linelength.command[tok].append(v_cr_params.length_commandtoken)
-            # number of memorycells
-            v_linelength.command[tok].append(positions)
-            # not transmitted
+            # number of loops
+            v_linelength.command[tok].append(0)
             v_linelength.command[tok].append(0)
         else:
-            # 1st loop
             v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
-            # number of memorycells
-            v_linelength.command[tok].append(positions)
-            # length_of_number_of_elements
-            v_linelength.command[tok].append(positionlength)
-        i = 0
-        # first <ty>
-        while i < positions:
-            item1 = item[i + 2].split(",")
-            # type is string / numeric ?
-            if str.isnumeric(item1[0]):
-                # string
-                # maxstring: maximum length of string, 0 for numeric <ty>
-                v_linelength.command[tok].append(int(item1[0]))
-                # length of this, length of <ty>
-                v_linelength.command[tok].append(misc_functions.length_of_int(int(item1[0])))
-                # 0: numeric / 1: string
-                v_linelength.command[tok].append(1)
-            else:
-                # numeric
-                v_linelength.command[tok].append(0)
-                v_linelength.command[tok].append(v_cr_params.length_of_par[item1[0]])
-                v_linelength.command[tok].append(0)
-            i += 1
+            # number of loops
+            v_linelength.command[tok].append(1)
+            v_linelength.command[tok].append(0)
 
-        v_linelength.answer[tok].append("4")
-        if positions == 1:
-            # 1st loop
+            v_linelength.command[tok].append(positions - 3)
+            v_linelength.command[tok].append(positionlength)
+            # check !
+            v_linelength.command[tok].append(2)
+
+        v_linelength.answer[tok].append("7")
+        if positions == 3:
+            item1 = item[2].split(",")
+            # updated later
             v_linelength.answer[tok].append(0)
-        else:
-            # 1st loop
-            v_linelength.answer[tok].append(positionlength)
-        # number of memorycells
-        v_linelength.answer[tok].append(positions)
-        # length_of_number_of_elements
-        v_linelength.answer[tok].append(positionlength)
-        i = 0
-        # first <ty>
-        while i < positions:
-            item1 = item[i + 2].split(",")
-            # type is string / numeric ?
+            # number of loops
+            v_linelength.answer[tok].append(0)
+            v_linelength.answer[tok].append(0)
             if str.isnumeric(item1[0]):
-                # string
-                # maxstring: maximum length of string, 0 for numeric <ty>
+                # max length of string
+                v_linelength.answer[tok][1] = misc_functions.length_of_int(int(item1[0]))
                 v_linelength.answer[tok].append(int(item1[0]))
-                # length of this, length of <ty>
                 v_linelength.answer[tok].append(misc_functions.length_of_int(int(item1[0])))
-                # 0: numeric / 1: string
-                v_linelength.answer[tok].append(1)
+                # check!
+                v_linelength.answer[tok].append(3)
             else:
                 # numeric
+                v_linelength.answer[tok][1] = v_cr_params.length_of_par[item1[0]]
                 v_linelength.answer[tok].append(0)
                 v_linelength.answer[tok].append(v_cr_params.length_of_par[item1[0]])
-                v_linelength.answer[tok].append(0)
-            i += 1
+                # no check!
+                v_linelength.answer[tok].append(1)
+        else:
+            # number of positions, not index
+            positions -= 2
+            # length for 1st loop: length_of_commandtoken + length of startcell
+            v_linelength.answer[tok].append(positionlength)
+            # number of loops
+            v_linelength.answer[tok].append(1)
+            v_linelength.answer[tok].append(0)
+
+            # elementposition
+            v_linelength.answer[tok].append(positions)
+            v_linelength.answer[tok].append(positionlength)
+            # check!
+            v_linelength.answer[tok].append(2)
+
+            i = 0
+            while i < positions:
+                item1 = item[i + 2].split(",")
+                # type is string / numeric ?
+                if str.isnumeric(item1[0]):
+                    # length of string
+                    v_linelength.answer[tok].append(int(item1[0]))
+                    v_linelength.answer[tok].append(misc_functions.length_of_int(int(item1[0])))
+                    # check!
+                    v_linelength.answer[tok].append(3)
+                else:
+                    # numeric
+                    v_linelength.answer[tok].append(0)
+                    v_linelength.answer[tok].append(v_cr_params.length_of_par[item1[0]])
+                    # no check!
+                    v_linelength.answer[tok].append(1)
+                i += 1
     return
 
 
@@ -817,32 +1002,42 @@ def ct_ob(announcement, tok, device):
         v_linelength.command[tok].append("0")
         v_linelength.command[tok].append(v_cr_params.length_commandtoken)
     else:
-        v_linelength.command[tok].append("5")
+        v_linelength.command[tok].append("8")
+        # number of positions, not index
         positions -= 2
-            # wait 1st loop
-        v_linelength.command[tok].append(v_cr_params.length_commandtoken + 2 * positionlength)
-        # number_of_memorycells
+        # length for 1st loop: length_of_commandtoken + length of startcell
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
+        # number of loops
+        v_linelength.command[tok].append(2)
+        v_linelength.command[tok].append(0)
+
+        # start of elements
         v_linelength.command[tok].append(positions)
-        # length_of_number_of_memorycells
         v_linelength.command[tok].append(positionlength)
+        # check!
+        v_linelength.command[tok].append(2)
+        # number of elements
+        v_linelength.command[tok].append(positions)
+        v_linelength.command[tok].append(positionlength)
+        # check!
+        v_linelength.command[tok].append(2)
+
         i = 0
-        # first <ty>
         while i < positions:
             item1 = item[i + 2].split(",")
             # type is string / numeric ?
             if str.isnumeric(item1[0]):
                 # string
-                # maxstring: maximum length of string, 0 for numeric <ty>
                 v_linelength.command[tok].append(int(item1[0]))
-                # length of this, length of <ty>
                 v_linelength.command[tok].append(misc_functions.length_of_int(int(item1[0])))
-                # 0: numeric / 1: string
-                v_linelength.command[tok].append(1)
+                # check!
+                v_linelength.command[tok].append(3)
             else:
                 # numeric
                 v_linelength.command[tok].append(0)
                 v_linelength.command[tok].append(v_cr_params.length_of_par[item1[0]])
-                v_linelength.command[tok].append(0)
+                # no check!
+                v_linelength.command[tok].append(1)
             i += 1
     v_linelength.answer[tok].append("0")
     v_linelength.answer[tok].append(0)
@@ -860,60 +1055,58 @@ def ct_ab(announcement, tok, device):
         v_linelength.command[tok].append(0)
         v_linelength.answer[tok].append("0")
         v_linelength.answer[tok].append(0)
-
     else:
-        positions -= 2
-        v_linelength.command[tok].append("5")
-        # 1st loop
-        v_linelength.command[tok].append(v_cr_params.length_commandtoken + 2 * positionlength)
-        # number of memorycells
-        v_linelength.command[tok].append(positions)
-        # length_of_number_of_elements
+        v_linelength.command[tok].append("1")
+        v_linelength.command[tok].append(v_cr_params.length_commandtoken + positionlength)
+        # number of loops
+        v_linelength.command[tok].append(2)
+        v_linelength.command[tok].append(0)
+        # start element
+        v_linelength.command[tok].append(positions - 2)
         v_linelength.command[tok].append(positionlength)
-        i = 0
-        # first <ty>
-        while i < positions:
-            item1 = item[i + 2].split(",")
-            # type is string / numeric ?
-            if str.isnumeric(item1[0]):
-                # string
-                # maxstring: maximum length of string, 0 for numeric <ty>
-                v_linelength.command[tok].append(int(item1[0]))
-                # length of this, length of <ty>
-                v_linelength.command[tok].append(misc_functions.length_of_int(int(item1[0])))
-                # 0: numeric / 1: string
-                v_linelength.command[tok].append(1)
-            else:
-                # numeric
-                v_linelength.command[tok].append(0)
-                v_linelength.command[tok].append(v_cr_params.length_of_par[item1[0]])
-                v_linelength.command[tok].append(0)
-            i += 1
+        # check !
+        v_linelength.command[tok].append(2)
+        # number of elements
+        v_linelength.command[tok].append(positions - 2)
+        v_linelength.command[tok].append(positionlength)
+        # check !
+        v_linelength.command[tok].append(2)
 
-        v_linelength.answer[tok].append("5")
-        # wait 1st loop
-        v_linelength.answer[tok].append(2 * positionlength)
-        # number_of_memorycells
-        v_linelength.answer[tok].append(positions)
-        # length_of_number_of_memorycells
+        v_linelength.answer[tok].append("8")
+        # number of positions, not index
+        positions -= 2
+        # length for 1st loop: length of startcell
         v_linelength.answer[tok].append(positionlength)
+        # number of loops
+        v_linelength.answer[tok].append(2)
+        v_linelength.answer[tok].append(0)
+
+        # start element
+        v_linelength.answer[tok].append(positions)
+        v_linelength.answer[tok].append(positionlength)
+        # check!
+        v_linelength.answer[tok].append(2)
+        # number of elements
+        v_linelength.answer[tok].append(positions)
+        v_linelength.answer[tok].append(positionlength)
+        # check!
+        v_linelength.answer[tok].append(2)
+
         i = 0
-        # first <ty>
         while i < positions:
             item1 = item[i + 2].split(",")
             # type is string / numeric ?
             if str.isnumeric(item1[0]):
                 # string
-                # maxstring: maximum length of string, 0 for numeric <ty>
                 v_linelength.answer[tok].append(int(item1[0]))
-                # length of this, length of <ty>
                 v_linelength.answer[tok].append(misc_functions.length_of_int(int(item1[0])))
-                # 0: numeric / 1: string
-                v_linelength.answer[tok].append(1)
+                # check!
+                v_linelength.answer[tok].append(3)
             else:
                 # numeric
                 v_linelength.answer[tok].append(0)
                 v_linelength.answer[tok].append(v_cr_params.length_of_par[item1[0]])
-                v_linelength.answer[tok].append(0)
+                # no check!
+                v_linelength.answer[tok].append(1)
             i += 1
     return

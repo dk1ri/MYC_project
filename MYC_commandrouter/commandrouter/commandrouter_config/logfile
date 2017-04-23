@@ -1,7 +1,60 @@
-1489429869.7591126 check_log
-1489429969.7564197 re_read  my devices
-1489429969.7604215 check_log
-1489430069.758267 re_read  my devices
-1489430069.7622654 check_log
-1489430169.7600105 re_read  my devices
-1489430169.764513 check_log
+1492939877.564887 check_log
+1492939877.735077 dev, no vaid token
+1492939877.9352517 dev, no vaid token
+1492939878.1355438 dev, no vaid token
+1492939878.335745 dev, no vaid token
+1492939878.5359304 dev, no vaid token
+1492939878.7362003 dev, no vaid token
+1492939878.9365234 dev, no vaid token
+1492939879.1367452 SK switch parameter value too high, loop:0 187 3
+1492939879.1367452 from SK: no valid commandtoken 213
+1492939879.1367452 from SK: no valid commandtoken 186
+1492939879.1367452 from SK: no valid commandtoken 168
+1492939879.1367452 from SK: no valid commandtoken 216
+1492939879.1367452 from SK: no valid commandtoken 174
+1492939879.1367452 from SK: no valid commandtoken 178
+1492939879.1467469 from SK: no valid commandtoken 189
+1492939879.1467469 SK om string parameter value too high, loop:0 215 119
+1492939879.246924 SK timeout  1
+1492939879.3372452 SK switch parameter value too high, loop:0 82 1
+1492939879.3372452 from SK: no valid commandtoken 189
+1492939879.437338 SK timeout  1
+1492939879.5375657 dev, no vaid token
+1492939879.737732 from SK: no valid commandtoken 229
+1492939879.737732 from SK: no valid commandtoken 206
+1492939879.737732 from SK: no valid commandtoken 207
+1492939879.837824 SK timeout  1
+1492939879.9379213  from SK: commandtoken with no action145
+1492939879.9379213 from SK: no valid commandtoken 233
+1492939879.9379213 SK switch parameter value too high, loop:0 8473 269
+1492939879.9379213 SK switch parameter value too high, loop:0 59741 269
+1492939880.038037 SK timeout  1
+1492939880.1381197 SK om string parameter value too high, loop:0 129 119
+1492939880.1381197 SK of numeric parameter value too high, loop:0 5 2
+1492939880.1381197 SK of numeric parameter value too high, loop:0 5283458 65999
+1492939880.1381197 SK switch parameter value too high, loop:0 109 100
+1492939880.1381197 from SK: no valid commandtoken 210
+1492939880.1381197 from SK: no valid commandtoken 161
+1492939880.1381197 SK switch parameter value too high, loop:0 161 3
+1492939880.1381197 from SK: no valid commandtoken 184
+1492939880.4481177 SK timeout  1
+1492939880.548156 dev, no vaid token
+1492939880.7483964 dev, no vaid token
+1492939880.9490292 from SK: no valid commandtoken 228
+1492939880.9490292 from SK: no valid commandtoken 243
+1492939880.9490292 SK switch parameter value too high, loop:0 194 13
+1492939880.9490292 from SK: no valid commandtoken 189
+1492939880.9490292 SK switch parameter value too high, loop:0 1233206 65999
+1492939880.9490292 from SK: no valid commandtoken 196
+1492939880.9490292 SK switch parameter value too high, loop:0 187 119
+1492939881.1588223 SK switch parameter value too high, loop:0 21830 1199
+1492939881.1588223 SK switch parameter value too high, loop:0 253 1
+1492939881.1588223 from SK: no valid commandtoken 242
+1492939881.1588223 from SK: no valid commandtoken 255
+1492939881.1588223 from SK: no valid commandtoken 206
+1492939881.2589493 SK timeout  1
+1492939881.3590984 from SK: no valid commandtoken 189
+1492939881.3590984 SK switch parameter value too high, loop:0 209 1
+1492939977.5606992 re_read  my devices
+1492939977.5706995 check_log
+1492940001.3609262 user timeout0

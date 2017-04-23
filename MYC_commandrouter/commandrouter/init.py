@@ -9,14 +9,12 @@ others are called by read_my_devices only
 
 import os
 
-from tests import *
 from io_handling import *
 from misc_functions import *
 
 import v_device_names_and_indiv
 import v_configparameter
 import v_cr_params
-import v_ld
 
 # variables per device
 import v_dev
@@ -178,6 +176,7 @@ def create_device(indiv):
     v_dev.dev_cr_tok.append({})
     # list of devicetoken
     v_dev.tok.append([])
+    v_dev.info.append((0))
     v_dev.input_device.append(0)
     v_dev.interface_adress.append(0)
     v_dev.interface_baudrate.append(0)
@@ -186,11 +185,11 @@ def create_device(indiv):
     v_dev.interface_port.append(0)
     v_dev.interface_timeout.append(0)
     v_dev.interface_type.append("")
-    v_dev.linelength_actual_call.append(0)
     # linelength parameters modified at real time: number of byte for next action
     v_dev.linelength_len.append(0)
     v_dev.linelength_other.append(0)
     v_dev.linelength_other1.append(0)
+    v_dev.linelength_loop.append(0)
     v_dev.name.append(indiv)
     v_dev.start_time.append(0)
     v_dev.readpointer.append([])
@@ -283,15 +282,15 @@ def create_inputbuffer(interface_type, name,):
     # actual_call in analyze_length for next action:
     v_sk.linelength_len.append(0)
     # count the number of analyze calls
-    v_sk.linelength_actual_call.append(0)
     v_sk.linelength_other.append(0)
     v_sk.linelength_other1.append(0)
+    v_sk.linelength_loop.append(0)
     v_sk.name.append(interface_type + name)
     v_sk.number_of_bits.append("")
     v_sk.socket.append([])
     v_sk.source.append([])
     # starttime
-    v_sk.starttime.append(0)
+    v_sk.starttime.append([])
     v_sk.user_number.append(0)
     v_sk.multiuser.append([2])
     v_sk.user_active.append([])
@@ -303,6 +302,7 @@ def create_inputbuffer(interface_type, name,):
         v_sk.user_timeout[m].append(0)
         v_sk.user_active[m].append(0)
         v_sk.user_answer_token[m].append(bytearray([42]))
+        v_sk.starttime[m].append(0)
         i += 1
     v_sk.telnet_number.append([])
     # contain s list of started ports
@@ -393,7 +393,7 @@ def read_announcements_of_a_device(indiv, devicegroupname, device, own_cr):
                         temp = item[i].split(",")
                         if len(temp) > 1:
                             if temp[1] == "INFO":
-                                v_dev.answer_as_info[device] = 1
+                                v_dev.info[device] = 1
                         i += 1
 
             # resolve duplicate commandtoken / type, concatenate to one line
@@ -503,4 +503,3 @@ def get_announcements_of_lower_level_device(devicegroupname):
     # and copy to commandrouter_config/devicegroupfiles
     # strip last "I" line
     return
-

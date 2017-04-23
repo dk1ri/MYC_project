@@ -18,9 +18,9 @@ import v_token_params
 
 def com240(line, tok, token, input_device, user):
     # parameters are checked before
-    temp = v_cr_params.length_commandtoken + v_linelength.command[tok][3]
+    temp = v_cr_params.length_commandtoken + v_linelength.command[tok][5]
     start_line = int.from_bytes(line[v_cr_params.length_commandtoken:temp], byteorder='big', signed=False)
-    number_of_lines = int.from_bytes(line[temp: temp + v_linelength.command[tok][3]], byteorder='big', signed=False)
+    number_of_lines = int.from_bytes(line[temp: temp + v_linelength.command[tok][5]], byteorder='big', signed=False)
     output = int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken)
     i = 0
     while i < number_of_lines:
@@ -28,7 +28,7 @@ def com240(line, tok, token, input_device, user):
         if len(item) > 1:
             item1 = item[1].split(",")
             if item1[0][0] == "r" or item1[0][0] == "s":
-                # empty string
+                # empty string for r ans s commands
                 output.extend(int_to_ba(0, v_linelength.command[tok][5]))
             else:
                 strl = len(v_announcelist.full[start_line])
@@ -36,7 +36,7 @@ def com240(line, tok, token, input_device, user):
                 output.extend(str_to_bytearray((v_announcelist.full[start_line])))
         i += 1
         start_line += 1
-        if start_line > v_linelength.command[tok][4]:
+        if start_line >= v_linelength.command[tok][4]:
             # end of memory
             start_line = 0
     v_sk.info_to_all.extend(output)
@@ -46,9 +46,9 @@ def com240(line, tok, token, input_device, user):
 
 def com241(line, tok, token, input_device, user):
     # parameters are checked before
-    temp = v_cr_params.length_commandtoken + v_linelength.command[tok][3]
+    temp = v_cr_params.length_commandtoken + v_linelength.command[tok][5]
     start_line = int.from_bytes(line[v_cr_params.length_commandtoken:temp], byteorder='big', signed=False)
-    number_of_lines = int.from_bytes(line[temp: temp + v_linelength.command[tok][3]], byteorder='big', signed=False)
+    number_of_lines = int.from_bytes(line[temp: temp + v_linelength.command[tok][5]], byteorder='big', signed=False)
     output = int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken)
     i = 0
     while i < number_of_lines:
@@ -57,8 +57,8 @@ def com241(line, tok, token, input_device, user):
         output.extend(str_to_bytearray((v_announcelist.basic[start_line])))
         i += 1
         start_line += 1
-        if start_line > v_linelength.command[tok][2]:
-            # end of memor<
+        if start_line >= v_linelength.command[tok][4]:
+            # end of memory
             start_line = 0
     v_sk.info_to_all.extend(output)
     # return bytes to delete (2 * v_linelength.command[tok][3])
@@ -74,6 +74,7 @@ def com249(line, tok, token, input_device, user):
     while i < len(line):
         v_sk.user_answer_token[input_device][user].extend(line[i:i+v_cr_params.length_commandtoken])
         i += v_cr_params.length_commandtoken
+    # missing:
     output = int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken)
     return
 
@@ -122,10 +123,9 @@ def com251(line, tok, token, input_device, user):
 
 
 def com252(line, tok, token, input_device, user):
-    print("CRLasrerror")
     # LAST ERROR
     v_sk.info_to_all.extend(int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken))
-    v_sk.info_to_all.extend(int_to_ba(len(v_sk.last_error[input_device]),1))
+    v_sk.info_to_all.extend(int_to_ba(len(v_sk.last_error[input_device]), 1))
     v_sk.info_to_all.extend(str_to_bytearray(v_sk.last_error[input_device]))
     return
 
@@ -141,7 +141,7 @@ def com253(line, tok, token, input_device, user):
     elif line[0] == 1:
         # reply empty usernumber
         if v_sk.multiuser[input_device] == 2:
-            #this is the first command on this interface
+            # this is the first command on this interface
             v_sk.multiuser = 1
             v_sk.user_timeout[input_device][0] = time.time()
             v_sk.info_to_all.extend(bytearray([1, 0]))

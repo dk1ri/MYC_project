@@ -27,9 +27,11 @@ def poll_inputs():
         input_buffer_number += 1
     return
 
+
 # poll inputbuffer see command_handling
 
-#output to LD
+
+# output to LD
 def send_to_ld():
     # one bytearraylement (complete command) to LD
     if v_ld.data_to_ld != "":
@@ -75,7 +77,7 @@ def send_buffer_to_device():
                     if tok == 0:
                         v_sk.info_to_all.extend(bytearray([0]*v_cr_params.length_commandtoken))
                     else:
-                        v_sk.info_to_all.extend(int_to_ba(tok,v_cr_params.length_commandtoken))
+                        v_sk.info_to_all.extend(int_to_ba(tok, v_cr_params.length_commandtoken))
                     v_sk.info_to_all.extend(str_to_bytearray(announce_line))
                 else:
                     # original token
@@ -137,5 +139,6 @@ def send_to_all():
     # up to now: print only
     if v_sk.info_to_all != bytearray([]):
         print("info to all SK:", v_sk.info_to_all)
+    v_sk.info_to_telnet = v_sk.info_to_all
     v_sk.info_to_all = bytearray([])
     return

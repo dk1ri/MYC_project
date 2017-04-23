@@ -107,7 +107,7 @@ def load_check():
     v_time_values.from_dev = []
     v_time_values.from_ld = []
     v_time_values.to_sk = []
-    v_time_values.to_sk_str =[]
+    v_time_values.to_sk_str = []
     v_time_values.check_number = 0
     i = 0
     for lines in check_file:
@@ -133,6 +133,7 @@ def load_check():
             i = 0
     check_file.close()
     return
+
 
 def to_ba(string):
     # convert (integer) number to bytearray
@@ -160,20 +161,20 @@ def to_ba2(string):
     str_active = 0
     ob = bytearray([])
     tempi = ""
-    last =""
+    last = ""
     cont = 0
     while i < len(string):
         # read each character
         if string[i] == " ":
             # separator for all
             if tempi == "xxstr":
-                #stringmarker found
+                # stringmarker found
                 if str_active == 0:
                     str_active = 1
                     last = ""
                 else:
                     str_active = 0
-                    ob.extend(str_to_bytearray((last)))
+                    ob.extend(str_to_bytearray(last))
                     cont = 0
                 tempi = ""
             elif str_active == 1:
@@ -195,5 +196,5 @@ def to_ba2(string):
             ob.extend(bytearray([int(tempi)]))
         else:
             if tempi == "xxstr":
-                ob.extend(str_to_bytearray((last)))
+                ob.extend(str_to_bytearray(last))
     return ob

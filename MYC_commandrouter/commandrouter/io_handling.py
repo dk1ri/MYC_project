@@ -1,11 +1,9 @@
 # name : commandrouter_ethernet_handling.py
 # ethernet handling using threads
 
-
 import sys
 import socket
 import threading
-import time
 import msvcrt
 
 from misc_functions import *
@@ -19,6 +17,7 @@ import v_time_values
 
 # Ethernet:
 
+
 class ServerThread (threading.Thread):
     # ethernet server Part, connecting to HI, PR...
     def __init__(self, server_socket, input_buffer_number):
@@ -29,7 +28,7 @@ class ServerThread (threading.Thread):
     def run(self):
         while 1:
             connection, addr = self.server_socket.accept()
-            write_log("connected to: "+ str(addr))
+            write_log("connected to: " + str(addr))
             server_read = ServerThreadRead(connection, self.input_buffer_number)
             server_read.start()
             write_log("server read start")
@@ -46,7 +45,6 @@ class ServerThreadRead (threading.Thread):
         self.input_buffer_number = input_buffer_number
 
     def run(self):
-#        global v_sk
         while True:
             try:
                 data_in = self.connection.recv(1024)
@@ -59,10 +57,6 @@ class ServerThreadRead (threading.Thread):
                 v_sk.inputline[self.input_buffer_number].extend(data_in)
 #                    i += 1
                 write_log("Input read: " + str(v_sk.inputline[self.input_buffer_number]) + "end")
-                # start timeout
-                if v_sk.starttime[self.input_buffer_number] == 0:
-                    v_sk.starttime[self.input_buffer_number] = int(time.time())
-                    v_sk.inputline_active[self.input_buffer_number] = 0
             except (ConnectionAbortedError, OSError):
                 write_log(" input read aborted")
                 self.connection.close()
@@ -78,12 +72,15 @@ class ServerThreadWrite (threading.Thread):
 
     def run(self):
         while True:
-            if v_sk.answer_ready[self.input_buffer_number] == 1:
+            if v_sk.info_to_telnet != bytearray([]):
+                i = 0
+                stri = ""
+                while i < len(v_sk.info_to_telnet[self.input_buffer_number]):
+                    stri += chr(v_sk.info_to_telnet)[i]
+                    i += 1
                 try:
-                    write_log("telnetServer send: " + str(len(v_sk.answerline[self.input_buffer_number])))
-                    self.connection.sendall(v_sk.answerline[self.input_buffer_number])
-                    v_sk.answer_ready[self.input_buffer_number] = 0
-                    v_sk.answerline[self.input_buffer_number] = bytearray([])
+                    self.connection.sendall(stri)
+                    v_sk.info_to_telnet = bytearray([])
                 except (ConnectionAbortedError, OSError):
                     write_log("telnet server send aborted")
                     self.connection.close()
@@ -92,7 +89,7 @@ class ServerThreadWrite (threading.Thread):
 
 
 def start_ethernet_server(port, input_buffer_number):
-    i= 0
+    i = 0
     while i < len(v_sk.ethernet_server_started):
         if port in v_sk.ethernet_server_started[i]:
             return
@@ -193,9 +190,9 @@ def win_terminal(input_buffer_number, device_buffer_number):
             if t == " ":
                 # add to inputline
                 if v_kbd_input.data != "":
-                    if v_kbd_input.data[0 == "a"]:
+                    if v_kbd_input.data[0] == "a":
                         i = int(v_kbd_input.data[1:])
-                        v_time_values.command_file = "commandfiles\_commandfile_test"+ str(i)
+                        v_time_values.command_file = "commandfiles\_commandfile_test" + str(i)
                         v_time_values.auto = 1
                         v_time_values.check_number = 0
                         # there must be a timeout for invalid commands:
@@ -203,7 +200,19 @@ def win_terminal(input_buffer_number, device_buffer_number):
                         v_time_values.checktime = v_configparameter.time_for_command_timeout - 0.5
                         v_time_values.number_of_nok = 0
                         load_check()
-                        print("input from file _commandfile_test"+ str(i) +" started")
+                        print("input from file _commandfile_test" + str(i) + " started")
+                    elif v_kbd_input.data[0] == "r":
+                        if v_time_values.auto == 10:
+                            v_time_values.auto = 0
+                            v_configparameter.time_for_command_timeout = v_time_values.random_timeout_temp
+                        else:
+                            v_time_values.auto = 10
+                            v_time_values.random_i = 0
+                            v_time_values.random_j = 0
+                            v_time_values.random_k = 4
+                            v_time_values.random_timeout_temp = v_configparameter.time_for_command_timeout
+                            v_configparameter.time_for_command_timeout = 0.1
+                            v_time_values.random_time = time.time()
                     else:
                         i = (int(v_kbd_input.data))
                         if i < 256:
@@ -213,20 +222,23 @@ def win_terminal(input_buffer_number, device_buffer_number):
                                 print("from SK to CR ", input_buffer_number, " : ", v_kbd_input.data)
                             else:
                                 v_dev.data_to_CR[device_buffer_number].append(int_to_bytes(i, 1))
-                                v_dev.wait_for_answer[device_buffer_number] = 1
                                 print("from device to CR ", device_buffer_number, v_kbd_input.data)
                     v_kbd_input.data = ""
             elif str.isnumeric(t) == 1:
                 v_kbd_input.data += t
             elif t == "d":
                 v_kbd_input.skdev = 1
+                v_kbd_input.data = ""
                 print("next kbd input to device_in")
             elif t == "S":
                 v_kbd_input.skdev = 0
+                v_kbd_input.data = ""
                 print("next kbd input to SK_in")
             elif t == "e":
                 sys.exit(0)
             elif t == "a":
+                v_kbd_input.data = t
+            elif t == "r":
                 v_kbd_input.data = t
         # ignore other characters
     return
@@ -245,12 +257,12 @@ def terminal_out(text, input_buffer):
         except UnicodeEncodeError:
             t += "length unprintable "
         i += 1
-    tt +=  t
+    tt += t
     if v_time_values.auto == 0:
         print(tt)
     else:
         if t == v_time_values.to_sk[v_time_values.check_number - 1]:
-            print (v_time_values.check_number - 1, "ok: ", tt)
+            print(v_time_values.check_number - 1, "ok: ", tt)
         else:
             print(v_time_values.check_number - 1, "nok", tt, v_time_values.to_sk[v_time_values.check_number - 1])
     return

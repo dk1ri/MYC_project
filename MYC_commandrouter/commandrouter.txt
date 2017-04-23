@@ -1,7 +1,7 @@
 MYC Command-router
 
 Author: DK1RI
-Version V01.8 20170313
+Version V01.10 20170326
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -60,13 +60,14 @@ Testing
 For program testing the following is implemented:
 
 Some tables generated at initialization are available as files in the check_output directory. So the created full announce-list can be checked easily.
-There is a set of command-files. These are used to check the routing kernel and should check all command-types with different parameters. Files to check the error behavior will follow. These checks are initiated by a<n><SPACE> from the terminal. <n> is the number of the checkfile in the checkfiles directory 
+There is a set of command-files. These are used to check the routing kernel and should check all command-types with different parameters. Files to check the error behavior will follow. These checks are initiated by a<n><SPACE> from the terminal. <n> is the number of the checkfile in the checkfiles directory.
+r<SPACE> initiate a random input to the SK and device input. This will produce error messages but should not crash the program.
 
 Implementation of the Hardware
 
 The CR should be implemented on a Raspberry PI. A Raspberry has ethernet access and a complete operating system. Power consumption an price is also acceptable.
 May be that a web server for the SK can also run on the same machine..
-not yet tested
+not yet tested.
 
 Hierarchical MYC System
 
@@ -98,8 +99,9 @@ The CR do some checks on the inputs:
 command-token
 positional parameters and element number lower than maximum 
 length of string
-<data> fields are not checked, especially restriction of <ty> given in <des>
-error messages are sent to logfile only
+<data> fields are not checked (with few exceptions), especially restriction of <ty> given in <des>
+error messages are sent to logfile only.
+If a error is detected, received characters are ignored and the next byte byte is seen as the start of the next command / answer.
 
 Following messages are defined now:
 
@@ -120,10 +122,6 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 This document can be copied without changes.
 The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
-
-
-
-
 
 
 Reference

@@ -35,32 +35,32 @@ The same is valid for the device_handling for answers and info:
 """
     input_device = 0
     # something received from SK ... ?
-    for line in v_sk.inputline:
+    while input_device < len(v_sk.inputline):
+        line = v_sk.inputline[input_device]
         # if input data is correct and complete appropriate action is called
         if len(line) > 0:
             user = 0
-            to_cr = 0
-            if v_sk.multiuser[input_device] == 0:
-                pass
-            elif v_sk.multiuser[input_device] == 1:
+            if v_sk.multiuser[input_device] == 1:
                 if v_sk.user_active[input_device][int(line[0])] == 1:
                     # valid user needed for CR_own_commands
                     user = line[:1]
                     line = line[1:]
                 else:
+                    # no valid user
+                    write_log("no valid user")
                     finish_sk_error(input_device, user)
-            else:
-                pass
-            got_bytes = len(line)
+                    input_device += 1
+                    continue
             if line[0] == 0:
                 # necessary to delete token:
-                v_sk.linelength_len[input_device] = 1
-                to_cr = 1
-                finish_sk(input_device, user, to_cr)
+                v_sk.linelength_len[input_device] = v_cr_params.length_commandtoken
+                finish_sk(input_device, user, 1)
                 input_device += 1
                 continue
             else:
+                to_cr = 0
                 # commandtoken ready?
+                got_bytes = len(line)
                 if got_bytes >= v_cr_params.length_commandtoken:
                     tokennumber = int.from_bytes(line[0:v_cr_params.length_commandtoken], byteorder='big', signed=False)
                     if tokennumber < v_cr_params.number_of_commands_noCR:
@@ -81,7 +81,8 @@ The same is valid for the device_handling for answers and info:
                             # send to device 0 (CR)
                             to_cr = 1
                         except KeyError:
-                            v_sk.last_error[input_device] = "no valid commandtoken " + str(tokennumber)
+                            write_log("from SK: no valid commandtoken " + str(tokennumber))
+                            v_sk.linelength_len[input_device] = 1
                             finish_sk_error(input_device, user)
                             input_device += 1
                             continue
@@ -89,367 +90,429 @@ The same is valid for the device_handling for answers and info:
                     input_device += 1
                     continue
             # tok is a valid index to CR-tokennumber based lists now
-            if v_sk.starttime[input_device] == 0:
+            line_length_index_0 = v_linelength.command[tok][0]
+            if v_sk.linelength_loop[input_device] == 0:
+                v_sk.linelength_len[input_device] = v_linelength.command[tok][1]
+            if v_sk.starttime[input_device][user] == 0:
                 # set time for timeout
-                v_sk.starttime[input_device] = time.time()
-            while got_bytes >= v_sk.linelength_len[input_device]:
-                # if fist loop initialize buffers
-                if v_sk.linelength_actual_call[input_device] == 0:
-                    # set length for 1st loop
-                    v_sk.linelength_len[input_device] = v_linelength.command[tok][1]
-                    v_sk.linelength_actual_call[input_device] = 1
-                else:
-# start switches, range commands and numeric om, am
-                    if v_linelength.command[tok][0] == "1":
-                        if v_linelength.command[tok][2] == 0:
-                            # got all
-                            finish_sk(input_device, user, to_cr)
-                            input_device += 1
-                            break
-                        else:
-                            # check parameter , number of parameter + 2 -> index to v_linelength.command[tok]
-                            error = 0
-                            block = 0
-                            temp = v_sk.linelength_len[input_device]
-                            temp_new = temp
-                            # index of 1 block (start)
-                            par_index = 3
-                            while block < v_linelength.command[tok][2]:
-                                # add length
-                                length = v_linelength.command[tok][par_index + 1]
-                                temp_new += length
-                                if v_linelength.command[tok][par_index] > 0:
-                                    # skip check if 0
-                                    if bytes_to_int_ba(line[temp:temp_new]) > v_linelength.command[tok][par_index]:
-                                        v_sk.linelength_len[input_device] = temp_new
-                                        finish_sk_error(input_device, user)
-                                        error = "SK switch parameter value too high "
-                                        write_log(error)
-                                        error = 1
-                                        break
-                                block += 1
-                                temp = temp_new
-                                par_index += 2
-                            if error == 0:
-                                v_sk.linelength_len[input_device] = temp_new
-                                finish_sk(input_device, user, to_cr)
-                            input_device += 1
-                            break
-# end switches, range commands and numeric om, am. no real time length calculation
-# start om / am string
-                    elif v_linelength.command[tok][0] == "2":
-                        if v_sk.linelength_actual_call[input_device] == 1:
-                            # add extracted stringlength
-                            temp = v_sk.linelength_len[input_device]
-                            stringlength = int.from_bytes(line[temp - v_linelength.command[tok][6]:temp], byteorder='big', signed=False)
-                            if stringlength > v_linelength.command[tok][5]:
-                                # string overflow
-                                finish_sk_error(input_device, user)
-                                error = "SK stringlength overflow"
-                                write_log(error)
-                                input_device += 1
-                                break
-                            v_sk.linelength_len[input_device] += stringlength
-                            v_sk.linelength_actual_call[input_device] = 2
-                        else:
-                            # actual_call == 2, got all data
-                            # check parameter , number of parameter + 2 -> index to v_linelength.coomand[tok]
-                            par_index = v_linelength.command[tok][2] + 2
-                            temp = v_cr_params.length_commandtoken
-                            tempnew = temp
-                            while par_index < v_linelength.command[tok][2]:
-                                # op and oo command
-                                # position in ba
-                                tempnew += v_linelength.command[tok][par_index + 1]
-                                if bytes_to_int_ba(line[temp:tempnew]) > v_linelength.command[tok][par_index]:
-                                    finish_sk_error(input_device, user)
-                                    input_device += 1
-                                    break
-                                par_index += 1
-                                temp = tempnew
-                            finish_sk(input_device, user, to_cr)
-                            input_device += 1
-                            break
-# end om / am string
-# start on / an of / af
-                    elif v_linelength.command[tok][0] == "3":
-                        if v_sk.linelength_actual_call[input_device] == 1:
-                            # check startelement and number of elements for operate and answer command
-                            # commandtoken:
-                            temp1 = v_cr_params.length_commandtoken
-                            # check elements and startpositiion
-                            temp2 = temp1 + v_linelength.command[tok][3]
-                            startposition = int.from_bytes(line[temp1:temp2], byteorder='big', signed=False)
-                            if startposition > v_linelength.command[tok][2]:
-                                finish_sk_error(input_device, user)
-                                error = " SK on / an startposition value too high " + str(startposition) + " " + str(v_linelength.command[tok][2])
-                                write_log(error)
-                                input_device += 1
-                                break
-                            else:
-                                if v_linelength.command[tok][7] == 0:
-                                    # on / an
-                                    # add length of number of elements
-                                    temp1 = temp2 + v_linelength.command[tok][3]
-                                    elements = int.from_bytes(line[temp2:temp1], byteorder='big', signed=False)
-                                    if elements > v_linelength.command[tok][2]:
-                                        finish_sk_error(input_device, user)
-                                        error = "SK on / an element value too high" + elements + " " + v_linelength.command[tok][2]
-                                        write_log(error)
-                                        input_device += 1
-                                        break
-                                else:
-                                    # of / af: there is no startposition
-                                    elements = startposition
-                            # values correct now
-                            if v_linelength.command[tok][6] == 0:
-                                # numeric:
-                                if v_linelength.answer[tok][0] != "0":
-                                    # answer command :finished
-                                    finish_sk(input_device, user, to_cr)
-                                    input_device += 1
-                                    break
-                                else:
-                                    # operate command
-                                    # add elements * length of element
-                                    v_sk.linelength_len[input_device] += elements * v_linelength.command[tok][5]
-                                    v_sk.linelength_actual_call[input_device] = 2
-                            else:
-                                # string:
-                                if v_linelength.answer[tok][0] != "0":
-                                    # answer command finished
-                                    finish_sk(input_device, user, to_cr)
-                                    input_device += 1
-                                    break
-                                else:
-                                    # operate command
-                                    v_sk.linelength_other[input_device] = elements
-                                    v_sk.linelength_len[input_device] += v_linelength.command[tok][5]
-                                    v_sk.linelength_actual_call[input_device] = 3
-                        elif v_sk.linelength_actual_call[input_device] == 2:
-                            # got everything: numeric operate
-                            finish_sk(input_device, user, to_cr)
-                            input_device += 1
-                            break
-                        elif v_sk.linelength_actual_call[input_device] == 3:
-                            # string: extract stringlength
-                            temp2 = v_sk.linelength_len[input_device]
-                            temp1 = temp2 - v_linelength.command[tok][5]
-                            stringlength = int.from_bytes(line[temp1:temp2], byteorder='big', signed=False)
-                            if stringlength > v_linelength.command[tok][4]:
-                                finish_sk_error(input_device, user)
-                                error = "string overflow"
-                                write_log(error)
-                                input_device += 1
-                                break
-                            v_sk.linelength_len[input_device] += stringlength
-                            v_sk.linelength_actual_call[input_device] = 4
-                        elif v_sk.linelength_actual_call[input_device] == 4:
-                            # actual element
-                            v_sk.linelength_other[input_device] -= 1
-                            if v_sk.linelength_other[input_device] == 0:
-                                # finish
-                                finish_sk(input_device, user, to_cr)
-                                input_device += 1
-                                break
-                            else:
-                                # add length of stringlength
-                                v_sk.linelength_len[input_device] += v_linelength.command[tok][3]
-                                v_sk.linelength_actual_call[input_device] = 3
-# end on / an of / af
-# start oa / aa
-                    elif v_linelength.command[tok][0] == "4":
-                        if v_sk.linelength_actual_call[input_device] == 1:
-                            # got commandtoken + memoryposition
-                            # memoryposition
-                            position = 0
-                            if v_linelength.command[tok][3] > 0:
-                                # position transmitted
-                                position = int.from_bytes(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][3]:v_sk.linelength_len[input_device]], byteorder='big', signed=False)
-                                if position > v_linelength.command[tok][2]:
-                                    finish_sk_error(input_device, user)
-                                    error = " SK oa/aa value too high" + str(position) + " " + str(v_linelength.command[tok][2])
-                                    write_log(error)
-                                    input_device += 1
-                                    break
-                            # data correct
-                            if v_linelength.answer[tok][0] != "0":
-                                # answer command, got all
-                                finish_sk(input_device, user, to_cr)
-                                input_device += 1
-                                break
-                            else:
-                                # operate command, add length of <ty> or length of sringlength
-                                v_sk.linelength_len[input_device] += v_linelength.command[tok][3 * position + 5]
-                                v_sk.linelength_other[input_device] = position
-                                if v_linelength.command[tok][3 * position + 6] == 0:
-                                    # numeric
-                                    v_sk.linelength_actual_call[input_device] = 2
-                                else:
-                                    # string
-                                    v_sk.linelength_actual_call[input_device] = 3
-                        elif v_sk.linelength_actual_call[input_device] == 2:
-                            # finish numeric
-                            finish_sk(input_device, user, to_cr)
-                            input_device += 1
-                            break
-                        elif v_sk.linelength_actual_call[input_device] == 3:
-                            # got stringlength now
-                            # stringlength:
-                            stringlength = int.from_bytes(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][3* position + 6]:v_sk.linelength_len[input_device]], byteorder='big', signed=False)
-                            if stringlength > v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 4]:
-                                # string overflow
-                                finish_sk_error(input_device, user)
-                                error = "stringlength overflow"
-                                write_log(error)
-                                input_device += 1
-                                break
-                            # add number of bytes of string
-                            v_sk.linelength_len[input_device] += stringlength
-                            v_sk.linelength_actual_call[input_device] = 4
-                        elif v_sk.linelength_actual_call[input_device] == 4:
-                            finish_sk(input_device, user, to_cr)
-                            input_device += 1
-                            break
-# end oa / aa
-# start ob / ab
-                    elif v_linelength.command[tok][0] == "5":
-                        if v_sk.linelength_actual_call[input_device] == 1:
-                            # got commandtoken (+ startpos + number of elements)
-                            temp1 = v_cr_params.length_commandtoken
-                            # check elements and startpositiion
-                            temp2 = temp1 + v_linelength.command[tok][3]
-                            startposition = int.from_bytes(line[temp1:temp2], byteorder='big', signed=False)
-                            if startposition > v_linelength.command[tok][2]:
-                                finish_sk_error(input_device, user)
-                                error = "SK ob /ab startposition value too high"
-                                write_log(error)
-                                input_device += 1
-                                break
-                            else:
-                                # add length of number of elements
-                                temp1 = temp2 + v_linelength.command[tok][3]
-                                elements = int.from_bytes(line[temp2:temp1], byteorder='big', signed=False)
-                                if elements > v_linelength.command[tok][2]:
-                                    finish_sk_error(input_device, user)
-                                    error = "SK ob /ab element value too high" + str(elements) + " " + str(v_linelength.command[tok][2])
-                                    write_log(error)
-                                    input_device += 1
-                                    break
-                            # startnumber and elements correct
-                            if v_linelength.answer[tok][0] != "0":
-                                # answer command, got all
-                                finish_sk(input_device, user, to_cr)
-                                input_device += 1
-                                break
-                            else:
-                                # operate command
-                                if elements > 0:
-                                    #  add length of <ty> or length of sringlength of first element
-                                    # 2nd element (1) of n block 3 *n + 4 + 1 (n 0...x)
-                                    v_sk.linelength_len[input_device] += v_linelength.command[tok][3 * startposition + 5]
-                                    # remember position
-                                    # v_linelength.answer block number for startnumenr and number of elements
-                                    v_sk.linelength_other[input_device] = startposition
-                                    v_sk.linelength_other1[input_device] = elements
-                                    # 3rd element (2) of n block 3 *n + 1 + 2
-                                    if v_linelength.command[tok][3 * startposition + 6] == 0:
-                                        # numeric
-                                        v_sk.linelength_actual_call[input_device] = 2
-                                    else:
-                                        # string
-                                        v_sk.linelength_actual_call[input_device] = 4
-                                else:
-                                    finish_sk(input_device, user, to_cr)
-                                    input_device += 1
-                                    break
-                        elif v_sk.linelength_actual_call[input_device] == 2:
-
-                            # got numeric element
-                            # elements:
-                            v_sk.linelength_other1[input_device] -= 1
-                            if v_sk.linelength_other1[input_device] == 0:
-                                # finish numeric
-                                finish_sk(input_device, user, to_cr)
-                                input_device += 1
-                                break
-                            else:
-                                # memory position
-                                v_sk.linelength_other[input_device] += 1
-                                if v_sk.linelength_other[input_device] > v_linelength.command[tok][2]:
-                                    # memory position overflow
-                                    v_sk.linelength_other[input_device] = 0
-                                # add length of <ty> or length of linelength
-                                v_sk.linelength_len[input_device] += v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 5]
-                                if v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 6] == 1:
-                                    # string
-                                    v_sk.linelength_actual_call[input_device] = 4
-                                # else: v_sk.linelength_actual_call[input_device] = 2
-                        elif v_sk.linelength_actual_call[input_device] == 4:
-                            # got length of next element string or numeric
-                            stringlength = int.from_bytes(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][3]:v_sk.linelength_len[input_device]], byteorder='big', signed=False)
-                            if v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 6] == 1:
-                                # string
-                                if stringlength > v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 4]:
-                                    # string overflow
-                                    finish_sk_error(input_device, user)
-                                    error = "SK ob / ab stringlength overflow "
-                                    write_log(error)
-                                    input_device += 1
-                                    break
-                            # add number of bytes of string
-                            v_sk.linelength_len[input_device] += stringlength
-                            v_sk.linelength_actual_call[input_device] = 5
-                        elif v_sk.linelength_actual_call[input_device] == 5:
-                            v_sk.linelength_other1[input_device] -= 1
-                            if v_sk.linelength_other1[input_device] == 0:
-                                # elements done
-                                finish_sk(input_device, user, to_cr)
-                                input_device += 1
-                                break
-                            else:
-                                # get length of next element
-                                # increment position in v_linelength
-                                v_sk.linelength_other[input_device] += 1
-                                if v_sk.linelength_other[input_device] > v_linelength.command[tok][2]:
-                                    v_sk.linelength_other[input_device] = 0
-                                stringlength = v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 5]
-                                if v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 6] == 1:
-                                    # string
-                                    if stringlength > v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 4]:
-                                        # string overflow
-                                        finish_sk_error(input_device, user)
-                                        error = "stringlength overflow "
-                                        write_log(error)
-                                        input_device += 1
-                                        break
-                                v_sk.linelength_len[input_device] += stringlength
-                                if v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 6] == 0:
-                                    # next element numeric
-                                    v_sk.linelength_actual_call[input_device] = 2
-                                else:
-                                    v_sk.linelength_actual_call[input_device] = 4
-# end ob / ab
-# start error
-                    elif v_linelength.command[tok][0] == "0":
-                        # error, not valid, delete commandtoken
-                        write_log(" from SK: no valid commandtoken " + str(tok))
-                        finish_sk_error(input_device, user)
+                v_sk.starttime[input_device][user] = time.time()
+# start switches, range commands and om, am numeric, all memory answer commands
+            if line_length_index_0 == "1":
+                while got_bytes >= v_sk.linelength_len[input_device]:
+                    if v_linelength.command[tok][2] == 0:
+                        # ready
+                        finish_sk(input_device, user, to_cr)
                         input_device += 1
                         break
+                    # startindex of block (of v_linelength.command[tok])
+                    start = 4 + 3 * v_sk.linelength_loop[input_device]
+                    if v_linelength.command[tok][start + 2] == 2:
+                        # check parameter
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][start + 1]:v_sk.linelength_len[input_device]])
+                        if parameter > v_linelength.command[tok][start]:
+                            error = "SK switch parameter value too high, loop:" + str(v_sk.linelength_loop[input_device]) + " " + str(parameter) + " " + str(v_linelength.command[tok][start])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                    v_sk.linelength_loop[input_device] += 1
+                    if v_sk.linelength_loop[input_device] == v_linelength.command[tok][2]:
+                        # all loops done
+                        finish_sk(input_device, user, to_cr)
+                        input_device += 1
+                        break
+                    else:
+                        # add next linelength
+                        v_sk.linelength_len[input_device] += v_linelength.command[tok][start + 4]
+                else:
+                    # not enough bytes
+                    input_device += 1
+# end switches, range commands and om, am numeric
+# start om string: identical to "1", except for loop = 2
+            elif line_length_index_0 == "2":
+                while got_bytes >= v_sk.linelength_len[input_device]:
+                    # startindex of block (of v_linelength.command[tok])
+                    start = 4 + 3 * v_sk.linelength_loop[input_device]
+                    if v_linelength.command[tok][start + 2] == 2:
+                        # check parameter
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][start + 1]:v_sk.linelength_len[input_device]])
+                        if parameter > v_linelength.command[tok][start]:
+                            error = "SK om string parameter value too high, loop:" + str(v_sk.linelength_loop[input_device]) + " " + str(parameter) + " " + str(v_linelength.command[tok][start])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        # must be stored
+                        v_sk.linelength_other[input_device] = parameter
+                    v_sk.linelength_loop[input_device] += 1
+                    if v_sk.linelength_loop[input_device] == v_linelength.command[tok][2]:
+                        # all loops done
+                        finish_sk(input_device, user, to_cr)
+                        input_device += 1
+                        break
+                    else:
+                        # add next linelength
+                        if v_sk.linelength_loop[input_device] == 2:
+                            v_sk.linelength_len[input_device] += v_sk.linelength_other[input_device]
+                        else:
+                            v_sk.linelength_len[input_device] += v_linelength.command[tok][start + 4]
+                else:
+                    # not enough bytes
+                    input_device += 1
+# end om string
+# start on numeric
+            elif line_length_index_0 == "3":
+                while got_bytes >= v_sk.linelength_len[input_device]:
+                    # startindex of block (of v_linelength.command[tok])
+                    start = 4 + 3 * v_sk.linelength_loop[input_device]
+                    if v_linelength.command[tok][start + 2] == 2:
+                        # check parameter
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][start + 1]:v_sk.linelength_len[input_device]])
+                        if parameter > v_linelength.command[tok][start]:
+                            error = "SK on numeric parameter value too high, loop:" + str(v_sk.linelength_loop[input_device]) + " " + str(parameter) + " " + str(v_linelength.command[tok][start])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        if v_sk.linelength_loop[input_device] == 1:
+                            # remember next length (number of elements * length of element
+                            v_sk.linelength_other[input_device] = parameter * v_linelength.command[tok][start + 4]
+                    v_sk.linelength_loop[input_device] += 1
+                    if v_sk.linelength_loop[input_device] == v_linelength.command[tok][2]:
+                        # all elements done
+                        finish_sk(input_device, user, to_cr)
+                        input_device += 1
+                        break
+                    else:
+                        if v_sk.linelength_loop[input_device] == 2:
+                            v_sk.linelength_len[input_device] += v_sk.linelength_other[input_device]
+                        else:
+                            # add next linelength (+3+2)
+                            v_sk.linelength_len[input_device] += v_linelength.command[tok][start + 4]
+                else:
+                    # not enough bytes
+                    input_device += 1
+# end on numeric
+# start on string
+            elif line_length_index_0 == "4":
+                while got_bytes >= v_sk.linelength_len[input_device]:
+                    if v_sk.linelength_loop[input_device] == 0:
+                        # check parameter of startelement
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][5]:v_sk.linelength_len[input_device]])
+                        if parameter > v_linelength.command[tok][4]:
+                            error = "SK on startelement parameter value too high:" + str(parameter) + " " + str(v_linelength.command[tok][4])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        v_sk.linelength_loop[input_device] = 1
+                        # add length of elementnumber
+                        v_sk.linelength_len[input_device] += v_linelength.command[tok][8]
+                    if v_sk.linelength_loop[input_device] == 1:
+                        # check parameter of number of elements
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][8]:v_sk.linelength_len[input_device]])
+                        if parameter == 0 or parameter > v_linelength.command[tok][7]:
+                            error = "SK on number of elements parameter 0 or value too high:" + str(parameter) + " " + str(v_linelength.command[tok][7])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        # remember number of elements
+                        v_sk.linelength_other[input_device] = parameter
+                        v_sk.linelength_loop[input_device] = 2
+                        # add length of stringlength
+                        v_sk.linelength_len[input_device] += v_linelength.command[tok][11]
+                    elif v_sk.linelength_loop[input_device] == 2:
+                        if v_sk.linelength_other[input_device] <= 0:
+                            # all elements done
+                            finish_sk(input_device, user, to_cr)
+                            input_device += 1
+                            break
+                        else:
+                            # add length of stringlength:
+                            parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][11]:v_sk.linelength_len[input_device]])
+                            if parameter > v_linelength.command[tok][10]:
+                                error = "SK ob length of stringlenth parameter value too high:" + str(parameter) + " " + str(v_linelength.command[tok][10])
+                                write_log(error)
+                                finish_sk_error(input_device, user)
+                                input_device += 1
+                                # exit "while loop"
+                                break
+                            v_sk.linelength_len[input_device] += parameter
+                            v_sk.linelength_loop[input_device] = 3
+                    else:
+                        # v_sk-linelength_loop == 3
+                        v_sk.linelength_other[input_device] -= 1
+                        if v_sk.linelength_other[input_device] <= 0:
+                            # all elements done
+                            finish_sk(input_device, user, to_cr)
+                            input_device += 1
+                            break
+                        v_sk.linelength_len[input_device] += v_linelength.command[tok][11]
+                        v_sk.linelength_loop[input_device] = 2
+                else:
+                    # not enough bytes
+                    input_device += 1
+# end on  string
+# start of numeric
+            elif line_length_index_0 == "5":
+                if v_sk.starttime[input_device][user] == 0:
+                    # set time for timeout
+                    v_sk.starttime[input_device][user] = time.time()
+                while got_bytes >= v_sk.linelength_len[input_device]:
+                    # one check in loop 0 only
+                    if v_sk.linelength_loop[input_device] == 0:
+                        # check parameter
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][5]:v_sk.linelength_len[input_device]])
+                        if parameter > v_linelength.command[tok][4]:
+                            error = "SK of numeric parameter value too high, loop:" + str(v_sk.linelength_loop[input_device]) + " " + str(parameter) + " " + str(v_linelength.command[tok][4])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        # remember next length (number of elements * length of element
+                        v_sk.linelength_other[input_device] = parameter * v_linelength.command[tok][8]
+
+                    v_sk.linelength_loop[input_device] += 1
+                    if v_sk.linelength_loop[input_device] == 2:
+                        # all elements done
+                        finish_sk(input_device, user, to_cr)
+                        input_device += 1
+                        break
+                    else:
+                        # v_sk.linelength_loop[input_device] == 1:
+                        v_sk.linelength_len[input_device] += v_sk.linelength_other[input_device]
+                else:
+                    # not enough bytes
+                    input_device += 1
+# end of numeric
+# start of string
+            elif line_length_index_0 == "6":
+                while got_bytes >= v_sk.linelength_len[input_device]:
+                    # startindex of block (of v_linelength.command[tok])
+                    start = 4 + 3 * v_sk.linelength_loop[input_device]
+                    if v_linelength.command[tok][start + 2] == 2:
+                        # check parameter
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][start + 1]:v_sk.linelength_len[input_device]])
+                        if parameter > v_linelength.command[tok][start]:
+                            error = "SK of string parameter value too high, loop:" + str(v_sk.linelength_loop[input_device]) + " " + str(parameter) + " " + str(v_linelength.command[tok][start])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        if v_sk.linelength_loop[input_device] == 0:
+                            # remember number of elements
+                            v_sk.linelength_other[input_device] = parameter
+                        if v_sk.linelength_loop[input_device] == 1 or v_sk.linelength_loop[input_device] == 3:
+                            # remember length of string
+                            v_sk.linelength_other1[input_device] = parameter
+                    v_sk.linelength_loop[input_device] += 1
+                    if v_sk.linelength_loop[input_device] == 5:
+                        v_sk.linelength_loop[input_device] = 3
+                    # add next linelength
+                    if v_sk.linelength_loop[input_device] == 1 or v_sk.linelength_loop[input_device] == 3:
+                        if v_sk.linelength_loop[input_device] > 0:
+                            if v_sk.linelength_other[input_device] < 1:
+                                # all elements done
+                                finish_sk(input_device, user, to_cr)
+                                input_device += 1
+                                break
+                            v_sk.linelength_other[input_device] -= 1
+                        # add length of stringlength
+                        v_sk.linelength_len[input_device] += v_linelength.command[tok][8]
+                    else:
+                        # add length of string
+                        v_sk.linelength_len[input_device] += v_sk.linelength_other1[input_device]
+                else:
+                    # not enough bytes
+                    input_device += 1
+# end of string
+# start oa
+            elif line_length_index_0 == "7":
+                while got_bytes >= v_sk.linelength_len[input_device]:
+                    if v_linelength.command[tok][2] == 0:
+                        # 0: no position parameter
+                        if v_linelength.command[tok][6] == 1:
+                            # 1: numeric, no check, got all data
+                            finish_sk(input_device, user, to_cr)
+                            input_device += 1
+                            break
+                        else:
+                            # 3: string
+                            if v_sk.linelength_loop[input_device] == 1:
+                                # all elements done
+                                finish_sk(input_device, user, to_cr)
+                                input_device += 1
+                                break
+                            if v_linelength.command[tok][6] == 3:
+                                # check length of stringlength
+                                parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][5]:v_sk.linelength_len[input_device]])
+                                if parameter > v_linelength.command[tok][4]:
+                                    error = "SK oa stringlength value too high, loop:" + str(v_sk.linelength_loop[input_device]) + " " + str(parameter) + " " + str(v_linelength.command[tok][4])
+                                    write_log(error)
+                                    finish_sk_error(input_device, user)
+                                    input_device += 1
+                                    # exit "while loop"
+                                    break
+                                v_sk.linelength_len[input_device] += parameter
+                                v_sk.linelength_loop[input_device] += 1
+                            else:
+                                # numeric # all elements done
+                                finish_sk(input_device, user, to_cr)
+                                input_device += 1
+                                break
+                    else:
+                        # 1 : with position parameter
+                        if v_sk.linelength_loop[input_device] == 0:
+                            parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][5]:v_sk.linelength_len[input_device]])
+                            if parameter > v_linelength.command[tok][4]:
+                                error = "SK oa / aa parameter value too high, loop:" + str(v_sk.linelength_loop[input_device]) + " " + str(parameter) + " " + str(v_linelength.command[tok][4])
+                                write_log(error)
+                                finish_sk_error(input_device, user)
+                                input_device += 1
+                                # exit "while loop"
+                                break
+                            # remember the element to transfer (position in v_linelength)
+                            v_sk.linelength_other[input_device] = 7 + parameter * 3
+                            # add length of numeric or length of stringlength
+                            v_sk.linelength_len[input_device] += v_linelength.command[tok][8 + parameter * 3]
+                        else:
+                            # loop == 1 or == 2
+                            if v_linelength.command[tok][v_sk.linelength_other[input_device] + 2] == 1:
+                                # numeric, ready now
+                                finish_sk(input_device, user, to_cr)
+                                input_device += 1
+                                break
+                            else:
+                                # string
+                                if v_sk.linelength_loop[input_device] == 1:
+                                    # check length of stringlength
+                                    parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][5]:v_sk.linelength_len[input_device]])
+                                    if v_sk.linelength_other1[input_device] > v_linelength.command[tok][4]:
+                                        error = "SK oa / aa parameter value too high, loop:" + str(v_sk.linelength_loop[input_device]) + " " + str(v_sk.linelength_other[input_device]) + " " + str(v_linelength.command[tok][4])
+                                        write_log(error)
+                                        finish_sk_error(input_device, user)
+                                        input_device += 1
+                                        # exit "while loop"
+                                        break
+                                    v_sk.linelength_len[input_device] += parameter
+                                else:
+                                    # all elements done
+                                    finish_sk(input_device, user, to_cr)
+                                    input_device += 1
+                                    break
+                        v_sk.linelength_loop[input_device] += 1
+                else:
+                    # not enough bytes
+                    input_device += 1
+# end oa
+# start ob
+            elif line_length_index_0 == "8":
+                while got_bytes >= v_sk.linelength_len[input_device]:
+                    # startindex of block (of v_linelength.command[tok])
+                    if v_sk.linelength_loop[input_device] == 0:
+                        # check parameter of startelement
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][5]:v_sk.linelength_len[input_device]])
+                        if parameter > v_linelength.command[tok][4]:
+                            error = "SK ob / ab startelement parameter value too high:" + str(parameter) + " " + str(v_linelength.command[tok][4])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        # remember start elements
+                        v_sk.linelength_other[input_device] = parameter
+                        v_sk.linelength_loop[input_device] += 1
+                        v_sk.linelength_len[input_device] += v_linelength.command[tok][5]
+                    if v_sk.linelength_loop[input_device] == 1:
+                        # check parameter of number of elements
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][8]:v_sk.linelength_len[input_device]])
+                        if parameter == 0 or parameter > v_linelength.command[tok][7]:
+                            error = "SK ob / ab number of elements parameter 0 or value too high:" + str(parameter) + " " + str(v_linelength.command[tok][7])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        # remember number of elements
+                        v_sk.linelength_other1[input_device] = parameter
+                        v_sk.linelength_loop[input_device] += 1
+                        # add length of 1st element or length of stringlength; linelength_other == 0 start with position 10
+                        v_sk.linelength_len[input_device] += v_linelength.command[tok][3 * v_sk.linelength_other[input_device] +11]
+                        if v_linelength.command[tok][3 * v_sk.linelength_other[input_device] + 12] == 3:
+                            # string
+                            v_sk.linelength_loop[input_device] = 3
+                    elif v_sk.linelength_loop[input_device] == 2:
+                        v_sk.linelength_other1[input_device] -= 1
+                        if v_sk.linelength_other1[input_device] <= 0:
+                            # all elements done
+                            finish_sk(input_device, user, to_cr)
+                            input_device += 1
+                            break
+                        else:
+                            # add numeric numeric or length of stringlength:
+                            v_sk.linelength_other[input_device] += 1
+                            if v_sk.linelength_other[input_device] == v_linelength.command[tok][4]:
+                                # overflow
+                                v_sk.linelength_other[input_device] = 0
+                            start = 3 * v_sk.linelength_other[input_device] + 11
+                            v_sk.linelength_len[input_device] += v_linelength.command[tok][start]
+                            if v_linelength.command[tok][start + 1] == 3:
+                                # string
+                                v_sk.linelength_loop[input_device] = 3
+                    else:
+                        # v_sk.linelength_loop = 3, got length of stringlength
+                        # check parameter
+                        start = 10 + 3 * v_sk.linelength_other[input_device]
+                        parameter = bytes_to_int_ba(line[v_sk.linelength_len[input_device] - v_linelength.command[tok][start + 1]:v_sk.linelength_len[input_device]])
+                        if parameter > v_linelength.command[tok][start]:
+                            error = "SK ob / ab length of stringlenth parameter value too high:" + str(parameter) + " " + str(v_linelength.command[tok][start])
+                            write_log(error)
+                            finish_sk_error(input_device, user)
+                            input_device += 1
+                            # exit "while loop"
+                            break
+                        v_sk.linelength_len[input_device] += parameter
+                        v_sk.linelength_loop[input_device] = 2
+                else:
+                    # not enough bytes
+                    input_device += 1
+# end ob
+# start error
+            elif line_length_index_0 == "0":
+                # error, not valid, delete commandtoken
+                write_log(" from SK: commandtoken with no action" + str(tok))
+                v_sk.linelength_len[input_device] = v_cr_params.length_commandtoken
+                finish_sk_error(input_device, user)
+                input_device += 1
+                break
 # end error
-        input_device += 1
+        else:
+            # linelength = 0:
+            input_device += 1
+# end of for loop
     return
 
 
 def finish_sk(input_device, user, to_cr):
     # transfer data
+    if user == 0:
+        s = v_sk.inputline[input_device][:v_sk.linelength_len[input_device]]
+    else:
+        s = v_sk.inputline[input_device][1:v_sk.linelength_len[input_device] + 1]
     if to_cr == 0:
-        # send command to LD (string)
-        v_ld.data_to_ld += ba_to_str2(v_sk.inputline[input_device][:v_sk.linelength_len[input_device]])
+        if len(s) > 0:
+            # send command to LD (string)
+            v_ld.data_to_ld += ba_to_str2(s)
     else:
         # send to  v_dev.data_to_device[0] (CR)
-        s = v_sk.inputline[input_device][:v_sk.linelength_len[input_device]]
         if len(s) > 0:
             v_dev.data_to_device[0][v_dev.writepointer[0]] = s
             v_dev.user[0][v_dev.writepointer[0]] = user
@@ -460,13 +523,15 @@ def finish_sk(input_device, user, to_cr):
     # reset some values of v_sk after command finished
     v_sk.inputline[input_device] = v_sk.inputline[input_device][v_sk.linelength_len[input_device]:]
     v_sk.linelength_len[input_device] = 0
-    v_sk.linelength_actual_call[input_device] = 0
-    v_sk.starttime[input_device] = 0
+    v_sk.linelength_loop[input_device] = 0
+    v_sk.starttime[input_device][user] = 0
     # avoid user timeout
     v_sk.user_timeout[input_device][user] = time.time()
-    if v_sk.user_active == 2:
+    v_sk.linelength_other[input_device] = 0
+    v_sk.linelength_other1[input_device] = 0
+    if v_sk.user_active[input_device][user] == 2:
         # single User mode
-        v_sk.user_active = 0
+        v_sk.user_active[input_device][user] = 0
     return
 
 
@@ -474,11 +539,14 @@ def finish_sk_error(input_device, user):
     # reset some values of v_sk after command finished
     v_sk.inputline[input_device] = v_sk.inputline[input_device][v_sk.linelength_len[input_device]:]
     v_sk.linelength_len[input_device] = 0
-    v_sk.linelength_actual_call[input_device] = 0
-    v_sk.starttime[input_device] = 0
+    v_sk.linelength_loop[input_device] = 0
+    v_sk.starttime[input_device][user] = 0
+    # avoid user timeout
+    v_sk.linelength_other[input_device] = 0
+    v_sk.linelength_other1[input_device] = 0
     # avoid user timeout
     v_sk.user_timeout[input_device][user] = time.time()
-    if v_sk.user_active == 2:
+    if v_sk.user_active[input_device][user] == 2:
         # single User mode
-        v_sk.user_active = 0
+        v_sk.user_active[input_device][user] = 0
     return
