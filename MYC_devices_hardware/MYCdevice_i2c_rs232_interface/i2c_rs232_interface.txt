@@ -1,6 +1,6 @@
 I2C zu RS232 / USB Interface
 
-Author DK1RI, Version V03.4, 20161112
+Author DK1RI, Version V03.5, 20170815
 This project can be found in https://github.com/dk1ri  as well.
 
 Einleitung
@@ -9,7 +9,6 @@ Diese beiden Interfaces sollen im wesentlichen zum Test von MYC Devices und für 
 Mit einem Interface als Master und einem als Slave können die Grundfunktionen eines MYC Systems demonstriert werden.
 Das Interface als Master ist auch als seriell - I2C Konverter verwendbar.
 Als serielle Schnittstelle kann je nach Bestückung  RS232 oder USB  verwendet werden; sowohl für Master als auch Slave.
-Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Das Interface als Slave kann als Prototyp für andere Interfaces mit I2C Device - Schnittstelle verwendet werden. Als Interface für andere Geräte muss das Interface andere / weitere Befehlskonvertierungen machen.
 
 Beschreibung
@@ -23,20 +22,31 @@ Einbindung in das MYC System
 
 Dieses Interface kann als I2C Master für die Bedienung eines MYC Devices ohne command-router verwendet werden.
 Wenn dann das gleiche Interface als Slave angeschlossen wird, arbeitet das Master Interface (fast) wie ein command-router mit einer seriellen Schnittstelle für eine Benutzerschnittstelle oder übergeordnetes MYC System. Auf der seriellen Seite  werden die MYC commands eingeben, so wie die Benutzerschnittstelle in einem MYC System das tun muss.
-Nimmt das Interface auf der Befehlsschnittstelle (I2C beim Slave, seriell beim Master) Daten entgegen und interpretiert das erste Zeichen als Befehl und handelt entsprechend. Wird ein Befehl oder Parameter als ungültig erkannt, wird das nächste Zeichen als neuer Befehl interpretiert.
-Der Befehl wird ausgeführt, wenn er mit Parametern komplett erkannt wurde.
-Ein nicht vollständiger Befehl wird nach ca 0,5 s gelöscht.
-Die Strings – maximal 253 Zeichen - müssen mit der Zahl der Bytes - 1 Byte - beginnen!
+Das Interface nimmt auf der Befehlsschnittstelle (I2C beim Slave, seriell beim Master) Daten entgegen und interpretiert das erste Zeichen als Befehl und handelt entsprechend. Wird ein Befehl oder Parameter als ungültig erkannt, wird das nächste Zeichen als neuer Befehl interpretiert.
+Der Befehl wird ausgeführt, wenn er mit Parametern komplett und gültig erkannt wurde.
+Ein nicht vollständiger Befehl wird nach ca 1 s gelöscht.
+Die Strings – maximal 252 Zeichen - müssen mit der Zahl der Bytes - 1 Byte - beginnen!
 
 I2C als Slave :
 
-Dieses Interface ist ein einfaches Device mit (neben den reservierten Befehlen) nur 2 Befehlen an der I2C Schnittstelle: der Schreibbefehl gibt den von der I2C Schnittstelle empfangenen String auf die serielle Schnittstelle. Der Lesebefehl kopiert die Daten des seriellen Eingabepuffers in den I2C Puffer, wo der I2C Master die Daten abholen kann.
+Dieses Interface ist ein einfaches Device mit (neben den reservierten Befehlen) nur 2 Befehlen an der I2C Schnittstelle: der Schreibbefehl gibt den von der I2C Schnittstelle empfangenen String (ohne Länge) auf die serielle Schnittstelle. Der Lesebefehl kopiert die Daten des seriellen Eingabepuffers in den I2C Puffer, wo der I2C Master die Daten abholen kann. Die Abholung kann in mehreren Paketen erfolgen. Werden mehr Daten abgerufen als vorhanden, sind diese ein &H80 (ein nicht gültiges Kommando). Weitere Lesebefehle werden ignoriert, bis die Daten abgerufen wurden; MULTI_ANSWER = 0 (siehe [6] )
 Eingaben auf der seriellen Schnittstelle werden geechot und in der seriellen Puffer kopiert. Wenn kein Lesebefehl erfolgt, werden nach 252 Zeichen weitere Zeichen ignoriert.
+Die Länge des Strings wird dann hinzugefügt, wenn der String in den I2C Puffer übertragen wird.
+Schreibbefehle sind auch möglich, ohne dass die Lesedaten abgeholt werden.
+Um Blockaden zu vermeiden, müssen Daten von Lesebefehlen innerhalb einer Sekunde abgeholt werden. Danach werden sie gelöscht. Die Firmware kann einfach auf eine Zeit von 10 Sekunden (für Tests) geändert werden.
+
 Beispiele im HEX Format:
 
 010474657374		01 ist der Befehl des Slave zur Ausgabe auf der seriellen Schnittstelle.
-Gibt 4 Zeichen des Strings „test“ mit CRLF auf der seriellen Schnittstelle aus.
-Ist die Länge größer als 252 Byte oder werden mehr Zeichen übertragen als in der Länge angegeben, wird der Rest verworfen.
+Gibt 4 Zeichen des Strings „test“ ohne CRLF auf der seriellen Schnittstelle aus.
+Ist die Länge größer als 252 Byte wird der Befehl ignoriert. 
+Der Befehl wird ausgeführt, sobald er komplett ist. Während der Ausführung wird die I2C Schnittstelle nicht abgefragt.
+Werden mehr Zeichen übertragen als in der Länge angegeben, wird der Rest anschließend als neuer Befehl interpretiert.
+02				ist der Lesebefehl (kopiert den RS232 Puffer in den I2C Puffer)
+020474657374		Antwort an den Master: der ruft 4  gültige Bytes ab
+oder
+02 				Es gibt aber nur 3 gültige Bytes:
+020374657380		Antwort mit 3 gültigen Bytes (80 ist ein ungültiger commandtoken)
 
 I2C als  Master:
 
@@ -49,7 +59,7 @@ Einige Befehle funktionieren nur abhängig vom gewählten Myc_mode.
 Anschluss eines gleichen Slave-Interfaces, der Master ist "commandrouter"
 
 Dieser Mode wird durch den Befehl &HEE01 eingestellt. Die Befehle &H01, &H02 gelten nicht.
-Dann verhält das Interface wie ein command-router und setzt die Befehle für das Slave Interface  richtig um.
+Dann verhält das Interface wie ein command-router – es kennt die Slave Befehle - und setzt die Befehle für das Slave Interface  richtig um.
 
 Die Eingabe an der RS232 Schnittstelle hat ein Echo. (ein command-router allerdings nicht)
 Die Ausgabe erfolgt ohne Abschluss (CR LF).
@@ -63,29 +73,32 @@ Entsprechend den MYC Regeln  lautet ein Schreibbefehl zum Beispiel (gezeigt im  
 Die 04 ist die Länge des folgenden Strings. Danach folgt der zu übertragende Text (test).
 Bei dem gleichen Interface als Slave wird der Text -test- auf der RS232 Schnittstelle ausgegeben.
 Ein Lesebefehl (ebenso im HEX Format)
-12
-12 ist der Befehl zum Lesen. Der Befehl (weitergegeben als 02) bewirkt beim Slave, dass der String im Eingabepuffer mit vorangestellter Länge des String in den Ausgabepuffer geschrieben wird. Danach liest der Master den String und gibt ihn an die RS232 Schnittstelle. Wurden auf der Slave Seite keine Daten eingegeben, wird nur die Länge (0) ausgegeben.
-Die angegebene Länge (253) im announcement ist die Maximallänge des String, die der Master behandeln kann..
+12 03
+12 ist der Befehl zum Lesen. Der Befehl (weitergegeben als 02) bewirkt beim Slave, dass der String im Eingabepuffer mit vorangestellter &H02 und Länge des String in den Ausgabepuffer geschrieben wird. Danach liest der Master den String und gibt ihn an die RS232 Schnittstelle. Wurden auf der Slave Seite nicht genügend Daten eingegeben, wird nur statt der Daten ein ungültiger Commandtoken (&H80) ausgegeben.
+Die angegebene Länge (252) im announcement ist die Maximallänge des String, die der Master behandeln kann..
 Der Befehl
 &H10
 liefert das basic announcement des Slave. Die Daten liefert der Master, ohne den Slave zu fragen; so wie es der command-router machen würde. 
-Der Befehl &H13 liefert den letzen Fehler des Slave. Die Daten muss man mit &H12 abholen.
+Der Befehl &H13 liefert den letzten Fehler des Slave.
 
 Anschluss eines beliebigen Devices:
 
-Dieser Mode wird durch &HEE00 eingestellt und ist der Default Mode. Die Befehle &H10 - &H15 gelten nicht.
+Dieser Mode wird durch &HEE00 eingestellt und ist der Default Mode. Die Befehle &H10 - &H13 gelten nicht.
 Da so beliebige devices angeschlossen werden können, kennt der Master auch das Datenformat der Antworten nicht. Abweichend vom MYC Protokoll in „richtigen“ MYC Systemen muss daher beim Lesebefehl auch die Zahl der gewünschten Bytes angegeben werden. 
 
 Beispiel zum Senden &H01
 0106010474657374
 Nach dem Befehl 01 beginnt der Sendestring mit der Länge des folgenden String (06). Das folgende (dritte) Zeichen kann der Befehlstoken an ein angeschlossenes Device sein. 01 gibt folgenden String der Länge 04 am I2C - RS232 Interface (Slave) aus: test
-Bei gleichem Interface als Slave muss der Lesebefehl 02 (Länge 1) mit 
-010102 gesendet werden. Dieser Befehl kopiert den RS232 Puffer in den I2C Puffer. Danach werden 5 Bytes gelesen:
-0205
-Das erste empfangene Byte ist dabei Länge, wenn ein String empfangen wurde. 
+Bei gleichem Interface als Slave muss der Lesebefehl 02 mit Zahl der gewünschten Bytes gesendet werden. Dieser Befehl kopiert 4 Bytes des RS232 Puffers in den I2C Puffer des Slave.  Danach werden 6 Bytes abgeholt:
+01020204
+0206
+Das Ergebnis ist:
+0206020474657374
+Das erste Byte ist der eigene Token, dann die eigene Länge und dann die 6 Byte der Antwort. 
+Da in diesem Fall sich der Master wie ein device verhält, erscheint der Token und die Länge doppelt.
 Andere Befehle geben ggf andere Datentypen und andere Datenlängen zurück. 
 
-Die I2C Adresse des Slave kann mit &HECxx eingegeben werden. Die Adresse xx muss im Bereich von 0 – 127 sein.
+Die I2C Adresse des Slave kann mit &HECxx eingegeben werden. Die Adresse xx muss im Bereich von 1 – 127 sein.
 
 Befehle
 
@@ -98,7 +111,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RS232_I2C_interface Master;V04.2;1;170;1;20"
+Data "0;m;DK1RI;RS232_I2C_interface Master;V05.0;1;170;1;20"
 '
 Announce1:
 'Befehl &H01 <s>
@@ -194,7 +207,7 @@ Announce16:
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1"
 '
 Announce17:
 'Befehl &HFF <n> :
@@ -207,6 +220,12 @@ Data "R !($1 $2) IF $239=1"
 '
 Announce19:
 Data "R !($16 $17 $18 $19 $20) IF $239=0"
+'
+Announce20:
+Data "R !$254&2&&0 IF $255&5=0"
+'
+Announce21:
+Data "R !$254&5&&0 IF $255&2=0"
 
 Slave:
 
@@ -250,17 +269,22 @@ Announce6:
 'Befehl &HFE <0..3> <data>
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
 '
 Announce7:
 'Befehl &HFF <0 .. 3> :
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
+'
+Announce8:
+Data " 254&2 IF $255&2=0"
 
 Regeln
 
-Es gibt zwei Zeilen mit Regeln  für den Master , da abhängig vom Myc_mode einige Befehle nicht funktionieren.
+Es gibt vier Zeilen mit Regeln für den Master und eine für den Slave.
+Abhängig vom Myc_mode funktionieren einige Befehle nicht.
+Weitere Regeln beschreiben, was passiert, wenn die Befehlsschnittstellen abgeschaltet werden: beim Master lassen sich nicht beidie Schnittstellen gleichzeitig abschalten; beim Slave funktioniert der Befehl zum Einschalten immert.
 
 I2C Adresse
 
@@ -279,11 +303,14 @@ Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 Reset
 
 Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Der Reset hat eine Verzögerungszeit von 1 Sekunde.
 
 Watchdog
 
 Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
 Nach jedem beendeten Befehl wird der gesamte Befehlspuffer gelöscht
+Weiterhin müssen die I2C Daten des Slave innerhalb einer Sekunde abholt werden.
+Es gibt einen allgemeinen Reset, wenn die Abfrageschleife länger als 2 Sekunde dauert.
 
 Software
 
@@ -299,12 +326,12 @@ Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Proz
 RS232 Schnittstelle
 
 Schnittstellenparameter: 19k2 8N1
-Es muss bei Jumper JP7 und JP8 ist jeweils Pin1 und Pin2  überbrückt werden.
+Es muss bei Jumper JP7 und JP8 ist jeweils Pin1 und Pin2 (die jeweils äußeren pins) überbrückt werden.
 
 USB Schnittstelle 
 
-Das Interface kann auch mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt seitlich nach außen. Die Pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP9 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
-Die Stromversorgung erfolgt dann über USB.
+Das Interface kann auch mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt seitlich nach außen. Die mittleren Pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP9 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die gesamte Stromversorgung erfolgt dann über USB.
 
 SMD
 
@@ -315,10 +342,11 @@ Stromversorgung
 
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
 
+
 Bestückung der Leiterplatte
 
 Da die Leiterplatte auch für andere Anwendungen eingesetzt werden kann, brauchen nur folgende Bauteile  bestückt werden:
-IC1, Q1 (20MHz), C3 – C6, X2 X3 (2.5mm Klinke), JP1 (muss für Normalbetrieb überbrückt werden), JP4
+IC1 (ATMega168), Q1 (20MHz), C3 – C6, X2 X3 (2.5mm Klinke), JP1 (muss für Normalbetrieb überbrückt werden), JP4
 
 mit RS232 Schnittstelle:
 IC2, IC3 (7805 oder pinkompatible Schaltregler), D1, C1, C2, C7 – C10, JP7, JP8 (jeweils Pin1 und Pin 2 überbrücken), X1 Buchse fur Hohlstecker), X4 (DB9 Buchse)
@@ -352,7 +380,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V02.0
-Bascom Version V04.2 für Master und Slave
+Bascom Version V05.0 für Master und Slave
 
 Copyright
 
@@ -368,3 +396,5 @@ Referenzen
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
 [5]	dk1ri.de/dhw/i2c_rs232_interface_eagle_minimal.zip
+[6]	dk1ri.de/myc/Reseved_tokens.pdf
+[7]	dk1ri.de/myc/Definitions.pdf (englisch)
