@@ -1,6 +1,6 @@
 Sprachausgabe
 
-Author DK1RI, Version V01.4, 20161112
+Author DK1RI, Version V01.5, 20170815
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -30,7 +30,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Sprachausgabe;V02.2;1;170;1;9"
+Data "0;m;DK1RI;Sprachausgabe;V03.0;1;145;1;11"
 '
 Announce1:
 'Befehl &H01 0 to 9
@@ -48,44 +48,52 @@ Announce3:
 'Befehl &H03 0 to 8
 'Modi
 'set modes
-'Data "3;os,modi;0,2;1,3;2.4;3,5;4,6;5,7;6,8;7,9;8,10"
+Data "3;ou,modi;0,2;1,3;2.4;3,5;4,6;5,7;6,8;7,9;8,10"
+'
 Announce4:
+'Befehl &H04
+'liest Modus
+' read mode
+Data "4;au,as3"
+'
+Announce5:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;100;9"
+Data "240;an,ANNOUNCEMENTS;145;11"
 '
-Announce5:                                                  '
+Announce6:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce6:                                                  '
+Announce7:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce7:
+Announce8:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,20,{0 to 127};a,RS232,1;a,USB,1"
 '
-Announce8:
+Announce9:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
-
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,20,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'
+Announce10:
+Data "R !$1 !$2 IF $3&1 > 0"
 I2C
 
 Die Default Adresse ist 20 / &H14
 Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
 Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
-
-
+Wenn Geräte am I2C Bus nur 3.3V vertragen (zB der Raspberry), dürfen die Pullup Widerstände nicht bestückt werden.
 
 Fehlermeldungen
 
@@ -125,7 +133,6 @@ Die Stromversorgung erfolgt dann über USB.
 SMD
 
 Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur  relativ großen Kondensatoren und Widerstände (1206).
-
 
 Stromversorgung
 
@@ -170,15 +177,11 @@ Sleeve	1
 Ring	2
 Tip	2
 
-
-
 Versionen
 
 Diese Beschreibung gilt für die 
 Leiterplattenversion 01.0
 Bascom Version 02.2
-
-
 
 Copyright
 
@@ -193,3 +196,4 @@ Referenzen
 [2]	dk1ri.de/dhw/sprachausgabe_bascom.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
+[5]	dk1ri.de/myc/Definitions.pdf (englisch)
