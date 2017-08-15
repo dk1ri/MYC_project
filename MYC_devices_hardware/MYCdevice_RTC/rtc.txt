@@ -1,6 +1,6 @@
 MYC Realtime Clock mit DCF
 
-Author DK1RI, Version V01.3, 20161112
+Author DK1RI, Version V02.0, 20170815
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -15,21 +15,25 @@ Die Eagle Daten der Leiterplatte stehen unter  [1].
 Als Realtime Modul wird der RTC-DCF Modul von ELV verwendet.
 Das Modul wird als Arduino Shield verwendet, dadurch wird die Leiterplatte zwar etwas größer, aber so entfällt die Pegelwandlung.
 Die Stromversorgung ist 12V, Stromaufnahme ca. 20mA mA oder über USB
-Die Kommunikation mit dem Modul erfolgt über die SPI Schnittstelle. 
+Die Kommunikation mit dem DCF Modul erfolgt über die SPI Schnittstelle. 
 Die MYC Befehle müssen binär über die I2C Schnittstelle oder über USB eingegeben werden.
-Die Details zu den Registern des DCF Moduls müssen in der Original Dokumentation des RTC-DCF Moduls nachgelesen werden.
-Die Uhrzeit wird im Format 8 Byte Unixzeit angegeben; allerdings nicht in UTC sondern in ME(S)Z angegeben. Es werden also 3600  (7200) Sekunden mehr angezeigt als die „wahre“ Unixzeit. Die gelesene Zeit ist gültig, sobald das DCF Signal erkannt wurde und die LED des Moduls an ist.
+Die Details zu den Registern des DCF Moduls müssen in der Original Dokumentation des Moduls nachgelesen werden.
+Defaultmäßig wird der DCF Empfang eingeschaltet und die LED leuchtet, sobald die Uhrzeit gültig ist. Es dauert einige Zeit, bis die Uhrzeit richtig empfangen wird.. Der Befehl &HFD liefert solange  eine 1. Wenn die Zeit stimmt, ist die Antwort 4.
+
+Die Uhrzeit wird im Format 8 Byte Unixzeit in Sekunden nach dem 1. 1. 1970 angegeben; allerdings nicht in UTC sondern in ME(S)Z angegeben. Es werden also 3600  (7200) Sekunden mehr angezeigt als die „wahre“ (UTC) Unixzeit.
 
 Befehle
 
 Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
+FolgendtProgramm:
 
+'annouince text
+'
 Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;RTC;V01.3;1;100;1;9"
+Data "0;m;DK1RI;RTC;V02.0;1;100;1;9"
 '
 Announce1:
 'Befehl  &H01
@@ -71,19 +75,20 @@ Announce7:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{0 to 127};a,USB,1"
 '
 Announce8:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,USB,1"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{0 to 127};a,USB,1"
 
 I2C
 
 Die Default Adresse ist 19 (&H13)
-Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
 Pullup Widerstände für den I2C Bus (R8/R9) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
+Wenn Geräte am I2C Bus nur 3.3V vertragen (zB der Raspberry), dürfen die Pullup Widerstände nicht bestückt werden.
 
 Fehlermeldungen
 
@@ -94,6 +99,7 @@ Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 Reset
 
 Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Der Reset hat eine Verzögerungszeit von 1 Sekunde.
 
 Watchdog
 
@@ -101,8 +107,8 @@ Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder grösser
-Die Software wurde in BASCOM geschrieben [2]
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
+Die Software wurde in BASCOM geschrieben [2].
 
 Programmierung des Prozessors
 
@@ -112,27 +118,30 @@ Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Proz
 
 USB Schnittstelle
 
-Der USB Modul UM2102 wird (isoliert) plan auf der Rückseite JP3 /JP6 verlötet.
+Der USB Modul UM2102 wird plan auf der Rückseite mit JP3 /JP6 verlötet.
+USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
 X3 kann nur bestückt werden, wenn der USB Modul mit Abstand auf der Rückseite verlötet wird (wird nicht empfohlen).
- 
+
 SMD
 
-Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ große Bauteile.
+Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur  relativ großen Bauteile  (1206 und groesser).
 
 Stromversorgung
 
 Die Stromversorgung ist 12V, Stromaufnahme ca. 20mA max oder über den USB Modul.
 
+
 RTC-DCF Modul
 
 Da der Modul  mit SPI gesteuert wird, brauchen die Steckerleisten ST2 und ST4 weder beim Modul noch beim Interface bestückt werden.
 Auf dem Modul müssen die 4 Lötbrücken für SPI überbrückt werden.
-Der Schalter des Moduls muss auf 1xxxxxxx (S1 – S8) - SPI mode - eingestellt werden.
+Der Schalter des Moduls muss auf 10xxxxxx (S1 – S8) - SPI mode - eingestellt werden.
 
 
 Bestückung der Leiterplatte
 
-Die Buchsen ST1 – ST4 nehmen das RTC Modul auf und sollten daher passende Höhe haben.
+Die Buchsen ST1 –und ST3 nehmen das RTC Modul auf und sollten daher passende Höhe haben.
 Möglicherweise muss ein weiterer Sockel aufgesteckt werden, da die Stromversorgungsbuchse das höchste Bauteil ist.
 ST2 und ST4 werden (elektrisch) nicht benötigt.
 JP1 muss für Normalbetrieb überbrückt werden.
@@ -160,7 +169,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V01.2
-Bascom Version V01.3
+Bascom Version V02.0
 
 Copyright
 
@@ -169,15 +178,10 @@ Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Gara
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
-
-
-
-
-
 Referenzen
 
 [1]	dk1ri.de/dhw/rtc_eagle.zip
 [2]	dk1ri.de/dhw/rtc_bascom.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
-
+[5]	dk1ri.de/myc/Definitions.pdf (englisch)
