@@ -1,13 +1,13 @@
 MYC Textdisplay
 					
 
-Author DK1RI, Version V01.4, 20161112
-This project can be found in https://www.github.com/dk1ri also.
+Author DK1RI, Version V02.0, 20170816
+This project can be found in https://www.github.com/dk1ri
 
 Einleitung
 
 Dies ist ein MYC Interface für zwei Typen von LCD Modulen, die in meiner Bastelkiste lagen:
-LM016XML (16 Zeichen zweireihig) und TLC501-30 (20 Zeichen, zweireihig)
+LM016XML (32 Zeichen zweireihig) und TLC501-30 (40 Zeichen, zweireihig)
 Diese Module sind mindestens 20 Jahre alt, aber ähnliche Displays mit HD44780 kompatibler Ansteuerung und identischer Pinbelegung sind auch heute noch erhältlich.
 
 Beschreibung und Bedienung
@@ -16,22 +16,22 @@ Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max.
 Es können LCD Module mit HD44780 kompatiblen Chips mit der Standard Pinbelegung direkt angeschlossen werden. 
 Die Steuerung kann über I2C, USB, seriell (allerdings ohne SUBD Verbinder und Pegelwandler)  erfolgen.
-Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
-Es können Texte mit einer maximalen Länge von 32  (40) Zeichen eingeben werden. Der Text wird umlaufend angezeigt; möglicherweise wird vorhandener Text überschrieben.
-Der Befehl &H01 erwartet einen String mit Stringlänge, der an die aktuelle Position geschrieben wird. Der Befehl &H02 erwartet m Bytes (2. Wert), die an die Position n (1. Wert) geschrieben werden; also ohne Stringlänge. Die Befehle &H04 und &H05 entsprechend.
+Es können Displays mit einer Länge von 32  oder 40 Zeichen angeschlossen werden. Die Konfiguration erfolgt vor dem Einsatz in einem MYC System mit dem Befehl &Hfe05000 (36 Zeichen) oder &Hfe0501 (40 Zeichen).
+Der Text wird umlaufend eingelesen; möglicherweise wird vorhandener Text überschrieben.
+Der Befehl &H01 erwartet einen String mit Stringlänge, der an die aktuelle Position geschrieben wird. Der Befehl &H02 erwartet m Zeichen (3. Byte), die an die Position n (2. Byte) geschrieben werden; also ohne Stringlänge; also zB &H0205026162 .Die Befehle &H04 und &H05 entsprechend für 40 Zeichen Displays.
 Falls das Display nichts anzeigt, muss möglicherweise die Kontrasteinstellung verändert werden. Die nötige Einstellung variiert stark in Abhängigkeit vom verwendeten Display.
 
 Einbindung in das MYC System
 
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
 
 Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Textdisplay;V02.2;1;160;1;19"
+Data "0;m;DK1RI;Textdisplay;V03.0;1;160;1;19"
 '
 Announce1:
 'Befehl &H01
@@ -121,7 +121,7 @@ Announce15:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;a,DISPLAYSIZE,0,{16x2,20x2}"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,USB,1;a,DISPLAYSIZE,0,{16x2,20x2}"
  '
 Announce16:
 'Befehl &HFF :
@@ -214,8 +214,8 @@ Ring	SDA
 Tip	SCL
 
 LCD
-das Modul LM016XML hat eine Stiftleiste. Eine Buchsenleiste wird auf der Bestückungsseite der Platine  gelötet; das Modul wird direkt darauf gesteckt. Das  LM016XML Modul befindet sich dann direkt über der Interfaceplatine. Wird die das Interface mit der 12V Buchse bestückt, sind übliche Buchsenleisten zu niedrig. Es gibt drei Lösungen: Getrennter Aufbau von Interface unde Modul und Verbindung mit Flachbandkabel; Übereinander stecken einer zweiten Buchsenleiste oder Anbringen der Buchsenleiste auf der Lötseite. Mein  LM016XML Modul würde dann „nach außen“ zeigen.
-Natürlich kann man auch den 12V Anschluss getrennt anbringen..
+das Modul LM016XML hat eine Stiftleiste. Eine Buchsenleiste wird auf der Bestückungsseite der Platine  gelötet; das Modul wird direkt darauf gesteckt. Das  LM016XML Modul befindet sich dann direkt über der Interfaceplatine. Pin 1 ist neben dem Quarz. Wird die das Interface mit der 12V Buchse bestückt, sind übliche Buchsenleisten zu niedrig. Es gibt drei Lösungen: Getrennter Aufbau von Interface und Modul und Verbindung mit Flachbandkabel; Übereinander stecken einer zweiten Buchsenleiste oder Anbringen der Buchsenleiste auf der Lötseite. Mein  LM016XML Modul würde dann „nach außen“ zeigen.
+Natürlich kann man auch den 12V Anschluss getrennt oder auf der Lötseite anbringen..
 
 Das TLC501-30  hat Lötanschlüsse;
 
@@ -243,8 +243,8 @@ Pin 11 - 14 werden nicht benötigt.
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 01.3
-Bascom Version 02.2
+Leiterplattenversion V01.3
+Bascom Version V03.0
 
 Copyright
 
@@ -255,7 +255,8 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[1]	dk1ri.de/dhw/extdisplay_eagle.zip
-[2]	dk1ri.de/dhw/textdisplay_bascom.zip
-[3]	dk1ri.de/myc/MYC.pdf 
+[1]	MYC_Textdisplay_eagle.zip
+[2]	MYC_Textdisplay_bascom.zip
+[3]	MYC.pdf
 [4]	dk1ri.de/myc/Description.pdf (englisch)
+[5]	dk1ri.de/myc/Definitions.pdf (englisch)
