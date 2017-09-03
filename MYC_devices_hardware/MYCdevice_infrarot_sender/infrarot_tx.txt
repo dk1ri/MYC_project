@@ -1,6 +1,6 @@
 Infrarot Sender
 
-Author DK1RI, Version V02.4, 20161111
+Author DK1RI, Version V03.0, 20170902
 This project can be found in https://github.com/dk1ri also.
 
 Einleitung
@@ -15,15 +15,15 @@ Beschreibung
 
 Es wird die gleiche Leiterplatte wie für das I2C_RS232_Interface verwendet.
 Die Eagle Daten stehen unter  [1].
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max.
-Das Interface arbeitet als I2C Slave.
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 40mA max oder über USB.
+Das Interface arbeitet als I2C Slave oder seriell (RS232 /USB)
 Das Programm ist nur das Framework, weitere MYC Befehle des Gerätes müssen nach Bedarf eingefügt werden. Man kann aber Befehle für Infrarot Codes direkt entsprechend den MYC Regeln eingeben.
 
 Die Daten müssen im MYC modes binär eingegeben werden; er erfolgt keine Wandlung; hier im HEX Format:
 &H01&H01
-01 ist der Befehl zur Infrarot RC5 Ausgabe. 01 ist ein Infrarot Code. Es wird immer nur ein Zeichen übertragen.
+01 ist der Befehl zur Infrarot RC5 Ausgabe. 01 ist ein Infrarot Code. Es wird immer nur ein Zeichen übertragen. Die RC5 / RC6 Adresse wird mit den Befehlen &H03 / &H05 geändert. Default ist 1.
 
-Im nicht-MYC mode müssen die RC5 Codes als 2 Ziffern von 00 - 63 über die serielle Schnittstelle eingeben werden. Rückkehr zum MYC mode erfolgt durch Eingabe von &H80. Die I2C Schnittstelle ist vom nicht-MYC mode nicht betroffen.
+Im nicht-MYC mode müssen die RC5 Codes dezimal als 2 Ziffern von 00 - 63 über die serielle Schnittstelle eingeben werden. Rückkehr zum MYC mode erfolgt durch Eingabe von &H80. Die RC5 Adresse wird mit dem Befehl &H03<&H01 - &H31> festgelegt.  Die I2C Schnittstelle ist vom nicht-MYC mode nicht betroffen.
 
 Befehle
 
@@ -34,7 +34,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;IR_sender;V03.2;1;160;1;14"
+Data "0;m;DK1RI;IR_sender;V04.0;1;160;1;14"
 '
 Announce1:
 'Befehl &H01   0-63
@@ -113,6 +113,7 @@ Announce13:
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,5,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'
 
 I2C
 
@@ -125,10 +126,12 @@ Fehlermeldungen
 Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
 Reset
 
 Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+
 
 Watchdog
 
@@ -212,11 +215,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 02.0
-Bascom Version 03.2
-
-
-
-
+Bascom Version 04.0
 
 
 
@@ -227,12 +226,10 @@ Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Gara
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
-
-
-
 Referenzen
 
 [1]	dk1ri.de/dhw/i2c_rs232_interface_eagle.zip
 [2]	dk1ri.de/dhw/infrarot_tx_bascom.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
+[5]	dk1ri.de/myc/Definitions.pdf (englisch)
