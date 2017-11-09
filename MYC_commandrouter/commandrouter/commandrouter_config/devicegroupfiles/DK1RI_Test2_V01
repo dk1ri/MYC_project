@@ -17,8 +17,9 @@
 16;as;0,on
 17;as;0,on;1,aus
 18;as;0,on;1,aus;2,idle;3,other
+19;ls;0,on;1,aus;2,idle;3,other
 240;an,ANNOUNCEMENTS;100;27
 252;aa,LAST ERROR;20,last_error
 253;aa,MYC INFO;b,BUSY
-254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,TERMINAL,1
-255;aa,as254
+254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,TERMINAL,1
+255;la,as254

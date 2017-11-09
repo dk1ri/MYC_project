@@ -8,13 +8,13 @@
 7;op,Rotatoroffset;1,range;degree;lin;0;359
 8;ap,Position;1,range;degree;lin;0;359
 9;aa,Values 1;a,controlon;a,Preset;a,Motor_cw;a,Motor_ccw;a,Limit;a,Under
-11;ou;0,idle,CCW calibration
-12;ou;0,idle,CW Calibration
-240;an,ANNOUNCEMENTS;100;21
+11;ku;0,idle,CCW calibration
+12;ku;0,idle,CW Calibration
+240;ln,ANNOUNCEMENTS;100;21
 252;aa,LAST ERROR;20,last_error
 253;aa,MYC INFO;b,BUSY
-254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,USB,1;b,COMPORT,5
-255;aa,as254
+254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,USB,1;b,COMPORT,5
+255;la,as254
 R !$2 !$4 !$6 IF $1=0
 R $5 $6 IF $3=1 OR $4=1
 R $4=0 IF $6=1
