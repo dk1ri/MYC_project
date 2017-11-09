@@ -1,12 +1,12 @@
 MYC Command-router
 
 Author: DK1RI
-Version V01.10 20170326
+Version V01.11 20171109
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
 
-This paper describes the command-router and my principles when writing the program. I hope,that the documentation within program is sufficient.
+This paper describes the command-router and my principles when writing the program. I hope, that the documentation within program is sufficient.
 Nevertheless for understanding the program you must understand the MYC principles and the protocol details. Description of working conditions for the command-router are distributed in the other documentation as well.
 For more details of the MYC system please check the reference.
 
@@ -45,7 +45,7 @@ output to SK
 The program should run on a raspberry pi with limited cpu resources.
 Because the CR must analyze any incoming byte, many lists and arrays are created during initialization. They are defined as v_xxx.py global variables. I am not sure, whether the used data structure is  the most effective (in terms of speed). So enhancements may be necessary.
 Sometimes the program lines are quite long and subarrays are hard to read. So I sometimes introduces variables like temp with a “lifetime” over a few lines. This enhances the readability, but may reduce speed. I also used those variables, when they are needed a few times, because a call of a variable may be faster than an element of a subarray.
-There are 3 input parser subprograms: SK-buffer, LD buffer for commands and infos and device buffer for answer and info. These subprograms are quite bulky and very similar. Nevertheless I used different subprograms to avoid unnecessary if – then selections. I hope, that this is the most speed effective solution. But I know, that servicing these lines is not comfortable.
+There are 3 input parser subprograms: command_handling -analyzing the SK-buffer for commands -, ld_command_handling -analizing the LD buffer for commands and infos-  and device_handling – anylizing the device buffer for answer and info. These subprograms are quite bulky and very similar. Nevertheless I used different subprograms to avoid unnecessary if – then selections. I hope, that this is the most speed effective solution. But I know, that servicing these lines is not comfortable.
 
 Usage
 
@@ -96,9 +96,9 @@ Error handling
 
 The routing kernel of the CR uses bytearray. Any character is allowed as input.
 The CR do some checks on the inputs:
-command-token
-positional parameters and element number lower than maximum 
-length of string
+for correct command-token
+for positional parameters and element number lower than maximum 
+foor correct length of string
 <data> fields are not checked (with few exceptions), especially restriction of <ty> given in <des>
 error messages are sent to logfile only.
 If a error is detected, received characters are ignored and the next byte byte is seen as the start of the next command / answer.
