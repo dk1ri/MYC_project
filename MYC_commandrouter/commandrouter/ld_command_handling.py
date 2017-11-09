@@ -1,7 +1,9 @@
-# name : ld_command_handling.py
-# command handling subprograms
-# this is mainly identical to commandhandling (for SK)
-
+"""
+name : ld_command_handling.py
+last edited: 1711
+command handling subprograms
+this is mainly identical to commandhandling (for SK)
+"""
 
 from cr_own_commands import *
 from misc_functions import *
@@ -67,9 +69,9 @@ The same is valid for the device_handling for answers and info:
                     return
                 # tok is a valid index to CR-tokennumber based lists now
                 line_length_index_0 = v_linelength.command[tok][0]
-# start switches, range commands and numeric om, am
                 if v_ld.linelength_loop == 0:
                     v_ld.linelength_len = v_linelength.command[tok][1]
+# start switches, range commands and numeric om, am
                 if line_length_index_0 == "1":
                     while got_bytes >= v_ld.linelength_len:
                         if v_linelength.command[tok][2] == 0:
@@ -335,9 +337,9 @@ The same is valid for the device_handling for answers and info:
                                     # exit "while loop"
                                     break
                                 # remember the element to transfer (position in v_linelength)
-                                v_ld.linelength_other = 7 + parameter * 3
+                                v_ld.linelength_other = 4 + parameter * 3
                                 # add length of numeric or length of stringlength
-                                v_ld.linelength_len += v_linelength.command[tok][8 + parameter * 3]
+                                v_ld.linelength_len += v_linelength.command[tok][5 + parameter * 3]
                             else:
                                 # loop == 1 or == 2
                                 if v_linelength.command[tok][v_ld.linelength_other + 2] == 1:

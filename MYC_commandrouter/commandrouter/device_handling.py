@@ -1,5 +1,6 @@
 """
 name : device_handling.py
+last edited: 1711
 devicehandling subprograms
 analyzes the answers and info and transfer to SK devices buffers
 """
@@ -351,7 +352,6 @@ def poll_device_buffer():
                             # remember the element to transfer (position in v_linelength)
                             v_dev.linelength_other[device] = 7 + parameter * 3
                             # add length of numeric or length of stringlength
-                            print(v_linelength.answer[tok],parameter,"360")
                             v_dev.linelength_len[device] += v_linelength.answer[tok][8 + parameter * 3]
                         else:
                             # loop == 1 or == 2

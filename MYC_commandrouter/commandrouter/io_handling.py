@@ -1,5 +1,8 @@
-# name : commandrouter_ethernet_handling.py
-# ethernet handling using threads
+"""
+name : io_handlings.py
+last edited:
+ethernet handling using threads
+"""
 
 import sys
 import socket

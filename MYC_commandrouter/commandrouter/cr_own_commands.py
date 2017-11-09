@@ -1,4 +1,6 @@
 """
+name: cr_own_commands.py
+last edited:
 handling of commands for CR
 line contain complete data
 output to v_sk_info_to_all

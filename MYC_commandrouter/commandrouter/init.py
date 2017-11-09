@@ -153,7 +153,8 @@ def read_my_devices():
             i = 0
     my_dev_file.close()
     return new_device_found
-#
+
+
 """
 ------------------------------------------------
 tasks, with new device
@@ -176,7 +177,7 @@ def create_device(indiv):
     v_dev.dev_cr_tok.append({})
     # list of devicetoken
     v_dev.tok.append([])
-    v_dev.info.append((0))
+    v_dev.info.append(0)
     v_dev.input_device.append(0)
     v_dev.interface_adress.append(0)
     v_dev.interface_baudrate.append(0)
@@ -349,7 +350,8 @@ def read_announcements_of_a_device(indiv, devicegroupname, device, own_cr):
     # read announcements of one new device from file with devicegroupname
     # resolve duplicate commandtoken / commandtype:
     # replace ANNOUNCEMENT line
-    # find number of commands (excluding  rules and ANNOUNCEMENT line)
+    # drop "k" and "l" lines (for configuration only)
+    # find number of commands (excluding rules and ANNOUNCEMENT line)
     # device point to the actual element
     # do some checks on announcement data: return in case of error
     # missing: ask device, if devicegroupfile not available
@@ -368,6 +370,11 @@ def read_announcements_of_a_device(indiv, devicegroupname, device, own_cr):
         lines = linesx.splitlines()[0]
         if lines[0] == "#" or lines == "":
             continue
+        tr = linesx.split(';')
+        # drop "k" and "l" lines
+        if len(tr) > 1 :
+            if tr[1][0] == "k" or tr[1][0] == "l":
+                continue
         if lines[0] == "R":
             # rules will be appended to the end
             device_temp_rules.append(lines)

@@ -139,6 +139,7 @@ def handle_check():
 
 
 def random_data():
+# send data with ram length to (random) SK, LD or device input
     if v_time_values.terminal == 255:
         # find terminal
         j = 0
@@ -152,27 +153,31 @@ def random_data():
         print("no Terminal found")
         return
     v_sk.inputline[v_time_values.terminal] = bytearray([])
-    l = random.randint(1, v_time_values.random_k)
+    random_len = random.randint(1, v_time_values.random_k)
     direction = random.randint(0, 1)
+# input from LD is not needed here, becauss output to LD copied to input from LD
     device = random.randint(0, 6)
+    # must be lower then the number of devices
     j = 0
-    while j < l:
+    while j < random_len:
         ran_int = random.randint(0, 255)
         if direction == 0:
             v_sk.inputline[v_time_values.terminal].extend([ran_int])
+        #elif direction == 1:
+            #v_ld.data_to_CR = bytearray([ran_int])
         else:
             v_dev.data_to_CR[device] = bytearray([ran_int])
         j += 1
     if direction == 0:
         print("random: SK", v_sk.inputline[v_time_values.terminal])
+    # elif direction == 1:
+        # print("random: LD", v_ld.inputline[v_time_values.terminal])
     else:
         print("random; device:", device, v_dev.data_to_CR[device])
     v_time_values.random_time = time.time()
     v_time_values.random_i += 1
-    if v_time_values.random_i == 500:
-        v_time_values.random_i = 0
-        v_time_values.random_k += 1
-    if v_time_values.random_k == 20:
+    if v_time_values.random_i == 1000000:
+        # stop after 1000 loops
         v_time_values.auto = 0
         v_time_values.random_time = 0
         v_configparameter.time_for_command_timeout = v_time_values.random_timeout_temp

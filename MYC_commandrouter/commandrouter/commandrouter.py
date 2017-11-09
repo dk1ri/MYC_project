@@ -1,13 +1,13 @@
 """
 name : commandrouter.py
-Version 02.4, 20170423
+Version 02.6 , 20171109
 Purpose : Programm for a MYC commandrouter
 The Programm supports the MYC protocol
 tested with win Python 2017.1
 Should be used with raspberry Pi Hardware (not yet tested)
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
-The programm is not ready, see description
+The programm is not ready, see decumentation
 The code is due to enhancements
 """
 

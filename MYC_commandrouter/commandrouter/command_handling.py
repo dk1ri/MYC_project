@@ -1,7 +1,9 @@
-# name : command_handling.py
-# command handling subprograms for SK
+"""
+name : command_handling.py
+last edited: 1711
+command handling subprograms for SK
 # this is mainly identical to ld_commandhandling
-
+"""
 
 from cr_own_commands import *
 from misc_functions import *
@@ -379,10 +381,10 @@ The same is valid for the device_handling for answers and info:
                                 input_device += 1
                                 # exit "while loop"
                                 break
-                            # remember the element to transfer (position in v_linelength)
-                            v_sk.linelength_other[input_device] = 7 + parameter * 3
+                            # remember the element to transfer (1 st position in v_linelength)
+                            v_sk.linelength_other[input_device] = 4 + parameter * 3
                             # add length of numeric or length of stringlength
-                            v_sk.linelength_len[input_device] += v_linelength.command[tok][8 + parameter * 3]
+                            v_sk.linelength_len[input_device] += v_linelength.command[tok][5 + parameter * 3]
                         else:
                             # loop == 1 or == 2
                             if v_linelength.command[tok][v_sk.linelength_other[input_device] + 2] == 1:

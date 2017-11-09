@@ -15,6 +15,7 @@ from_ld = []
 to_sk = []
 to_sk_str = []
 auto = 0
+# manual automatic input to terminal
 terminal = 255
 part = 0
 out_device = 0
@@ -23,7 +24,6 @@ data = bytearray([])            #store intermediate data
 command_file = 0
 # for random test
 random_i = 0
-random_k = 4
 random_time = 0
 random_timeout_temp = 0
 random_s_d = 0

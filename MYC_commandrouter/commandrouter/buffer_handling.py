@@ -1,3 +1,8 @@
+"""
+name : buffer_handling.py
+last edited:
+misc functions
+"""
 
 from cr_own_commands import *
 from io_handling import *

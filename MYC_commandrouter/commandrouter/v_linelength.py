@@ -3,7 +3,7 @@ answer = []				    # answer / info: list for length of answer, the length do con
                             # this will be the the length of the device_token
 
 """
-The intention of these lists is simpliffy the parsing of commands, answers and info
+The intention of these lists is simplify the parsing of commands, answers and info
 The announcelines are translated to these list used for parsing
 One entry per commandtoken of full announcelist
 Index to these lists are identical to the commandtoken; this simplyfies lookup. exception: &Hxxfx (CR own) commands;
@@ -30,8 +30,8 @@ The result is the length of the data, which must be available to enter the next 
 if this length is available at that time next loop is entered immediately, otherwise the loop is exited and the next task done.
 If there are enough data to enter a loop, it is checked, whether all lops are finished. If so the command is finished 
 and some data are reset.
-If the loop is exited because there are not enaugh data, the status is remember in the following variables:
-v_sk_xxx, c_ld_xxx and v_dev_xxx
+If the loop is exited because there are not enaugh data, the status is remembered in the following variables:
+v_sk_xxx, v_ld_xxx and v_dev_xxx
                     linelength_loop                     # actual loopnumber starting with 0
                     linelength_len                      # actual number of bytes to wait for next action
                     linelength_other                    # needed for some commands
