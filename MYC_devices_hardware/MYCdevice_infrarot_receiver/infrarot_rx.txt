@@ -1,6 +1,6 @@
 Infrarot (RC5) Empfänger
 
-Author DK1RI, Version V03.0, 20170902
+Author DK1RI, Version V03.1, 20180118
 This project can be found in https://github.com/dk1ri also.
 
 Einleitung
@@ -34,7 +34,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Infrared (RC5) receiver;V04.0;1;160;1;11"
+Data "0;m;DK1RI;Infrared (RC5) receiver;V04.0;1;145;1;11;1-1"
 '
 Announce1:
 'Befehl  &H01
@@ -51,8 +51,8 @@ Data "2;oa,rc5adress;b,{0 to 31}"
 Announce3:
 'Befehl &H03
 'RC5 Adresse lesen
-' read RC5 adress
-Data "3;aa,as3"
+'read RC5 adress
+Data "3;aa,as2"
 '
 Announce4:
 'Befehl  &H14
@@ -68,9 +68,9 @@ Data "21;aa,as20"
 '
 Announce6:
 'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;160;11"
+'announcement aller Befehle lesen
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;145;11"
 '
 Announce7:
 'Befehl &HFC
@@ -88,13 +88,13 @@ Announce9:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,RS232,1;a,USB,1"
 '
 Announce10:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
 
 I2C
@@ -116,7 +116,9 @@ Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden
 
 Watchdog
 
-Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
 
 Software
 
@@ -127,7 +129,7 @@ Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
 Um der Prozessor von der Stromversorgung der übrigen Schaltung zu trennen, muss der Jumper JP1 entfernt werden.
-Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp müssen ggf angepasst werden. Der Quarz hat eine Frequenz von 8MHz.
 
 Infrarot Eingang
 
@@ -175,6 +177,8 @@ UM2102
 
 nur I2C
 R8, R9 nach Bedarf, X2, X3, IC3, D1, C1, C2
+
+Als Quarz muss ein 8MHz Quarz verwendet werden!
 
 Weitere Bestückung erleichtert Tests..
 
