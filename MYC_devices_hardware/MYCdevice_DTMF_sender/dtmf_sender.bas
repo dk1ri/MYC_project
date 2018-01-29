@@ -1,19 +1,27 @@
 '-----------------------------------------------------------------------
 'name : dtmf_sender.bas
-'Version V03.3, 20161109
+'Version V04.0, 20180126
 'purpose : Programm for sending MYC protocol as DTMF Signals
 'This Programm workes as I2C slave or serial protocoll
-'Can be used with hardware rs232_i2c_interface Version V02.0 by DK1RI
-'The Programm supports the MYC protocol
-'Slave max length of string is 252 Bytes.
-'Please modify clock frequncy and processor type, if necessary
+'Can be used with hardware rs232_i2c_interface Version V02.1 by DK1RI
 '
-'micro : ATMega88
+'The Programm supports the MYC protocol
+'Slave max length of I2C string is 250 Bytes.
+'Please modify clock frequency and processor type, if necessary
+'
+'When doing modifying, please check / modify:
+' Const No_of_announcelines =
+' Const Aline_length (also in F0 command)
+' number of announcements in the 0 and 240 command announcements
+' add lines in Sub_restore
+' IC2 Adress in reset and announcements
+' check Const Tx_factor
+'
 'Fuse Bits :
 'External Crystal, high frequency
 'clock output disabled
 'divide by 8 disabled
-'$PROG &HFF,&HC6,&HDF,&HF9' generated. Take care that the chip supports all fuse bytes.
+'JTAG Disabled (if applicable)
 '
 'copyright : DK1RI
 'some parts are copied from Bascom Manual
@@ -21,8 +29,9 @@
 'under GPL (Gnu public licence)
 '-----------------------------------------------------------------------
 'Templates:
-' I2C_slave_4.1
+'slave_core_V01.5
 '-----------------------------------------------------------------------
+'
 'Used Hardware:
 ' serial
 ' I2C
@@ -37,104 +46,125 @@
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-'$regfile = "m88pdef.dat"
-' for ATmega8P
-$regfile = "m88def.dat"
-' (for ATmega8)
+$regfile = "m88pdef.dat"
+'$regfile = "m88def.dat"
+'$regfile = "m328pdef.dat"
 $crystal = 10000000
-' DTMF need 10MHz max
 $baud = 19200
-' use baud rate
-$hwstack = 64
-' default use 32 for the hardware stack
-$swstack = 20
-' default use 10 for the SW stack
-$framesize = 50
-' default use 40 for the frame space
+'use baud rate
+$hwstack = 32
+'default use 32 for the hardware stack
+$swstack = 10
+'default use 10 for the SW stack
+$framesize = 40
+'default use 40 for the frame space
+'
 ' Simulation!!!!
 ' $sim
 '
 '**************** libs
 'use byte library for smaller code
 '$lib "mcsbyte.lbx"
-$lib "i2c_twi.lbx"
 '
 '**************** Variables
 Const Lf = 10
-Const Stringlength = 254
+Const I2c_buff_length = 254
 'that is maximum
-Const Rs232length = 253
-'must be smaller than Stringlength
-Const Cmd_watchdog_time = 65000
-'Number of main loop before command reset
-Const Blinktime = 3000
+Const Stringlength = I2c_buff_length - 4
+'I2c_buff_length - command - parameter
+Const Not_valid_cmd = &H80
+'a non valid commandtoken
+Const Cmd_watchdog_time = 200
+'Number of main loop * 256  before command reset
+Const Tx_factor = 10
+' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
+Const Tx_timeout = 10
+'ca 5s: 10 for 10MHZ 20 for 20 MHz
+'Number of loops: 256 * 30 * Tx_timeout
+'timeout, when I2c_Tx_b is cleared and new commands allowed
+'
 Const No_of_announcelines = 13
 'announcements start with 0 -> minus 1
 '
+'************************
 Dim First_set As Eram Byte
-'first run after reset
-Dim L As Byte
-'Temps and local
-Dim Tempb As Byte
-Dim Tempc As Byte
-Dim Tempd As Byte
-Dim Temps As String * 20
-Dim I As Integer
-'Blinkcounter  for tests
-Dim J As Integer
-Dim Temps_b(20) As Byte At Temps Overlay
-Dim A As Byte
-'actual input
-'Dim Rs232_pointer As Byte
-Dim Announceline As Byte
-'notifier for multiple announcelines
-Dim A_line As Byte
-'actual announline
 Dim Dev_name As String * 20
 Dim Dev_name_eeram As Eram String * 20
 Dim Dev_name_b(20) As Byte At Dev_name Overlay
 Dim Dev_number As Byte
 Dim Dev_number_eeram As Eram Byte
 Dim Adress As Byte
-'I2C adress
 Dim Adress_eeram As Eram Byte
-'I2C Buffer
-Dim I2c_tx As String * Stringlength
-Dim I2c_tx_b(stringlength) As Byte At I2c_tx Overlay
-Dim I2c_pointer As Byte
-Dim I2c_length As Byte
-Dim Command As String * Stringlength
-'Command Buffer
-Dim Command_b(stringlength) As Byte At Command Overlay
-Dim Commandpointer As Byte
-Dim Command_no As Byte
-Dim Twi_status As Byte
-'HW I2C
-Dim Twi_control As Byte
-Dim Last_error As String * 30
-'Error Buffer
-Dim Last_error_b(30) As Byte At Last_error Overlay
-Dim Error_no As Byte
-Dim Cmd_watchdog As Word
-'Watchdog notifier
+'I2C adress
 Dim I2C_active As Byte
 Dim I2C_active_eeram As Eram Byte
 Dim RS232_active As Byte
 Dim RS232_active_eeram As Eram Byte
 Dim USB_active As Byte
 Dim Usb_active_eeram As Eram Byte
-Dim Send_lines As Byte
+'
+Dim L As Byte
+Dim Tempa As Byte
+Dim Tempb As Byte
+Dim Tempc As Byte
+Dim Tempd As Byte
+Dim Temps As String * 20
+Dim Temps_b(20) As Byte At Temps Overlay
+'
+Dim I As Byte
+Dim J As Byte
+
+Dim A As Byte
+'actual input
+Dim Blw As Byte
+'
+Dim Announceline As Byte
+'notifier for multiple announcelines
+Dim A_line As Byte
+' Announcline for 00 and F0 command
 Dim Number_of_lines As Byte
+Dim Send_lines As Byte
+' Temporaray Marker
+' 0: idle; 1: in work; 2: F0 command; 3 : 00 command
+Dim I2c_tx As String * I2c_buff_length
+Dim I2c_tx_b(I2c_buff_length) As Byte At I2c_tx Overlay
+Dim I2c_pointer As Byte
+Dim I2c_write_pointer As Byte
+Dim I2c_tx_busy As Byte
+' 0: new commands ok
+' 2. answer in progress, new command wait, until data transfer finished or timeout
+Dim Command As String * I2c_buff_length
+'Command Buffer
+Dim Command_b(I2c_buff_length) As Byte At Command Overlay
+Dim Commandpointer As Byte
+Dim Command_no As Byte
+'
+Dim Twi_status As Byte
+'
+Dim Error_no As Byte
+Dim Error_cmd_no As Byte
+Dim Cmd_watchdog As Word
+'Watchdog for loop
+'Watchdog for I2c sending
+Dim Tx_time As Byte
+Dim Command_mode As Byte
+'0: I2C input 1: seriell
 '
 Dim Dtmf_duration As Byte
 Dim Dtmf_duration_eeram As Eram Byte
 Dim Dtmf_pause As Byte
 Dim Dtmf_pause_eeram As Eram Byte
-Dim Command_mode As Byte
-'0: I2C input 1: seriell
-dim no_myc as byte
-dim no_myc_eeram as eram byte
+Dim no_myc as byte
+Dim no_myc_eeram as eram byte
 Dim Dtmf_char as Byte
+'
+Blw = peek (0)
+If Blw.WDRF = 1 Then
+   Error_no = 3
+Else
+   Error_no = 255
+End If
+'
 '**************** Config / Init
 ' Jumper:
 Config PinB.2 = Input
@@ -169,268 +199,232 @@ Slave_loop:
 Start Watchdog
 'Loop must be less than 2s
 '
-Gosub Blink_
-'for tests
-'
-Gosub Cmd_watch
+'Blink and timeoout
+Incr J
+If J = 255 Then
+   J = 0
+   Incr I
+   Select Case I
+      Case 30
+         If Tx_time > 0 Then
+            Incr Tx_time
+            If Tx_time > Tx_timeout Then
+               Gosub Reset_i2c_tx
+               Error_no = 6
+               Error_cmd_no = Command_no
+            End If
+         End If
+      Case 100
+         Set Led4
+      Case 200
+         Reset Led4
+      Case 255
+         I = 0
+         'twint set?
+         If TWCR.7 = 0 Then Gosub Reset_i2c
+   End Select
+'commands are expected as a string arriving in short time.
+'this watchdog assures, that a wrong commands will be deleted
+'commandbuffers is reset
+   If Cmd_watchdog > 0 Then Incr Cmd_watchdog
+      If Cmd_watchdog > Cmd_watchdog_time Then
+      Error_no = 5
+      Error_cmd_no = Command_no
+      Gosub Command_received
+   End If
+End If
 '
 'RS232 got data?
 A = Ischarwaiting()
 If A = 1 Then
-   A = Waitkey()
+   A = Inkey()
    If no_myc = 1 Then
       If A = 32 Then
-      'Space, switch to i2c mode again
+      'switch to myc mode again
          no_myc=0
          no_myc_eeram =no_myc
       Else
          Dtmf_char = A
          Gosub Send_dtmf
          Waitms dtmf_pause
-     End If
+      End If
    Else
-      If Command_mode = 0 Then
-      'restart if i2cmode
-         Command_mode = 1
-         Gosub  Command_received
-      End If
-      If Commandpointer < Stringlength Then
-      'If Buffer is full, chars are ignored !!
-         Command_b(Commandpointer) = A
-         If Cmd_watchdog = 0 Then
-            Cmd_watchdog = 1
-            'start watchdog
-            Reset Led3
-            'LED on
-         End If
-         If Rs232_active = 0 And Usb_active = 0 Then
-         'allow &HFE only
-            If Command_b(1) = 254 Then
-               Gosub Slave_commandparser
-            Else
-               Gosub  Command_received
-            End If
-         Else
-            Gosub Slave_commandparser
-         End If
-      End If
-   End if
-   'As a testdevice, all characters are send to serial
+     If Command_mode = 0 Then
+        'restart if i2cmode
+        Command_mode = 1
+        Gosub  Command_received
+     End If
+     If I2c_tx_busy = 0 Then
+        Command_b(Commandpointer) = A
+        If RS232_active = 1 Or Usb_active = 1 Then
+           Gosub Slave_commandparser
+        Else
+           'allow &HFE only
+           If Command_b(1) <> 254 Then
+              Gosub  Command_received
+           Else
+              Gosub Slave_commandparser
+           End If
+        End If
+     Else
+        Error_no = 7
+        Error_cmd_no = Command_no
+     End If
+   End If
 End If
 '
 'I2C
-Twi_control = Twcr And &H80
+'This part should be executed as fast as possible to continue I2C:
 'twint set?
-If Twi_control = &H80 Then
-'twsr 60 -> start, 80-> daten, A0 -> stop
-   Twi_status = Twsr
-   Twi_status = Twi_status And &HF8
-'slave send:
-   If Command_mode = 0 Then
-   'slave send only in I2C mode
-      If Twi_status = &HA8 Or Twi_status = &HB8 Then
-         If I2c_pointer <= I2c_length Then
-            Twdr = I2c_tx_b(i2c_pointer)
+If TWCR.7 = 1 Then
+   'twsr 60 -> start, 80-> data, A0 -> stop
+      Twi_status = TWSR And &HF8
+   If Twi_status = &HA8 Or Twi_status = &HB8 Then
+      'slave send:
+      'a slave send command must always be completed (or until timeout)
+      'incoming commands are ignored as long as i2c_tx is not empty
+      'for multi line F0 command I2c_tx may be loaded a few times if necessary.
+      'multiple announcelines are loaded by line
+      If I2c_write_pointer = 1 Or I2c_active = 0 Then
+         'nothing to send
+         Twdr = Not_valid_cmd
+      Else
+         If I2c_pointer < I2c_write_pointer Then
+            'continue sending
+            TWDR = I2c_tx_b(I2c_pointer)
             Incr I2c_pointer
-         Else
-         'last Byte, String finished
-            If Send_lines = 1 Then
-            'lines to send
-               If Number_of_lines > 1 Then
-                  Tempb = No_of_announcelines - 1
-                  'A_line is incremented before READ, -> No_of_announcelines -1 is last valid line
-                  If A_line < Tempb Then
-                     Cmd_watchdog = 0
-                     Decr Number_of_lines
-                     Incr A_line
-                     Gosub Sub_restore
-                     Twdr = I2c_tx_b(i2c_pointer)
-                     Incr I2c_pointer
-                  Else
-                     Cmd_watchdog = 0
-                     Decr Number_of_lines
-                     A_line = 0
-                     Gosub Sub_restore
-                     Twdr = I2c_tx_b(i2c_pointer)
-                     Incr I2c_pointer
-                  End If
+            If I2c_pointer >= I2c_write_pointer Then
+               If Number_of_lines > 0 Then
+                  Gosub Sub_restore
                Else
-                  Twdr =&H00
-                  Send_lines = 0
-                  I2c_length = 0
+                  Gosub Reset_i2c_tx
                End If
-            Else
-               Twdr =&H00
-               Send_lines = 0
-               I2c_length = 0
             End If
          End If
       End If
-   End If
-'
-'I2C receives data and and interpet as commands.
-'slave receive:
-   If Twi_status = &H80 Or Twi_status = &H88 Then
-      Tempb = Twdr
-      If Command_mode = 1 Then
-      'restart if rs232mode
-         Command_mode = 0
-         'i2c mode
-         Gosub  Command_received
-      End If
-      If Commandpointer <= Stringlength Then
-         Command_b(commandpointer) = Tempb
-         If Cmd_watchdog = 0 Then Cmd_watchdog = 1
-         'start watchdog
-         Reset Led3
-         'LED on  for tests
-         If I2c_active = 0 Then
-         'allow &HFE only
-            If Command_b(1) = 254 Then
-               Gosub Slave_commandparser
-            Else
+   Else
+      If Twi_status = &H80 Or Twi_status = &H88 Then
+         'I2C receives data and and interpret as commands.
+         If I2c_tx_busy = 0 Then
+            If Command_mode = 1 Then
+            'restart if rs232mode
+               Command_mode = 0
+               'i2c mode
                Gosub  Command_received
             End If
+            Command_b(Commandpointer) = TWDR
+            If I2c_active = 0 And Command_b(1) <> 254 Then
+               'allow &HFE only
+               Gosub  Command_received
+            Else
+               Gosub Slave_commandparser
+            End If
          Else
-            Gosub Slave_commandparser
+            Error_no = 7
+            Error_cmd_no = Command_no
          End If
       End If
    End If
    Twcr = &B11000100
 End If
+'
 Stop Watchdog                                               '
 Goto Slave_loop
 '
 '===========================================
 '
 Reset_:
-First_set = 5
+'This wait is necessary, because some programmers provide the chip
+'with power for a short time after programming.
+'This may start the reset_ sub, but stop before ending.
+Wait 1
 Dev_number = 1
 Dev_number_eeram = Dev_number
 Dev_name = "Device 1"
 Dev_name_eeram = Dev_name
+'
 Adress = 14
+'internal: even figures only
 Adress_eeram = Adress
-Dtmf_duration = 50
-Dtmf_duration_eeram = Dtmf_duration
-Dtmf_pause = 50
-Dtmf_pause_eeram = Dtmf_pause
-no_myc = 0
-no_myc_eeram = no_myc
 I2C_active = 1
 I2C_active_eeram = I2C_active
 RS232_active = 1
 RS232_active_eeram = RS232_active
 USB_active = 1
 Usb_active_eeram = Usb_active
+'
+'This should be the last
+First_set = 5
+'set at first use
 Return
 '
 Init:
 Dev_number = Dev_number_eeram
 Dev_name = Dev_name_eeram
 Adress = Adress_eeram
-Dtmf_duration = Dtmf_duration_eeram
-Dtmf_pause = Dtmf_pause_eeram
-no_myc = no_myc_eeram
 I2C_active = I2C_active_eeram
 RS232_active = RS232_active_eeram
 Usb_active = Usb_active_eeram
-Led3 = 1
-Led4  = 1
-DTMF = 0
-I = 0
-J = 0
 Command_no = 1
-Command_mode = 0
-Announceline = 255
-Last_error = " No Error"
-Error_no = 255
-'No Error
+Error_cmd_no = 0
+Send_lines = 0
 Gosub Command_received
 Gosub Reset_i2c_tx
+Gosub Reset_i2c
+I = 0
+J = 0
+Command_mode = 0
+Announceline = 255
+I2c_tx_busy = 0
+'
+Dtmf_duration = Dtmf_duration_eeram
+Dtmf_pause = Dtmf_pause_eeram
+'
 Return
 '
-Cmd_watch:
-'commands are expected as a string arriving in short time.
-'this watchdog assures, that a wrong commands will be deleted
-'all buffers are reset
-If Cmd_watchdog > Cmd_watchdog_time Then
-   Error_no = 3
-   Gosub Last_err
-   Gosub Command_received
-   'reset commandinput
-   Gosub Reset_i2c_tx
-   'after that time also read must be finished
-Else
-   If Cmd_watchdog <> 0 Then Incr Cmd_watchdog
-End If
-Return
-'
-Last_err:
-Last_error = Str(0 , 30)
-Select Case Error_no
-   Case 0
-      Last_error = ": command not found: "
-   Case 1
-      Last_error = ": I2C error: "
-   Case 3
-      Last_error = ": cmd Watchdog: "
-   Case 4
-      Last_error = ": parameter error: "
-End Select
-Temps = Str(command_no)
-Tempb = Len(temps)
-Tempc = Len(last_error)
-For Tempd = 1 To Tempb
-   Incr Tempc
-   Insertchar Last_error , Tempc , Temps_b(tempd)
-Next Tempd
-Return
-Error_no = 255
-'
-Blink_:
-'for tests
-'Led Blinks To Show Life
-J = J + 1
-If J = Blinktime Then
-   J = 0
-   Select Case I
-      Set Led4
-   Case 8
-      I = 0
-      Reset Led4
-   End Select
-   Incr I
-End If
-Return
-'
-Command_finished:
+Reset_i2c:
 Twsr = 0
 'status und Prescaler auf 0
-Twdr = &HFF
+Twdr = Not_valid_cmd
 'default
 Twar = Adress
 'Slaveadress
 Twcr = &B01000100
 Return
 '
+Reset_i2c_tx:
+I2c_pointer = 1
+I2c_write_pointer = 1
+I2c_tx_busy = 0
+Tx_time = 0
+Return
+'
 Command_received:
 Commandpointer = 1
-Command = String(stringlength , 0)
-'no multiple announcelines, if not finished
-Cmd_watchdog = 0
-Gosub Command_finished
-If Error_no <> 3 Then Set Led3
-If Error_no < 255 Then Gosub Last_err
 Incr Command_no
-If Command_no = 255 Then Command_no = 0
+If Command_no = 255 Then Command_no = 1
+If Command_no = Error_cmd_no Then
+   Error_cmd_no = 0
+   Error_no = 255
+End If
+Cmd_watchdog = 0
+Set Led3
 Return
 '
 Sub_restore:
-Gosub Reset_i2c_tx
-Error_no = 255
-'no error
+' read one line
+Select Case Send_lines
+   'select the start of text
+   Case 1
+      Tempd = 1
+   Case 3
+      Tempd = 2
+   Case 2
+      Tempd = 4
+End Select
+'
 Select Case A_line
+'
    Case 0
       Restore Announce0
    Case 1
@@ -458,32 +452,50 @@ Select Case A_line
    Case 12
       Restore Announce12
    Case Else
-      Error_no = 4
-      Gosub Last_err
+         'will not happen
 End Select
-If Error_no = 255 Then
-   Read I2c_tx
-   I2c_length = Len(i2c_tx)
-   For Tempb = I2c_length To 1 Step -1
-   'shift 1 pos right
-      I2c_tx_b(tempb + 1) = I2c_tx_b(tempb)
-   Next Tempb
-   I2c_tx_b(1) = I2c_length
-   Incr I2c_length
-   If Command_mode = 1 Then
-      For Tempb = 1 To I2c_length
-         Tempc = I2c_tx_b(Tempb)
-         Printbin Tempc
-      Next Tempb
-   End If
-   'complete length of string
-End If
+Read I2c_tx
+Tempc = Len(I2c_tx)
+For Tempb = Tempc To 1 Step - 1
+   Tempa = Tempb + Tempd
+   I2c_tx_b(Tempa) = I2c_tx_b(Tempb)
+Next Tempb
+Select Case Send_lines
+   Case 1
+      I2c_tx_b(1) = Tempc
+      I2c_write_pointer = Tempc + 2
+      'additional announcement lines
+   Case 3
+      'start basic announcement
+      I2c_tx_b(1) = &H00
+      I2c_tx_b(2) = Tempc
+      I2c_write_pointer = Tempc + 3
+      Send_lines = 1
+   Case 2
+      'start of announceline(s), send 3 byte first
+      I2c_tx_b(1) = &HF0
+      I2c_tx_b(2) = A_line
+      I2c_tx_b(3) = Number_of_lines
+      I2c_tx_b(4) = Tempc
+      I2c_write_pointer = Tempc + 5
+      Send_lines = 1
+End Select
+Incr A_line
+If A_line >= No_of_announcelines Then A_line = 0
+Decr Number_of_lines
+'Else
+'happens, for &HF=xx00
+'send header only
+I2c_pointer = 1
 Return
 '
-Reset_i2c_tx:
-I2c_length = 0
-I2c_pointer = 1
-I2c_tx = String(Stringlength,0)
+Print_i2c_tx:
+Decr  I2c_Write_pointer
+For Tempb = 1 To I2c_Write_pointer
+   Tempc = I2c_tx_b(Tempb)
+   Printbin Tempc
+Next Tempb
+Gosub Reset_I2c_tx
 Return
 '
 Send_dtmf:
@@ -501,7 +513,7 @@ Send_dtmf:
          Tempb = Dtmf_char - 85
       Case Else
          Error_no = 4
-         Gosub Last_err
+         Error_cmd_no = Command_no
    End Select
    If Error_no = 255 Then
       Cmd_watchdog = 0
@@ -515,426 +527,468 @@ Send_dtmf:
 Return
 '
 Slave_commandparser:
-If Commandpointer > 253 Then
-'Error, do nothing
-   Gosub Command_received
-Else
+'checks to avoid commandbuffer overflow are within commands !!
 '
-   Select Case Command_b(1)
-      Case 0
+'start watchdog if 0
+Incr Cmd_watchdog
+'
+Select Case Command_b(1)
+   Case 0
 'Befehl &H00
-'basic annoumement wird gelesen
-'basic announcement is read
-'Data "0;m;DK1RI;DTMF_sender;V03.3;1;100;1;13"
-         A_line = 0
-         Gosub Sub_restore
-         Gosub Command_received
+'eigenes basic announcement lesen
+'basic announcement is read to I2C or output
+'Data "0;m;DK1RI;DTMF_sender;V04.0;1;145;1;13;1-1"
+      I2c_tx_busy = 2
+      Tx_time = 1
+      A_line = 0
+      Number_of_lines = 1
+      Send_lines = 3
+      Gosub Sub_restore
+      If Command_mode = 1 Then Gosub Print_i2c_tx
+      Gosub Command_received
 '
-      Case 1
+   Case 1
 'Befehl &H01
 'liest string von I2C oder serial und sendet als DTMF
 'read string from I2C or serial and send as DTMF
-'Data "1;oa,send dtmf;252,{0 to 9,*,#,A to D}"
-        If Commandpointer < 2 Then
-           Incr Commandpointer
-        Else
-            If Commandpointer = 2 Then
-               Incr Commandpointer
-               If Command_b(2) = 0 Then Gosub Command_finished
+'Data "1;oa,send dtmf;250,{0 to 9,*,#,A to D}"
+     If Commandpointer < 2 Then
+        Incr Commandpointer
+     Else
+         If Commandpointer = 2 Then
+            Incr Commandpointer
+            If Command_b(2) = 0 Then Gosub Command_received
+         Else
+            L = Command_b(2) + 2
+            'Length
+            If Commandpointer = L Then
+            'string finished
+               For Tempc = 3 To L
+                  Dtmf_char = Command_b(tempc)
+                  Gosub Send_dtmf
+                  If Tempc < L Then
+                     Waitms dtmf_pause
+                  End If
+               Next Tempc
+               Gosub Command_received
             Else
-               L = Command_b(2) + 2
-               'Length
-               If Commandpointer = L Then
-               'string finished
-                  For Tempc = 3 To L
-                     Dtmf_char = Command_b(tempc)
-                     Gosub Send_dtmf
-                     If Tempc < L Then
-                        Waitms dtmf_pause
+               Incr Commandpointer
+            End If
+         End If
+     End If
+'
+   Case 234
+'Befehl &HEA
+'DTMF Länge schreiben
+'write DTMF length
+'Data "234;ka,DTMF Duration;b"
+      If Commandpointer = 2 Then
+         Dtmf_duration = Command_b(2)
+         Dtmf_duration_eeram = Dtmf_duration
+         Gosub Command_received
+      Else
+         Incr Commandpointer
+      End If
+'
+   Case 235
+'Befehl &HEB
+'Dtmf duration lesen
+'read DTMF Länge
+'Data "235;la,as234"
+      I2c_tx_busy = 2
+      Tx_time = 1
+      I2c_tx_b(1) = &HEB
+      I2c_tx_b(2) = Dtmf_duration
+      I2c_write_pointer = 3
+      If Command_mode = 1 Then Gosub Print_i2c_tx
+      Gosub Command_received
+'                                          l
+   Case 236
+'Befehl &HEC
+'Dtmf Pause schreiben
+'write DTMF Pause
+'Data "236;ka,DTMF Pause;b"
+      If Commandpointer = 2 Then
+         Dtmf_pause = Command_b(2)
+         Dtmf_pause_eeram = Dtmf_pause
+         Gosub Command_received
+      Else
+         Incr Commandpointer
+      End If
+'
+   Case 237
+'Befehl &HED
+'Dtmf Pause lesen
+'read DTMF Pause
+'Data "237;la,as236"
+      I2c_tx_busy = 2
+      Tx_time = 1
+      I2c_tx_b(1) = &HED
+      I2c_tx_b(2) = Dtmf_pause
+      I2c_write_pointer = 3
+      If Command_mode = 1 Then Gosub Print_i2c_tx
+      Gosub Command_received
+'
+   Case 238
+'Befehl &HEE
+'nomyc schreiben
+'write nomyc
+'Data "238;ka,no_myc;a"
+      If Commandpointer = 2 Then
+         If Command_b(2) < 2 Then
+            no_myc = Command_b(2)
+            no_myc_eeram = no_myc
+         Else
+            Error_no = 4
+            Error_cmd_no = Command_no
+         End If
+         Gosub Command_received
+      Else
+         Incr Commandpointer
+      End If
+'
+   Case 239
+'Befehl &HEF
+'nomyc lesen
+'read nomyc
+'Data "239;la,as238"
+      I2c_tx_busy = 2
+      Tx_time = 1
+      I2c_tx_b(1) = &HEF
+      I2c_tx_b(2) = no_myc
+      I2c_write_pointer = 3
+      If Command_mode = 1 Then Gosub Print_i2c_tx
+      Gosub Command_received
+'
+   Case 240
+   Case 240
+'Befehl &HF0<n><m>
+'liest announcements
+'read m announcement lines
+'Data "240;ln,ANNOUNCEMENTS;145;13"
+      If Commandpointer >= 3 Then
+         If Command_b(2) < No_of_announcelines And Command_b(3) < No_of_announcelines Then
+            I2c_tx_busy = 2
+            Tx_time = 1
+            Send_lines = 2
+            Number_of_lines = Command_b(3)
+            A_line = Command_b(2)
+            Gosub Sub_restore
+            If Command_mode = 1 Then
+               Gosub Print_i2c_tx
+               While Number_of_lines > 0
+                  Gosub Sub_restore
+                  Gosub Print_i2c_tx
+               Wend
+            End If
+         Else
+            Error_no = 4
+            Error_cmd_no = Command_no
+         End If
+         Gosub Command_received
+      Else
+         Incr Commandpointer
+      End If
+'
+   Case 252
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+'Data 252;aa,LAST ERROR;20,last_error"
+      I2c_tx_busy = 2
+      Tx_time = 1
+      Select Case Error_no
+         Case 0
+            I2c_tx = ": command not found: "
+         Case 1
+            I2c_tx = ": I2C error: "
+         Case 3
+            I2c_tx = ": Watchdog reset: "
+         Case 4
+            I2c_tx = ": parameter error: "
+         Case 5
+            I2c_tx = ": command watchdog: "
+         Case 6
+            I2c_tx = ": Tx timeout: "
+         Case 7
+            I2c_tx = ": not valid at that time: "
+         Case 8
+            I2c_tx = ": i2c_buffer overflow: "
+         Case 255
+            I2c_tx = ": No error: "
+      End Select
+      Tempc = Len (I2c_tx)
+      For Tempb = Tempc To 1 Step - 1
+         I2c_tx_b(Tempb + 5) = I2c_tx_b(Tempb)
+      Next Tempb
+      I2c_tx_b(1) = &HFC
+      I2c_tx_b(2) = &H20
+      I2c_tx_b(3) = &H20
+      I2c_tx_b(4) = &H20
+      I2c_tx_b(5) = &H20
+      Temps = Str(Command_no)
+      Tempd = Len (Temps)
+      For Tempb = 1 To Tempd
+         I2c_tx_b(Tempb + 2) = Temps_b(Tempb)
+      Next Tempb
+      I2c_write_pointer = Tempc + 6
+      Temps = Str(Error_cmd_no)
+      Tempd = Len (Temps)
+      For Tempb = 1 To Tempd
+         I2c_tx_b(I2c_write_pointer) = Temps_b(Tempb)
+         Incr I2c_write_pointer
+      Next Tempb
+      Tempc = Tempc + 3
+      I2c_tx_b(2) = Tempc + Tempd
+      If Command_mode = 1 Then Gosub Print_i2c_tx
+      Gosub Command_received
+'
+   Case 253
+'Befehl &HFD
+'Geraet aktiv antwort
+'Life signal
+'Data "253;aa,MYC INFO;b,ACTIVE"
+      I2c_tx_busy = 2
+      Tx_time = 1
+      I2c_tx_b(1) = &HFD
+      I2c_tx_b(2) = 4
+      'no info
+      I2c_write_pointer = 3
+      If Command_mode = 1 Then Gosub Print_i2c_tx
+      Gosub Command_received
+'
+   Case 254
+'Befehl &HFE <n><data>
+'eigene Individualisierung schreiben
+'write individualization
+'Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;a,USB,1"
+      If Commandpointer >= 2 Then
+         Select Case Command_b(2)
+            Case 0
+               If Commandpointer < 3 Then
+                  Incr Commandpointer
+               Else
+                  If Commandpointer = 3 Then
+                     Incr Commandpointer
+                     If Command_b(3) = 0 Then Gosub Command_received
+                  Else
+                     L = Command_b(3) + 3
+                     If Commandpointer >= L Then
+                        Dev_name = String(20 , 0)
+                        If L > 23 Then L = 23
+                        For Tempb = 4 To L
+                           Dev_name_b(Tempb - 3) = Command_b(Tempb)
+                        Next Tempb
+                        Dev_name_eeram = Dev_name
+                        Gosub Command_received
+                     Else
+                        Incr Commandpointer
                      End If
-                  Next Tempc
+                  End If
+               End If
+            Case 1
+               If Commandpointer = 3 Then
+                  Dev_number = Command_b(3)
+                  Dev_number_eeram = Dev_number
                   Gosub Command_received
                Else
                   Incr Commandpointer
                End If
-            End If
-         End If
-'
-      Case 234
-'Befehl &HEA
-'DTMF Länge schreiben
-'write DTMF length
-'Data "234;oa,DTMF Duration;b"
-         If Commandpointer = 2 Then
-            Dtmf_duration = Command_b(2)
-            Dtmf_duration_eeram = Dtmf_duration
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 235
-'Befehl &HEB
-'Dtmf duration lesen
-'read DTMF Länge
-'Data "235;aa,as234"
-         If Command_mode = 1 Then
-            Printbin Dtmf_duration
-         Else
-            Gosub Reset_i2c_tx
-            I2c_length = 1
-            I2c_tx_b(1) = Dtmf_duration
-         End If
-         Gosub Command_received
-'
-      Case 236
-'Befehl &HEC
-'Dtmf Pause schreiben
-'write DTMF Pause
-'Data "236;oa,DTMF Pause;b"
-         If Commandpointer = 2 Then
-            Dtmf_pause = Command_b(2)
-            Dtmf_pause_eeram = Dtmf_pause
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 237
-'Befehl &HED
-'Dtmf Pause lesen
-'read DTMF Pause
-'Data "237;aa,as236"
-         I2c_length = 1
-         If Command_mode = 1 Then
-            Printbin Dtmf_pause
-         Else
-            Gosub Reset_i2c_tx
-            I2c_length = 1
-            I2c_tx_b(1) = Dtmf_pause
-         End If
-         Gosub Command_received
-'
-      Case 238
-'Befehl &HEE
-'nomyc schreiben
-'write nomyc
-'Data "238;oa,no_myc;a"
-         If Commandpointer = 2 Then
-            If Command_b(2) < 2 Then
-               no_myc = Command_b(2)
-               no_myc_eeram = no_myc
-            Else
-               Error_no =0
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 239
-'Befehl &HEF
-'nomyc lesen
-'read nomyc
-'Data "239;aa,as238"
-         If Command_mode = 1 Then
-            Printbin no_myc
-         Else
-            Gosub Reset_i2c_tx
-            I2c_length = 1
-            I2c_tx_b(1) = no_myc
-         End If
-         Gosub Command_received
-'
-
-      Case 240
-'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-'Data "240;an,ANNOUNCEMENTS;100;13"
-         If Commandpointer = 3 Then
-            If Command_b(2) < No_of_announcelines And Command_b(3) <= No_of_announcelines Then
-                If Command_b(3) > 0 Then
-                  Send_lines = 1
-                  Number_of_lines = Command_b(3)
-                  A_line = Command_b(2)
-                  Gosub Sub_restore
-                  If Command_mode = 1 Then
-                     Decr Number_of_lines
-                     While  Number_of_lines > 0
-                        Decr Number_of_lines
-                        Incr A_line
-                        If A_line >= No_of_announcelines Then
-                           A_line = 0
-                        End If
-                        Gosub Sub_restore
-                     Wend
-                  End If
-               End If
-            Else
-               Error_no = 4
-            End If
-            Gosub Command_received
-         Else
-               Incr Commandpointer
-         End If
-'
-      Case 252
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-'Data "252;aa,LAST ERROR;20,last_error"
-         Gosub Reset_i2c_tx
-         Temps = Str(command_no)
-         I2c_length = Len(temps)
-         For Tempb = 1 To I2c_length
-            I2c_tx_b(tempb + 1) = Temps_b(tempb)
-            '+1: leave space for length
-         Next Tempb
-         Incr I2c_length
-         'because of 1 byte with length
-         Tempb = Len(last_error)
-         For Tempc = 1 To Tempb
-            Tempd = Tempc + I2c_length
-            'write at the end
-            I2c_tx_b(tempd) = Last_error_b(tempc)
-         Next Tempc
-         I2c_length = Tempd
-         'last tempd is length
-         Decr Tempd
-         I2c_tx_b(1) = Tempd
-         If Command_mode = 1 Then
-            For Tempb = 1 To I2c_length
-               Tempc = I2c_tx_b(tempb)
-               Printbin Tempc
-            Next Tempb
-         End If
-         Gosub Command_received
-'
-      Case 253
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-'Data "253;aa,MYC INFO;b,ACTIVE"
-         Gosub Reset_i2c_tx
-         If Command_mode = 1 Then
-            Printbin 4
-         Else
-            I2c_tx_b(1) = 4
-            'no info
-            I2c_length = 1
-         End If
-         Gosub Command_received
-'
-      Case 254
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-'Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;a,USB,1;a,RADIO,1"
-         If Commandpointer >= 2 Then
-            Select Case Command_b(2)
-               Case 0
-                  If Commandpointer < 3 Then
-                     Incr Commandpointer
+            Case 2
+               If Commandpointer < 3 Then
+                  Incr Commandpointer
+               Else
+               'as per announcement: bit
+                  If Command_b(3) < 2 Then
+                     I2C_active = Command_b(3)
+                     I2C_active_eeram = I2C_active
                   Else
-                     If Commandpointer = 3 Then
-                        Incr Commandpointer
-                        If Command_b(3) = 0 Then Gosub Command_received
-                     Else
-                        L = Command_b(3)
-                        If L > 20 Then L = 20
-                        L = L + 3
-                        If Commandpointer = L Then
-                           Dev_name = String(20 , 0)
-                           For Tempb = 4 To L
-                              Dev_name_b(tempb - 3) = Command_b(tempb)
-                           Next Tempb
-                           Dev_name_eeram = Dev_name
-                           Gosub Command_received
-                        Else
-                           Incr Commandpointer
-                        End If
-                     End If
+                     Error_no = 4
+                     Error_cmd_no = Command_no
                   End If
-               Case 1
-                  If Commandpointer = 3 Then
-                     Dev_number = Command_b(3)
-                     Dev_number_eeram = Dev_number
-                     Gosub Command_received
-                  Else
-                     Incr Commandpointer
-                  End If
-               Case 2
-                  If Commandpointer < 3 Then
-                     Incr Commandpointer
-                  Else
-                  'as per announcement: bit
-                     If Command_b(3) < 2 Then
-                        I2C_active = Command_b(3)
-                        I2C_active_eeram = I2C_active
-                     Else
-                        Error_no = 4
-                     End If
-                     Gosub Command_received
-                  End If
-               Case 3
-                  If Commandpointer = 3 Then
-                     Tempb = Command_b(3)
-                     If Tempb < 128 Then
-                        Tempb = Tempb * 2
-                        Adress = Tempb
-                        Adress_eeram = Adress
-                     Else
-                        Error_no = 4
-                     End If
-                     Gosub Command_received
-                  Else
-                     Incr Commandpointer
-                  End If
-               Case 4
-                  If Commandpointer < 3 Then
-                     Incr Commandpointer
-                  Else
-                     If Command_b(3) > 1 Then Command_b(3) = 1
-                     RS232_active = Command_b(3)
-                     RS232_active_eeram = RS232_active
-                     Gosub Command_received
-                  End If
-               Case 5
-                  If Commandpointer < 3 Then
-                     Incr Commandpointer
-                  Else
-                     If Command_b(3) > 1 Then Command_b(3) = 1
-                     Usb_active = Command_b(3)
-                     Usb_active_eeram = Usb_active
-                     Gosub Command_received
-                  End If
-               Case Else
-                  Error_no = 4
                   Gosub Command_received
-            End Select
-         Else
-           Incr Commandpointer
-         End If
+               End If
+            Case 3
+               If Commandpointer = 3 Then
+                  Tempb = Command_b(3)
+                  If Tempb < 128 Then
+                     Tempb = Tempb * 2
+                     Adress = Tempb
+                     Adress_eeram = Adress
+                     Gosub Reset_i2c
+                  Else
+                     Error_no = 4
+                     Error_cmd_no = Command_no
+                  End If
+                  Gosub Command_received
+               Else
+                  Incr Commandpointer
+               End If
+            Case 4
+               If Commandpointer = 3 Then
+                  Tempb = Command_b(3)
+                  If Tempb < 2 Then
+                     Rs232_active = Tempb
+                     Rs232_active_eeram = Rs232_active
+                  Else
+                     Error_no = 4
+                     Error_cmd_no = Command_no
+                  End If
+                  Gosub Command_received
+               Else
+                  Incr Commandpointer
+               End If
+            Case 5
+               If Commandpointer = 3 Then
+                  Tempb = Command_b(3)
+                  If Tempb < 2 Then
+                     Usb_active = Tempb
+                     Usb_active_eeram = Usb_active
+                  Else
+                     Error_no = 4
+                     Error_cmd_no = Command_no
+                  End If
+                  Gosub Command_received
+               Else
+                  Incr Commandpointer
+               End If
+
+            Case Else
+               Error_no = 4
+               Error_cmd_no = Command_no
+         End Select
+      Else
+        Incr Commandpointer
+      End If
 '
-      Case 255
-'Befehl &HFF :
+   Case 255
+'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-'Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1"
-         If Commandpointer = 2 Then
-            Gosub Reset_i2c_tx
+'Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+      If Commandpointer >= 2 Then
+         I2c_tx_busy = 2
+         Tx_time = 1
+         If Command_b(2) < 8 Then
+            I2c_tx_b(1) = &HFF
+            I2c_tx_b(2) = Command_b(2)
             Select Case Command_b(2)
                Case 0
-                  I2c_length = Len(dev_name)
-                  I2c_tx_b(1) = I2c_length
-                  For Tempb = 1 To I2c_length
-                     I2c_tx_b(tempb + 1) = Dev_name_b(tempb)
-                  Next Tempb
-                  Incr I2c_length
+                  'Will send &HFF0000 for empty string
+                  Tempc = Len(Dev_name)
+                  I2c_tx_b(3) = Tempc
+                  I2c_write_pointer = 4
+                  Tempb = 1
+                  While Tempb <= Tempc
+                     I2c_tx_b(I2c_write_pointer) = Dev_name_b(tempb)
+                     Incr I2c_write_pointer
+                     Incr Tempb
+                  Wend
                Case 1
-                  I2c_tx_b(1) = Dev_number
-                  I2c_length = 1
+                  I2c_tx_b(3) = Dev_number
+                  I2c_write_pointer = 4
                Case 2
-                  I2C_tx_b(1) = I2C_active
-                  I2c_length = 1
+                  I2C_tx_b(3) = I2c_active
+                  I2c_write_pointer = 4
                Case 3
                   Tempb = Adress / 2
-                  I2c_tx_b(1) = Tempb
-                  I2c_length = 1
+                  I2c_tx_b(3) = Tempb
+                  I2c_write_pointer = 4
                Case 4
-                  I2c_tx_b(1) = RS232_active
-                  I2c_length = 1
+                  I2c_tx_b(3) = Rs232_active
+                  I2c_write_pointer = 4
                Case 5
-                  I2c_tx_b(1) = 0
-                  I2c_length = 1
+                  I2c_tx_b(3) = 0
+                  I2c_write_pointer = 4
                Case 6
-                  I2c_tx = "8n1"
-                  I2c_length = 3
+                  I2c_tx_b(3) = 3
+                  I2c_tx_b(4) = "8"
+                  I2c_tx_b(5) = "N"
+                  I2c_tx_b(6) = "1"
+                  I2c_write_pointer = 7
                Case 7
-                  I2c_tx_b(1) = USB_active
-                  I2c_length = 1
-               Case Else
-                  Error_no = 4
-                  'ignore anything else
+                  I2c_tx_b(3) = Usb_active
+                  I2c_write_pointer = 4
             End Select
-            If Command_mode = 1 Then
-               For Tempb = 1 To I2c_length
-                  Tempc = I2c_tx_b(tempb)
-                  Printbin Tempc
-               Next Tempb
-            End If
-            Gosub Command_received
          Else
-               Incr Commandpointer
+            Error_no = 4
+            Error_cmd_no = Command_no
+            'ignore anything else
          End If
-      Case Else
-         Error_no = 0
-         'ignore anything else
-         Gosub Last_err
+         If Command_mode = 1 Then Gosub Print_i2c_tx
          Gosub Command_received
-   End Select
-End If
+      Else
+         Incr Commandpointer
+      End If
+'
+   Case Else
+      Error_no = 0
+      'ignore anything else
+      Error_cmd_no = Command_no
+      Gosub Command_received
+End Select
+Stop Watchdog
 Return
 '
 '==================================================
 '
 End
+'
 'announce text
 '
 Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;DTMF_sender;V03.3;1;100;1;13"
+Data "0;m;DK1RI;DTMF_sender;V04.0;1;145;1;13;1-1"
 '
 Announce1:
 'Befehl &H01
 'liest string von I2C oder serial und sendet als DTMF
 'read string from I2C or serial and send as DTMF
-Data "1;oa,send dtmf;252,{0 to 9,*,#,A to D}"
+Data "1;oa,send dtmf;250,{0 to 9,*,#,A to D}"
 '
 Announce2:
 'Befehl &HEA
 'DTMF Länge schreiben
 'write DTMF length
-Data "234;oa,DTMF Duration;b"
+Data "234;ka,DTMF Duration;b"
 '
 Announce3:
 'Befehl &HEB
 'Dtmf duration lesen
 'read DTMF Länge
-Data "235;aa,as234"
+Data "235;la,as234"
 '
 Announce4:
 'Befehl &HEC
 'Dtmf Pause schreiben
 'write DTMF Pause
-Data "236;oa,DTMF Pause;b"
+Data "236;ka,DTMF Pause;b"
 '
 Announce5:
 'Befehl &HED
 'Dtmf Pause lesen
 'read DTMF Pause
-Data "237;aa,as236"
+Data "237;la,as236"
 '
 Announce6:
 'Befehl &HEE
 'nomyc schreiben
 'write nomyc
-Data "238;oa,no_myc;a"
+Data "238;ka,no_myc;a"
 '
 Announce7:
 'Befehl &HEF
 'nomyc lesen
 'read nomyc
-Data "239;aa,as238"
+Data "239;la,as238"
 '
 Announce8:
-'Befehl &HF0
+'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
-'read announcement lines
-Data "240;am,ANNOUNCEMENTS;100;13"
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;145;13"
 '
 Announce9:                                                  '
 'Befehl &HFC
@@ -952,11 +1006,11 @@ Announce11:
 'Befehl &HFE <n> <n>
 'Individualisierung schreiben
 'write indivdualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;a,USB,1"
 '
 Announce12:
 'Befehl &HFF
 'Individualisierung lesen
 'read indivdualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
