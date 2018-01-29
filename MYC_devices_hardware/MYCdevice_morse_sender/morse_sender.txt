@@ -1,6 +1,6 @@
 Morse Sender
 
-Author DK1RI, Version V01.5, 20170815
+Author DK1RI, Version V01.6, 20180118
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -25,7 +25,7 @@ Die Befehlsdaten müssen binär eingegeben werden; er erfolgt keine Wandlung, hier
 01 ist der Befehl zur Morse  Ausgabe. 04 ist die Länge des nachfolgenden Strings test
 Die gesendeten Zeichen werden auch immer über die serielle Schnittstelle so ausgegeben.
 
-Es können 252 Zeichen maximal am Stück übertragen werden; die Länge des Strings wird mit einem Byte übertragen.
+Es können 250 Zeichen maximal am Stück übertragen werden; die Länge des Strings wird mit einem Byte übertragen.
 Nach Eingabe eines Strings muss man warten, bis die Morse Signale übertragen wurden. Andernfalls gehen Eingabedaten verloren. 
 Serieller Eingang und I2C können „gleichzeitig“ verwendet werden. Allerdings wird beim jedem Wechsel der Befehlspuffer gelöscht.
 
@@ -47,19 +47,19 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;morse sender;V03.0;1;145;1;15"
+Data "0;m;DK1RI;morse sender;V03.0;1;145;1;15;1-1"
 '
 Announce1:
 'Befehl  &H01 <s>
 'I2C / serial String als Morse senden
 'send I2C / serial String as Morse
-Data "1;oa,send morse;252,{.,\,,:,\;,?,-,_,(,),',=,+,/,@,0 to 10,a to z, A to Z}"
+Data "1;oa,send morse;250,{.,\,,:,\;,?,-,_,(,),',=,+,/,@,0 to 10,a to z, A to Z}"
 '
 Announce2:
 'Befehl  &H02 0 to 19
 'Geschwindigkeit schreiben
 'write speed
-Data "2;op,morse speed;20,{5 to 100};lin;Wpm"
+Data "2;op,morse speed;1;20,{5 to 100};lin;Wpm"
 '
 Announce3:
 'Befehl  &H03
@@ -71,7 +71,7 @@ Announce4:
 'Befehl  &H04
 'Frequenz schreiben 100 - 2000Hz
 'write frequency
-Data "4;op,morse frequency;20,{100 to 2000};lin;Hz"
+Data "4;op,morse frequency;1;20,{100 to 2000};lin;Hz"
 '
 Announce5:
 'Befehl  &H05
@@ -83,7 +83,7 @@ Announce6:
 'Befehl  &H06
 'Mode einstellen, Myc, direkteingabe, 5er Gruppen
 'set mode
-Data "6;os,mode;0,myc mode;1,morse input;2,0 to 9;3,a to f;4,g to l;5,m to s;6,t to z;7,special;8,all"
+Data "6;os,mode;1;0,myc mode;1,morse input;2,0 to 9;3,a to f;4,g to l;5,m to s;6,t to z;7,special;8,all"
 '
 Announce7:
 'Befehl  &H07
@@ -95,7 +95,7 @@ Announce8:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;145;15"
+Data "240;ln,ANNOUNCEMENTS;145;15"
 '
 Announce9:                                                  '
 'Befehl &HFC
@@ -119,7 +119,7 @@ Announce12:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,18,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,18,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 Announce13:
 Data "R !* IF $6&1"
 '
@@ -153,11 +153,9 @@ Der Reset hat eine Verzögerungszeit von 1 Sekunde.
 
 Watchdog
 
-Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
-Nach jedem beendeten Befehl wird der gesamte Befehlspuffer gelöscht
-Weiterhin müssen zu sendende I2C Daten innerhalb einer Sekunde abholt werden.
-Es gibt einen allgemeinen Reset, wenn die Abfrageschleife länger als 2 Sekunde dauert.
-
+Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
 
 Software
 
@@ -213,7 +211,6 @@ R8, R9 nach Bedarf, X2, X3, (ohne USB außerdem: X1,IC3, D1, C1, C2
 
 Weitere Bestückung erleichtert Tests..
 
-
 Anschlüsse
 
 Power
@@ -237,7 +234,7 @@ Morsesignal (LP SL6)
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 02.0
+Leiterplattenversion 02.1
 Bascom Version 03.0
 
 Copyright
@@ -254,4 +251,5 @@ Referenzen
 [2]	dk1ri.de/dhw/morse_sender_bascom.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/myc/Definitions.pdf (englisch)
+[5]	dk1ri.de/myc/Definitions.pdf
+
