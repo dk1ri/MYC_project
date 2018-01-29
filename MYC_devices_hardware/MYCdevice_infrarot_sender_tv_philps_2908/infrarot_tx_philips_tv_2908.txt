@@ -1,6 +1,6 @@
 Infrarot Sender für TV Philips 22PFL2908H/12
 
-Author DK1RI, Version V03.0 201709
+Author DK1RI, Version V03.1 20180118
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -28,7 +28,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;philips_tv_2908;V04.0;1;160;1;47"
+Data "0;m;DK1RI;philips_tv_2908;V04.0;1;145;1;47;1-1"
 '
 Announce1:
 'Befehl &H01
@@ -278,9 +278,9 @@ Data "41;ou,0;ok;1,ok"
 '
 Announce42:                                              '
 'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;160;47"
+'announcement aller Befehle lesen
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;145;47"
 '
 Announce43:                                                  '
 'Befehl &HFC
@@ -298,13 +298,13 @@ Announce45:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,15,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,15,{0 to 127};a,RS232,1;a,USB,1"
 '
 Announce46:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,15,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,15,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
 
 RC5 Adresse.
@@ -331,7 +331,9 @@ Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden
 
 Watchdog
 
-Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
 
 Software
 
@@ -411,15 +413,8 @@ Infrarot (SL4)
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V02.0
+Leiterplattenversion V02.1 
 Bascom Version V04.0 
-
-
-
-
-
-
-
 
 
 
