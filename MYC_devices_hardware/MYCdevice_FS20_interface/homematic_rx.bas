@@ -1,7 +1,7 @@
 '-----------------------------------------------------------------------
-'name : FS20_8Kanal_rx_bascom.bas
-'Version V05.0, 20180126
-'purpose : Programm for receiving FS20 Signals
+'name : homematic_8Kanal_rx_bascom.bas
+'Version V01.1, 20180126
+'purpose : Programm for receiving homematic Signals
 'Can be used with hardware FS20_interface V02.0 by DK1RI
 '
 'The Programm supports the MYC protocol
@@ -40,7 +40,7 @@
 '
 '-----------------------------------------------------------------------
 'Missing/errors:
-'
+'Was mqcht scMODE (i2clength ist entfallen)
 '-----------------------------------------------------------------------
 $regfile = "m644pdef.dat"
 $crystal = 20000000
@@ -77,17 +77,7 @@ Const Tx_timeout = 20
 'Number of loops: 256 * 30 * Tx_timeout
 'timeout, when I2c_Tx_b is cleared and new commands allowed
 '
-Const T_factor = 1953
-'20MHz / 1024 / 1953 = 10  Hz -> 100ms
-'stop for Timer1
-Const T_Short = 2
-'0,2s
-Const T_long = T_short * 30
-'6 s
-Const T_modus = T_short * 63
-'12.5s
-'
-Const No_of_announcelines = 11
+Const No_of_announcelines = 12
 '
 '************************
 Dim First_set As Eram Byte
@@ -153,13 +143,13 @@ Dim Tx_time As Byte
 Dim Command_mode As Byte
 '0: I2C input 1: seriell
 '
+Dim Scan_mode As Byte
+'0: Eventmode 1: Statusmode
+Dim Scan_mode_eeram As Eram Byte
+Dim Additional_byte As Byte
 Dim Switch_status As Byte
-Dim Switch_status_old As Byte
-Dim Mod_counter As Byte
-Dim Modus As Byte
-Dim Timer_started as Bit
-Dim Switch As Byte
-Dim K As Word
+Dim Stop_info As BYte
+'Eventmode: stop info for output of other answers
 '
 Blw = peek (0)
 If Blw.WDRF = 1 Then
@@ -174,54 +164,68 @@ Config Portb.0 = Input
 Portb.0 = 1
 Reset__ Alias Pinb.0
 '
-Config PortA.7 = Output
-Ta1 Alias PortA.7     'INH Taster Eingang 1
-Config PortA.6 = Output
-Ta2 Alias portA.6     'ING Taster Eingang 2
-Config PortA.5 = Output
-Ta3 Alias PortA.4     'INF Taster Eingang 3
-Config PortA.4 = Output
-Ta4 Alias PortA.4     'INE Taster Eingang 4
-Config PortA.3 = Output
-Ta5 Alias PortA.3     'IND Taster Eingang 5
-Config PortA.2 = Output
-Ta6 Alias PortA.2     'INC Taster Eingang 6
-Config PortA.1 = Output
-Ta7 Alias PortA.1     'INB Taster Eingang 7
-Config PortA.0 = Output
-Ta8 Alias PortA.0     'INA Taster Eingang 8
-Porta = &HFF
+Config PinA.0 = Input
+PortA.0 = 1
+In1 Alias PinA.0
+Config PinA.1 = Input
+PortA.1 = 1
+In2 Alias PinA.1
+Config PinA.2 = Input
+PortA.2 = 1
+In3 Alias PinA.2
+Config PinA.3 = Input
+PortA.3 = 1
+In4 Alias PinA.3
+Config PinA.4 = Input
+PortA.4 = 1
+In5 Alias PinA.4
+Config PinA.5 = Input
+PortA.5 = 1
+In6 Alias PinA.5
+Config PinA.6 = Input
+PortA.6 = 1
+In7 Alias PinA.6
+Config PinA.7 = Input
+PortA.7 = 1
+In8 Alias PinA.7
 '
-Config PinC.7 = Input '1 Modul Output_1
+Config PinC.7 = Output
 PortC.7 = 1
-Sch1 Alias Pinc.7
-Config PinC.6 = Input '2 Modul Output_2
+Sch1 Alias Portc.7
+Config PinC.6 = Output
 PortC.6 = 1
-Sch2 Alias Pinc.6
-Config PinC.5 = Input '3 Modul Output_3
+Sch2 Alias Portc.6
+Config PinC.6 = Output
+PortC.6 = 1
+Sch3 Alias Portc.5
+Config PinC.5 = Output
 PortC.5 = 1
-Sch3 Alias Pinc.5
-Config PinC.4 = Input '4 Modul Output_4
-PortC.4 = 1
-Sch4 Alias PinC.4
-Config PinC.3 = Input '5 Modul Output_5
+Sch4 Alias PortC.3
+Config PinC.3 = Output
 Portc.3 = 1
-Sch5 Alias Pinc.3
-Config Pinc.2 = Input '6 Modul Output_6
+Sch5 Alias Portc.2
+Config Pinc.2 = Output
 Portc.2 = 1
-Sch6 Alias PinC.2
-Config Pind.7 = Input '7 Modul Output_7
+Sch6 Alias Portd.7
+Config Pind.7 = Output
 Portd.7 = 1
-Sch7 Alias Pind.7
-Config Pind.6 = Input '8 Modul Output 8
+Sch7 Alias Portd.7
+Config Pind.6 = Output
 Portd.6 = 1
-Sch8 Alias Pind.6
+Sch8 Alias Portd.6
 '
+'not used -> set to input
+Config Pind.2 = Input
+Config Pind.3 = Input
+Config Pind.4 = Input
+Config Pind.5 = Input
+Config Pinb.4 = Input
 '
 Config Watchdog = 2048
 '
-Config Timer1 = Timer, Prescale = 1024
-Stop Timer1
+'
+'Mega8 has fixed parameter, processor will hang here, if uncommented:
+'Config Com1 = 19200 , Databits = 8 Parity = None , Stopbits = 1                                                '
 '
 '****************Interrupts
 'Enable Interrupts
@@ -268,32 +272,6 @@ If J = 255 Then
       Error_no = 5
       Error_cmd_no = Command_no
       Gosub Command_received
-   End If
-End If
-'
-Gosub Check_input_status
-'
-'check timer
-If Modus > 0 Then
-   If Timer_started = 0 Then
-      Timer1 = 0
-      Start Timer1
-      Timer_started = 1
-      K = 0
-   End If
-   If Timer1 > T_factor Then
-      Incr K
-      Stop Timer1
-      If K >= Modus Then
-         'Switch_off
-         PortA = &HFF
-         K = 0
-         Timer_started = 0
-         Modus = 0
-      Else
-         Timer1 = 0
-         Start Timer1
-      End If
    End If
 End If
 '
@@ -428,9 +406,6 @@ Command_mode = 0
 Announceline = 255
 I2c_tx_busy = 0
 '
-Modus = 0
-Timer_started = 0
-K = 0
 Return
 '
 Reset_i2c:
@@ -474,7 +449,6 @@ Select Case Send_lines
 End Select
 '
 Select Case A_line
-'
    Case 0
       Restore Announce0
    Case 1
@@ -495,6 +469,10 @@ Select Case A_line
       Restore Announce8
    Case 9
       Restore Announce9
+   Case 10
+      Restore Announce10
+   Case 11
+      Restore Announce11
    Case Else
          'will not happen
 End Select
@@ -542,103 +520,65 @@ Next Tempb
 Gosub Reset_I2c_tx
 Return
 '
-Check_input_status:
-'This will not interrupt the F0 command
-If Number_of_lines > 0 Then Return
-Switch_status_old = Switch_status
-Switch_status.0 = Sch1
-Switch_status.1 = Sch2
-Switch_status.2 = Sch3
-Switch_status.3 = Sch4
-Switch_status.4 = Sch5
-Switch_status.5 = Sch6
-Switch_status.6 = Sch7
-Switch_status.7 = Sch8
-If Switch_status <> Switch_status_old Then
-   If Switch_status.0 <> Switch_status_old.0 Then
+Check_inputs:
+Tempb = 255
+   If In1 <> Switch_status.0 Then
+      Switch_status.0 = In1
       Tempb = 0
-      Tempc = Switch_status.0
-      Gosub status_changed
+      Tempc = In1
    End If
-   If Switch_status.1 <> Switch_status_old.1 Then
+   If In2 <> Switch_status.1 Then
+      Switch_status.1 = In2
       Tempb = 1
-      Tempc = Switch_status.1
-      Gosub status_changed
+      Tempc = In2
    End If
-   If Switch_status.2 <> Switch_status_old.2 Then
+   If In3 <> Switch_status.2 Then
+      Switch_status.2 = In3
       Tempb = 2
-      Tempc = Switch_status.2
-      Gosub status_changed
+      Tempc = In3
    End If
-   If Switch_status.3 <> Switch_status_old.3 Then
+   If In4 <> Switch_status.3 Then
+      Switch_status.3 = In4
       Tempb = 3
-      Tempc = Switch_status.3
-      Gosub status_changed
+      Tempc = In4
    End If
-   If Switch_status.4 <> Switch_status_old.4 Then
+   If In5 <> Switch_status.4 Then
+      Switch_status.4 = In5
       Tempb = 4
-      Tempc = Switch_status.4
-      Gosub status_changed
+      Tempc = In5
    End If
-   If Switch_status.5 <> Switch_status_old.5 Then
+   If In6 <> Switch_status.5 Then
+      Switch_status.5 = In6
       Tempb = 5
-      Tempc = Switch_status.5
-      Gosub status_changed
+      Tempc = In6
    End If
-   If Switch_status.6 <> Switch_status_old.6 Then
+   If In7 <> Switch_status.6 Then
+      Switch_status.6 = In7
       Tempb = 6
-      Tempc = Switch_status.6
-      Gosub status_changed
+      Tempc = In7
    End If
-   If Switch_status.7 <> Switch_status_old.7 Then
+   If In8 <> Switch_status.7 Then
+      Switch_status.7 = In8
       Tempb = 7
-      Tempc = Switch_status.7
-      Gosub status_changed
+      Tempc = In8
    End If
-End If
 Return
 '
-Status_changed:
-'show active high as 1
-If Tempc = 0 Then
-   Tempc = 1
-Else
-   Tempc = 0
+Check_input_status:
+Gosub Check_inputs
+If Tempb < 255 Then
+   If I2c_tx_busy = 0 Then
+     I2c_tx_b(1) = &H01
+     I2c_tx_b(2) = Tempb
+     I2c_tx_b(3) = Tempc
+     I2c_write_pointer = 4
+     If Command_mode = 1 Then Gosub Print_i2c_tx
+  Else
+     Error_no = 7
+     Error_cmd_no = Command_no
+  End If
+  Gosub Command_received
 End If
-Printbin &H01
-Printbin Tempb
-Printbin Tempc
-I2c_tx_b(I2c_Write_pointer) = &H01
-Incr I2c_Write_pointer
-If I2c_Write_pointer = I2c_buff_length Then I2c_Write_pointer = 1
-I2c_tx_b(I2c_Write_pointer) = Tempb
-Incr I2c_Write_pointer
-If I2c_Write_pointer = I2c_buff_length Then I2c_Write_pointer = 1
-I2c_tx_b(I2c_Write_pointer) = Tempc
-Incr I2c_Write_pointer
-If I2c_Write_pointer = I2c_buff_length Then I2c_Write_pointer = 1
-Return
-'
-Switch_on:
-   Switch = Command_b(2)
-   Select Case Switch
-      Case 0
-         Reset Ta1
-      Case 1
-         Reset Ta2
-      Case 2
-         Reset Ta3
-      Case 3
-         Reset Ta4
-      Case 4
-         Reset Ta5
-      Case 5
-         Reset Ta6
-      Case 6
-         Reset Ta7
-      Case 7
-         Reset Ta8
-   End Select
 Return
 '
 Slave_commandparser:
@@ -652,7 +592,7 @@ Select Case Command_b(1)
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;s;DK1RI;FS20_receiver;V05.0;1;145;1;11;1-1"
+'Data "0;m;DK1RI;homematic_receiver;V01.1;1;145;1;12;1-1"
       I2c_tx_busy = 2
       Tx_time = 1
       A_line = 0
@@ -673,60 +613,92 @@ Select Case Command_b(1)
 '
    Case 2
 'Befehl  &H02
-'liest Status aller 8 Schalter  MYC write!!
-'read status of all 8 switches  MYC write!!
-'Data "2;la,status all switches,for Test and Initialization;b"
-      I2c_tx_busy = 2
-      Tx_time = 1
-      I2c_tx_b(1) = &H02
-      I2c_write_pointer = 3
-      Tempb = 0
-      If Sch1 = 1 Then Tempb = Tempb Or &B00000001
-      If Sch2 = 1 Then Tempb = Tempb Or &B00000010
-      If Sch3 = 1 Then Tempb = Tempb Or &B00000100
-      If Sch4 = 1 Then Tempb = Tempb Or &B00001000
-      If Sch5 = 1 Then Tempb = Tempb Or &B00010000
-      If Sch6 = 1 Then Tempb = Tempb Or &B00100000
-      If Sch7 = 1 Then Tempb = Tempb Or &B01000000
-      If Sch8 = 1 Then Tempb = Tempb Or &B10000000
-      I2c_tx_b(2) = Tempb
-      If Command_mode = 1 Then Gosub Print_i2c_tx
-      Gosub Command_received
+'liest Status der 8 Schalter  scan_mode : 0
+'read status of 8 switches
+'Data "2;au,8 switches;1;0;1;2;3;4;5;6;7"
+         If Scan_mode = 1 Then
+            If Commandpointer >= 2 Then
+               If Command_b(2) > 7 Then
+                  Error_no = 4
+                  Error_cmd_no = Command_no
+               Else
+                  Select Case Command_b(2)
+                     Case 0
+                        Tempb = In1
+                     Case 1
+                        Tempb = In2
+                     Case 2
+                        Tempb = In3
+                     Case 3
+                        Tempb = In4
+                     Case 4
+                        Tempb = In5
+                     Case 5
+                        Tempb = In6
+                     Case 6
+                        Tempb = In7
+                     Case 7
+                        Tempb = In8
+                  End Select
+                  If I2c_tx_busy = 0 Then
+                     I2c_tx_b(1) = &H01
+                     I2c_tx_b(2) = Tempb
+                     I2c_tx_b(3) = Tempc
+                     I2c_write_pointer = 4
+                     If Command_mode = 1 Then Gosub Print_i2c_tx
+                  Else
+                     Error_no = 7
+                     Error_cmd_no = Command_no
+                  End If
+                  Stop_info = 1
+               End If
+               Gosub Command_received
+            Else
+               Incr Commandpointer
+            End If
+         Else
+            Error_no = 0
+            Error_cmd_no = Command_no
+            Gosub Command_received
+         End If
 '
-   Case 3
+      Case 3
 'Befehl  &H03
-'schaltet ein /aus
-'switch on / off
-'Data "3;ku, switch for Test and Initialization;1;0;1;2;3;4;5.6,7"
-      If Modus = 0 Then
-         If Commandpointer >= 2 Then
-            If Command_b(2) < 8 Then
-               Modus = T_short
-               Gosub Switch_on
-            Else
-               Error_no = 4
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
+'liest Status aller 8 Schalter  scan_mode : 0
+'read status of all 8 switches
+'Data "3;aa,status all shwitches;b"
+         If Scan_mode = 1 Then
+            I2c_tx_busy = 2
+            Tx_time = 1
+            Tempb = 0
+            If In1 = 1 Then Tempb = Tempb Or &B00000001
+            If In2 = 1 Then Tempb = Tempb Or &B00000010
+            If In3 = 1 Then Tempb = Tempb Or &B00000100
+            If In4 = 1 Then Tempb = Tempb Or &B00001000
+            If In5 = 1 Then Tempb = Tempb Or &B00010000
+            If In6 = 1 Then Tempb = Tempb Or &B00100000
+            If In7 = 1 Then Tempb = Tempb Or &B01000000
+            If In8 = 1 Then Tempb = Tempb Or &B10000000
+            I2c_tx_b(1) = &H02
+            I2c_tx_b(2) = Tempb
+            I2c_write_pointer = 3
+            If Command_mode = 1 Then Gosub Print_i2c_tx
+            Stop_info = 1
          Else
-            Incr Commandpointer
+            Error_no = 0
+            Error_cmd_no = Command_no
          End If
-      Else
-         Error_no = 0
-         Error_cmd_no = Command_no
          Gosub Command_received
-      End If
 '
-   Case 4
+      Case 4
 'Befehl  &H04
-'schaltet ein /aus  Anlernen
-'switch on / off learning
-'Data "4;ku, learning mode for Test and Initialization;1;0;1;2;3;4;5.6,7"
-      If Modus = 0 Then
-         If Commandpointer >= 2 Then
-            If Command_b(2) < 8 And Command_b(3) < 2  Then
-               Gosub Switch_on
-               Modus = T_long
+'schreibt scanmode 0 default: eventmode, 1: Statusmode
+'write scanmode 0 default: eventmode, 1: Statusmode
+'Data "4;os,scanmode;1;0,eventmode;1,statusmode"
+         If Commandpointer = 2 Then
+            If Command_b(2) < 2  Then
+               Scan_mode = Command_b(2)
+               Scan_mode_eeram = Scan_mode
             Else
                Error_no = 4
                Error_cmd_no = Command_no
@@ -735,32 +707,26 @@ Select Case Command_b(1)
          Else
             Incr Commandpointer
          End If
-      Else
-         Error_no = 0
-         Error_cmd_no = Command_no
+'
+      Case 5
+'Befehl  &H05
+'liest scanmode
+'read scanmode
+'Data "5;aa,as4"
+         I2c_tx_busy = 2
+         Tx_time = 1
+         I2c_tx_b(1) = &H04
+         I2c_tx_b(2) = Scan_mode
+         I2c_write_pointer = 3
+         If Command_mode = 1 Then Gosub Print_i2c_tx
          Gosub Command_received
-      End If
 '
-   Case 5
-'Befehl &H05
-'busy, 1: keine Befehle akzeptiert
-'busy, 1: no commands accepted
-'Data "5;la,busy;a"
-      I2c_tx_busy = 2
-      Tx_time = 1
-      I2c_tx_b(1) = &H05
-      I2c_write_pointer = 3
-      Tempb = 0
-      If Modus > 0 Then Tempb = 1
-      I2c_tx_b(2) = Tempb
-      If Command_mode = 1 Then Gosub Print_i2c_tx
-      Gosub Command_received
-'
+      Case 240
    Case 240
 'Befehl &HF0<n><m>
 'liest announcements
 'read m announcement lines
-'Data "240;ln,ANNOUNCEMENTS;145;11"
+'Data "240;ln,ANNOUNCEMENTS;145;12"
       If Commandpointer >= 3 Then
          If Command_b(2) < No_of_announcelines And Command_b(3) < No_of_announcelines Then
             I2c_tx_busy = 2
@@ -856,7 +822,7 @@ Select Case Command_b(1)
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
-'Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,13,{0 to 127};a,RS232,1;a,USB,1"
+'Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,13;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
       If Commandpointer >= 2 Then
          Select Case Command_b(2)
             Case 0
@@ -960,7 +926,7 @@ Select Case Command_b(1)
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-'Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,13,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,13;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
       If Commandpointer >= 2 Then
          I2c_tx_busy = 2
          Tx_time = 1
@@ -1035,7 +1001,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read
-Data "0;m;DK1RI;FS20_receiver;V05.0;1;145;1;11;1-1"
+Data "0;m;DK1RI;Fhomematic_receiver;V01.1;1;145;1;12:1-1"
 '
 Announce1:
 'Befehl  &H01
@@ -1045,32 +1011,33 @@ Data "1;rr,8 switches;1;0;1;2;3;4;5.6,7"
 '
 Announce2:
 'Befehl  &H02
-'liest Status aller 8 Schalter  MYC write!!
-'read status of all 8 switches  MYC write!!
-Data "2;la,status all switches,for Test and Initialization;b"
+'liest Status der 8 Schalter  scan_mode : 0
+'read status of 8 switches
+Data "2;au,8 shwitches;1;0;1;2;3;4;5;6;7"
 '
 Announce3:
 'Befehl  &H03
-'schaltet ein /aus
-'switch on / off
-Data "3;ku, switch for Test and Initialization;1;0;1;2;3;4;5.6,7"
-'
+'liest Status aller 8 Schalter  scan_mode : 0
+'read status of all 8 switches
+Data "3;aa,status all shwitches;b"
+ '
 Announce4:
-'Befehl  &H03'schaltet ein /aus  Anlernen
-'switch on / off learning
-Data "4;ku, learning mode for Test and Initialization;1;0;1;2;3;4;5.6,7"
+'Befehl  &H04
+'schreibt scanmode 0 default: eventmode, 1: Statusmode
+'write scanmode 0 default: eventmode, 1: Statusmode
+Data "4;os,scanmode;1;0,eventmode;1,statusmode"
 '
 Announce5:
-'Befehl &H05
-'busy, 1: keine Befehle akzeptiert
-'busy, 1: no commands accepted
-Data "5;la,busy;a"
+'Befehl  &H05
+'liest scanmode
+'read scanmode
+Data "5;aa,as4"
 '
 Announce6:
 'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
 'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;11"
+Data "240;ln,ANNOUNCEMENTS;100;12"
 '
 Announce7:                                                  '
 'Befehl &HFC
@@ -1096,3 +1063,5 @@ Announce10:
 'read individualization
 Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,13,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
+Announce11:
+Data "R !($1 $2) IF $4 = 0"

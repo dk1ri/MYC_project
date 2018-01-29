@@ -1,0 +1,383 @@
+MYC - FS20 / homematic Sender und Empfänger
+
+Author DK1RI, Version V03.0 20180117
+This paper is published in https://github.com/dk1ri  as well
+
+Einleitung
+
+Diese vier Interfaces können ein MYC System mit einem FS20 oder homematic System zur Haussteuerung verbinden; die Empfänger steuern das MYC System; die Sender werden gesteuert.
+Die Leiterplatte kann die Module FS20 SM8 - 8 Kanal FS20 Empfänger, den FS20 S8M - 8 Kanal Sender, homematic HM-MOD-EM8 - 8 Kanal Sender oder  homematic HD-MOD-Re8 – Empfänger aufnehmen.
+Für die Varianten gibt es jeweils eine Firmware.
+Die Beschreibung der FS20 / homematic Funktionen steht in der Bedienungsanleitung der Module. Das Verständnis der Systeme wird vorausgesetzt.
+
+Beschreibung
+
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA max.
+Als Interface zum MYC System ist eine I2C und eine serielle / USB Schnittstelle vorgesehen.
+Beim Empfänger, der Befehle an den CR sendet, muss die aktive Schnittstelle bei der Initialisierung festgelegt werden.
+Der Sender, der FS20 Befehle erhält, kann zwar Behle auf beiden Schnitstellen empfangen. Wird die Schnittstelle gewechselt, wird der Befehlspuffer allerdings gelöscht.
+An der seriellen Schnittstelle kann für Tests ein Rechner mit Terminalprogramm (19,2kB, 8N1) angeschlossen werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+Das FS20 System selbst liefert keine Rückmeldung, ob ein Befehl ausgeführt wurde. Deshalb gibt es beim Sender auch keine Abfrage des Status. Es gibt daher auch keine Möglichkeit, abzufragen, wann ein Befehl ausgeführt ist. Die Dimmbefehle dauern bis zu 1,5Sekunden. In dieser Zeit werden andere Befehle ignoriert.
+
+FS20-Empfänger 
+Das Empfängerinterface kann verwendet werden, um mit einem FS20 Sender bis zu acht (Schalt)funktionen im MYC System durchzuführen.
+Das Empfängerinterface erhält die Befehle von einem FS20 Sender und gibt die (in einem MYC System) als  Befehl &H01 00... 07 an das Logikdevice weiter. Dieses muss so konfiguriert werden, dass es die zugehörigen Befehle an das richtige Device weitergibt. Der FS20-Empfänger hat die Funktion eines SS (simple skin; einfaches Eingabegerät) mit devicetyp s.
+
+Bei normalem Betrieb sendet der Empfänger nur den Befehl &H01 oder reagiert auf die reservierten Befehle des CR.
+Jede Änderung der Schaltausgänge (auch wenn die über die Tasten erfolgen) wird über die RS232 / USB Schnittstelle sofort ausgegeben und in den I2C Puffer geschrieben. Der CR muss die Daten abrufen. Wenn alle gültigen Daten gelesen wurden, werden ungültige Commandtoken (&HEF) ausgegeben .
+Die bei dem Modul vorgesehene Funktionalität –  nur ein Ausgang aktiv – kann verwendet werden; eine Schaltvorgang resultiert dann in zwei MYC Befehlen.
+Es gibt weitere Befehle, die nur für die Konfiguration vorgesehen sind:
+Der Empfängermodul muss entsprechend der Bedienungsanleitung angelernt werden. Der Empfänger kann mit dem Befehl &H0400 … 07 in den Anlernmode für je einen Schalter gebracht werden.
+Mit den Befehlen &H02 und &H03 können die Schalter für Testzwecke geschaltet werden, bzw der Status abgerufen werden.
+Da einige der Konfigurationsfunktionen länger dauern, kann mit dem Befehl &H05 geprüft werden, ob der nächste Befehl gesendet werden kann.
+
+Mögliche Befehle:
+Die Befehle &H02  - &H05 werden nur für Test und bei der Konfiguration verwendet.
+
+Announce0:
+'Befehl &H00
+'eigenes basic announcement lesen
+'basic announcement is read
+Data "0;m;DK1RI;FS20_receiver;V05.0;1;145;1;11;1-1"
+'
+Announce1:
+'Befehl  &H01
+'liest Status der 8 Schalter, und sendet als operate
+'read status of 8 switches and send as operate
+Data "1;rr,8 switches;1;0;1;2;3;4;5.6,7"
+'
+Announce2:
+'Befehl  &H02
+'liest Status aller 8 Schalter  MYC write!!
+'read status of all 8 switches  MYC write!!
+Data "2;la,status all switches,for Test and Initialization;b"
+'
+Announce3:
+'Befehl  &H03
+'schaltet ein /aus
+'switch on / off
+Data "3;ku, switch for Test and Initialization;1;0;1;2;3;4;5.6,7"
+'
+Announce4:
+'Befehl  &H03'schaltet ein /aus  Anlernen
+'switch on / off learning
+Data "4;ku, learning mode for Test and Initialization;1;0;1;2;3;4;5.6,7"
+'
+Announce5:
+'Befehl &H05
+'busy, 1: keine Befehle akzeptiert
+'busy, 1: no commands accepted
+Data "5;la,busy;a"
+'
+Announce6:
+'Befehl &HF0<n><m>
+'announcement aller Befehle lesen
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;145;11"
+'
+Announce7:                                                  '
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;20,last_error"
+'
+Announce8:                                                  '
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+Announce9:
+'Befehl &HFE :
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,13,{0 to 127};a,RS232,1;a,USB,1"
+'
+Announce10:
+'Befehl &HFF :
+'eigene Individualisierung lesen
+'read individualization
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,13,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'
+.
+FS20-Sender
+Die Funktion des Sendeinterfaces ist einfach: Über die I2C / serielle Schnittstelle erhält das Interface Befehle zur FS20-Steuerung.
+Die  Programmiersperre und der Sofort-Senden Mode dürfen nicht aktiviert sein, der Sendeabstand sollte beim Defaultwert (0) stehen und wird per Software im Normalbetrieb auf 2s gesetzt.
+Der gewählte 4 Kanal / 8 Kanal Mode bleibt auch nach dem Abschalten erhalten und wird beim Einschalten initialisiert. Der Default Mode ist 4 Kanal.
+Die Befehle des Senders dauern bis zu 7 Sekunden. In dieser Zeit werden andere Befehle ignoriert. Und es gibt eine Fehlermeldung.
+Nicht alle Empfänger verstehen alle Befehle; zum Beispiel den Dimmbefehl.
+
+Es gibt weitere Befehle, die nur für die Konfguration vorgesehen sind: die Umstellung von 4Kanal / 8 Kanal Betriebsart, die Einstellung von Hauscode und Adresse (&H09, &H0B, &H0C, &H0D).
+Da einige der Konfigurationsfunktionen länger dauern, kann mit dem Befehl &H0Egeprüft werden, ob der nächste Befehl gesendet werden kann.
+ Die Konfiguration kann auch mit den Tasten erfolgen. Details dazu stehen in der Bedienungsanleitung.
+'
+Announce0:
+'Befehl &H00
+'eigenes basic announcement lesen
+'basic announcement is read to I2C or output
+Data "0;m;DK1RI;FS20 8 chanal sender;V04.1;1;145;1;21;1-1"
+'
+Announce1:
+'Befehl &H01
+'schaltet kanäle, 4 Kanal
+'switch chanals,4 chanal mode
+Data "1;or,Aus / An;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+'
+Announce2:
+'Befehl &H02
+'dimmt kanäle ab , 4 Kanal
+'dim chanals down,4 chanal mode
+Data "2;ou,dimmt ab;1;0,idle;1,Kanal1;2,Kanal2;3,Kanal3;4,Kanal4"
+'
+Announce3:
+'Befehl &H03
+'dimmt kanäle  auf, 4 Kanal
+'dims chanals up, 4 chanal mode
+Data "3;ou,dimmt auf;1;0,idle;1,Kanal1;2,Kanal2;3,Kanal3;4,Kanal4"
+'
+Announce4:
+'Befehl &H04
+'Timer für 4 Kanal Mode
+'Timer for 4 chanal mode
+Data "4;ou,Timer start/stop;1;0,idle;1,Kanal1;2,Kanal2;3,Kanal3;4,Kanal4"
+'
+Announce5:
+'Befehl &H05
+'schaltet Kanäle an / aus, 8 Kanäle
+'switch chanals on / off, 8 chanal mode
+Data "5;ou,Ein/Aus;1;0,idle;1,Kanal1;2,Kanal2;3,Kanal3;4,Kanal4;5,Kanal5;6,kanal6;7,Kanal7;8,Kanal8"
+'
+Announce6:
+'Befehl &H06
+'dimmt kanäle  auf/ab, 8 Kanäle
+'dims chanals up/down, 8 chanal mode
+'Data "6;ou,dimmt auf/ab;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8"
+'
+Announce7:
+'Befehl &H07
+'Timer für 8 Kanal Mode
+'Timer for 8 chanal mode
+Data "7;ou,Timer start/stop;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8"
+'
+Announce8:
+'Befehl &H08
+'schreiben 0: 4 / 1 : 8 Kanalmode
+'write 0: 4 / 1: 8 chanalmode
+Data "8;ks1;;0,4 Kanal;1,8 Kanal"
+'
+Announce9:
+'Befehl &H09
+'lesen 4 / 8 Kanalmodemode
+'read 4 / 8 chanal mode
+Data "9,as,as9"
+'
+Announce10:
+'Befehl &H0A
+'Hauscode eingeben (8 Ascii Ziffern von 1 - 4)
+'housecode (8 ASCII Digits from 1 to 4
+Data "10;ka,housecode;8,{1 TO 4}"
+'
+Announce11:
+'Befehl &H0B
+'Adresse eingeben 5 Ziffern von 1 bis 4; tastenpaar + 4 Ziffern Adresse
+'adress, 5 digits from 1 to 4; Buttonnumber + 4 digits Adress
+Data "11;ka,adress, 4 chanal;5,{1 to 4}"
+'
+Announce12:
+'Befehl &H0C
+'Adresse eingeben 5 Ziffern Tasten 1-8 + 4 Ziffern fuer Adresse 1 - 4
+'adress, 5 digits Button 1 to 8 + 4 Digits for adress 1 to 4
+Data "12;ka,adress, 8 chanal;5,{1 to 8}"
+'
+Announce13:
+'Befehl &H0D
+'busy, 1: keine Befehle akzeptiert
+'busy, 1: no commands accepted
+Data "13;la,busy;a"
+'
+Announce14:
+'Befehl &HF0<n><m>
+'announcement aller Befehle lesen
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;145;21"
+'
+Announce15:                                                  '
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;20,last_error"
+'
+Announce16:                                                  '
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+Announce17:
+'Befehl &HFE :
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,12,{0 to 127};a,RS232,1;a,USB,1"
+'
+Announce18:
+'Befehl &HFF :
+'eigene Individualisierung lesen
+'read individualization
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,12,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+'
+Announce19:
+Data "R !$1 !$2 !$3 !$4 !$5 IF $10 = 1"
+Announce20:
+Data "R !$6 !$7 !$8 IF $10 = 0"
+'
+
+homematic Sender und Empfänger 
+Die Funktion ist im wesentliche n die gleiche wie für die FS20 Interfaces:
+
+
+
+Allgemeines zu MYC Befehlen
+
+Nimmt das Interface Daten entgegen und interpretiert das erste Zeichen als Befehl und handelt entsprechend. Wird ein Befehl als ungültig erkannt, wird der komplette Befehlspuffer gelöscht.
+Ein begonnener Befehl erwartet eine bestimmte Menge an Parametern und kann nicht unterbrochen werden.
+Ein nicht vollständiger Befehl wird nach ca 1,5 s gelöscht.
+Details zum MYC System stehen in [3] und [4].
+
+Die Befehlslisten sind eine Kopie aus dem Bascom Programm.
+
+I2C Adresse
+
+Die Default Adresse ist 12 (&H0C) für den FS20 Sender und 13 (&H0D) für den FS20 Empfänger.
+Die Default Adresse ist 24 (&H18) für den homematic Sender und 25 (&H19) für den homematic  Empfänger.
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände für den I2C Bus (R8/R9) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
+Wenn Geräte am I2C Bus nur 3.3V vertragen (zB der Raspberry), dürfen die Pullup Widerstände nicht bestückt werden.
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+
+Reset
+
+Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Der Reset hat eine Verzögerungszeit von 1 Sekunde.
+
+Watchdog
+
+Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega16 oder größer.
+Die Software wurde in BASCOM geschrieben [2]
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
+Um der Prozessor von der Stromversorgung der übrigen Schaltung zu trennen, muss der Jumper JP1 entfernt werden.
+Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+
+RS232 Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+Es muss bei Jumper JP7 und JP8 ist jeweils Pin1 und Pin2 (die jeweils äußeren pins) überbrückt werden.
+
+USB Schnittstelle 
+
+Das Interface kann auch mit der USB Platine UM2102 (N) von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt seitlich nach außen. Die Pins des Verbinders ST2  sind mit dem 6 poligen Verbinder JP4 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die gesamte Stromversorgung erfolgt dann über USB.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ großen Kondensatoren (1206).
+
+Stromversorgung
+
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
+Eine Versorgung des Prozessors mit 3.3V ist auf der Platine vorgesehen, erfordert aber weitere Änderungen.
+
+Bestückung der Leiterplatte
+
+Die Buchsen BU1 - Bu3 werden auf der Bauteileseite angebracht und nehmen die FS20 Module auf.
+Bu2 und Bu3 kann auch als 24 polige Buchsenleiste ausgeführt sein.
+Wenn das Interface nur den FS20 Sender aufnehmen soll, kann Bu2 / Bu3 entfallen. 
+SL1 und  SL2 auf der Bauteileseite nehmen (alternativ) die homematic Module auf.
+Der FS20-Sender benötigt keine Batterie; die Stromversorgung kann dann über das Interface erfolgen: JP2, pin2 und pin3 des Interfaces verbinden.
+Beim Empfänger muss JP2, pin1 und pin2 des Interfaces verbunden sein.
+
+Die Schaltung wird mit 5V versorgt; Jumper JP1  pin 1 und 2 verbinden  (Beschriftung: 5)
+Alle Versionen (5V):
+C5, C6, C7, Q1, IC4, JP1, JP2, JP5, JP6
+Bei Q2 und Q3 sind Source und Drain zu verbinden.
+
+mit RS232 Schnittstelle:
+IC2, IC3 (7805 oder pinkompatible Schaltregler), D1, C1, C2, C4, C8– C11,  X4 (Buchse für Hohlstecker), X3 (DB9 Buchse)
+
+Mit USB Schnittstelle (alternativ zu RS232):
+UM2102(N), (JP3, JP4)
+
+Verwendung von ISP:
+JP6
+
+mit I2C (5V Betrieb):
+X5, X6, R7, R8 nach Bedarf. Bei Q2 und Q3 muss Drain und Source überbrückt werden.
+
+FS20 Empfänger:
+Bu1, Bu2, Bu3
+JP2: pin 1 und 2 verbinden
+
+FS20 Sender:
+BU2, Bu3
+
+homematic:
+SL1, SL2
+
+Nur bei 3.3V Versorgung: DC1, C2, C7, Q2, Q3, Q4, R1, R2, R3, R4.
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+RS232
+5	GND
+2	TX - vom Interface zum Computer
+3	RX - vom Computer zum Interface
+
+I2C Stereo (2 x 3,5mm Klinke) ab LP Version 2.0
+Sleeve	GND
+Ring	SDA
+Tip	SCL
+
+5V Betrieb
+JP1: 1und 2 verbinden
+Q4: Drain und Source verbinden
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion V02.0
+Bascom Versionen V05.0 
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Referenzen
+
+[1]	dk1ri.de/dhw/FS20_interface_eagle.zip
+[2]	dk1ri.de/dhw/FS20.zip
+[3]	dk1ri.de/dhw/homematic.zip
+[4]	dk1ri.de/myc/MYC.pdf 
+[5]	dk1ri.de/myc/Description.pdf (englisch)
+[6]	dk1ri.de/myc/Definitions.pdf (englisch)
