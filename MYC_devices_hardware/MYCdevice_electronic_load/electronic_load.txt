@@ -1,6 +1,6 @@
 Eine elektronische Last mit MYC Protokoll
 
-Author DK1RI, Version V01.2, 20161111
+Author DK1RI, Version V02.0 2017
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -10,291 +10,313 @@ Das Gerät wird mit dem MYC Protokoll über den I2C Bus oder RS232 /USB gesteuert.
  
 Sicherheitshinweis
 
-Dieses Gerät kann mit hohen Spannungen und hohen Temperaturen betrieben werden. Der Aufbau und die Bedienung dieses Gerätes ist nur durch ausreichend qualifiziertes Personal erlaubt.
+Dieses Gerät kann mit hohen Spannungen und hohen Temperaturen betrieben werden. Der Aufbau und die Bedienung dieses Gerätes ist nur durch ausreichend qualifiziertem Personal erlaubt.
 Due to possible high voltages and high temperature the usage of this device is allowed for qualified personal only.
 
 Beschreibung
 
 Die Schaltung besteht aus der Steuerungsplatine [1] und der äußeren Beschaltung mit den FETs und den Shuntwiderständen [6].
 Die elektrischen Daten der elektronischen Last hängen von der äußeren Beschaltung ab. Die Leiterplatte kann maximal sieben FETs getrennt steuern und maximal 7 Shuntwiderstände zur Messung des Stroms verwenden. Eine Teilbestückung ist möglich.
-Für andere Shuntwiderstände und Strombereiche müssen einige Widerstände geändert werden. Eine Berechnungsvorlage steht in [4]. Für diese unterschiedlichen Versionen muss die Firmware geändert werden. Bei einer Verwendung im MYC System müssen dann auch die Befehlsbeschreibungen (announcements) geändert werden, wenn sich die Wertebereiche ändern.
+Für andere Shuntwiderstände und Strombereiche müssen einige Widerstände geändert werden. Eine Berechnungsvorlage steht in [5]. Für diese unterschiedlichen Versionen muss die Firmware geändert werden. Bei einer Verwendung im MYC System müssen dann auch die Befehlsbeschreibungen (announcements) geändert werden, wenn sich die Wertebereiche ändern.
 Die vorliegende  Beschreibung und Schaltung bezieht sich auf eine Version mit IRFP150 FETs (100V, 30A und ca 200W maximale Verlustleistung pro FET) mit 10mOhm Shunt.
 Die aufgebaute Schaltung ist bis 90V, 210A und 350W mit dem verwendeten Kühlkörper einsetzbar. Um die 30A pro FET zu erreichen ist eine Spannung des Meßobjekts von 1,8V minimal notwendig.
 Die Auflösung bei der Spannungsmessung beträgt nominal 88mV, die der Strommessung 29mA für jeden Messwiderstand / FETs. Die Firmware versucht, so wenige FETs wie möglich zu verwenden, um die Genauigkeit zu erhöhen und teilt die Leistung möglichst gleichmäßig auf, wenn mehrere FETs verwendet werden.
 Pro Messwiderstand soll ein FET verwendet werden. Das Parallelschalten von FETs ist grundsätzlich möglich, kann aber zu ungleichmäßiger Verteilung der Ströme führen.
 Man kann den gewünschten Strom, Widerstand oder die gewünschte Leistung für die Last vorgeben.
-Bei Überlast, auch einzelner FETs, schaltet die Last sofort hochohmig.
-Beim Wechsellastbetrieb wird wird die Last aus und eingeschaltet. Dies Schaltzeit ist einstellbar. Die Spannung kann dann mit einen Oszillographen gemessen werden.
+Bei Überlast, auch einzelner FETs, schaltet die gesamte Last sofort hochohmig.
+Beim Wechsellastbetrieb wird die Last aus und eingeschaltet. Dies Schaltzeit ist einstellbar. Die Spannung kann dann mit einen Oszillographen gemessen werden.
 Das Gerät versteht das MYC Protokoll; die Befehle und Parameter müssen binär eingegeben werden. Für Details zum MYC Protokoll siehe [3] und [4] (aktuell)
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 
 
-Aufbau
-
-Die FETs sollten so montiert werden, dass alle möglichst die gleiche Verlustleistung aufnehmen können, da nur der Wert für einen FET als Grenzwert angegeben werden kann.
-Sinngemäß das gleiche gilt für die Messwiderstände. 
-Bei den verwendeten FETs ist die Kühlfläche und Drain miteinander verbunden. Bei  Montage auf dem Kühlkörper ohne Isolation muss dieser bei hohen Spannungen berührungssicher aufgebaut werden. 
-Die verwendeten Messwiderstände sind bis 500V isoliert und können direkt auf den Kühlkörper geschraubt werden.
-Der Widerstand zur Messung der Spannung kann in einen Widerstand auf der Steuerplatine und einen externen Widerstand aufgeteilt werden. Dadurch bleiben die Spannungen auf der Leiterplatte niedrig. Die Spannung an den Stromeingängen darf 5V nicht überschreiten.
-Die Widerstände an den Gates der FETs sollten direkt an die FETs angelötet werden.
-Die Masse der Steuerungsleiterplatte und der äußeren Beschaltung sollen an nur einer Stelle miteinander verbunden werden.
-C28, R28, R29  und der externe Widerstand zur Spannungsmessung bilden einen Tiefpass. Die Zeitkonstante soll nicht über 1ms liegen.
-
 Grundsätzliche Funktion
 
-Die elektrische Last arbeitet als Zweipunktregler mit einer Hysterese vom doppelten Wert der Auflösung des Stromes. Die Auflösung der Strommessung beträgt 29mA; der Strom kann sich also um 58mA pro FET verändern. Die relative Genauigkeit ist vom gewünschten, eingestellten Wert abhängig.
-Es ist möglich, dass die elektronische Last beim Einschalten des Interfaces kurze Zeit  (< 10ms) niederohmig ist. Es wird daher empfohlen, das zu messende Gerät erst anzuschließen, wenn die 5V Spannung anliegt.
-Nach dem Start sind die FETs ausgeschaltet. Nachdem ein Stromwert, Widerstandswert oder  eine gewünschte Leistung eingegeben wurde, und die Meßspannung ca 400mV überschreitet, wird  zunächst eine Sekunde gewartet. Dann wird der Widerstand der FETs der Reihe nach verringert  und  dabei Strom und Spannung gemessen. Die Steuerung macht circa 600 Messungen pro Sekunde. Eine Änderung des Widerstandes aller 7 FETs vom maximalen zum minimalen Widerstand dauert circa 47 Sekunden (4095 * 7 / 600). Es kann also eine Zeitlang dauern, bis der gewünschte Wert erreicht ist.
+Die elektronische Last arbeitet als Zweipunktregler mit einer Hysterese vom doppelten Wert der Auflösung des Stromes. Die Auflösung der Strommessung beträgt 29mA; der Strom kann sich also um 58mA pro FET verändern. Die relative Genauigkeit ist vom gewünschten, eingestellten Wert abhängig.
+Es ist möglich, dass die elektronische Last beim Einschalten des Interfaces kurze Zeit  (< 10ms) niederohmig ist. Es wird daher empfohlen, das zu messende Gerät erst anzuschließen, wenn die 5V Spannung an der Steuerung anliegt.
+Nach dem Start sind die FETs ausgeschaltet. Nachdem ein Stromwert, Widerstandswert oder  eine gewünschte Leistung eingegeben wurde, und die Meßspannung ca 400mV überschreitet, wird  der Widerstand der FETs der Reihe nach verringert  und  dabei Strom und Spannung gemessen. Die Steuerung macht circa 600 Messungen pro Sekunde. Eine Änderung des Widerstandes aller 7 FETs vom maximalen zum minimalen Widerstand dauert circa 47 Sekunden (4095 * 7 / 600). Es kann also eine Zeitlang dauern, bis der gewünschte Wert erreicht ist.
 Wird die Meßspannung unterbrochen, startet dieser Ablauf erneut.
 Wird der Strom oder die Verlustleistung eines FETs überschritten, werden alle FETs sofort hochohmig geschaltet; der gewünschte Widerstand, Strom oder die Leistung muss neu eingegeben werden.
-Um den Test nach dem Aufbau zu erleichtern, gibt es den Befehl &H19<n><m>
+In einem normalen MYC System werden die Befehle &HE1 - &HEF nicht verwendet: sie werden vom Commandrouter nicht weitergegeben.
+Sie dienen zur Einstellung der maximalen Fet Verlustleistung, Zahl der Fets und zur Eichung.
+Um den Test nach dem Aufbau zu erleichtern, gibt es den Befehl &HE5<n><m>
 <n> ist die Fetnummer (0...6), <m> ist ein Wert, der direkt an den DA Wandler übergeben wird (von 0...4095). Hohe Werte sperren den FET. Ein Wert von ca 2500 ergibt einen Strom von ca 2A.
-Der Befehl &H1A gibt die direkten Werte der 7 Strom AD Wandler Eingänge (binär 0 … 1023) aus; allerdings nur auf der seriellen Schnittstelle. Es werden also 14 Byte gesendet.
+Der Befehl &HE7<n> gibt die direkten Werte der 7 Strom AD Wandler Eingänge (binär 0 … 1023) aus.
 
 Hinweise zur Bedienung
 
-Nach dem Einschalten ist die Last abgeschaltet. Um zum Beispiel eine Leistung vorzugeben, muss die mit (zum Beispiel) &H0900FF gewählt werden. 00FF ist ein 2 stelliger Hex Wert mit 20mW Stufung, also 5,1W. Werden wegen der Maximalleistung pro FET und Zahl der vorhandenen FETs zu hohe Werte eingegeben, gibt es eine Fehlermeldung.
+Vor dem normalen Betrieb sollte die Einstellung einiger Parameter und eine Eichung vorgenommen werden.
+Bei Vollbestückung mit den vorgesehen Fets ist nur die Eichung nötig.
+Defaultmässig wird die Eichung mit 22,5V (25% von 90V) und 1,5A (5% von 30A) vorgenommen.
+Höhere Werte erhöhen die Genauigkeit und können mit &HE8 / &HEC geändert werden.
+Die Spannungseichung erfolgt mit &HEA, die Stromeichung mit &HEE<n> für jeden FET einzeln.
+Der Strom muss auf den gewünschten Wert (zB 1,5A) begrenzt werden; der Fet wird niederohmig geschaltet und nach 0,5s gemessen und der Korrekturfaktor berechnet.
+
+Nach dem Einschalten ist bei normalem Betrieb die Last abgeschaltet. Um zum Beispiel eine Leistung vorzugeben, muss die mit (zum Beispiel) &H0900FF gewählt werden. 00FF ist ein 2 stelliger Hex Wert mit 20mW Stufung, also 5,1W. Werden wegen der Maximalleistung pro FET und Zahl der vorhandenen FETs zu hohe Werte eingegeben, gibt es eine Fehlermeldung.
 Wird die Spannung angelegt (oder ist schon angelegt), wird zunächst die minimal mögliche Zahl der verwendeten FETs berechnet, abhängig von der Verlustleitung. Die Spannung kann nachträglich erhöht werden, allerdings erfolgt beim Überschreiten der maximalen Verlustleistung die komplette Abschaltung.
-Mit &HEEn (n = 1...7) kommt man in den Eichmodus für die Ströme. Die FETs werden hochohmig geschaltet, nur der ausgewählte (1 … 7) wird niederohmig. Der Stromwert zur Eichung kann als Prozentwert von 30A mit dem Befehl &H14n (n = 1...100) eingegeben werden. Es stellt sich ein Strom ein, der dem bestehenden Korrekturfaktor entspricht. Danach schaltet sich die Regelung ab und die LED leuchtet. Danach wird der gewünschte Strom durch Ändern der Spannung extern eingestellt und mit dem Befehl &HEE00  wird die Eichung vorgenommen.
-Die Eichung muss mit jedem FET einzeln vorgenommen werden.
-Während der Stromeichung darf die Spannung 400mV nicht unterschreiten.
-Eine zu hohe Verlustleistung bricht die Eichung ab und ergibt eine Fehlermeldung.
-Mit dem Befehl &H15 kann ein Prozentwert eingegeben werden, auf den der Wert zur Stromeichung reduziert werden kann, wenn eine Eichung mit 30A nicht möglich ist. Zum Beispiel ergebt ein Wert von 30 einen Eichstrom vom 9A. Niedrige Wertebereiche verringern allerdings die Genauigkeit.
-&HED  ist der Befehl zur Eichung der Spannung. Am Spannungseingang wird eine Spannung von 90V erwartet.
+Statt der Leistung kann auch der Strom oder Widerstand vorgegeben werden.
+Die Spannung kann immer gemessen werden,die Ströme nur, wenn die elektronische Last in Betrieb ist oder zum Testen mit &HE5<n> ein Fet aktiviert wurde.
+Die Abschaltung aller Fets erfolgt mit &H12.
+Die Messauflösung beträgt 10Bit (1024 Stufen). Bei kleinen Strömen (Spannungen) ist die Genauigkeit daher begrenzt. Zum Beispiel beträgt bei 5V Messspannung die Genauigkeit nur (88mV / 5V) ca 18%. Hinzu kommt die Ungenauigkeit durch die Strommessung
 
 Befehle
 
 Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
 Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
-	
+
 Announce0:
-'Befehl &H00
-'basic annoumement wird gelesen
-'basic announcement is read
-Data "0;m;DK1RI;electronic load for 7 IRFP150;V01.3;1;120;1;33"
+'Befehl &H00; 1 byte / 1 byte + string
+'eigenes basic announcement lesen
+'basic announcement is read to I2C or output
+Data "0;m;DK1RI;electronic load for 7 IRFP150;V02.0;1;145;1;41;1-1"
 '
 Announce1:
-'Befehl &H01
-'lese aktuelle Spannung (1Bit -> 10mV)
+'Befehl &H01 (resolution 10mV);  1 byte / 3 byte
+'lese aktuelle Spannung
 'read actual voltage
-Data "1;aa,read actual voltage;w,{0 to 100.00},V"
-'
+Data "1;ap,read actual voltage;1;10001,{0.00 to 100.00};lin:V"
+ '
 Announce2:
-'Befehl &H02
+'Befehl &H02; 1 byte / 3 byte
 'liest gesamten Strom (1Bit -> 10mA)
 'read all current
-Data "2;aa,read actual current;w,{0 to 210.00},A"
+Data "2;ap,read actual current;1;21001,{0.00 to 210.00};lin:A"
 '
 Announce3:
-'Befehl &H03  0 - 6
-'liest aktuellen Strom eines FETs (1Bit -> 10mA)
+'Befehl &H03  0 - 6 (resolution 10mA); 2 byte / 4 byte
+'liest aktuellen Strom eines FETs
 'read actual current of a FET
-Data "3;am,read actual current;w,{0 to 30.00},A;7"
+Data "3;ap,read actual current;7;30001,{0.00 to 30.00};lin:A"
 '
 Announce4:
-'Befehl &H04  (1Bit -> 10mW)
+'Befehl &H04  (resolution 10mW); 1 byte / 5 byte
 'liest gesamte Leistung
 'read all current
-Data "4;aa,read actual power;w,{0 to 1400.0},W"
+Data "4;ap,read actual power;1;140001,{0.00 to 1400.00};lin;W"
 '
 Announce5:
-'Befehl &H05  0 - 6 (1Bit -> 10mW)
+'Befehl &H05  0 - 6 (resolution 10mW); 2 byte / 4 Byte
 'liest aktuelle Leistung eines FETs
 'read actual power of a FET
-Data "5;am,read actual power;w,{0 to 200.0},W;7"
+Data "5;ap,read actual power;7;20001,{0.00 to 200.00};lin;W"
 '
 Announce6:
-'Befehl &H06
-'lese aktuellen Widerstand  (1Bit -> 1mOhm)
+'Befehl &H06 (resolution mOhm); 1 byte / 5 byte
+'liest aktuellen Widerstand
 'read actual resistor
-Data "6;ap,read actual resistor;2000000,{1 to 2000000};lin;mOhm"
+Data "6;ap,read actual resistor;1;3000000,{1 to 3000000};lin;mOhm"
 '
 Announce7:
-'Befehl &H07 0 - 21000
-'gewuenschten Strom (10mA resolution)
-'required current  (10mA resolution)
-Data "7;op,required current;21001,{0 to 210,00};lin;A"
+'Befehl &H07 0 - 21000 (10mA resolution); 3 byte / -
+'gewuenschten Strom
+'required current
+Data "7;op,required current;1;21001,{0.00 to 210,00};lin;A"
 '
 Announce8:
-'Befehl &H08
-'gewuenschten Strom (10mA resolution) lesen
-'read required current  (10mA resolution)
+'Befehl &H08  (10mA resolution); 1 byte / 3 byte
+'gewuenschten Strom lesen
+'read required current
 Data "8;ap,as7"
 '
 Announce9:
-'Befehl &H09 0 - 65535
-'gewuenschte Leistung (20mW resolution)
-'required power  (20mW resolution)
-Data "9;op,required power;65536,{0 to 1310700};lin;mW"
+'Befehl &H09 0 - 65535 (10mW resolution); 4 byte / -
+'gewuenschte Leistung
+'required power
+Data "9;op,required power;1;140001,{0.00 to 1400.00};lin;W"
 '
 Announce10:
-'Befehl &H0A
-'gewuenschte Leistung  (20mW resolution) lesen
-'required power  (20mW resolution)
+'Befehl &H0A (10mW resolution); 1 byte / 4 byte
+'gewuenschte Leistung lesen
+'read required power
 Data "10;ap,as9"
 '
 Announce11:
-'Befehl &H0B 0 - 1999990
-'gewuenschten Widerstand schreiben (Auflösung 1mOhm)
-'write required resistor (resolution 1mOhm)
-Data "11;op,required resistor;1999991,{9 to 2000000};lin;mOhm"
-
+'Befehl &H0B 9mOhm - 3kOhm (resolution 1mOhm); 4 byte / -
+'gewuenschten Widerstand schreiben
+'write required resistor
+Data "11;op,required resistor:1;2999991,{9 to 3000000};lin;mOhm"
+'
 Announce12:
-'Befehl &H0C
+'Befehl &H0C (resolution 1mOhm); 1 byte / 4 byte
 'gewuenschter Widerstand mOhm lesen
 'read required resistor
 Data "12;ap,as11"
 '
 Announce13:
-'Befehl &H0D 0|1
+'Befehl &H0D 0|1; 2 byte / -
 'Wechsellast schreiben
 'write (start) on /off mode
-Data "13;or,on off mode;0,off,on"
+Data "13;or,on off mode;1;0,off,on"
 '
 Announce14:
-'Befehl &H0E
+'Befehl &H0E; 1 byte / 2 byte
 'Wechsellast lesen
 'read on /off mode
 Data "14;ar,as13"
 '
 Announce15:
-'Befehl &H0F 0 - 256
-'Maximale Leistung pro Fet
-'maximum power per FET
-Data "15;op;maximum power per FET;200,{1 to 200};lin;Watt"
-'
-Announce16:
-'Befehl &H10
-'Maximale Leistung pro Fet lesen
-'read maximum power per FET
-Data "16;ap,as15"
-'
-Announce17:
-'Befehl &H11 0 to 127
-'Aktive FETs binaer schreiben
-'write active FETS binary
-Data "17;oa,active FETs, binary;b,{0 to 127}"
-'
-Announce18:
-'Befehl &H12
-'Aktive FETs binaer lesen
-'read active FETS binary
-Data "18;aa,as17"
-'
-Announce19:
-'Befehl &H13
-'schaltet Last ab
-'switch off
-Data "19;ou,switch off;0"
-'
-Announce20:
-'Befehl &H14
-'Mode lesen
-'read mode
-Data "20;ar,read mode;0,off;1,I;2,P;3,R"
-'
-Announce21:
-'Befehl &H15 0 to 100
-'Faktor für Stromeichung schreiben
-'write factor for current calibration
-Data "21;oa,current calibtation factor;b,{0 to 100}"
-'
-Announce22:                                                  '
-'Befehl &H16
-'Faktor für Stromeichung lesen
-'read factor for current calibration
-Data "22;aa,as21"
-'
-Announce23:
-'Befehl &H17 0 to 255
+'Befehl &H0F; 2 byte / -
 'Zeit für Wechsellast schreiben
 'write time for on - off mode
-Data "23;oa,time for on off mode;b"
+Data "15;op,time for on off mode;1;128,{0 to 2.55};lin;s"
 '
-Announce24:
-'Befehl &H18
+Announce16:
+'Befehl &H10; 1 byte / 2 byte
 'Zeit für Wechsellast lesen
 'read time for on - off mode
-Data "24;aa,as23"
+Data "16;aa,as15"
+'
+Announce17:
+'Befehl &H11; 1 byte / 2 byte
+'Mode lesen
+'read mode
+Data "17;ar,read mode;1;0,off;1,I;2,P;3,R"
+'
+Announce18:
+'Befehl &H12; 1 byte / -
+'schaltet Last ab
+'switch off
+Data "18;ou,switch off;1;0,idle;1,off"
+'
+Announce19:
+'Befehl &HE1; 2 byte / -
+'Maximale Leistung pro Fet
+'maximum power per FET
+Data "225;kp;maximum power per FET;1;201;lin;Watt"
+'
+Announce20:
+'Befehl &HE2; 1 byte / 2 byte
+'Maximale Leistung pro Fet lesen
+'read maximum power per FET
+Data "226;lp,as225"
+'
+Announce21:
+'Befehl &HE3 (0 to 127); 2  byte / -
+'Aktive FETs binaer schreiben
+'write active FETS binary
+Data "227;ka,active FETs, binary;b,{0 to 127}"
+'
+Announce22:
+'Befehl &HE4; 1 bytte / 2 byte
+'Aktive FETs binaer lesen
+'read active FETS binary
+Data "228;la,as227"
+'
+Announce23:
+'Befehl &HE5 0 to 6 , 0 to 4095; 4 byte / -
+'Fet control register einstellen
+'set fet control register
+Data "229;km,set fet control register;6;w,{0 to 4095}"
+'
+Announce24:
+'Befehl &HE6; 2 byte / 4 byte
+'Fet control register lesen
+'read fet control register
+Data "230; lm,as229"
 '
 Announce25:
-'Befehl &H19 0 to 6 , 0 to 4095
-'für Tests: Widerstand eines Fest einstellen
-'for tests: set resistor value of a fet
-Data "25;om,set resistance;6;w,{0 to 4095}"
+'Befehl &HE7; 2 byte / 4 byte
+'ADC register lesen
+'read ADC register
+Data "231; lp,read ADC register;6;1024;lin;-"
 '
 Announce26:
-'Befehl &H1A
-'für Tests: Alle AD Wanler lesen
-'for tests: read all AD outputs
-Data "26;am,read AD values;6;w,{0 to 1023}"
+'Befehl &HE8 0 to 100; 2 byte / -
+'Faktor für Spannungseichung schreiben
+'write factor for voltage calibration
+Data "232;kp,voltage calibtation factor;1:101;lin;%"
 '
-Announce27:                                             '
-'Befehl &HED
-'Spannung eichen mit 90V
-'calibrate Voltage with 90V
-Data "237;ou,calibrate voltage;0"
+Announce27:
+'Befehl &HE9; 1 byte / 2 byte
+'Faktor für Spannungseichung lesen
+'read factor for voltage calibration
+Data "233;la,as232"
 '
 Announce28:
-'Befehl &HEE 0 - 7
-'Strom eichen
-'calibrate Current
-Data "238;ou,calibrate current;0,off;1,FET1;2,FET2;3,FET3;34FET4;5,FET5;6,FET6;7,FET7"
+'Befehl &HEA; 1 byte / -
+'Spannung eichen
+'calibrate Voltage
+Data "234;ku,calibrate voltage;1;0,,idle;1 calibrate voltage"
 '
 Announce29:
-'Befehl &HEF
-'Stromeichung mode lesen
-'read mode  of current calibration
-Data "20;ar,read mode;0,off;1,I;2,P;3,I;4,calibrate"
+'Befehl &HEB:1 byte / 2 byte
+'Spannungseichung lesen
+'read voltage calibration
+Data "235;lp,read voltage calibration;1:201,{0 to 200};lin;%"
 '
 Announce30:
-'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;100;33"
+'Befehl &HEC 0 to 100; 2 byte / -
+'Faktor für Stromeichung schreiben
+'write factor for current calibration
+Data "236;op,current calibration factor;1;101;lin;%"
 '
 Announce31:
+'Befehl &HED; 1 byte / 2 byte
+'Faktor für Stromeichung lesen
+'read factor for current calibration
+Data "237;ap,as236"
+'
+Announce32:
+'Befehl &HEE 0 - 7 ; 2 byte / -
+'Strom eichen
+'calibrate Current
+Data "238;ku,calibrate current;1;0,off;1,FET1;2,FET2;3,FET3;34FET4;5,FET5;6,FET6;7,FET7"
+'
+Announce33:
+'Befehl &HEF; 2 byte / 3 byte
+'Stromeichung lesen
+'read current calibration
+Data "239;lp,read current calibration;7;201;lin;%"
+'
+Announce34:
+'Befehl &HF0<n><m>
+'liest announcements
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;145;41"
+'
+Announce35:
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce32:
+Announce36:
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce33:
+Announce37:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{0 to 127};a,RS232,1;a,USB,11"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{0 to 127};a,RS232,1;a,USB,11"
 '
-Announce34:
+Announce38:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
-Announce35:
-Data"R !$2 !$3 !$4 !$5 !$6 IF $14=1"
+Announce39:
+Data "R !$13 IF $17 = 0"
 '
-Announce36:
-Data "R !$21 IF $239=1"
+Announce40:
+Data "R !$7 !$9 !$11 IF $1 < 400"
+'
 
 I2C
 
 Die Default Adresse ist 21 (&H15).
-Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
 Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
 
 Fehlermeldungen
 
 Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler – letzte Befehlsnummer vor Auftritt des Fehlers
-Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Dazu werden die empfangenen Befehle von 1 bis 254 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
 Reset
 
@@ -302,7 +324,9 @@ Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden
 
 Watchdog
 
-Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
 
 Software
 
@@ -312,7 +336,9 @@ Die Software wurde in BASCOM geschrieben [2]
 Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker (JP6) vorhanden.
-Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden. Beim Programmieren sollte der Jumper JP1 entfernt werden.
+
+
 
 RS232 Schnittstelle
 
@@ -325,17 +351,26 @@ Die Schaltung kann alternativ zu RS232 mit der USB Platine UM2102 von ELV bestüc
 
 SMD
 
-Die Leiterplatte ist teilweise mit SMD bestückt, außer den 5/6 poligen Operationsverstärkern nur recht große  Bauteile (1206)
-
-
+Die Leiterplatte ist teilweise mit SMD bestückt, außer den Operationsverstärkern nur recht große  Bauteile (1206). Es gibt zwei Varianten der Leiterplatte. Die eine mit 7 5(6) poligen Einfach Operationsverstärkern, die andere mit 2 14 poligen Operationsverstärkern.
 
 Stromversorgung
 
 Die Stromversorgung ist 12V, Stromaufnahme ca. 20mA (2mA mit USB) max.
 
-Bestückung der Leiterplatte
+Aufbau
 
-Teilbestückung ist möglich. Für jeden der sieben Kanäle muss jeweils der DAC mit OPAmp und der OPAmp zur Strommessung mit zugehörigen Widerständen bestückt werden. Die Widerstände nicht benutzter Eingänge der Treiber OPAmps sollten aber auch bestückt werden.
+Die FETs sollten so montiert werden, dass alle möglichst die gleiche Verlustleistung aufnehmen können, da nur der Wert für einen FET als Grenzwert angegeben werden kann.
+Sinngemäß das gleiche gilt für die Messwiderstände. 
+Bei den verwendeten FETs ist die Kühlfläche und Drain miteinander verbunden. Bei  Montage auf dem Kühlkörper ohne Isolation muss dieser bei hohen Spannungen berührungssicher aufgebaut werden. 
+Die verwendeten Messwiderstände sind bis 500V isoliert und können direkt auf den Kühlkörper geschraubt werden.
+Der Widerstand zur Messung der Spannung kann in einen Widerstand auf der Steuerplatine und einen externen Widerstand aufgeteilt werden. Dadurch bleiben die Spannungen auf der Leiterplatte niedrig. Die Spannung an den Stromeingängen darf 5V nicht überschreiten.
+Die Widerstände an den Gates der FETs sollten direkt an die FETs angelötet werden.
+Die Masse der Steuerungsleiterplatte und der äußeren Beschaltung sollen an nur einer Stelle miteinander verbunden werden.
+C28, R28, R29  und der externe Widerstand zur Spannungsmessung bilden einen Tiefpass. Die Zeitkonstante soll nicht über 1ms liegen.
+
+Als SMD Operationsverstärker können verschiedene Typen der MCP603x Familie verwendet werden. 5 oder 6 polige Typen sind möglich; die Offsetspannung sollte <= 150uV sein. Diese gibt es nur als SMD Bauteile. Die Grenzfrequenz ist nicht kritisch. Da sich die 14poligen SO Gehäuse etwas einfacher verarbeiten lassen, gibt es eine Leiterplattenversion dafür. 
+
+Teilbestückung ist möglich. Für jeden der sieben Kanäle muss jeweils der DAC mit OPAmp und der OPAmp zur Strommessung mit zugehörigen Widerständen bestückt werden. Die Widerstände nicht benutzter Eingänge der Treiber / OPAmps sollten aber auch bestückt werden.
 Die Spule L1 (ca 22uH) kann überbrückt werden. Sie dient zur Unterdrückung möglicher Störungen in HF empfindlicher Umgebung.
 Bei Verwendung von ISP muss JP6 bestückt werden.
 
@@ -349,6 +384,8 @@ UM2102
 
 mit I2C 
 R1, R2 nach Bedarf, X2, X3
+
+Bei normalem Betrieb muss JP1 (Power) gesteckt sein.
 
 Anschlüsse
 
@@ -403,7 +440,7 @@ U/Iin SL6
 
 Die äußere Beschaltung
 
-Ich habe 7 FETS IRFP150 aus der Bastelkiste verwendet. Dies ergibt als Grenzbelastung 90V, ca 210A (bei 175 Grad) und eine Verlustleistung von ca 350W. Mehr Wärme kann der vorhandenen Kühlkörper nicht abführen.
+Ich habe 7 FETS IRFP150 aus der Bastelkiste verwendet. Dies ergibt als Grenzbelastung 90V, ca 210A (bei 175 Grad Tj) und eine Verlustleistung von ca 350W. Mehr Wärme kann der vorhandenen Kühlkörper nicht abführen.
 Direkt am Gate der FETs wurden 10kOhm Widerstände angelötet (siehe [6]).
 Als Shunt wurde ein 10mOhm, 10W Shunt von Isabellenhütte verwendet.
 
@@ -412,16 +449,8 @@ Die Messspannung darf nicht direkt angeschlossen werden, sondern nur über einen 
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 01.2
-Bascom Version 01.3
-
-
-
-
-
-
-
-
+Leiterplattenversion 01.2 / 1.3
+Bascom Version 02.0
 
 Copyright
 
@@ -430,11 +459,18 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
+
+
+
+
+
+
 Referenzen
 
-[[1]	dk1ri.de/dhw/electronic_load_eagle.zip
+[1]	dk1ri.de/dhw/electronic_load_eagle.zip
 [2]	dk1ri.de/dhw/electronic_load_bascom.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
 [5]	dk1ri.de/dhw/electronic_load_calculation.pdf
 [6]	dk1ri.de/dhw/electronic_load_external_ciruit.png
+[7]	dk1ri.de/myc/Definitions.pdf (englisch)
