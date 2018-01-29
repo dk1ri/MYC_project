@@ -1,6 +1,6 @@
 Klimasensor mit MYC Protokoll
 
-Author DK1RI, Version V02.0, 20170824
+Author DK1RI, Version V02.1, 20180118
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -29,25 +29,25 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Klimasensor;V02.0;1;100;15"
+Data "0;m;DK1RI;Klimasensor;V02.1;1;145;1;21;1-1"
 '
 Announce1:
 'Befehl &H01
 'liest Temperatur
 'read temperature
-Data "1;aa,read temperature;w,{-40.00 to 84.99},DegC"
+Data "1;ap,read temperature;1;12500,{-40.00 to 84.99};lin;DegC"
 '
 Announce2:
 'Befehl &H02
 'liest Feuchtigkeit
 'read humidity
-Data "2;aa,read humidity;L,{0.000 to 100.000},%"
+Data "2;ap,read humidity;1;100001,{0.000 to 100.000};lin;%"
 '
 Announce3:
 'Befehl &H03
 'liest Druck
 'read pressure
-Data "3;aa,read pressure;L,{300.000 to 1100.000},hPa"
+Data "3;ap,read pressure;1;1100001,{0.000 to 1100.000};lin;hPa"
 '
 Announce4:
 'Befehl &H04 0 to 5
@@ -124,8 +124,8 @@ Announce15:
 Announce16:
 'Befehl &HF0<n><m>
 'liest announcements
-'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;100;21"
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;145;21"
 '
 Announce17:
 'Befehl &HFC
@@ -143,20 +143,20 @@ Announce19:
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,RS232,1;a,USB,1"
 '
 Announce20:
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,RADIO,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
 
 I2C
 
 Die Default Adresse ist 22 (&H16).
 Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
-Pullup Widerstände für den I2C Bus (R8/R9) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. Die Schaltung arbeitet mit 3.3V, der I2C Anschluss ist aber 5V kompatibel.
+Pullup Widerstände für den I2C Bus (R8/R9) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen.
 
 Fehlermeldungen
 
@@ -170,7 +170,9 @@ Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden
 
 Watchdog
 
-Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
+Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
 
 Software
 
@@ -181,13 +183,11 @@ Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker (JP6) vorhanden.
 Die Programmierung darf nur mit entferntem Sensor durchgeführt werden.
-Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden Die Frequenz darf nicht höher als 10MHz sein.
-
-
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
 
 Serielle / USB Schnittstelle
 
-Die Schaltung kann mit der USB Platine UM2102 von ELV bestückt werden. Diese liefert 5V und 3.3V Die große Leiterplattenversion kann statt des USB Moduls auch mit seriellen Daten gesteuert werden (19k2 8N1, TTL Pegel). Ein Pegelwandler und RS232 Stecker ist allerdings nicht vorhanden. Beide Schnittstellen können gleichzeitig bestückt werden. Beim Wechsel der Schnittstelle werden die bestehenden Daten glöscht.
+Die Schaltung kann mit der USB Platine UM2102 von ELV bestückt werden. Diese liefert 5V und 3.3V Die große Leiterplattenversion kann statt des USB Moduls auch mit seriellen Daten gesteuert werden (19k2 8N1, TTL Pegel). Ein (invertierender) Pegelwandler und RS232 Stecker ist allerdings nicht vorhanden.
  
 SMD
 
@@ -202,26 +202,25 @@ Bestückung der Leiterplatte
 
 Bei Verwendung von ISP muss JP6 bestückt werden.
 
-Der Sensormodul wird mit einer Stiftleiste versehen. Die 6 polige Buchsenleiste ist auf der Unterseite. Nach dem Aufstecken des Sensormoduls liegt der Modul unter der Leiterplatte, zeigt also zu Mitte hin. Der Sensor der Sensorplatine liegt außen, also unten.
 Folgende Bauteile sind abhängig vom verwendeten Interface zu bestücken:
 
+Bei beiden Versionen wird der USB Modul auf der Bestückungsseite angebracht, der Sensor auf der Leiterbahnseite.
+
 „große“ Version:
+
 mit USB:
 UM2102
-es entfällt: X1, X3, D1, C1, DC1, IC2,
+es entfällt: X1, X3, D1, C1, DC1, IC2 
 Der USB Modul wird plan auf der Oberseite der Platine angelötet. USB Modul und Leiterplatte müssen voneinander isoliert werden.
+Der Sensormodul wird mit einer Stiftleiste versehen. Die 6 polige Buchsenleiste ist auf der Unterseite. Nach dem Aufstecken des Sensormoduls liegt der Modul unter der Leiterplatte, zeigt also zu Mitte hin. Der Sensor der Sensorplatine liegt außen, also unten.
 
 mit I2C: 
-R8, R9: nach Bedarf. R8, R9, Q2, Q3 nur für 5V Kompatibilität. X2, X3
-Hat der I2C Bus nur 3.3V, kann auch eine Drahtbrücke zwischen Drain und Source von Q2, Q3 eingelötet werden.
-X3 kann nur bestückt werden, wenn der USB Modul nicht gleichzeitig bestückt wird.
+R8, R9: nach Bedarf. R8, R9, Q2, Q3 für 5V Kompatibilität. X2, X3
+Hat der I2C Bus nur 3.3V, kann auch eine Drahtbrücke zwischen Drain und Source von Q2, Q3 eingelötet werden 
 
 „kleine“ Version:
 alle Teile müssen bestückt werden.
 Der Quarz muss eine kleine Version sein (HC48/U-S).
-Auch der USB Modul hat ein Buchsenleiste und werden so aufgesteckt, dass sie über der Interface Leiterplatte liegt.
-
-
 
 
 Anschlüsse
@@ -230,8 +229,7 @@ Power
 Tip	12V
 Ring	GND
 
-
-I2C  (2 x 3,5mm Klinke Stereo)
+I2C (2 x 3,5mm Klinke Stereo)
 Sleeve	GND
 Ring	SDA
 Tip	SCL
@@ -240,7 +238,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 01.1
-Bascom Version 02.0
+Bascom Version 02.1
 
 Copyright
 
@@ -255,4 +253,3 @@ Referenzen
 [2]	dk1ri.de/dhw/Klimasensor_bascom.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/myc/Definitions.pdf (englisch)
