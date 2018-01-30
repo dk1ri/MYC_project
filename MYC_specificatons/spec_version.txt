@@ -1,0 +1,69 @@
+MYC Spec_version
+
+Author: DK1RI
+Version V01. 2017
+This paper is published in https://github.com/dk1ri as well
+
+As an  introduction article to the MYC system please read [1] (german) or [2]
+
+This paper describes the defined versions of specifications. For details see [5].
+
+Branch 1:
+
+SPEC_VERSION
+commands
+Reserved token
+rules
+Definitions
+
+
+1
+02.12
+01.20
+01.9
+01.3
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Copyright	
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+
+
+
+
+Reference
+
+[1]	http://dk1ri.de/myc/MYC.pdf  (german)
+[2]	http://dk1ri.de/myc/MYC_en.pdf
+[3]	http://dk1ri.de/myc/Description.pdf
+[4]	http://dk1ri.de/myc/commands.pdf
+[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	http://dk1ri.de/myc/Rules.pdf
+[7]	http://dk1ri.de/myc/commandrouter.pdf
+[8]	http://dk1ri.de/myc/Rules_device.pdf
+[9]	http://dk1ri.de/myc/skin.pdf
+[10]	http://dk1ri.de/myc/logicdevice.pdf
+[11]	http://dk1ri.de/myc/Definitions.pdf
+[12]	http://dk1ri.de/myc/spec_version.pdf

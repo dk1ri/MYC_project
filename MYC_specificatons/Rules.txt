@@ -1,7 +1,7 @@
 MYC Rules
 
 Author: DK1RI
-Version V01.8 20161102
+Version V01.9 20170129
 This project can be found in https://github.com/dk1ri  also.
 
 Preliminary !!!!!
@@ -50,10 +50,12 @@ Syntax is similar to "R" rules.
 
 General Rules behavior
 
+There are no rules for o / a commands of simple SK, which are used for test and initialization only.
 Each rule is one announcement line (for FU) or an (MYC string) answer or info of a “an” command (for RU).
 By default all commands are working. If a command should be disabled, there must be a rule. The rule  is R !<c> …
 Enabling is done by R !!<c> …
-If a command should be executed use R ?<c> ...
+If a command should be executed use R ?<c> …
+If a command should be be executed after another use ?<c> AFTER <c>. Example is a Webserver, where a command to read page is necessary after the loading command.
 
 Definitions for the rules syntax
 
@@ -71,6 +73,7 @@ right side operators:	! (not) = < > <= >= AND OR ( )
 ?<c>			command to execute
 &			followed by a parameter (usually a sequence number) or <s”> without separator 
 			parameters are transmitted parameters, not those of <des> of announcements
+&&			is a value
 
 Special rules 
 
@@ -115,6 +118,8 @@ OR
 =			left side: operator, right side: equal
 TO
 .			delimiter for parameter 
+AFTER
+NECESSARY_FOR
 
 Examples
 
