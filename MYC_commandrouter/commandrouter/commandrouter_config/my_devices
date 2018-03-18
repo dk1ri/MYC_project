@@ -1,55 +1,54 @@
-# first line: devicegroupname;individual_name;individual_number
+#This file show all devices used by CR (3 lines per device)
+#
+# 1st line: devicegroupname;individual_name;individual_number
 # different devices must have different first line: first line must be unique in a MYC subsystem!
+#
 # 2nd line: from devicegroupfile; necessary to find lower level CR
-# third line: from devicegroupfile; necessary to get the interface
-# Tje interfaces must be induvidualized, The CR will contact active interfaces!!!
-# Three lines per device in the given sequence are mendatory; 
-# # as first char of a line for comments are allowed
+#
+# 3rd line: from devicegroupfile but with individualization; necessary to get the interface
+#
+# The CR will contact active interfaces ony!!!
+#
+# Sequence of lines must not be changed!
+#
+# # as first char of a line for comments are allowed.
 #
 ####################################################
 # the first device must be the own commandrouter !!!
 ####################################################
 DK1RI;commandrouter1;V01;CR0;1
-0;c;DK1RI;commandrouter1;V01;1;100;1;6
+0;c;DK1RI;commandrouter1;V01;1;100;1;6;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,TERMINAL,1;a,TELNET,1;w,PORT,23
 #
 DK1RI;Test1;V01;device1;1
-0;m;DK1RI;Test1,metacommands;V01;1;100;1;8
+0;m;DK1RI;Test1,metacommands;V01;1;100;1;8;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,device1;b,NUMBER,1;a,I2C,1;b,ADRESS,17
 #
 DK1RI;Test2;V01;device1;1
-0;m;DK1RI;Test2;V01;1;100;1;31
+0;m;DK1RI;Test2;V01;1;100;1;31;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,device1;b,NUMBER,1;a,I2C,1;b,ADRESS,23
 #
 DK1RI;Test3;V01;device1;1
-0;m;DK1RI;Test3;V01;1;100;1;15
+0;m;DK1RI;Test3;V01;1;100;1;15;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,device1;b,NUMBER,1;a,I2C,1;b,ADRESS,8
 #
 DK1RI;Test4;V01;device1;1
-0;m;DK1RI;Test4;V01;#1;100;1;26
+0;m;DK1RI;Test4;V01;#1;100;1;26;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
 #
 DK1RI;Test5;V01;device1;1
-0;m;DK1RI;Test5;V01;1;100;1;26
+0;m;DK1RI;Test5;V01;1;100;1;26;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
 #
 DK1RI;Test6;V01;device1;1
-0;m;DK1RI;Test6;V01;1;100;1;26
+0;m;DK1RI;Test6;V01;1;100;1;26;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
 #
 DK1RI;Test7;V01;device1;1
-0;m;DK1RI;Test7;V01;1;100;1;15
+0;m;DK1RI;Test7;V01;1;100;1;15;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
 #
 DK1RI;Test8;V01;device1;1
-0;m;DK1RI;Test8;V01;1;100;1;15
+0;m;DK1RI;Test8;V01;1;100;1;15;1-1
 255;aa,INDIVIDUALIZATION;20,NAME,device1;b,NUMBER,1;a,I2C,1;b,ADRESS,10
-#
-DK1RI;Rs232_i2c_interface_Slave;V01;device1;1
-0;m;DK1RI;Rs232_i2c_interface Slave;V01;1;100;1;8
-255;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,TELNET,1;13,ADRESS,192.168.0.102
-#
-DK1RI2;commandrouterlevel-0;V01;CR1a;3
-0;c;DK1RI2;commandrouterlevel-0;V01;1;91;1;44
-255;aa,INDIVIDUALIZATION;20,NAME,CR1a;b,NUMBER,3;a,I2C,1;b,ADRESS,16
 #

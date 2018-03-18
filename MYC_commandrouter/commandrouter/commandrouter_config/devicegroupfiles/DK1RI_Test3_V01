@@ -1,18 +1,21 @@
-0;m;DK1RI;Test3;V01;1;100;1;15
-1;op;10;lin;Hz,unit;300;lin;Hz
-2;op;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
-3;oo;255,steps;100,time;s;100,stepsize;a,up,down
-4;oo;256,steps;1000,time;s;1000,stepsize;z
-5;oo;255;100;s;0;z
-6;oo;256;0;s;0;z;255;100;s;0;b
-7;oq;100
-8;oq;68000
-9;oq;100;100
-10;oq;68000;1000
-11;ap;10;lin;Hz;100,100;lin;Hz
-12;ap;1000;lin;Hz;10000000;lin;Hz
-240;an,ANNOUNCEMENTS;100;15
+0;m;DK1RI;Test3;V01;1;100;1;21;1-1
+1;op;1;10;lin;Hz,unit;300;lin;Hz
+2;op;1;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+3;op;2;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+4;oo;1;255,steps;100,time;s;1000,stepsize;a,up,down
+5;oo;2;256,steps;1000,time;s;100000,stepsize;w
+6;oo;1;600;255;s;0;t
+7;oo;1;256;0;s;1000;b
+8;oo;2;300;0;s;0;b
+9;ap;1;10;lin;Hz;100,100;lin;Hz
+10;ap;1;1000;lin;Hz;10000000;lin;Hz
+11;op;2;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+12;oo;2;256,steps;1000,time;s;1000,stepsize;z
+13;ap;2;10;lin;Hz;100,100;lin;Hz
+14;ap;500;1000;lin;Hz;10000000;lin;Hz
+15;oo;1;600;255;s;0;t;255;255;s;0;t
+240;ln,ANNOUNCEMENTS;100;21
 252;aa,LAST ERROR;20,last_error
 253;aa,MYC INFO;b,BUSY
-254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
-255;aa,as254
+254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
+255;la,as254
