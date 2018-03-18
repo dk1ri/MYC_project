@@ -1,7 +1,7 @@
 MYC Definitions, Abbreviations and Formats
 
 Author: DK1RI
-Version V01.2 20170301
+Version V01.03.01 20180318
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -11,16 +11,17 @@ For more details of the MYC system please check the reference.
 
 Definitions, abbreviations  and formats
 
+
 FU			func, function, normal device or controlled program, device-type m
-SK			skin, human interface or controlling program, send, a / o commands only, device-type h
-SS			simple skin as switches, send r / s commands only, device-type s
+SK			skin, human Interface or controlling program, device-type h
+SS			simple skin as switches, send r / s commands only, device-type s, o / a commands are used during configration
 CR			command-router, device-type c
 LD			logic-device, device-type l
 RU			rules device, device-type r
-<dt>			device-type: m, h, s, c, l,  r
+<dt>			devicetype: m, h, s, c, l,  r
 <dg>			device-group; devices with identical hardware and firmware
-<c>			unique (per device) command token; one number (unsigned n bytes). 0 (one byte always) is reserved for the basic
-			announcement. 0xxxf0 - 0xxxff are also reserved
+<c>			unique (per device) command token; one number (unsigned n bytes). 0 (one byte always) is reserved for the basic 
+			announcement. 0xxxf0 - 0xxxff are also reserved 
 <ct>			command-type
 <p>			property (parameter) of the type <n> or <s> in command, answer and info 
 <pa>			property of the type <n>, <ty>, <sm> or <OPTION> in an announcement 
@@ -28,35 +29,36 @@ RU			rules device, device-type r
 <DEFAULT>		mandatory default value
 <des>	 		a string <sm>  used in announcements for identification or description of  commands and properties.
 			<des> are optional sometimes. They can be used better human reading and for informative display of the SK. 
-			They are also used for the translation to real values or restriction of values.
+			They are also used for the translation to real values or restriction of values. 
 <n>			numeric value, binary in commands and properties; decimal readable in announcements, 0xxx, 0bxx notation allowed in 
 			announcements. This notation is translated by the CR, when creating the full list, but not in <des>.This notation is not allowed in 
-			“R” and “I” lines.
-			 Numbers are transmitted “big endian”: MSB first.
+			“” and “I” lines.
+			Numbers are transmitted “big endian”: MSB first. 
 			<n> has different environments:
-			 -  <n> is used as a positional parameter as unsigned numbers for switches, range control and position of memory cells. The 				transmitted values have a range from 0 to x, as defined by  the announcement.
+			- <n> is used as a positional parameter as unsigned numbers for switches, range control and position of memory cells. The
+			transmitted values have a range from 0 to x, as defined by  the announcement.
 			For the selection of these numbers it is important, how many different values are needed. So a (real) range of -3 to
-			 +200 has 204 	values and a byte with the range of 0 to 203 is used for transmission.
-			A range from 1,0 to 2.0 needs 11 values from 0 to 10 – a byte is also sufficient.
+			+200 has 204 values and a byte with the range of 0 to 203 is used for transmission.
+			A range from 1,0 to 2.0 needs 11 values from 0 to 10 – a byte is also sufficient. 
 			The SK knows the real values by the readable and real values of <des> of the announcement  and will translate and 
-			display the real values.
+			display the real values. 
 			To minimize transmission time, numeric values for properties are transmitted 
-			as 1 byte, 				if equal or less than 255 (0 to 0xff) different values are needed 
-			as 2 bytes,				if equal or less than 65535 (0 - 0xffff) different values are needed 
-			as 3 bytes,...
-			...
-			All transmitted numbers are “0” based.
+			as 1 byte, if equal or less than 255 (0 to 0xff) different values are needed 
+			as 2 bytes, if equal or less than 65535 (0 - 0xffff) different values are needed 
+			as 3 bytes,... …
+			 All transmitted numbers are “0” based. 
 			In  on / an, of / af and ob and ab command a “0” of number of elements mean no element.
-    -  For command-token the same rule apply; but the 16 token for reserved commands must be taken into account. For the full list of
-    CR there are additional 16 token for communication with SK reserved.
-The length of the transmitted number of numeric memory-contents is defined by <ty>
-<s>			string, all characters. The string is preceded by the length as unsigned number. The length is of type <n> and can 1, 2, 3..byte; 			depend on maximum length of thr string given in the announcement. This type exists in commands, answers and infos.
+			- For command-token the same rule apply; but the 16 token for reserved commands must be taken into account. For the full list
+ of    			CR there are additional 16 token for communication with SK reserved.
+			– The length of the transmitted number of numeric memory-contents is defined by <ty> 
+<s>			string, all characters. The string is preceded by the length as unsigned number. The length is of type <n> and can 1, 2, 3..byte; 
+			depend on maximum length of thr string given in the announcement. This type exists in commands, answers and infos.
 <sm>			string (all characters except  , ;{}\) Used in announcements; forbidden characters must be escaped (preceded) by \
 <l>			maximum length of a string <s> in announcements
-<ty>			type of memory cells in announcements
+<ty>			 type of memory cells in announcements
 			0 byte: z: no data transfer / use internal data; 1 byte: a : bit, b : byte; 2 bytes: i : signed integer, w : unsigned word; 
 			4 bytes: e: signed long, L : unsigned long, s : single;
-			8 bytes: d : double, t : (64 bit UNIX) time-date; variable number of bytes: c : command-token.
+			8 bytes: d : double, t : (64 bit UNIX) time-date; variable number of bytes: c : command-token. 
  			<l> : maximum length of a string.
 			A bit is transferred as a byte with the value of 0x00 or 0x01.
 			The 0 byte type z is used when internal data are used.
@@ -65,17 +67,18 @@ The length of the transmitted number of numeric memory-contents is defined by <t
 <announce>		complete announcement or announcement line, a string <sm>; as answer it is transmitted in <s> format
 <data>			<s> or <n> in commands answers or info 
 separators		For the announcement parser (CR, SK or LD eg):  , ; (comma, semicolon) 
-			, is the separator between pa and <des>.
-			; is the separator between <c>, <ct> and <pa>
+			, is the separator between pa and des.
+			; is the separator between <c>, <ct> and <pa> 
 			There are no separators in commands, answers and infos
-0xxxff			means highest number in 1, 2, 3..Byte number (hex format)
+0xxxff			means highest number in 1, 2, 3..Byte number (hex format) (not used in announcements)
 [ ]			optional properties
+
+All numbers in announcements are numeric; Binary, octal, hex … format is not supported.
 
 Non valid data
 
 There is no character reserved for non valid data.
-Any device must answer with valid data. In some cases a device is polled for data, but data may be not valid at that time. The default polling wait time for the caller is 100ms. The device can modify it by the 0xxxfa announcement. After that time data must be valid.
-If  for any reason this cannot be used, the device will define a non-valid character. If defined as 0xff valid data 0xff is receded (escaped) by 0xff. This behavior is announced by a 0xxxfa  announcement.
+Any device must answer with valid data. In some cases a device is polled for data, but data may be not valid at that time. The default polling wait time for the caller is 100ms. If a device do not have valid data, it will send a not valid command-token.
 
 Copyright
 
@@ -85,6 +88,8 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 This document can be copied without changes.
 The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
+
+
 
 
 
@@ -102,4 +107,3 @@ Reference
 [8]	http://dk1ri.de/myc/Rules_device.pdf
 [9]	http://dk1ri.de/myc/skin.pdf
 [10]	http://dk1ri.de/myc/logicdevice.pdf
-[11]	http://dk1ri.de/myc/Definitions.pdf

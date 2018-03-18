@@ -1,7 +1,7 @@
 MYC Reserved Commands
 
 Author: DK1RI
-Version V01.20.1 20170114
+Version V01.20.02 20180318
 This paper is published in https://github.com/dk1ri as well
 
 Introduction
@@ -18,7 +18,8 @@ Overview
 Every MYC device should provide mandatory reserved command tokens and understand them, if applicable.
 The set of announcements of a MYC device should be in numerical sequence, start with the reserved basic command 0x00 and end with the other reserved tokens 0xxxf0 - 0xxxff. Rules lines may follow . In the full anouncment-list of CR the last line of each device is the I-announcement. This is necessary, to identify commands in systems with hierarchical (stacked) command-routers.
 
-Nine of the reserved tokens are used and defined now: 0x00, 0xxxf0, 0xxxf1 and 0xxxf9 - 0xxxff
+Nine of the reserved tokens are used and defined now: 0x00, 0xxxf0, 0xxxf1 and 0xxxf9 – 0xxxff.
+It is noted, that the commands below are shown as operate / answer (o / a)  commands, but may be used in a real announcement as k / l commands, which will not be included to the full list by the CR.
 
 Basic Command 0x00
 
@@ -71,16 +72,20 @@ answer / info:	0xxxF1<n><m><data>
 
 Feature for SK 0xxxf9
 
-This command is used by the CR only. The CR can store individual features for a device.  SK-FEATURE must be the 1st <des>
+This command is used by the CR and SK only. SK-FEATURE must be the 1st <des>.
 
 Announce: 249;oa,SK-FEATURE[,<des>]...;<OPTION>[,<des>]...
 command;	0xxxF9<n><data>
 answer / info:	-
 
 defined <OPTION>s
-<l>,ANSWERS				<l> is the maximum length of a list of (binary) token of basic announcements of devices, for which the SK
- 						want answers and infos, no spaces -  or:  * means all (default) (do not mix * and command-token).
+<l>,ANSWERS				used by CR: <l> is the maximum length of a string with a list of (binary) token of basic announcements of 
+						devices, for which the SK want answers and infos, numbers, or * only.  * means all (default) 
+						(do not mix * and command-token). The CR will use the default after USERTIMEOUT.
+						This feature is not remembered by the CR and must be set after SK connection timeout.
 
+<b>,STOP					used by SK only; mandatory. The CR will send 0xf01 to signal, that the input buffer is full and further data
+						are ignored. Default: 0x00
 
 Features Command 0xxxfa
 
@@ -96,25 +101,28 @@ Defined <OPTION> are:
 b,INFO,<DEFAULT>			FU only. Optional, can be used, if infos are send; must not be defined otherwise
 						0:	info used, but no polled interface
 						other:	requested info polling time in 10ms. <DEFAULT> is 10 (means 100ms)
+<sm>,INFOCOMMANDS			FU  only. The CR should poll the commands given in this ls list
 a,MULTI_ANSWER,<DEFAULT>		FU only, Optional, 1, if device can handle multiple answer commands, DEFAULT: 0 for polled devices as
-						 I2C, 1 for others. For polled devices with default, the master must get the answer with 1 second. After that 
-						the FU may delete the answer.
+						 I2C, 1 for others. For polled devices with default, the master must get the answer within 1 second. After 
+						that time the FU may delete the answer.
 
 w,COMMANDDELAY<DEFAULT>	in ms, DEFAULT is 100. The CR will wait for this time, before sending another command. This will 
 						allow slow devices to handle commands. 0 means, that the device can buffer commands. The FU will not 
 						accept commands during that time. The FU will also do so, until all data are sent to the master.
-				 
+	
+			 
 Log on Command 0xxxfb
 
 This command is used by the RU only. Used, if the system requires a log on for users to allow all or a subset of commands. The RU will then send a string with “Q” rules to the CR. From this the CR will use a individual list of commands for this user and block all other commands.
 For more details see 	http://dk1ri.de/myc/Rules_device.pdf
-The command announcement has the first command-type description  "LOGON"
+The command announcement has the first command-type description  "LOGON". Only the given properties are allowed in this sequence:
+NAME and PASSWORD is limited to 255 characters (1 byte length of string).
 
-announce:	251;ob,LOGON[,<des>];<b>,mode;<l>,name;<l>,password
-mode:	1	log out							password: any <s>
-	2	log on
-	3	switch on user management (admin only)
-	4	switch off user management (admin only)		password: any <s>
+announce:	251;ob,LOGON[,<des>];<b>,MODE;<l>,NAME;<l>,PASSWORD
+MODE:	1	log out	
+		2	log on
+		3	switch on user management (admin only)
+		4	switch off user management (admin only)
 command:	0xxxfb0x000x03<mode><name><password>
 answer	/ info	-
 
@@ -148,9 +156,11 @@ b,ACTIVE					mandatory as first element
 				04		ready and active
 				other <n>	try again in <n> seconds, default try again is 10s
 b,ANNOUNCELIST		<n>		(new) list <n> available; for CR only
-b,USERNUMBER		<n>		ask to allocate a user-number (mandatory for CR) for details see [3]
 b,ANSWERTIMEOUT	<n>		for polled devices: After timeout output data are deleted and new commands are executed.
-						In 100ms, Default is 10 (1s)		
+						In 100ms, Default is 10 (1s)	
+b,CHANNELTIMEOUT	<n>		used by CR multi-channel interfaces only in seconds.
+B, CHANNELNUMBER	<n>		used by CR multi-channel interfaces only default is 0: public channel.
+	
 more  to be defined.
 
 
@@ -192,41 +202,42 @@ OPTION>							comment:
 								<sizex> something like 16x2, 1024p
 <a>,I2C|RS232|CAN|RC5|RC6| 				
 USB|TELNET|HTTP|HTTPS|TERMINAL|			Multiple interfaces start with one of these types, followed by the other parameters.
-SSH|RADIO,<DEFAULT>					0: not active; 1:  active
+SSH|RADIO,USBM|TELNETM|HTTPM|HTTPSM|	0: not active; 1:  active
+TERMINALM|SSHM|RADIOM,<DEFAULT>		The “M” Interfaces are used by CR only and support multiuser access.
 
 Defined Interfaces:
 
- <a>,I2C;<DEFAULT>;
+ <a>,I2CI2CM;<DEFAULT>;
  b,ADRESS,<DEFAULT>{1 to 127}			{1 to 127}, mandatory
 
-<a>RS232,<DEFAULT>;
+<a>RS232|RS232M,<DEFAULT>;				default: auto, 8N1
  b.BAUDRATE,<DEFAULT>,{auto,19200,...}		Baudrate, optional
  3,NUMBER_OF_BITS,{8N1}				something like this, optional
  b,COMPORT							COM Port number, optional
 
- <a>,TELNET,<DEFAULT>;				server !!
+ <a>,TELNET|TELNETM,<DEFAULT>;			server !!
 <a>,SSH,<DEFAULT>					server !!
  w,PORT							portnumber, optional
 <s>,ADRESS							IP adress or DNS Name, mandatory						
  b,TIMEOUT,<default>					Timeout, optional				
 
-<a>,HTTP,<DEFAULT>;					server !!
+<a>,HTTP|HTTPM,<DEFAULT>;				server !!
 <s>,ADRESS							madatory
 b,TIMEOUT,<DEFAULT>					Timeout (optional)
 
-<a>,Terminal,<DEFAULT>;					usually for CR only, interface, from where the program is called, no other options.
+<a>,TERMINAL|TERMINALM,<DEFAULT>;		usually for CR only, interface, from where the program is called, no other options.
 
-<a>,USB,<DEFAULT>;					slave
+<a>,USB|USBM,<DEFAULT>;				slave
 
- <a>,RC5,<DEFAULT>;
+ <a>,RC5|RC5M,<DEFAULT>;
  b,ADRESS,<DEFAULT>,{1 to 32}				mandatory
  <a>,RC6,<DEFAULT>;
 b,ADRESS,<DEFAULT>,{1 to 64}				mandatory
 
-<a>,CAN,<DEFAULT>;
+<a>,CAN|CANM,<DEFAULT>;
  b,ADRESS,<DEFAULT>
 
-<a>RADIO,<DEFAULT>					Wireless interface
+<a>RADIO|RADIOM,<DEFAULT>				Wireless interface
 
 I-announcements
 
