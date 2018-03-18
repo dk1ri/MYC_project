@@ -1,7 +1,7 @@
 MYC Command-router
 
 Author: DK1RI
-Version V01.11 20171109
+Version V01.12 20180318
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -45,23 +45,35 @@ output to SK
 The program should run on a raspberry pi with limited cpu resources.
 Because the CR must analyze any incoming byte, many lists and arrays are created during initialization. They are defined as v_xxx.py global variables. I am not sure, whether the used data structure is  the most effective (in terms of speed). So enhancements may be necessary.
 Sometimes the program lines are quite long and subarrays are hard to read. So I sometimes introduces variables like temp with a “lifetime” over a few lines. This enhances the readability, but may reduce speed. I also used those variables, when they are needed a few times, because a call of a variable may be faster than an element of a subarray.
-There are 3 input parser subprograms: command_handling -analyzing the SK-buffer for commands -, ld_command_handling -analizing the LD buffer for commands and infos-  and device_handling – anylizing the device buffer for answer and info. These subprograms are quite bulky and very similar. Nevertheless I used different subprograms to avoid unnecessary if – then selections. I hope, that this is the most speed effective solution. But I know, that servicing these lines is not comfortable.
+There are 3 input parser subprograms: command_handling -analyzing the SK-buffer for commands -, ld_command_handling - analyzing the LD buffer -  and device_handling – analyzing the device buffer. These subprograms use the same parser data_handling
 
 Usage
 
 The routing kernel is working for all commands and answers defined now.
 Nevertheless the usage of the program now is suitable for tests only.
 Input can be done by keyboard or via telnet by sending the ASCII numbers 0... 255 followed by a space.
+Data are sent to the SK interface. To send data to the device interface type d<SPACE> and S<SPACE> back to the SK interface.
 A file can be used to send multiple commands.
 Data, which should be send to the device, are send to the console.
 
 Testing
 
+If the variable v_cr_params.test_mode is set to 1, log entries and some other messages are sent to the terminal.
+
 For program testing the following is implemented:
 
 Some tables generated at initialization are available as files in the check_output directory. So the created full announce-list can be checked easily.
-There is a set of command-files. These are used to check the routing kernel and should check all command-types with different parameters. Files to check the error behavior will follow. These checks are initiated by a<n><SPACE> from the terminal. <n> is the number of the checkfile in the checkfiles directory.
+There is a set of command-files. These are used to check the routing kernel and should check all command-types with different parameters. Files to check the error behavior will follow. 
+For Windows10:
+Install python (3.6, 32bit)
+open powershell (AltX ? i)
+write something like:
+cd <location of CR programm>
+C:\Users\<your name>\AppData\Local\Programs\Python\Python35-32\python.exe commandrouter.py
+
+These checks are initiated by a<n><SPACE> from the terminal. <n> is the number of the checkfile in the checkfiles directory.
 r<SPACE> initiate a random input to the SK and device input. This will produce error messages but should not crash the program.
+The actual throughput for random data is about 3000 loops/s (checking and analizing all inputs) with about 20kByte/s. Throughput will be higher with correct data, because random data produce many errors with writing the log and displaying on the terminal
 
 Implementation of the Hardware
 
@@ -98,20 +110,17 @@ The routing kernel of the CR uses bytearray. Any character is allowed as input.
 The CR do some checks on the inputs:
 for correct command-token
 for positional parameters and element number lower than maximum 
-foor correct length of string
-<data> fields are not checked (with few exceptions), especially restriction of <ty> given in <des>
-error messages are sent to logfile only.
+for correct length of string
+<data> fields are not checked (with few exceptions), especially restriction of <ty> given in <des>.
+Error messages are sent to logfile only.
 If a error is detected, received characters are ignored and the next byte byte is seen as the start of the next command / answer.
 
-Following messages are defined now:
+Multiuser
 
-re-read my devices	sent to log
-SK timeout...		data missing, data ignored, info to SK
-dev timeout		data missing, data ignored
-new announcelist	sent to log
-value too high		data ignored, if command from SK: info to SK; if in info from dev: -
-non valid token	data ignored, if command from SK: info to SK; if in info from dev: -
-stringlength overflow	data ignored, if command from SK: info to SK; if in info from dev: -
+Some interfaces will support multiuser access. This is not supported now.
+
+
+
 
 
 Copyright
