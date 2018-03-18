@@ -1,0 +1,31 @@
+# command input file (to check commands)
+# ======================================
+# 
+## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Errors in the commandfiles may crash the programm
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+#
+# These files test the correct generation of v_linelength-command and the correct function of the modul data_handling.
+# Because v_lenlength.answer is generated in the same way as v_linelength.command and inputs from devices sre
+# handled byy data_handling checking of answers is not necessary.
+# checks are done with operate and answer commands from SK only.
+#
+# tests are initiated by a<n><SPACE> from the terminal, where n is the number of the 
+# _commandfile_test<n>.
+#
+# The program will send some info to the terminal to shown wheather the command workes correct
+# or errors from the input are detected.
+# 
+# comments (line starting with #) are allowed
+# requires same syntax as for inputs on the terminal (ASCII values separated by space)
+# numbers > 255 will crash the programm
+#
+# there must be 4 lines for each command:
+# lines not used must be empty
+# 1 - number_of_command announceline	for info
+# 2 - command from SK			send
+# 3 - output to device			required
+# 4 - either "shold be ok" or "should produce an error"
+#
+# Commands, which are handled by the CR have no output to a device.
+# The output to the terminal must be checked directly

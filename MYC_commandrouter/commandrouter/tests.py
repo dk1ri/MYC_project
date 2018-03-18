@@ -13,6 +13,7 @@ import v_device_names_and_indiv
 import v_kbd_input
 import v_linelength
 import v_sk
+import v_sk_interface
 import v_time_values
 import v_token_params
 
@@ -30,10 +31,10 @@ def print_for_test():
     print_for_test3("v_command_length_reserved_token_start", v_cr_params.reserved_token_start)
     print_for_test3("v_command_length_startnumber", v_cr_params.startnumber)
     print_for_test3("v_command_index_of_cr-commands", v_token_params.index_of_cr_commands)
+    print_for_test3("v_cr_params_cr_announcement", v_cr_params.cr_announcement)
     print_for_test3("v_cr_params_name", v_cr_params.full_device_name)
     print_for_test3("v_cr_params_length_of_announcement_length", v_cr_params.length_of_announcement_length)
-    print_for_test3("v_cr_params_llength_of_last_error_length", v_cr_params.length_of_last_error_length)
-    print_for_test3("v_configparameter_announcements", v_configparameter.announcements)
+    print_for_test3("v_cr_params_length_of_last_error_length", v_cr_params.length_last_error_length)
     print_for_test3("v_configparameter_devicegroup", v_configparameter.devicegroup)
     print_for_test3("v_configparameter_my_devices_file", v_configparameter.my_devices_file)
     print_for_test3("v_configparameter_time_for_activ_check", v_configparameter.time_for_activ_check)
@@ -41,7 +42,6 @@ def print_for_test():
     print_for_test3("v_configparameter_time_for_command_timeout", v_configparameter.time_for_command_timeout)
     print_for_test3("v_dev_announceline", v_dev.announceline)
     print_for_test3("v_dev_name", v_dev.name)
-    print_for_test3("v_dev_dev_cr_tok", v_dev.dev_cr_tok)
     print_for_test3("v_dev_interface_adress", v_dev.interface_adress)
     print_for_test3("v_dev_interface_baudrate", v_dev.interface_baudrate)
     print_for_test3("v_dev_interface_comport", v_dev.interface_comport)
@@ -54,24 +54,22 @@ def print_for_test():
     print_for_test3("v_dev_data_to_CR", v_dev.data_to_CR)
     print_for_test1("v_token_params_dev_token", v_token_params.dev_token)
     print_for_test1("v_token_params_device", v_token_params.device)
+    print_for_test1("v_token_params_index_of_cr_commands", v_token_params.index_of_cr_commands)
+    print_for_test1("v_token_params_index_of_cr_commands_r", v_token_params.index_of_cr_commands_r)
     print_for_test3("v_device_names_and_indiv_nmae", v_device_names_and_indiv.name)
     print_for_test1("v_device_names_and_indiv_active", v_device_names_and_indiv.activ)
     print_for_test1("v_device_names_and_indiv_last", v_device_names_and_indiv.last)
-    print_for_test3("v_input_buffer_baudrate", v_sk.baudrate)
-    print_for_test3("v_input_buffer_inputline", v_sk.inputline)
-    print_for_test3("v_input_buffer_interface_adress", v_sk.interface_adress)
-    print_for_test3("v_input_buffer_interface_name", v_sk.interface_name)
-    print_for_test3("v_input_buffer_interface_port", v_sk.interface_port)
-    print_for_test3("v_input_buffer_interface_timeout", v_sk.interface_timeout)
-    print_for_test3("v_input_buffer_interface_type", v_sk.interface_type)
-    print_for_test3("v_input_buffer_inputline_active", v_sk.inputline_active)
-    print_for_test3("v_input_buffer_name", v_sk.name)
-    print_for_test3("v_input_buffer_numberofbits", v_sk.number_of_bits)
+    print_for_test3("v_input_buffer_baudrate", v_sk_interface.baudrate)
+    print_for_test3("v_input_buffer_interface_adress", v_sk_interface.interface_adress)
+    print_for_test3("v_input_buffer_interface_port", v_sk_interface.interface_port)
+    print_for_test3("v_input_buffer_interface_timeout", v_sk_interface.interface_timeout)
+    print_for_test3("v_input_buffer_interface_type", v_sk_interface.interface_type)
+    print_for_test3("v_input_buffer_numberofbits", v_sk_interface.number_of_bits)
     print_for_test3("v_input_buffer_starttime", v_sk.starttime)
     print_for_test3("v_input_buffer_last_error", v_sk.last_error)
-    print_for_test3("v_input_buffer_socket", v_sk.socket)
-    print_for_test3("v_input_buffer_source", v_sk.source)
-    print_for_test3("v_input_buffer_telnet_no", v_sk.telnet_number)
+    print_for_test3("v_input_buffer_socket", v_sk_interface.socket)
+    print_for_test3("v_input_buffer_source", v_sk_interface.source)
+    print_for_test3("v_input_buffer_telnet_no", v_sk_interface.telnet_number)
     print_for_test1("v_kbd_input_data", v_kbd_input.data)
     print_for_test3("v_kbd_input_skdev", v_kbd_input.skdev)
     print_for_test3("v_line_length_answer", v_linelength.answer)
@@ -101,35 +99,26 @@ def print_for_test3(file, data):
 
 def load_check():
     check_file = open(v_time_values.command_file)
-    v_time_values.announcememnt = []
+    v_time_values.announcement = []
     v_time_values.from_sk = []
     v_time_values.to_dev = []
-    v_time_values.from_dev = []
-    v_time_values.from_ld = []
-    v_time_values.to_sk = []
-    v_time_values.to_sk_str = []
+    v_time_values.errormsg =[]
     v_time_values.check_number = 0
     i = 0
     for lines in check_file:
         if lines[0] == "#":
             continue
         if i == 0:
-            v_time_values.announcememnt.append(lines.rstrip())
+            v_time_values.announcement.append(lines.rstrip())
         if i == 1:
             v_time_values.from_sk.append(to_ba(lines.rstrip()))
         if i == 2:
             v_time_values.to_dev.append(to_ba(lines.rstrip()))
         if i == 3:
-            v_time_values.from_dev.append(to_ba(lines.rstrip()))
-        if i == 4:
-            v_time_values.from_ld.append(to_ba(lines.rstrip()))
-        if i == 5:
-            v_time_values.to_sk.append(to_ba(lines.rstrip()))
-        if i == 6:
-            # numbers with string
-            v_time_values.to_sk_str.append(to_ba2(lines.rstrip()))
+            # errormsg for dev
+            v_time_values.errormsg.append(lines.rstrip())
         i += 1
-        if i == 7:
+        if i == 4:
             i = 0
     check_file.close()
     return

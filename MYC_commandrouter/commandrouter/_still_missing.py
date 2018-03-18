@@ -8,7 +8,7 @@ logic device handling
 get_announcements_of_one_lower_level_device
 device interfaces
 login commands and procedure
-multi user per hardware input device
+multi channel support
 ask device, if devicegroupfile not available
 The syntax of config file must be correct. The program may crash otherwise
 Do not check weather a input of a device is active

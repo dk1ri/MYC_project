@@ -21,6 +21,7 @@ def str_to_bytearray(string):
 
 
 def ba_to_str(ba):
+    # bytearray to string
     string = ""
     i = 0
     while i < len(ba):
@@ -143,7 +144,7 @@ def calculate_length_of_commandtoken(number):
         multi = multi * 256
         v_cr_params.startnumber = v_cr_params.startnumber * 256
         v_cr_params.length_commandtoken += 1
-    # adder for 0hxxFx commands: n + f0 = ohxxf0
+    # adder for 0hxxFx commands: n + f0 = 0hxxf0
     v_cr_params.adder = multi - 0x100
     # reserved commandtoken last 16 reserved
     v_cr_params.reserved_token_start = multi - 0x10
@@ -158,7 +159,7 @@ def device_length_of_commandtoken(number):
     multi = 256
     # length_of_commandtoken:
     length_commandtoken = 1
-    while number + 32 >= multi:
+    while number + 16 >= multi:
         multi = multi * 256
         length_commandtoken += 1
     return length_commandtoken
@@ -166,33 +167,27 @@ def device_length_of_commandtoken(number):
 
 def length_of_typ(c_type):
     # c_type is parameter - type: a, b, L d, .... or numner for string
-    # return 1st element: n|s|e   2nd element: length
-    length = []
+    # return 1st element: n|s|e   2nd element: length of parameter or length of stringlength, 3rd element: max value
     if c_type == "c":
         # commands
-        length.append("n")
-        length.append(v_cr_params.length_commandtoken)
+        return "n", v_cr_params.length_commandtoken
     else:
-        length.append("n")
         try:
             # numeric: temp[1]: parameterlength
-            length.append(v_cr_params.length_of_par[c_type])
+            return "n", v_cr_params.length_of_par[c_type],v_cr_params.max_of_par[c_type]
         except KeyError:
             # string
             try:
                 # temp[1] length of stringlength
-                length.append(length_of_int(int(c_type)))
-                length[0] = "s"
-            except KeyError:
+                return "s", length_of_int(int(c_type)), int(c_type)
+            except ValueError:
                 # error
-                length[0] = "0"
-                length.append(0)
-    return length
-
+                Exit("length of typ error ",ctype)
 
 def write_log(line):
     # remove after tests
-    print(line)
+    if v_configparameter.test_mode == 1:
+        print(line)
     handle = open(v_configparameter.logfile, "a")
     handle.write(str(time.time()) + " " + line + "\n")
     handle.close()
@@ -200,16 +195,31 @@ def write_log(line):
 
 
 def strip_dimension(announcement):
+    #strip <des>
     i = 0
-    # ignore , Option must be at the end
-    item1 = announcement.split(";")
+    stripped = announcement.split(";")
     number_of_items = 0
-    while i < len(item1):
-        item = item1[i].split(",")
+    while i < len(stripped):
+        item = stripped[i].split(",")
         if len(item) > 1:
-            if item[1] != "DIMENSION":
+            if (item[1] != "DIMENSION") and (item[1] != "CHAPTER"):
                 number_of_items += 1
         else:
             number_of_items += 1
+        stripped[i] = item[0]
         i += 1
-    return number_of_items
+    return number_of_items, stripped
+
+
+def stacklength(stripped):
+    # return the number of bytes required for stacks if stack is > 1
+    stacks = int(stripped[2])
+    # value 0 is not allowed -> 1; transmitted value i "0" based:
+    if stacks == 0:
+        stacks = 1
+    stacks -= 1
+    if stacks == 0:
+        stack_length = 0
+    else:
+        stack_length = length_of_int(stacks)
+    return  stacks, stack_length

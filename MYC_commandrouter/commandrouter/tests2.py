@@ -19,6 +19,7 @@ import v_dev
 # import v_kbd_input
 import v_linelength
 import v_sk
+import v_sk_interface
 import v_time_values
 # import v_token_params
 
@@ -28,112 +29,85 @@ import v_time_values
 
 
 def handle_check():
+    # handling of commandfiles
     if v_time_values.terminal == 255:
         # find terminal
         j = 0
-        while j < len(v_sk.interface_type):
+        while j < len(v_sk_interface.interface_type):
             j += 1
-            if v_sk.interface_type[j - 1] == "TERMINAL":
+            if v_sk_interface.interface_type[j - 1] == "TERMINAL":
                 v_time_values.terminal = j
     if v_time_values.terminal == 255:
         v_time_values.auto = 0
         v_time_values.part = 0
         print("no Terminal found")
         return
-    if v_time_values.check_number < len(v_time_values.from_sk):
-            # not finished
-        if v_time_values.part == 1:
-            # line 1 and 2
-            print("")
-            print("announcement: ", v_time_values.announcememnt[v_time_values.check_number])
-            v_time_values.last_checktime = time.time()
-            # reset inputs
-            v_sk.inputline[v_time_values.terminal] = bytearray([])
-            # if there is no value with from_sk there is no with to_dev
-            if v_time_values.from_sk[v_time_values.check_number] == bytearray([]):
-                v_time_values.part = 3
-            else:
-                v_sk.inputline[v_time_values.terminal] = v_time_values.from_sk[v_time_values.check_number]
-                tok = 0
-                if v_time_values.from_sk[v_time_values.check_number][0] != 0:
-                    tok = int.from_bytes(v_time_values.from_sk[v_time_values.check_number][:v_cr_params.length_commandtoken], byteorder='big', signed=False)
-                # find corresponding output device
-                v_time_values.out_device = 0
-                if tok != 0:
-                    if tok < v_cr_params.number_of_commands_noCR:
-                        # normal cr_commands
-                        v_time_values.out_device = v_token_params.device[tok]
-                    else:
-                        v_time_values.out_device = v_token_params.device[v_token_params.index_of_cr_commands[tok]]
-                # do nextactions
-                poll_input_buffer()
-                send_to_ld()
-                poll_ld()
-                send_buffer_to_device()
-                # next: check data to device:
-                v_time_values.part = 2
+    while v_time_values.check_number < len(v_time_values.from_sk):
+        v_sk.inputline[v_time_values.terminal] = bytearray([])
+        v_sk.len[v_time_values.terminal] = [0,0,0,0,0]
+        v_sk.starttime[v_time_values.terminal] = 0
+        # avoid user timeout
+        # avoid user timeout
+        v_sk.channel_timeout[v_time_values.terminal] = time.time()
+        v_time_values.part = 1
+        v_time_values.data = bytearray([])
 
-        elif v_time_values.part == 2:
-            # line 3: check data to dev
-            if v_time_values.data == v_time_values.to_dev[v_time_values.check_number]:
-                print(v_time_values.check_number, "to_dev ok: ", v_time_values.data)
-                for lines in v_sk.inputline:
-                    if lines != bytearray([]):
-                        print("too many data: ", lines)
-                # next: send data from device
-                v_time_values.part = 3
+        # line 1 and 2
+        v_time_values.check_line_finished = 0
+        print("")
+        print(v_time_values.check_number,"announcement: ", v_time_values.announcement[v_time_values.check_number])
+        v_time_values.last_checktime = time.time()
+        v_sk.inputline[v_time_values.terminal] = v_time_values.from_sk[v_time_values.check_number]
+        tok = 0
+        if v_time_values.from_sk[v_time_values.check_number][0] != 0:
+            tok = int.from_bytes(v_time_values.from_sk[v_time_values.check_number][:v_cr_params.length_commandtoken], byteorder='big', signed=False)
+        # find corresponding output device
+        v_time_values.out_device = 0
+        if tok != 0:
+            if tok < v_cr_params.number_of_commands_noCR:
+                # normal cr_commands
+                v_time_values.out_device = v_token_params.device[tok]
             else:
-                print(v_time_values.check_number, "to_dev nok:", v_time_values.data, v_time_values.to_dev[v_time_values.check_number])
-                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                v_time_values.number_of_nok += 1
-                # stop
-                # may be, that timeout is not reset:
-                v_sk.starttime[v_time_values.terminal][0] = 0
-                v_sk.inputline[v_time_values.terminal] = bytearray([])
-                v_time_values.part = 0
-                v_time_values.check_number += 1
-            v_time_values.data = bytearray([])
+                v_time_values.out_device = v_token_params.device[v_token_params.index_of_cr_commands[tok]]
 
-        elif v_time_values.part == 3:
-            # send data from dev
-            # if this is a info, the previous block of line must have set the out-device by a command.
-            # There is no way to find a correct device at that time
-            if v_time_values.from_dev[v_time_values.check_number] == "":
-                # data_to_sk is empty as well
-                # This was a operating command, there may data in info_to_all
-                # poll_devices and poll_device_buffer should do nothing
-                pass
+        poll_input_buffer()
+        send_to_ld()
+        poll_ld()
+        send_buffer_to_device()
+        # next: check data to device:
+        # line 3: check data to dev
+        if v_time_values.data == v_time_values.to_dev[v_time_values.check_number]:
+            v_time_values.all += 1
+            if v_time_values.errormsg[v_time_values.check_number] == "should be ok":
+                v_time_values.number_of_ok += 1
+                print("ok", v_time_values.errormsg[v_time_values.check_number])
             else:
-                v_dev.data_to_CR[v_time_values.out_device].extend(v_time_values.from_dev[v_time_values.check_number])
-            poll_device_buffer()
-            v_time_values.part = 4
-
-        elif v_time_values.part == 4:
-            # all output data are send to info_to_all as bytearray
-            check = v_time_values.to_sk[v_time_values.check_number]
-            if check == bytearray(b''):
-                check = v_time_values.to_sk_str[v_time_values.check_number]
-            if v_sk.info_to_all == check:
-                print(v_time_values.check_number, "to_sk ok: ", v_sk.info_to_all)
-            else:
-                print(v_time_values.check_number, "to_sk nok: ", v_sk.info_to_all, v_time_values.to_sk[v_time_values.check_number], v_time_values.to_sk_str[v_time_values.check_number])
-                print("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
-                v_time_values.number_of_nok += 1
-            v_time_values.check_number += 1
-            v_time_values.part = 0
-            send_to_all()
+                if v_time_values.errormsg[v_time_values.check_number] == "should produce an error":
+                    v_time_values.number_of_ok_nok += 1
+                    print ("should produce an error, but is ok")
+                else:
+                    if v_time_values.errormsg[v_time_values.check_number] != "":
+                        print("wrong errormsg")
         else:
-            # some error # stop
-            v_time_values.auto = 0
-            v_time_values.part = 0
-            v_configparameter.time_for_command_timeout = v_configparameter.time_for_command_timeout * 10
-            print("commands from file finished. Number of error:", v_time_values.number_of_nok)
+            print(v_time_values.check_number, "to_dev nok:", v_time_values.data,v_time_values.to_dev[v_time_values.check_number])
+            v_time_values.all += 1
+            if v_time_values.errormsg[v_time_values.check_number] == "should produce an error":
+                v_time_values.number_of_ok += 1
+                print("ok",v_time_values.errormsg[v_time_values.check_number])
+            else:
+                if v_time_values.errormsg[v_time_values.check_number] == "should be ok":
+                    v_time_values.number_of_nok += 1
+                    print("should be ok, but is nok")
+                else:
+                    if v_time_values.errormsg[v_time_values.check_number] != "":
+                        print("wrong errormsg")
+
+        v_time_values.check_number += 1
+
     else:
         # stop
         v_time_values.auto = 0
-        v_time_values.part = 0
-        v_configparameter.time_for_command_timeout = v_configparameter.time_for_command_timeout * 10
-        print("commands from file finished. Number of error:", v_time_values.number_of_nok)
+        print("commands from file finished. ok:",v_time_values.number_of_ok, "of:",v_time_values.all, " Number of errors:", v_time_values.number_of_nok, "number of wrong errors:", v_time_values.number_of_ok_nok)
 
     return
 
@@ -143,42 +117,46 @@ def random_data():
     if v_time_values.terminal == 255:
         # find terminal
         j = 0
-        while j < len(v_sk.interface_type):
+        while j < len(v_sk_interface.interface_type):
             j += 1
-            if v_sk.interface_type[j - 1] == "TERMINAL":
+            if v_sk_interface.interface_type[j - 1] == "TERMINAL":
                 v_time_values.terminal = j
     if v_time_values.terminal == 255:
         v_time_values.auto = 0
         v_time_values.part = 0
         print("no Terminal found")
         return
-    v_sk.inputline[v_time_values.terminal] = bytearray([])
     random_len = random.randint(1, v_time_values.random_k)
     direction = random.randint(0, 1)
 # input from LD is not needed here, becauss output to LD copied to input from LD
-    device = random.randint(0, 6)
+    device = random.randint(0, 2)
     # must be lower then the number of devices
     j = 0
+    v_time_values.mess_byte += random_len
     while j < random_len:
         ran_int = random.randint(0, 255)
         if direction == 0:
             v_sk.inputline[v_time_values.terminal].extend([ran_int])
-        #elif direction == 1:
-            #v_ld.data_to_CR = bytearray([ran_int])
         else:
-            v_dev.data_to_CR[device] = bytearray([ran_int])
+            v_dev.data_to_CR[device].extend(([ran_int]))
         j += 1
     if direction == 0:
-        print("random: SK", v_sk.inputline[v_time_values.terminal])
-    # elif direction == 1:
-        # print("random: LD", v_ld.inputline[v_time_values.terminal])
+        print("random: SK",len(v_sk.inputline[v_time_values.terminal]))
     else:
-        print("random; device:", device, v_dev.data_to_CR[device])
-    v_time_values.random_time = time.time()
-    v_time_values.random_i += 1
-    if v_time_values.random_i == 1000000:
-        # stop after 1000 loops
-        v_time_values.auto = 0
-        v_time_values.random_time = 0
-        v_configparameter.time_for_command_timeout = v_time_values.random_timeout_temp
+        print("random; device:", device, len(v_dev.data_to_CR[device]))
+# performance measurement corei7:
+# with all prints: 398s
+# one less: 378s
+# no random prints: 285s
+# error messages only 263s , 2499189 byte
+#    v_time_values.random_time = time.time()
+#    if v_time_values.mess == 0:
+#        v_time_values.mess = time.time()
+#    else:
+    #   print ("s", v_time_values.random_i)
+#        if v_time_values.random_i == 1000000:
+#            print(v_time_values.mess - time.time(),v_time_values.mess_byte)
+#            sys.exit()
+#       else:
+#            v_time_values.random_i += 1
     return

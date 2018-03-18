@@ -1,7 +1,7 @@
 """
 name : io_handlings.py
-last edited:
-ethernet handling using threads
+last edited: 201802
+winterminal and ethernet handling using threads
 """
 
 import sys
@@ -13,9 +13,11 @@ from misc_functions import *
 from tests import load_check
 
 import v_configparameter
+import v_cr_params
 import v_dev
 import v_kbd_input
 import v_sk
+import v_sk_interface
 import v_time_values
 
 # Ethernet:
@@ -93,11 +95,11 @@ class ServerThreadWrite (threading.Thread):
 
 def start_ethernet_server(port, input_buffer_number):
     i = 0
-    while i < len(v_sk.ethernet_server_started):
-        if port in v_sk.ethernet_server_started[i]:
+    while i < len(v_sk_interface.ethernet_server_started):
+        if port in v_sk_interface.ethernet_server_started[i]:
             return
         i += 1
-    v_sk.ethernet_server_started[input_buffer_number].append(port)
+    v_sk_interface.ethernet_server_started[input_buffer_number].append(port)
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         server_socket.bind(("", port))
@@ -181,40 +183,44 @@ def start_ethernet_client(host, port, device_buffer_number):
 
 def win_terminal(input_buffer_number, device_buffer_number):
     # can be used to input data to SK or device side
-    v_kbd_input.num += 1
     if msvcrt.kbhit():
         t = msvcrt.getwch()
         if v_time_values.auto == 1:
             # ignore other characters in this mode except "a"
             if t == "a":
                 v_time_values.auto = 0
-                print("input from file stopped")
+                write_log("input from file stopped")
         else:
             if t == " ":
                 # add to inputline
                 if v_kbd_input.data != "":
                     if v_kbd_input.data[0] == "a":
-                        i = int(v_kbd_input.data[1:])
-                        v_time_values.command_file = "commandfiles\_commandfile_test" + str(i)
-                        v_time_values.auto = 1
-                        v_time_values.check_number = 0
-                        # there must be a timeout for invalid commands:
-                        v_configparameter.time_for_command_timeout = v_configparameter.time_for_command_timeout / 10
-                        v_time_values.checktime = v_configparameter.time_for_command_timeout - 0.5
-                        v_time_values.number_of_nok = 0
-                        load_check()
-                        print("input from file _commandfile_test" + str(i) + " started")
+                        try:
+                            i = int(v_kbd_input.data[1:])
+                            v_time_values.command_file = "commandfiles\_commandfile_test" + str(i)
+                            v_time_values.auto = 1
+                            v_time_values.check_number = 0
+                            # there must be a timeout for invalid commands:
+                            v_configparameter.time_for_command_timeout = v_configparameter.time_for_command_timeout / 10
+                            v_time_values.checktime = v_configparameter.time_for_command_timeout - 0.5
+                            v_time_values.number_of_ok = 0
+                            v_time_values.number_of_nok = 0
+                            v_time_values.number_of_ok_nok = 0
+                            v_time_values.part = 1
+                            v_time_values.all = 0
+                            load_check()
+                            print("input from file _commandfile_test" + str(i) + " started")
+                        except ValueError:
+                           print (" win terminal input: ValueError")
+                           v_kbd_input.data = ""
                     elif v_kbd_input.data[0] == "r":
                         if v_time_values.auto == 10:
                             v_time_values.auto = 0
-                            v_configparameter.time_for_command_timeout = v_time_values.random_timeout_temp
                         else:
                             v_time_values.auto = 10
                             v_time_values.random_i = 0
                             v_time_values.random_j = 0
                             v_time_values.random_k = 4
-                            v_time_values.random_timeout_temp = v_configparameter.time_for_command_timeout
-                            v_configparameter.time_for_command_timeout = 0.1
                             v_time_values.random_time = time.time()
                     else:
                         i = (int(v_kbd_input.data))
@@ -262,7 +268,7 @@ def terminal_out(text, input_buffer):
         i += 1
     tt += t
     if v_time_values.auto == 0:
-        print(tt)
+        pass
     else:
         if t == v_time_values.to_sk[v_time_values.check_number - 1]:
             print(v_time_values.check_number - 1, "ok: ", tt)

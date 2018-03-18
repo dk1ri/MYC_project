@@ -1,148 +1,96 @@
-# command input file (to check commands)
-# ======================================
 #
 # test3: Range commands
 #
-# info lines must follow command or answer lines of the same device!
-# the program will not detect the correct device otherwise!!!!!
-# comments (line starting with #) are allowed
-# requires same syntax as for inputs (ASCII values separated by space)
-# blank lines mean no I/O, numbers > 255 will crah the programm
-# there must be 7 lines for each command:
-# - announceline
-# - command from SK
-# - output to device
-# - answer from device
-# - info /command to CR from LD (lines before should be empty)
-# - output to SK; no string
-# - output to SK; number and string mixed, string encloded by \\str\\
+3001 31;m;DK1RI;Test3;V01;1;100;1;15;1-1
+31
+
+should be ok
 #
-# parameters with more than one byte are not checked!!
+3002 32;op;1;10;lin;Hz,unit;300;lin;Hz
+32 9 01 02
+1 9 01 02
+should be ok
 #
-3001 27;m;DK1RI;Test3;V01;1;100;1;15
-27
-27
-
-
-
-27 31 xxstr 27;m;DK1RI;Test3;V01;1;100;1;15 xxstr
+3003 32;op;1;10;lin;Hz,unit;300;lin;Hz
+32 10
+1 10
+should produce an error
 #
-3002 28;op;10;lin;Hz,unit;300;lin;Hz
-28 5 01 02
-1 5 01 02
-
-
-
-
-#
-3003 29;op;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+3004 33;op;1;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
 # 3 dimensions 1, 2 and 4 byte
-29 98 3 20 0 4 5 6
-2 98 3 20 0 4 5 6
-
-
-
-
+33 99 3 231 5 245 224 255
+2 99 3 231 5 245 224 255
+should be ok
 #
-3004 30;oo;255,steps;100,time;s;100,stepsize;a,up,down
-# steps 1 byte, time 1 byte, size 1 byte, up down 1 byte
-30 31 30 4 0
-3 31 30 4 0
-
-
-
-
+3005 33;op;1;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+# 3 dimensions 1, 2 and 4 byte
+33 99 3 231 5 245 225 0
+2 99 3 231 5 245 225 0
+should produce an error
 #
-3005 31;oo;256,steps;1000,time;s;1000,stepsize;z
-#steps 2 byte, time 2 byte size 2 byte
-31 0 129 1 2 1 2
-4 0 129 1 2 1 2
-
-
-
-
+3006 34;op;2;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+34 0 99 3 231 5 245 224 254
+3 0 99 3 231 5 245 224 254
+should be ok
 #
-3006 32;oo;255;100;s;0;z
-#2 dimensions 2 times : steps 1 byte, time 1 byte
-32 1 1
-5 1 1
-
-
-
-
+3007 35;oo;1;255,steps;100,time;s;1000,stepsize;a,up,down
+35 254 99 3 231 1
+4 254 99 3 231 1
+should be ok
 #
-3007 33;oo;256;0;s;0;z;255;100;s;0;b
-#steps 2 + 0 + 0 + 0   + 1 + 1 + 0 + 1 byte ( 2 dimensions)
-33 0 22 1 1 1
-6 0 22 1 1 1
-
-
-
-
+3008 35;oo;1;255,steps;100,time;s;1000,stepsize;a,up,down
+35 255
+4 255
+should produce an error
 #
-3008 34;oq;100
-34
-7
-
-
-
-
+3009 35;oo;1;255,steps;100,time;s;1000,stepsize;a,up,down
+35 254 99 3 232
+4 254 99 3 232
+should produce an error
 #
-3009 35;oq;68000
-35
-8
-
-
-
-
+3010 35;oo;1;255,steps;100,time;s;1000,stepsize;a,up,down
+35 254 99 3 231 2
+4 254 99 3 231 2
+should produce an error
 #
-3010 36;oq;100;100
-36
+3011 36;oo;2;256,steps;1000,time;s;100000,stepsize;w
+36 1 255 3 231 1 134 159 255 255
+5 1 255 3 231 1 134 159 255 255
+should be ok
+#
+3012 36;oo;2;256,steps;1000,time;s;100000,stepsize;w
+36 2
+5 2
+should produce an error
+#
+3013 37;oo;1;600;255;s;0;t
+37 2 87 254 99 1 1 1 1 1 1 1
+6 2 87 254 99 1 1 1 1 1 1 1
+should be ok
+#
+3014 38;oo;1;256;0;s;1000;b
+#
+38 255 3 231 255 
+7 255 3 231 255 
+should be ok
+#
+3015 39;oo;2;300;0;s;0;b
+39 1 1 43 255 
+8 1 1 43 255 
+should be ok
+#
+3016 40;ap;1;10;lin;Hz;100,100;lin;Hz
+40
 9
-
-
-
-
+should be ok
 #
-3011 37;oq;68000;1000
-37
-10
-
-
-
-
+3021 46;oo;1;600;255;s;0;t;255;255;s;0;t
+46 2 87 254 99 1 1 1 1 1 1 1 254 254 99 1 1 1 1 1 1 1
+15 2 87 254 99 1 1 1 1 1 1 1 254 254 99 1 1 1 1 1 1 1
+should be ok
 #
-3012 38;ap;10;lin;Hz;100,100;lin;Hz
-38
-11
-11 4 10
-
-38 4 10
-
-#
-#info
-3013 38;ap;10;lin;Hz;100,100;lin;Hz
-
-
-11 2 10
-
-38 2 10
-
-#
-3014 39;ap;1000;lin;Hz;10000000;lin;Hz
-39
-12
-12 1 2 1 2 3
-
-39 1 2 1 2 3
-
-#
-#info
-3015 39;ap;1000;lin;Hz;10000000;lin;Hz
-
-
-12 1 2 1 2 3
-
-39 1 2 1 2 3
-
+3022 46;oo;1;600;255;s;0;t;255;255;s;0;t
+46 2 87 254 99 1 1 1 1 1 1 1 254 255 99 1 1 1 1 1 1 1
+15 2 87 254 99 1 1 1 1 1 1 1 254 255 99 1 1 1 1 1 1 1
+should produce an error
 #

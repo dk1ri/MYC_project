@@ -1,156 +1,71 @@
-# command input file (to check commands)
-# ======================================
 #
 # test1: check of nc and CR own announcements
 #
-# info lines must follow command or answer lines of the same device!
-# the program will not detect the correct device otherwise!!!!!
-# comments (line starting with #) are allowed
-# requires same syntax as for inputs (ASCII values separated by space)
-# blank lines mean no I/O, numbers > 255 will crah the programm
-# there must be 7 lines for each command:
-# - announceline
-# - command from SK
-# - output to device
-# - answer from device
-# - info /command to CR from LD (lines before should be empty)
-# - output to SK; no string
-# - output to SK; number and string mixed, string encloded by \\str\\
-#
-# parameters with more than one byte are not checked!!
-#
-# CR basic, to_sk is not fixed, depends on actual number of commands:
-0 0;c;DK1RI;commandrouter1;V01;16;93;1;93
-0
+0 0;c;DK1RI;commandrouter1;V01;3;65;1;40;1-1
 0
 
-
-
-0 xxstr (0;c;DK1RI;commandrouter1;V01;16;93;1;193 xxstr
+should be ok
 #
-1 1;m;DK1RI;Test1,metacommands;V01;1;100;1;8
-1
-# cr own commands are not retranslated
+1 1;m;DK1RI;Test1,metacommands;V01;1;100;1;8;1-1
 1
 
-
-
-1 xxstr *1;m;DK1RI;Test1,metacommands;V01;1;100;1;8 xxstr
+should be ok
 #
-2 2;is;1
+2 2;is;1;1;2
 2
 
-
-
-
-
+should be ok
 #
-3 3;iy
+3 3;iz
 3
 
-
-
-
-
+should be ok
 #
-# info ' this would be a device error
-4 3;iy
-
-
+4 3;iz
 3
-
-
-
+1
+should produce an error
 #
 5 4;aa,LAST ERROR;20,last_error
 4
 252
-# one memory only -> no positinal paramter
-252 3 1 2 3
-
-4 3 1 2 3
-
+should be ok
 #
-# info:
-6 4;aa,LAST ERROR;20,last_error
-
-
-252 3 1 2 3
-
-4 3 1 2 3
-
-#
-7 5;aa,MYC INFO;b,BUSY
+6 5;aa,MYC INFO;b,BUSY
 5
 253
-253 4
-
-5 4
-
+should be ok
 #
-# info:
-8 5;aa,MYC INFO;b,BUSY
-
-
-253 4
-
-5 4
-
-#
-9 240;an,ANNOUNCEMENTS;70;34
-240 4 2
+7 240;ln,ANNOUNCEMENTS;65;40
 240 4 2
 
-
-
-240 29 xxstr 4;aa,LAST ERROR;20,last_error xxstr 20 xxstr 5;aa,MYC INFO;b,BUSY xxstr
+should be ok
 #
-# no info for announcement
-#
-10 241;an,BASIC ANNOUNCEMENTS;1;100
-241 1 1
+8 241;ln,BASIC ANNOUNCEMENTS;65;3
 241 1 1
 
-
-
-241 xxstr *1;m;DK1RI;Test1,metacommands;V01;1;100;1;8 xxstr
+should be ok
 #
-# no info for basic announcements
-#
-11 249;oa,SK-FEATURE;255,ANSWERS
-249 2 1 6
+9 249;ka,SK-FEATURE;255,ANSWERS
 249 2 1 6
 
-
-
-
+should be ok
 #
-12 251;ob,LOGON;b,mode;20,name;20,password251;ob,LOGON;b,mode;20,name;20,password
+10 251;kb,LOGON;b,mode;20,name;20,password
 # mode 1
 251 0 3 0 2 4 5 2 7 8
-251 0 3 0 2 4 5 2 7 8
 
-
-
-
+should be ok
 #
-13 252;aa,LAST ERROR;20
+11 252;aa,LAST ERROR;20
 252 
-252
 
-
-
-252 8 xxstr no error xxstr
+should be ok
 #
 # info is directly send by CR; no check
 #
-15 253;aa,MYC INFO;b,BUSY;b,USERNUMBER
+12 253;aa,MYC INFO;b,BUSY;b,USERNUMBER
 253 0
-253 0
 
-
-253 0 4
-
-#
-# info is directly send by CR; no check
+should be ok
 #

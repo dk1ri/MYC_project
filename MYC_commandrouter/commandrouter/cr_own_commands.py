@@ -1,6 +1,6 @@
 """
 name: cr_own_commands.py
-last edited:
+last edited: 201803
 handling of commands for CR
 line contain complete data
 output to v_sk_info_to_all
@@ -17,12 +17,27 @@ import v_linelength
 import v_sk
 import v_token_params
 
+# answers of all CR own command are send directly to SK (not via LD -> return 2
 
-def com240(line, tok, token, input_device, user):
-    # parameters are checked before
+def com240(line, token, input_device):
+    le = v_cr_params.length_commandtoken + 2 * v_announcelist.length_of_full_elements
+    if len(line) < le:
+        return 0
+    v_sk.len[input_device][0] = le
+    tok = v_token_params.index_of_cr_commands[token]
     temp = v_cr_params.length_commandtoken + v_linelength.command[tok][5]
     start_line = int.from_bytes(line[v_cr_params.length_commandtoken:temp], byteorder='big', signed=False)
+    if start_line >= v_announcelist.length_of_full_elements:
+        write_log("startline for announcecommand too high: " + str(start_line) + " should be " + str(v_announcelist.full_elements))
+        # bytes to delete:
+        v_sk.len[input_device][0] =le
+        return 2
     number_of_lines = int.from_bytes(line[temp: temp + v_linelength.command[tok][5]], byteorder='big', signed=False)
+    if number_of_lines > v_announcelist.full_elements:
+        write_log("number of lines for announcecommand too high: " + str(number_of_lines) + " should be " + str(v_announcelist.full_elements))
+        # bytes to delete:
+        v_sk.len[input_device][0] = le
+        return 2
     output = int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken)
     i = 0
     while i < number_of_lines:
@@ -30,7 +45,7 @@ def com240(line, tok, token, input_device, user):
         if len(item) > 1:
             item1 = item[1].split(",")
             if item1[0][0] == "r" or item1[0][0] == "s":
-                # empty string for r ans s commands
+                # empty string for r and s commands
                 output.extend(int_to_ba(0, v_linelength.command[tok][5]))
             else:
                 strl = len(v_announcelist.full[start_line])
@@ -42,15 +57,30 @@ def com240(line, tok, token, input_device, user):
             # end of memory
             start_line = 0
     v_sk.info_to_all.extend(output)
-    # return bytes to delete (2 * v_linelength.command[tok][3])
-    return
+    # bytes to delete:
+    v_sk.len[input_device][0] = le
+    return 2
 
 
-def com241(line, tok, token, input_device, user):
-    # parameters are checked before
+def com241(line, token, input_device):
+    le = v_cr_params.length_commandtoken + 2 * v_announcelist.length_of_basic_elements
+    if len(line) < le:
+        return 0
+    v_sk.len[input_device][0] = le
+    tok = v_token_params.index_of_cr_commands[token]
     temp = v_cr_params.length_commandtoken + v_linelength.command[tok][5]
     start_line = int.from_bytes(line[v_cr_params.length_commandtoken:temp], byteorder='big', signed=False)
+    if start_line >= v_announcelist.length_of_basic_elements:
+        write_log("startline for basic announcecommand too high: " + str(start_line) + " should be " + str(v_announcelist.basic_elements))
+        # bytes to delete:
+        v_sk.len[input_device][0] = le
+        return 2
     number_of_lines = int.from_bytes(line[temp: temp + v_linelength.command[tok][5]], byteorder='big', signed=False)
+    if number_of_lines > v_announcelist.basic_elements:
+        write_log("number of lines for announcecommand too high: " + str(number_of_lines) + " should be " + str(v_announcelist.basic_elements))
+        # bytes to delete:
+        v_sk.len[input_device][0] = le
+        return 2
     output = int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken)
     i = 0
     while i < number_of_lines:
@@ -63,84 +93,132 @@ def com241(line, tok, token, input_device, user):
             # end of memory
             start_line = 0
     v_sk.info_to_all.extend(output)
-    # return bytes to delete (2 * v_linelength.command[tok][3])
-    return
+    # bytes to delete:
+    v_sk.len[input_device][0] = le
+    return 2
 
 
-def com249(line, tok, token, input_device, user):
+def com249(line, token, input_device):
     # 249;oa,SK-FEATURE;255,ANSWERS
     # Answers in announcement: 255 -> 1 Byte
-    length = ord(line[v_cr_params.length_commandtoken:(v_cr_params.length_commandtoken + 1)])
-    i = v_cr_params.length_commandtoken + length
-    v_sk.user_answer_token[input_device][user] = bytearray([])
-    while i < len(line):
-        v_sk.user_answer_token[input_device][user].extend(line[i:i+v_cr_params.length_commandtoken])
-        i += v_cr_params.length_commandtoken
-    # missing:
-    output = int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken)
-    return
+    if len(line) < v_cr_params.length_commandtoken + v_cr_params.length_of_c_249_elements:
+        print("249_1", v_cr_params.length_commandtoken + v_cr_params.length_of_c_249_elements)
+        return 0
+    length = int.from_bytes(line[v_cr_params.length_commandtoken:v_cr_params.length_commandtoken + v_cr_params.length_of_c_249_elements], byteorder='big', signed=False)
+    v_sk.len[input_device][0] = v_cr_params.length_commandtoken + 1 + v_cr_params.length_of_c_249_elements
+    if length > v_cr_params.c_249_elements:
+        write_log("length of string of 249 command too high: " + str(length) + "should be: "+ str(v_cr_params.c_249_elements))
+        return 2
+    v_sk.len[input_device][0] += length
+    if len(line) < v_sk.len[input_device][0]:
+        print("249_2",v_sk.len[input_device][0] )
+        return 0
+    # missing : user
+    v_sk.len[input_device][0] = v_cr_params.length_commandtoken
+    return 2
 
 
-def com250(line, tok, token, input_device, user):
-    # FEATURE
-    output = int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken)
-    return
-
-
-def com251(line, tok, token, input_device, user):
+def com251(line, token, input_device):
     # 251;ob,LOGON;b,mode;20,name;20,password
     # ##############################
     # not ready
     # data must be send to RU
     # ################################
-    start = ord(line[v_cr_params.length_commandtoken:(v_cr_params.length_commandtoken + 1)])
-    elements = ord(line[v_cr_params.length_commandtoken + 1:(v_cr_params.length_commandtoken + 2)])
+    # start, elements and 1 additional byte required as min
+    if len(line) < v_cr_params.length_commandtoken + 2:
+        return 0
+    start = int.from_bytes(line[v_cr_params.length_commandtoken:(v_cr_params.length_commandtoken + 1)], byteorder='big', signed=False)
+    elements = int.from_bytes(line[v_cr_params.length_commandtoken + 1:(v_cr_params.length_commandtoken + 2)], byteorder='big', signed=False)
+    if start > 3 or elements > 3:
+        write_log("logon values too high " + str(start) + str(elements) + "should be 3" )
+        v_sk.len[input_device][0] = v_cr_params.length_commandtoken + 2
+        return 2
     i = start
     j = 0
     mode = 0
     name = ""
     password = ""
-    # point to next stringposition
-    stringpointer = v_cr_params.length_commandtoken + 2
+    # point to firstlement
+    pointer = v_cr_params.length_commandtoken + 2
+    length_of_activ_input = v_cr_params.length_commandtoken + 2
+    # set length of name /passwd
+    set_length = 0
     while j < elements:
-        if i == 0:
-            mode = ord(line[stringpointer:(stringpointer + 1)])
-            stringpointer += 1
-        elif i == 1:
-            namelength = ord(line[stringpointer:(stringpointer + 1)])
-            stringpointer += 1
-            name = ba_to_str(line[stringpointer: stringpointer + namelength])
-            stringpointer += namelength
-        elif i == 2:
-            passwordlength = ord(line[stringpointer:(stringpointer + 1)])
-            stringpointer += 1
-            password = ba_to_str(line[stringpointer: stringpointer + passwordlength])
-            stringpointer += passwordlength
-        i += 1
-        if i == 3:
-            i = 0
-        j += 1
+        if len(line) > pointer:
+            if i == 2:
+                if set_length == 2:
+                    password = ba_to_str(line[pointer:pointer + passwordlength])
+                    i = 0
+                    set_length = 0
+                elif set_length == 1:
+                    passwordlength = ord(line[pointer:(pointer + 1)])
+                    if passwordlength >  v_cr_params.c_251_password_length:
+                        write_log("password too long")
+                        v_sk.len[input_device][0] = length_of_activ_input
+                        return 2
+                    pointer += passwordlength
+                    length_of_activ_input += passwordlength
+                    set_length = 2
+                else :
+                    pointer += 1
+                    length_of_activ_input += 1
+                    set_length = 1
+
+            elif i == 1:
+                if set_length == 2:
+                    name = ba_to_str(line[pointer:pointer + namelength])
+                    i = 2
+                    set_length = 0
+                elif set_length == 1:
+                    namelength = ord(line[pointer:(pointer + 1)])
+                    if namelength >  v_cr_params.c_251_name_length:
+                        write_log("name too long")
+                        v_sk.len[input_device][0] = length_of_activ_input
+                        return 2
+                    pointer += namelength
+                    length_of_activ_input += namelength
+                    set_length = 2
+                else :
+                    pointer += 1
+                    length_of_activ_input += 1
+                    set_length = 1
+
+            elif i == 0:
+                if set_length == 1:
+                    mode = ord(line[pointer:pointer + 1])
+                    set_length = 0
+                    i = 1
+                else:
+                    pointer += 1
+                    set_length = 1
+                    length_of_activ_input += 1
+            j += 1
+        else:
+            return 0
+    v_sk.len[input_device][0] = length_of_activ_input
     print(mode, name, password)
-    return
+    return 2
 
 
-def com252(line, tok, token, input_device, user):
+def com252(line, token, input_device):
     # LAST ERROR
     v_sk.info_to_all.extend(int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken))
     v_sk.info_to_all.extend(int_to_ba(len(v_sk.last_error[input_device]), 1))
     v_sk.info_to_all.extend(str_to_bytearray(v_sk.last_error[input_device]))
-    return
+    v_sk.len[input_device][0] = v_cr_params.length_commandtoken
+    return 2
 
 
-def com253(line, tok, token, input_device, user):
-    # INFO
-    v_sk.info_to_all.extend(int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken))
-    line = line[v_cr_params.length_commandtoken:]
-    # paramenter:
-    if line[0] == 0:
-        # busy info
+def com253(line, token, input_device):
+    if len(line) < v_cr_params.length_commandtoken + 1:
+        return  0
+    temp = line[v_cr_params.length_commandtoken:v_cr_params.length_commandtoken + 1]
+    if temp == 0:
+        # INFO
+        v_sk.info_to_all.extend(int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken))
         v_sk.info_to_all.extend(bytearray([0, 4]))
-    elif line[0] == 1:
+    elif temp == 1:
+        # USER
         # reply empty usernumber
         if v_sk.multiuser[input_device] == 2:
             # this is the first command on this interface
@@ -158,67 +236,86 @@ def com253(line, tok, token, input_device, user):
         else:
             # single user mode
             v_sk.info_to_all.extend(bytearray([1, 0]))
-    # return bytes to delete
-    return v_cr_params.length_commandtoken + v_linelength.command[tok][3]
+    v_sk.len[input_device][0] = v_cr_params.length_commandtoken + 1
+    return 2
 
+def com255(line, token, input_device):
+    if len(line) < v_cr_params.length_commandtoken + 1:
+        return  0
+    temp = line[v_cr_params.length_commandtoken:v_cr_params.length_commandtoken + 1]
+    if temp == 0:
+        v_sk.info_to_all.extend(int_to_ba(token + v_cr_params.adder, v_cr_params.length_commandtoken))
+        v_sk.info_to_all.extend(bytearray([0, 4]))
+    v_sk.len[input_device][0] = v_cr_params.length_commandtoken + 1
+    return 2
 
 # cr_commands = [ 0x00, 0xf0, 0xfc, 0xfd, 0xfff0, 0xfffc, 0xfffd, 0xfffffff0, 0xfffffffc, 0xfffffffd]
 
 
-command = {0xf0: com240,
+cr_own_command = {0xf0: 240,
+        0xf1: 241,
+        0xf9: 249,
+        0xfa: 250,
+        0xfb: 251,
+        0xfc: 252,
+        0xfd: 253,
+        0xff: 255,
+        0xfff0: 240,
+        0xfff1: 241,
+        0xfff9: 249,
+        0xfffb: 251,
+        0xfffc: 252,
+        0xfffd: 253,
+        0xffff: 255,
+        0xfffff0: 240,
+        0xfffff1: 241,
+        0xfffff9: 249,
+        0xfffffb: 251,
+        0xfffffc: 252,
+        0xfffffd: 253,
+        0xffffff: 255,
+        0xfffffff0: 240,
+        0xfffffff1: 241,
+        0xfffffff9: 249,
+        0xfffffffb: 251,
+        0xfffffffc: 252,
+        0xfffffffd: 253,
+        0xffffffff: 255,
+        0xfffffffff0: 240,
+        0xfffffffff1: 241,
+        0xfffffffff9: 249,
+        0xfffffffffb: 251,
+        0xfffffffffc: 252,
+        0xfffffffffd: 253,
+        0xffffffffff: 255,
+        0xfffffffffff0: 240,
+        0xfffffffffff1: 241,
+        0xfffffffffff9: 249,
+        0xfffffffffffb: 251,
+        0xfffffffffffc: 252,
+        0xfffffffffffd: 253,
+        0xffffffffffff: 255,
+        0xfffffffffffff0: 240,
+        0xfffffffffffff1: 241,
+        0xfffffffffffff9: 249,
+        0xfffffffffffffb: 251,
+        0xfffffffffffffc: 252,
+        0xfffffffffffffd: 253,
+        0xffffffffffffff: 255,
+        0xfffffffffffffff0: 240,
+        0xfffffffffffffff1: 241,
+        0xfffffffffffffff9: 249,
+        0xfffffffffffffffb: 251,
+        0xfffffffffffffffc: 252,
+        0xfffffffffffffffd: 253,
+        0xffffffffffffffff: 255,
+        }
+
+cr_own = {0xf0: com240,
         0xf1: com241,
         0xf9: com249,
-        0xfa: com250,
         0xfb: com251,
         0xfc: com252,
         0xfd: com253,
-        0xfff0: com240,
-        0xfff1: com241,
-        0xfff9: com249,
-        0xfffa: com250,
-        0xfffb: com251,
-        0xfffc: com252,
-        0xfffd: com253,
-        0xfffff0: com240,
-        0xfffff1: com241,
-        0xfffff9: com249,
-        0xfffffa: com250,
-        0xfffffb: com251,
-        0xfffffc: com252,
-        0xfffffd: com253,
-        0xfffffff0: com240,
-        0xfffffff1: com241,
-        0xfffffff9: com249,
-        0xfffffffa: com250,
-        0xfffffffb: com251,
-        0xfffffffc: com252,
-        0xfffffffd: com253,
-        0xfffffffff0: com240,
-        0xfffffffff1: com241,
-        0xfffffffff9: com249,
-        0xfffffffffa: com250,
-        0xfffffffffb: com251,
-        0xfffffffffc: com252,
-        0xfffffffffd: com253,
-        0xfffffffffff0: com240,
-        0xfffffffffff1: com241,
-        0xfffffffffff9: com249,
-        0xfffffffffffa: com250,
-        0xfffffffffffb: com251,
-        0xfffffffffffc: com252,
-        0xfffffffffffd: com253,
-        0xfffffffffffff0: com240,
-        0xfffffffffffff1: com241,
-        0xfffffffffffff9: com249,
-        0xfffffffffffffa: com250,
-        0xfffffffffffffb: com251,
-        0xfffffffffffffc: com252,
-        0xfffffffffffffd: com253,
-        0xfffffffffffffff0: com240,
-        0xfffffffffffffff1: com241,
-        0xfffffffffffffff9: com249,
-        0xfffffffffffffffa: com250,
-        0xfffffffffffffffb: com251,
-        0xfffffffffffffffc: com252,
-        0xfffffffffffffffd: com253,
+        0xff: com255,
         }

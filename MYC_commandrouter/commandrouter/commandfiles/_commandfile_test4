@@ -1,287 +1,132 @@
-# command input file (to check commands)
-# ======================================
 #
 # test4: check of om / am commands
 #
-# info lines must follow command or answer lines of the same device!
-# the program will not detect the correct device otherwise!!!!!
-# comments (line starting with #) are allowed
-# requires same syntax as for inputs (ASCII values separated by space)
-# blank lines mean no I/O, numbers > 255 will crah the programm
-# there must be 7 lines for each command:
-# - announceline
-# - command from SK
-# - output to device
-# - answer from device
-# - info /command to CR from LD (lines before should be empty)
-# - output to SK; no string
-# - output to SK; number and string mixed, string encloded by \\str\\
-#
-# parameters with more than one byte are not checked!!
-#
-4001 42;m;DK1RI;Test4;V01;1;100;1;26
-42
-42
+4001 49;m;DK1RI;Test4;V01;1;100;1;26;1-1
+49
+# not sent to device!!
 
-
-
-xxstr * xxstr 31 xxstr 42;m;DK1RI;Test4;V01;1;100;1;26 xxstr
+should be ok
 #
-4002 43;om;a;3
-43 1 1
+4002 50;om;a;3
+50 1 1
 1 1 1
-
-
-
-
+should be ok
 #
-4003 44;om;b;3,yyy
-44 2 5
-2 2 5
-
-
-
-
+4003 50;om;a;3
+50 2
+1 2
+should produce an error
 #
-4004 45;om;i;3;456
+4004 50;om;a;3
+50 1 2
+1 1 2
+should produce an error
+#
+4005 51;om;b;256,yyy
+51 255 255
+2 255 255
+should be ok
+#
+4006 51;om;b;256,yyy
+51 255 255
+2 255 255
+should be ok
+#
+4007 52;om;i;3;456
 # 3* 456 pos (2 bytes); interger: 2 byte
-45 1 2 1 2  
-3 1 2 1 2
-
-
-
-
+52 1 111 1 2  
+3 1 111 1 2
+should be ok
 #
-4005 46;om;w;3;1034;65789
+4008 53;om;w;3;1034;65789
 # 3* 56789 pos (4 bytes); word: 2 byte
-46 1 2 3 4 1 2
+53 1 2 3 4 1 2
 4 1 2 3 4 1 2
-
-
-
-
+should be ok
 #
-4006 47;om;e;3
+4009 54;om;e;3
 # 3 pos (1 bytes); signed long: 4 byte
-47 1 1 2 3 4
-5 1 1 2 3 4
-
-
-
-
+54 2 1 2 3 4
+5 2 1 2 3 4
+should be ok
 #
-4007 48;om;L;256
+4010 54;om;e;3
+# 3 pos (1 bytes); signed long: 4 byte
+54 3 1 2 3 4
+5 3 1 2 3 4
+should produce an error
+#
+4011 55;om;L;256
 # 256 pos (1 bytes); unsigned long: 4 byte
-48 1 1 2 3 4
-6 1 1 2 3 4
-
-
-
-
+55 255 1 2 3 4
+6 255 1 2 3 4
+should be ok
 #
-4008 49;om;s;66000
-# 66000 pos (3 bytes); single: 4 byte
-49 1 1 3 1 2 3 4
-7 1 1 3 1 2 3 4
-
-
-
-
+4012 56;om;s;65536
+# 65536 pos (2 bytes); single: 4 byte
+56 255 255 1 2 3 4
+7 255 255 1 2 3 4
+should be ok
 #
-4009 50;om;d;3,xxx;400,yyy
-# 3 * 400 pos (2 bytes); double: 8 byte
-50 1 2 1 2 3 4 5 6 7 8
-8 1 2 1 2 3 4 5 6 7 8
-
-
-
-
+4013 57;om;d;256,xxx;255,yyy
+# 65536 pos (2 bytes); double: 8 byte
+57 254 255 1 2 3 4 5 6 7 8
+8 254 255 1 2 3 4 5 6 7 8
+should be ok
 #
-4010 51;om;t;270
-# 270 pos (2 bytes); time: 8 byte
-51 1 2 1 2 3 4 5 6 7 8
-9 1 2 1 2 3 4 5 6 7 8
-
-
-
-
+4014 58;om;d;256,xxx;255,yyy
+# 65280 pos (2 bytes); single: 8 byte
+58 254 255 1 2 3 4 5 6 7 8
+9 254 255 1 2 3 4 5 6 7 8
+should be ok
 #
-4011 52;om;127;2;3;4;5
-# 127 pos (1 bytes); stringlength 1 Byte
-52 1 5 1 2 3 4 5
-10 1 5 1 2 3 4 5
-
-
-
-
+4015 58;om;d;256,xxx;255,yyy
+# 65280 pos (2 bytes); single: 8 byte
+58 255 0 1 2 3 4 5 6 7 8
+9 255 0 1 2 3 4 5 6 7 8
+should produce an error
 #
-4012 53;am;a;3
-53 1
-11 1
-11 1 1
-
-53 1 1
-
+4016 59;om;t;4095
+# 3 * 400 pos (2 bytes); time: 8 byte
+59 1 2 1 2 3 4 5 6 7 8
+10 1 2 1 2 3 4 5 6 7 8
+should be ok
 #
-# info
-4013 53;am;a;3
-
-
-11 1 1
-
-53 1 1
-
+4017 60;om;256;2;3;4;5
+# 1200 pos (2 bytes); string: 8 byte
+60 119 0 8 1 2 3 4 5 6 7 8
+11 119 0 8 1 2 3 4 5 6 7 8
+should be ok
 #
-4014 54;am;b;3,yyy
-54 1
-12 1
-12 1 2
-
-54 1 2
-
+4018 60;om;256;2;3;4;5
+# 1200 pos (2 bytes); string: 8 byte
+60 119 0 9 1 2 3 4 5 6 7 8
+11 119 0 9 1 2 3 4 5 6 7 8
+should produce an error
 #
-# info
-4015 54;am;b;3,yyy
-
-
-12 1 2
-
-54 1 2
-
+4019 61;am;a;3
+# 3 pos (1 bytes); bit 1 Byte
+61 2
+12 2
+should be ok
 #
-4016 55;am;i;3;456
-55 1 2
-13 1 2
-13 1 2 1 2
-
-55 1 2 1 2
-
+4020 62;am;b;256,yyy
+62 255
+13 255
+should be ok
 #
-# info
-4017 55;am;i;3;456
-
-
-13 1 2 1 2
-
-55 1 2 1 2
-
+4021 63;am;i;256;4095
+63 15 254 255
+14 15 254 255
+should be ok
 #
-4018 56;am;w;3;1034;65789
-56 1 2 3 4
-14 1 2 3 4
-14 1 2 3 4 1 2
-
-56 1 2 3 4 1 2
-
+4022 64;am;256;2;3;4;5
+64 119
+15 119
+should be ok
 #
-# info
-4019 56;am;w;3;1034;65789
-
-
-14 1 2 3 4 1 2
-
-56 1 2 3 4 1 2
-
-#
-4020 57;am;e;3
-57 1
-15 1
-15 1 1 2 3 4
-
-57 1 1 2 3 4
-
-#
-# info
-4021 57;am;e;3
-
-
-15 1 1 2 3 4
-
-57 1 1 2 3 4
-
-#
-4022 58;am;L;256
-58 1
-16 1
-16 1 1 2 3 4
-
-58 1 1 2 3 4
-
-#
-# info
-4023 58;am;L;256
-
-
-16 1 1 2 3 4
-
-58 1 1 2 3 4
-
-#
-4024 59;am;s;66000
-59 1 0 3
-17 1 0 3
-17 1 0 3 1 2 3 4
-
-59 1 0 3 1 2 3 4
-
-#
-# info
-4025 59;am;s;66000
-
-
-17 1 0 3 1 2 3 4
-
-59 1 0 3 1 2 3 4
-
-#
-4026 60;am;d;3,xxx;400,yyy
-60 1 2
-18 1 2
-18 1 2 1 2 3 4 5 6 7 8
-
-60 1 2 1 2 3 4 5 6 7 8
-
-#
-# info
-4027 60;am;d;3,xxx;400,yyy
-
-
-18 1 2 1 2 3 4 5 6 7 8
-
-60 1 2 1 2 3 4 5 6 7 8
-
-#
-4028 61;am;t;270
-61 1 2
-19 1 2
-19 1 2 1 2 3 4 5 6 7 8
-
-61 1 2 1 2 3 4 5 6 7 8
-
-#
-# info
-4029 61;am;t;270
-
-
-19 1 2 1 2 3 4 5 6 7 8
-
-61 1 2 1 2 3 4 5 6 7 8
-
-#
-4030 62;am;127;2;3;4;5
-62 1
-20 1
-20 1 6 1 2 3 4 5 6
-
-62 1 6 1 2 3 4 5 6
-
-#
-# info
-4031 62;am;127;2;3;4;5
-
-
-20 1 6 1 2 3 4 5 6
-
-62 1 6 1 2 3 4 5 6
-
+4023 64;am;256;2;3;4;5
+64 120
+15 120
+should produce an error
 #

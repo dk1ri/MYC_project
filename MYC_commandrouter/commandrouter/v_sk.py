@@ -1,30 +1,20 @@
-# one buffer for each SK
-baudrate = []                           # for RS232
-inputline = []                          # actual input buffer, got from SK...
-inputline_active = []                   # if 1: locked by ethernet
-interface_adress =[]                    # adress for I2C, ... string
-interface_name = []                     # des after interface_type in 255  line
-interface_port = []                     # port for USB, http...
-interface_timeout = []                  # timeout
-interface_type = []                     # interface type as Terminal, Ethernet I2C,...
+""""
+name: v_sk.py
+last edited: 201803
+parameters for SK channel
+channel may be (non permanent) virtual for multi-channel interfaces
+
+"""
+# one item for each SK channel
+active = []                             # 0: not available, 1: active, 2: input buffer full
+inputline = []                          # input buffer
+len =[]                                 # contain a list: len, loop, other1, other2, other3
 last_error = []                         # last error message
-linelength_len =[]                      # linelength parameters modified at real time: number of byte for next action
-linelength_other =[]                    # necessary for some commands
-linelength_other1 =[]                   # necessary for some commands
-linelength_loop = []                    # loopcounter
-name = []                               # interface_type + interface_name
-number_of_bits = []                     # for RS232
-starttime = []                          # starttime for commandsarray (256 elements) for 256 user
-user_active =[]                         # array (256elements) for 256 user
-user_answer_token = []                  # #token of commands, for which the user want answers
-user_number = []
-user_timeout =[]
-multiuser =[]                           # 0: not active, 1: active 2 not set
-#telnet
-source = []                     	    # d: device -> client        h: HI -> server
-socket = []                     	    # sockets
-telnet_number = []              	    # index for this
-ethernet_server_started =[]             # contain s list of started ports
-#
+starttime = []                          # starttime of command
+channel_answer_token = []               # token of commands, for which the user want answers
+channel_number = []                     #
+channel_timeout =[]                     #
+multi_channel =[]                       # 0: not active, 1: active
+
 info_to_all = bytearray([])             # output to all SK
 info_to_telnet = bytearray({})          # temporaray

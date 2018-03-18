@@ -1,68 +1,83 @@
+"""
+name : v_linelength.py
+last edited: 201803
+list of required command /answer length used for parsing
+"""
+
 command = []                # command: list for length of command, the length contain length of tok (of full list);
 answer = []				    # answer / info: list for length of answer, the length do contain length of commandtoken
                             # this will be the the length of the device_token
 
 """
-The intention of these lists is simplify the parsing of commands, answers and info
-The announcelines are translated to these list used for parsing
-One entry per commandtoken of full announcelist
+The intention of these lists is simplify the parsing of commands, answers / info
+The announcelines are translated to these lists at (re-)initialiization.
+These lists contain n lists each, where n is the number of answer / operating commands of the full announcelist
 Index to these lists are identical to the commandtoken; this simplyfies lookup. exception: &Hxxfx (CR own) commands;
 (these use a lookup table)
 
-For "length of first loop" one parameter is used only, so that wrong data can be discarded immediately!!!
+Principle of data handling when the CR is analyzing incoming data:
 
-The lists are set at (re-)initialiization.
+Data is handled during loops. A loop is started, when a defined number of bytes is received. Then data is analyzed
+and the command / answer is either finished or the CR is awaiting additional bytes for entering the next loop.
 
-The maximum number of parameters is of a (0 based) positional parameter in most cases. This therefore is number of parameters  - 1
+During a loop checks may be done as well. The content of a parameter is checked, if applicable.
+In case of failure the command / answer is teminated and data are not forwarded.
 
-Some parameters are modified in real time. these are handled in v_sk.xx and v_dev.xx, because
-they must be reset at timeout.
-Principle of data handling:
-Data is handled during loops.
-When there are "enaugh" data available, a loop is entered. 
-For the first loop (loop0) the commandtoken and the first parameter (if any) must be available.
-During a loop 0 or one checks will be done. This checks the content of a parameter, if applicable.
-For switches and range commands all parameters are checked.
-For memory the memory position and number of parameters are checked, but not <ty>, If <ty> is a string the stringlength is checked.
-A string requires 2 loops: one for length, one for the string itself.
-Within a loop after the check the loopcounter is increased and the length of the new element added to the actual length.
+For the first loop (loop0) the commandtoken is available. If the command has no parameters, the command is finisched.
+Otherwise number of bytes for this parameter is got and the CR wait for these bytes. After this it enters loop1 ....
+For each commandtoken a specific type (1 of 9) is found. The handling of the following data depend on this type.
+
+If a loop do not finish a command some paramters are stored in v_sk_xxx, v_ld_xxx and v_dev_xxx, which will be used
+during the next loop
+
+Each string requires 2 loops: one for length, one for the string itself.
+
+If a command is not finished within a loop after the check the loopcounter is increased and the length of the next
+element added to the actual length.
 The result is the length of the data, which must be available to enter the next loop.
-if this length is available at that time next loop is entered immediately, otherwise the loop is exited and the next task done.
-If there are enough data to enter a loop, it is checked, whether all lops are finished. If so the command is finished 
-and some data are reset.
-If the loop is exited because there are not enaugh data, the status is remembered in the following variables:
-v_sk_xxx, v_ld_xxx and v_dev_xxx
-                    linelength_loop                     # actual loopnumber starting with 0
-                    linelength_len                      # actual number of bytes to wait for next action
-                    linelength_other                    # needed for some commands
-                    linelength_other1                   # dito
 
-Description of v_linelength_xxx:
-Index 0: type: 	0:      error or not applicable
-                1:      switches, range commands and numeric om, am; command of all answer commands
-                2:      om / am with string
-                3:      on / an numeric
-                4:      on / an string
-                5:      of / af numeric
-                6:      of / af string
-                7:      oa / aa
-                8:      ob / ab
+If a loop is is finished and an additional loop is necesary, the status is remembered in the following variables:
+v_sk.len, v_ld.len and v_dev.len
+                    0                     # actual loopnumber starting with 0
+                    1                     # complete number of bytes to wait for entering next loop
+                    2                     # needed for some commands
+                    3                     # dito
+                    4                     # dito
+
+Description of v_linelength.command , v_line_length.answer:
+These lists contain n lists each, where n is the number of answer / operating commands of the full announcelist
+
+For each command there are the following entries:
                 
-            Index
-for all     1   length for 1st loop: SK and LD: length_of_commandtoken + length of 1st parameter
-                                     dev: length of 1st parameter
-            2   number of loops (3 entries each, starting with 4)
-            3   not used
-            the following values are used if needed:
-            4   maxpos: maximum number for 1st parameter (loop0)
-            5   length of this
-            6   0: skip, 1: no check, 2: check
-            7   ...
+for type    Index
+            0       type
+0           1       length of commandtoken
+            others  omitted
+                        
+not 0       0       type
+            1       length for loop0 / loop1: length_of_commandtoken (+ length of 1st parameter -> loop1 as well)
+            2       number of loops (5 additional entries each, starting with index 4)
+            3       subfunction
+            
+            the following values are used if number of loops > 0: x = 4 + n * loops
+            x+0     maxpos: maximum number for 1st parameter (loop1)
+            x+1     length of 1st parameter
+            x+2     bytes to wait for for 2nd loop (0 if no other loop)
+            x+3     0: skip, 1: no check, 2: check maxpos
+            x+4     0: add x+1 to previous loop+2, 1: add actual parameter to x+2 (used for strings)
+            x+0     maxpos: maximum number for 2nd parameter (loop2)
+            x+1 ...
 
-Individual:
-for:    0:
-            1 0
-            others omitted
-
+                                                                        parameters
+ type: 	    0:      no parameters, just forward command, some switches
+            1:      switches, range commands, m and numeric om, am      all numeric and not changed at runtime
+            2:      om / am with string:                                fixed  numeric with one string
+            3:      on / an numeric;                                    variable number of numerics
+            4:      on / an string:                                     variable number of strings
+            5:      of / af numeric                                     variable number of numeric
+            6:      of / af string                                      variable number of strings
+            7:      oa / aa                                             either one string or numeric
+            8:      ob / ab                                             any number of mixed string / numeric
+            9:      do nothing, not applicable (as for answers of operating commands)
 """
 

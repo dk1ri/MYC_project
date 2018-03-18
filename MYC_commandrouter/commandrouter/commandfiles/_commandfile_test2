@@ -1,227 +1,169 @@
-# command input file (to check commands)
-# ======================================
 #
 # test2: check of switch commands
 #
-# info lines must follow command or answer lines of the same device!
-# the program will not detect the correct device otherwise!!!!!
-# comments (line starting with #) are allowed
-# requires same syntax as for inputs (ASCII values separated by space)
-# blank lines mean no I/O, numbers > 255 will crah the programm
-# there must be 7 lines for each command:
-# - announceline
-# - command from SK
-# - output to device
-# - answer from device
-# - info /command to CR from LD (lines before should be empty)
-# - output to SK; no string
-# - output to SK; number and string mixed, string encloded by \\str\\
-#
-# parameters with more than one byte are not checked!!
-#
-0201 6;m;DK1RI;Test2;V01;1;100;1;31
-6
+0201 0;m;DK1RI;Test2;V01;1;100;1;25;1-1
 6
 
-
-
-6 30 xxstr 6;m;DK1RI;Test2;V01;1;100;1;31 xxstr
+should be ok
 #
-0202 7;or;0,on off
+0202 7;or;1;0,on off
 7 0
 1 0
-
-
-
-
+should be ok
 #
-0203 8;or;0,on;1,aus
+0203 7;or;1;0,on off
+7 2
+1 2
+should produce an error
+#
+0204 8;or;2;0,on off
 8 0 1
 2 0 1
-
-
-
-
+should be ok
 #
-0204 9;or;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
-9 3 1
-3 3 1
-
-
-
-
+0205 8;or;2;0,on off
+8 2
+2 2
+should produce an error
 #
-0205 10;os;0,on
-10 0
-4 0
-
-
-
-
+0206 8;or;2;0,on off
+8 0 2
+2 0 2
+should produce an error
 #
-0206 11;os;0,on;1,aus
-11 1
-5 1
-
-
-
-
+0207 9;or;1;0,on;1,aus
+9 1 1
+3 1 1
+should be ok
 #
-0207 12;os;0,on;1,aus;2,idle;3,other;b,DIMENSION,21X;b,DIMENSION,2,Y
-12 3
-6 3
-
-
-
-
+0208 9;or;1;0,on;1,aus
+9 2
+3 2
+should produce an error
 #
-0208 13;ot;0,on off
-13
-7
-
-
-
-
+0209 9;or;1;0,on;1,aus
+9 1 2
+3 1 2
+should produce an error
 #
-0209 14;ot;0,on;1,aus
-14
-8
-
-
-
-
+0210 10;or;1;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+10 3 1
+4 3 1
+should be ok
 #
-0210 15;ot;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+0211 11;or;2;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+11 1 3 1
+5 1 3 1
+should be ok
+#
+0212 12;os;1;0,on;1,aus
+12 1
+6 1
+should be ok
+#
+0213 13;os;1;0,on;1,aus;2,idle;3,other;b,DIMENSION,21X;b,DIMENSION,2,Y
+13 3
+7 3
+should be ok
+#
+0214 14;os;2;0,on;1,aus;2,idle;3,other;b,DIMENSION,21X;b,DIMENSION,2,Y
+14 1 2
+8 1 2
+should be ok
+#
+0215 15;ot;1;0,on;1,aus
 15
 9
-
-
-
-
+should be ok
 #
-0211 16;ou;0,idle;1,on
+0216 16;ot;1;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
 16
 10
-
-
-
-
+should be ok
 #
-0212 17;ou;0,idle;1,on;2,off;3,other
-17 2
-11 2
-
-
-
-
+0217 17;ot;2;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+17 1
+11 1
+should be ok
 #
-0213 18;ou;0.idle;1,off;2,on;3,other;4,down;b,DIMENSION,2,X;b,DIMENSION,2,Y
-18 4
-12 4
-
-
-
-
+0218 18;ou;1;0,idle;1,on
+18 1
+12 1
+should be ok
 #
-0214 19;ar;0,on off
+0219 19;ar;1;0,on off
 19
 13
-13 1
-
-19 1
-
+should be ok
 #
-# info
-0215 19;ar;0,on off
-
-
-13 1
-
-19 1
-
-#
-0216 20;ar;0,on;1,aus
+0220 20;ar;2;0,on off
 20 0
 14 0
-14 0 1
-
-20 0 1
-
+should be ok
 #
-# info
-0217 20;ar;0,on;1,aus
-
-
-14 1 1
-
-20 1 1
-
+0221 20;ar;2;0,on off
+20 2
+14 2
+should produce an error
 #
-0218 21;ar;0,on;1,aus;2,idle;3,other
-21 3
-15 3
-15 1 1
-
-21 1 1
-
+0222 21;ar;1;0,on;1,aus
+21 1
+15 1
+should be ok
 #
-# info
-0219 21;ar;0,on;1,aus;2,idle;3,other
-
-
-15 1 1
-
-21 1 1
-
+0223 21;ar;1;0,on;1,aus
+21 2
+15 2
+should produce an error
 #
-0220 22;as;0,on
-22
-16
-16 0
-
-22 0
-
+0224 22;ar;1;0,on;1,aus;2,idle;3,other
+22 2
+16 2
+should be ok
 #
-# info
-0221 22;as;0,on
-
-
-16 0
-
-22 0
-
+0225 23;ar;2;0,on;1,aus;2,idle;3,other
+23 1 2
+17 1 2
+should be ok
 #
-0222 23;as;0,on;1,aus
-23
-17
-17 1
-
-23 1
-
-#
-# info
-0223 23;as;0,on;1,aus
-
-
-17 1
-
-23 1
-
-#
-0224 24;as;0,on;1,aus;2,idle;3,other
+0226 23;ar;2;0,on;1,aus;2,idle;3,other
+23 2 2
+17 2 2
+should produce an error
+# devtoken 18 is skipped!
+0227 24;as;1;0,on;1,aus
 24
-18
-18 1
-
-24 1
-
+19
+should be ok
+#
+0228 25;as;1;0,on;1,aus;2,idle;3,other
+25
+20
+should be ok
+#
+0129 26;as;300;0,on;1,aus;2,idle;3,other
+26 0 19
+21 0 19
+should be ok
+#
+0230 26;as;300;0,on;1,aus;2,idle;3,other
+26 2 11
+21 2 11
+should produce an error
+#
+0231 27;at;300;0,on;1,aus;2,idle;3,other
+27 0 19
+22 0 19
+should be ok
 #
 # info
-0225 24;as;0,on;1,aus;2,idle;3,other
-
-
-18 1
-
-24 1
-
+0232 27;at;300;0,on;1,aus;2,idle;3,other
+27 1 44
+22 1 44
+should produce an error
+#
+0233 28;au;300;0,on;1,aus;2,idle;3,other
+28 0 19
+23 0 19
+should be ok
 #

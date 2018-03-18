@@ -1,13 +1,14 @@
 """
 name : commandrouter.py
-Version 02.6 , 20171109
+Version 02.7 , 20180318
 Purpose : Programm for a MYC commandrouter
 The Programm supports the MYC protocol
-tested with win Python 2017.1
+develpoed using Pxcharm2017.03
+tested with win Python 3.6 (32Bit)
 Should be used with raspberry Pi Hardware (not yet tested)
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
-The programm is not ready, see decumentation
+The programm is not ready, see documentation
 The code is due to enhancements
 """
 
@@ -45,7 +46,7 @@ def dummy_sub():
 
 
 def initialization():
-    # read config and initialize parameter array (for commands an devices)
+    # read config
     readconfig(sys.argv)
     # read info for all devices and initialize them
     # and create announcelist
@@ -78,22 +79,17 @@ def time_dependent_tasks():
     # check for timeout of SK...,
     input_device = 0
     while input_device < len(v_sk.starttime):
-        # user timeout
-        j = 0
-        while j < 256:
-            # commandtimeout for each user
-            if v_sk.starttime[input_device][j] > 0:
-                if time.time() - v_sk.starttime[input_device][j] > v_configparameter.time_for_command_timeout:
-                    write_log("SK timeout  " + str(input_device))
-                    # error: purge complete line
-                    finish_sk_error(input_device, 0)
-            if v_sk.user_timeout[input_device][j] > 0:
-                if time.time() - v_sk.user_timeout[input_device][j] > v_configparameter.user_timeout:
-                    write_log("user timeout" + str(j))
-                    v_sk.user_timeout[input_device][j] = 0
-                    v_sk.user_answer_token[input_device][j] = bytearray([42])
-                    v_sk.user_active[input_device][j] = 0
-            j += 1
+        # channel timeout
+        if v_sk.starttime[input_device] > 0:
+            if time.time() - v_sk.starttime[input_device] > v_configparameter.time_for_command_timeout:
+                write_log("SK timeout  " + str(input_device)+str(time.time() - v_sk.starttime[input_device])+ " "+str(v_configparameter.time_for_command_timeout) )
+                # error: purge complete line
+                clear_sk(input_device)
+        if v_sk.channel_timeout[input_device] > 0:
+            if time.time() - v_sk.channel_timeout[input_device] > v_configparameter.channel_timeout:
+                write_log("channel timeout")
+                v_sk.channel_timeout[input_device] = 0
+                # delete interface: missing
 
         input_device += 1
     device = 0
@@ -102,12 +98,13 @@ def time_dependent_tasks():
             if time.time() - v_dev.start_time[device] > v_configparameter.time_for_command_timeout:
                 write_log("dev timeout: " + str(device))
                 # purge complete line
-                clear_dev(device, v_dev.linelength_len[device], 1, 0)
+                clear_dev(device)
         device += 1
     # (re-)start sending input from file
-    if v_time_values.auto == 1 and time.time() - v_time_values.last_checktime > v_configparameter.time_for_command_timeout + v_time_values.checktime:
-        v_time_values.part = 1
-    if v_time_values.auto == 10 and time.time() - v_time_values.random_time > 0.2:
+    #  slow
+  #  if v_time_values.auto == 10 and time.time() - v_time_values.random_time > 0.1:
+    if v_time_values.auto == 10 :
+        # no delay
         random_data()
     return
 
@@ -143,17 +140,14 @@ def check_activity_of_devices():
 
 def check_logfile():
     # limit logfile
-    i = 0
-    file = open(v_configparameter.logfile)
-    for line in file:
-        i += 1
-    file.close()
+    with open(v_configparameter.logfile) as file:
+        i = len(file.readlines())
     if i > v_configparameter.max_log_lines:
         os.remove(v_configparameter.logfile)
     return
 
 
-# Main#i
+# Main#
 v_time_values.last_activity = int(time.time())
 v_time_values.last_device_search = int(time.time())
 start_time = time.time()
@@ -168,11 +162,11 @@ print("ready")
 while 1:
     time_dependent_tasks()
     if v_time_values.auto == 1:
-        if v_time_values.part > 0:
-            handle_check()
+        handle_check()
     else:
+        # collect data from iputs:
         poll_inputs()
-        # analyzes the input_buffer :
+        # analyzes the input_buffer:
         poll_input_buffer()
         # send commands to LD:
         send_to_ld()

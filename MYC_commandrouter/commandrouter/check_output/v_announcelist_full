@@ -1,0 +1,133 @@
+0;c;DK1RI;commandrouter1;V01;9;66;1;133;1-1
+1;m;DK1RI;Test1,metacommands;V01;1;100;1;8;1-1
+2;is;1;1;2
+3;iz
+4;aa,LAST ERROR;20,last_error
+5;aa,MYC INFO;b,BUSY
+I;DK1RI;commandrouter1;V01;CR0;1;DK1RI;Test1;V01;device1;1
+6;m;DK1RI;Test2;V01;1;100;1;28;1-1
+7;or;1;0,on off
+8;or;2;0,on off
+9;or;1;0,on;1,aus
+10;or;1;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+11;or;2;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+12;os;1;0,on;1,aus
+13;os;1;0,on;1,aus;2,idle;3,other;b,DIMENSION,21X;b,DIMENSION,2,Y
+14;os;2;0,on;1,aus;2,idle;3,other;b,DIMENSION,21X;b,DIMENSION,2,Y
+15;ot;1;0,on;1,aus
+16;ot;1;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+17;ot;2;0,on;1,aus;2,idle;3,other;b,DIMENSION,2,X;b,DIMENSION,2,Y
+18;ou;1;0,idle;1,on
+19;ar;1;0,on off
+20;ar;2;0,on off
+21;ar;1;0,on;1,aus
+22;ar;1;0,on;1,aus;2,idle;3,other
+23;ar;2;0,on;1,aus;2,idle;3,other
+24;as;1;0,on;1,aus
+25;as;1;0,on;1,aus;2,idle;3,other
+26;as;300;0,on;1,aus;2,idle;3,other
+27;at;300;0,on;1,aus;2,idle;3,other
+28;au;300;0,on;1,aus;2,idle;3,other
+29;aa,LAST ERROR;20,last_error
+30;aa,MYC INFO;b,BUSY
+I;DK1RI;commandrouter1;V01;CR0;1;DK1RI;Test2;V01;device1;1
+31;m;DK1RI;Test3;V01;1;100;1;21;1-1
+32;op;1;10;lin;Hz,unit;300;lin;Hz
+33;op;1;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+34;op;2;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+35;oo;1;255,steps;100,time;s;1000,stepsize;a,up,down
+36;oo;2;256,steps;1000,time;s;100000,stepsize;w
+37;oo;1;600;255;s;0;t
+38;oo;1;256;0;s;1000;b
+39;oo;2;300;0;s;0;b
+40;ap;1;10;lin;Hz;100,100;lin;Hz
+41;ap;1;1000;lin;Hz;10000000;lin;Hz
+42;op;2;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+43;oo;2;256,steps;1000,time;s;1000,stepsize;z
+44;ap;2;10;lin;Hz;100,100;lin;Hz
+45;ap;500;1000;lin;Hz;10000000;lin;Hz
+46;oo;1;600;255;s;0;t;255;255;s;0;t
+47;aa,LAST ERROR;20,last_error
+48;aa,MYC INFO;b,BUSY
+I;DK1RI;commandrouter1;V01;CR0;1;DK1RI;Test3;V01;device1;1
+49;m;DK1RI;Test4;V01;1;100;1;21;1-1
+50;om;a;3
+51;om;b;256,yyy
+52;om;i;3;456
+53;om;w;3;1034;65789
+54;om;e;3
+55;om;L;256
+56;om;s;65536
+57;om;d;256,xxx;255,yyy
+58;om;d;256,xxx;255,yyy
+59;om;t;4095
+60;om;256;2;3;4;5
+61;am;a;3
+62;am;b;256,yyy
+63;am;i;256;4095
+64;am;256;2;3;4;5
+65;aa,LAST ERROR;20,last_error
+66;aa,MYC INFO;b,BUSY
+I;DK1RI;commandrouter1;V01;CR0;1;DK1RI;Test4;V01;device1;1
+67;m;DK1RI;Test5;V01;1;100;1;19;1-1
+68;on;a;3
+69;on;b;255,yyy
+70;on;i;4092
+71;on;w;255
+72;on;e;255
+73;on;L;255
+74;on;s;4092
+75;on;d;255
+76;on;t;255
+77;on;4;2;3;4;5
+78;an;a;255
+79;an;b;65535
+80;aa,LAST ERROR;20,last_error
+81;aa,MYC INFO;b,BUSY
+R !$69 IF $76 = 1
+R !$69 IF $76 = 1
+I;DK1RI;commandrouter1;V01;CR0;1;DK1RI;Test5;V01;device1;1
+82;m;DK1RI;Test6;V01;1;100;1;21;1-1
+83;of;a;3
+84;of;b;3
+85;of;i;3
+86;of;w;253
+87;of;e;3
+88;of;L;256
+89;of;s;66000
+90;of;d;3
+91;of;t;270
+92;of;4;4
+93;of;10;256
+94;af;b;3
+95;af;s;66000
+96;af;127;253
+97;aa,LAST ERROR;20,last_error
+98;aa,MYC INFO;b,BUSY
+R w
+R w
+I;DK1RI;commandrouter1;V01;CR0;1;DK1RI;Test6;V01;device1;1
+99;m;DK1RI;Test7;V01;1;100;1;10;1-1
+100;oa;a
+101;oa;a;b;i;w;e;L;s;d;t;127;500;a
+102;aa;a
+103;aa;a;b;i;w;e;L;s;d;t;127;500;a
+104;aa,LAST ERROR;20,last_error
+105;aa,MYC INFO;b,BUSY
+I;DK1RI;commandrouter1;V01;CR0;1;DK1RI;Test7;V01;device1;1
+106;m;DK1RI;Test8;V01;1;100;1;11;1-1
+107;ob;a
+108;ob;a;b;i;w;e;L;s;d;t;127;500;a
+109;ab;a
+110;ab;a;b;i;w;e;L;s;d;t;127;500;a
+111;ab;127;a;b;i;w;e;L;s;d;t;127;500;a
+112;aa,LAST ERROR;20,last_error
+113;aa,MYC INFO;b,BUSY
+I;DK1RI;commandrouter1;V01;CR0;1;DK1RI;Test8;V01;device1;1
+240;ln,ANNOUNCEMENTS;66;133
+241;ln,BASIC ANNOUNCEMENTS;66;9
+249;ka,SK-FEATURE;255,ANSWERS
+251;kb,LOGON;b,MODE;10,NAME;15,PASSWORD
+252;aa,LAST ERROR;20
+253;aa,MYC INFO;b,BUSY;b,USERTIMEOUT
+255;la,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,TERMINAL,1;a,TELNET,1;w,PORT,23
