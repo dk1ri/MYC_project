@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : electronic_load.bas
-'Version V02.1, 20180810
+'Version V02.2, 20180812
 'purpose : This is a electronic load for 7 fets IRFP150
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware  electronic_load V01.3 / 2.0 by DK1RI
@@ -111,9 +111,7 @@ Const Cmd_watchdog_time = 200
 'Number of main loop * 256  before command reset
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
-Const Tx_timeout = 20
-'ca 5s: 10 for 10MHZ 20 for 20 MHz
-'Number of loops: 256 * 30 * Tx_timeout
+Const Tx_timeout = Cmd_watchdog_time * Tx_factor
 'timeout, when I2c_Tx_b is cleared and new commands allowed
 '
 Const No_of_announcelines = 47
@@ -260,7 +258,7 @@ Dim Error_cmd_no As Byte
 Dim Cmd_watchdog As Word
 'Watchdog for loop
 'Watchdog for I2c sending
-Dim Tx_time As Byte
+Dim Tx_time As Word
 Dim Command_mode As Byte
 '0: I2C input 1: seriell
 '
@@ -547,11 +545,8 @@ If TWCR.7 = 1 Then
             TWDR = I2c_tx_b(I2c_pointer)
             Incr I2c_pointer
             If I2c_pointer >= I2c_write_pointer Then
-               If Number_of_lines > 0 Then
-                  Gosub Sub_restore
-               Else
-                  Gosub Reset_i2c_tx
-               End If
+               Gosub Reset_i2c_tx
+               If Number_of_lines > 0 Then Gosub Sub_restore
             End If
          End If
       End If
@@ -1532,7 +1527,7 @@ Select Case Command_b(1)
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;electronic load for 7 IRFP150;V02.1;1;145;1;47;1-1"
+'Data "0;m;DK1RI;electronic load for 7 IRFP150;V02.2;1;145;1;47;1-1"
       I2c_tx_busy = 2
       Tx_time = 1
       A_line = 0
@@ -2655,7 +2650,7 @@ Announce0:
 'Befehl &H00; 1 byte / 1 byte + string
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;electronic load for 7 IRFP150;V02.1;1;145;1;47;1-1"
+Data "0;m;DK1RI;electronic load for 7 IRFP150;V02.2;1;145;1;47;1-1"
 '
 Announce1:
 'Befehl &H01 (resolution 10mV);  1 byte / 3 byte
