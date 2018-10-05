@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : Klimasensor_bascom.bas
-'Version V02.1, 20180126
+'Version V02.2, 20181005
 'purpose : Program for mesuring temperature, humidity and pressure with the BME280 sensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware Klimasensor Version V01.1 by DK1RI
@@ -29,7 +29,7 @@
 'under GPL (Gnu public licence)
 '-----------------------------------------------------------------------
 'Templates:
-'slave_core_V01.5
+'slave_core_V01.6
 '
 'code for BM280 correction and Read_correction is copied and partly modified from
 '  BME280 Beispiel Code
@@ -82,9 +82,7 @@ Const Cmd_watchdog_time = 200
 'Number of main loop * 256  before command reset
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
-Const Tx_timeout = 10
-'ca 5s: 10 for 10MHZ 20 for 20 MHz
-'Number of loops: 256 * 30 * Tx_timeout
+Const Tx_timeout = Cmd_watchdog_time * Tx_factor
 'timeout, when I2c_Tx_b is cleared and new commands allowed
 '
 Const No_of_announcelines = 21
@@ -92,14 +90,14 @@ Const No_of_announcelines = 21
 '
 'BM280:
 Const Reg_F2_default = &B00000101
-'osrd_h = 101        16
+'osrd_h = 101        Oversampling humidity = 16
 Const Reg_F4_default = &B10110111
-'osrs_t  = 101    16
-'osrs_p  = 101    16
-'Mode    = 11     normal
+'osrs_t  = 101    oversampling Temp = 16
+'osrs_p  = 101    Oversampling Pressure =16
+'Mode    = 11     Mode =normal
 Const Reg_F5_default = &B00010000
-'t_sb = 000
-'Filter = 100
+'t_sb = 000  wait Time 0.5ms (normal mode)
+'Filter = 100 Filter coefficient 16 (slow)
 'spi3w = 0
 '
 '************************
@@ -139,7 +137,7 @@ Dim Announceline As Byte
 Dim A_line As Byte
 ' Announcline for 00 and F0 command
 Dim Number_of_lines As Byte
-Dim Send_lines As Byte
+Dim Send_line_gaps As Byte
 ' Temporaray Marker
 ' 0: idle; 1: in work; 2: F0 command; 3 : 00 command
 Dim I2c_tx As String * I2c_buff_length
@@ -162,25 +160,20 @@ Dim Error_cmd_no As Byte
 Dim Cmd_watchdog As Word
 'Watchdog for loop
 'Watchdog for I2c sending
-Dim Tx_time As Byte
+Dim Tx_time As Word
 Dim Command_mode As Byte
 '0: I2C input 1: seriell
 '
+Dim Tl AS Long
 Dim L1 As Long
 Dim HVar1 As Long
 Dim HVar2 As Long
 Dim HX As Long
 Dim HY As Long
 Dim HZ As Long
-Dim S1 As Single
-Dim Var1 As Double
-Dim Var2 As Double
-Dim X As Double
-Dim Y As Double
-Dim Z As Double
-Dim Spi_buffer(3) As Byte
+Dim Spi_buffer(5) As Byte
 'For write
-Dim Spi_buffer_in(24) As Byte
+Dim Spi_buffer_in(26) As Byte
 'For read
 '
 'BME280:
@@ -244,6 +237,8 @@ Dim Reg_F4_eeram As Eram Byte
 Dim Reg_F5 As Byte
 Dim Reg_F5_eeram As Eram Byte
 '
+Declare Function Pressure_64() As Dword
+'
 '
 Blw = peek (0)
 If Blw.WDRF = 1 Then
@@ -296,6 +291,10 @@ If J = 255 Then
                Error_cmd_no = Command_no
             End If
          End If
+         Gosub Read_data
+         Gosub Correct_temperature
+         Gosub Correct_humidity
+         Pressure = Pressure_64()
       Case 255
          I = 0
          'twint set?
@@ -360,11 +359,8 @@ If TWCR.7 = 1 Then
             TWDR = I2c_tx_b(I2c_pointer)
             Incr I2c_pointer
             If I2c_pointer >= I2c_write_pointer Then
-               If Number_of_lines > 0 Then
-                  Gosub Sub_restore
-               Else
-                  Gosub Reset_i2c_tx
-               End If
+               Gosub Reset_i2c_tx
+               If Number_of_lines > 0 Then Gosub Sub_restore
             End If
          End If
       End If
@@ -419,6 +415,11 @@ RS232_active_eeram = RS232_active
 USB_active = 1
 Usb_active_eeram = Usb_active
 '
+Reg_F2_eeram = Reg_F2_default
+Reg_F4_eeram = Reg_F4_default
+Reg_F5_eeram = Reg_F5_default
+Gosub Start_BM280
+Gosub Read_correction
 'This should be the last
 First_set = 5
 'set at first use
@@ -433,7 +434,7 @@ RS232_active = RS232_active_eeram
 Usb_active = Usb_active_eeram
 Command_no = 1
 Error_cmd_no = 0
-Send_lines = 0
+Send_line_gaps = 0
 Gosub Command_received
 Gosub Reset_i2c_tx
 Gosub Reset_i2c
@@ -449,7 +450,7 @@ Reg_F5 = Reg_F5_eeram
 Wait 1
 'to start BM280
 Gosub Start_BM280
-Gosub Read_correction
+Gosub Write_config
 Return
 '
 Reset_i2c:
@@ -482,7 +483,7 @@ Return
 '
 Sub_restore:
 ' read one line
-Select Case Send_lines
+Select Case Send_line_gaps
    'select the start of text
    Case 1
       Tempd = 1
@@ -545,7 +546,7 @@ For Tempb = Tempc To 1 Step - 1
    Tempa = Tempb + Tempd
    I2c_tx_b(Tempa) = I2c_tx_b(Tempb)
 Next Tempb
-Select Case Send_lines
+Select Case Send_line_gaps
    Case 1
       I2c_tx_b(1) = Tempc
       I2c_write_pointer = Tempc + 2
@@ -555,7 +556,7 @@ Select Case Send_lines
       I2c_tx_b(1) = &H00
       I2c_tx_b(2) = Tempc
       I2c_write_pointer = Tempc + 3
-      Send_lines = 1
+      Send_line_gaps = 1
    Case 2
       'start of announceline(s), send 3 byte first
       I2c_tx_b(1) = &HF0
@@ -563,7 +564,7 @@ Select Case Send_lines
       I2c_tx_b(3) = Number_of_lines
       I2c_tx_b(4) = Tempc
       I2c_write_pointer = Tempc + 5
-      Send_lines = 1
+      Send_line_gaps = 1
 End Select
 Incr A_line
 If A_line >= No_of_announcelines Then A_line = 0
@@ -589,6 +590,7 @@ Write_config:
    Spi_buffer(2) = Reg_F2
    Spi_buffer(3) = &H75
    Spi_buffer(4) = Reg_F5
+   '  must be the last
    Spi_buffer(5) = &H74
    Spi_buffer(6) = Reg_F4
    Reset Spi_cs
@@ -602,12 +604,10 @@ Start_BM280:
    Waitms 10
    Set Spi_cs
    'Initiate SPI on BM240
-'
-   Gosub Write_config
 Return
 '
 Read_correction:
-  'BME280 read calibration 24 Byte
+  'BME280 read calibration 24 + 4 Byte
    Spi_buffer(1) = &H88
    Reset Spi_cs
    Spiout Spi_buffer(1) , 1
@@ -704,14 +704,14 @@ Read_correction:
    Dig_h4 = Dig_h4 + Tempb
    Dig_h4_eeram = Dig_h4
 '
-   Dig_h5 = Spi_buffer_in(6)
+   Dig_h5 = Spi_buffer_in(7)
    Shift Dig_h5 , Left , 4
-   Tempb = Spi_buffer_in(5)
-   Shift Tempb , Right , 4
+   Tempb = Spi_buffer_in(6)
+   Shift Tempb, Right, 4
    Dig_h5 = Dig_h5 + Tempb
    Dig_h5_eeram = Dig_h5
 
-   Dig_h6 = Spi_buffer_in(7)
+   Dig_h6 = Spi_buffer_in(8)
    Dig_h6_eeram = Dig_h6
 Return
 '
@@ -819,115 +819,121 @@ Correct_humidity:
    Humidity = HVar1 / 1.024
 Return
 '
-Correct_pressure:
-   'var1 = t_fine - 128000
-   S1 = T_fine
-   Y = S1
-   X = 128000
-   Var1 = Y - X
-'
-   'var2 = var1 * var1 * dig_P6
-   Var2 = Var1 * Var1
-   S1 = Dig_p6
-   X = S1
-   Var2 = Var2 * X
-'
-   'var2 = var2 + ((var1*dig_P5)<<17);
-   S1 = Dig_p5
-   X = S1
-   X = Var1 * X
-   Y = 2 ^ 17
-   X = X * Y
-   Var2 = Var2 + X
-'
-   'var2 = var2 + (dig_P4<<35);
-   S1 = Dig_p4
-   X = S1
-   Y = 2 ^ 35
-   X = X * Y
-   Var2 = Var2 + X
-'
-   'var1 = ((var1 * var1 * dig_P3)>>8) + ((var1 * dig_P2)<<12);
-   X = Var1 * Var1
-   S1 = Dig_p3
-   Z = S1
-   X = X * Z
-   Y = 2 ^ 8
-   X = X / Y
-'
-   S1 = Dig_p2
-   Z = S1
-   Y = Var1 * Z
-   Z = 2 ^ 12
-   Y = Y * Z
-   Var1 = X + Y
-'
-   'var1 = ((1<<47)+var1)*dig_P1>>33;
-   X = &H800000000000
-   X = X + Var1
-   S1 = Dig_p1
-   Z = S1
-   Var1 = X * Z
-   Y = 2 ^ 33
-   Var1 = Var1 / Y
-'
-   L1 = Var1
-   If L1 = 0 Then
-      Pressure = Pressure_old
-      Return
-   End If
+Function Pressure_64() As Dword
+  Local Var1 As Double
+  Local Var2 As Double
+  Local X As Double
+  Local Y As Double
+  Local Z As Double
+  Local S1 As Single
+  Local L1 As Long
 
-   'x = 1048576-up;
-   X = 1048576
-   S1 = Up
-   Z = S1
-   X = X - Z
-'
-   'x = (((x<<31)-var2)*3125)/var1;
-   Y = 2 ^ 31
-   X = X * Y
-   X = X - Var2
-   Y = 3125
-   X = X * Y
-   X = X / Var1
-'
-   'var1 = (dig_P9 * (x>>13) * (x>>13)) >> 25;
-   Z = X
-   Y = 2 ^ 13
-   Z = Z / Y
-   S1 = Dig_p9
-   Y = S1
-   Var1 = Y * Z
-   Var1 = Var1 * Z
-   Y = 2 ^ 25
-   Var1 = Var1 / Y
-'
-   'var2 = (dig_P8 * x) >> 19;
-   S1 = Dig_p8
-   Y = S1
-   Var2 = Y * X
-   Y = 2 ^ 19
-   Var2 = Var2 / Y
-'
-   'x = ((x + var1 + var2) >> 8) + (dig_P7<<4);
-   X = X + Var1
-   X = X + Var2
-   Y = 2 ^ 8
-   X = X / Y
-   S1 = Dig_p7
-   Y = S1
-   Z = 2 ^ 4
-   Y = Y * Z
-   X = X + Y
-'
-   Y = 25.6
-   X = X / Y
-'
-   X = X - 300000
-   Pressure = x
-   ' start at 300000 hPa (= 0)
-   Pressure_old = Pressure
-Return
+  'var1 = t_fine - 128000
+  S1 = T_fine
+  Y = S1
+  X = 128000
+  Var1 = Y - X
+
+  'var2 = var1 * var1 * dig_P6
+  Var2 = Var1 * Var1
+  S1 = Dig_p6
+  X = S1
+  Var2 = Var2 * X
+
+  'var2 = var2 + ((var1*dig_P5)<<17);
+  S1 = Dig_p5
+  X = S1
+  X = Var1 * X
+  Y = 2 ^ 17
+  X = X * Y
+  Var2 = Var2 + X
+
+  'var2 = var2 + (dig_P4<<35);
+  S1 = Dig_p4
+  X = S1
+  Y = 2 ^ 35
+  X = X * Y
+  Var2 = Var2 + X
+
+  'var1 = ((var1 * var1 * dig_P3)>>8) + ((var1 * dig_P2)<<12);
+  X = Var1 * Var1
+  S1 = Dig_p3
+  Z = S1
+  X = X * Z
+  Y = 2 ^ 8
+  X = X / Y
+
+  S1 = Dig_p2
+  Z = S1
+  Y = Var1 * Z
+  Z = 2 ^ 12
+  Y = Y * Z
+  Var1 = X + Y
+
+  'var1 = ((1<<47)+var1)*dig_P1>>33;
+  X = &H800000000000
+  X = X + Var1
+  S1 = Dig_p1
+  Z = S1
+  Var1 = X * Z
+  Y = 2 ^ 33
+  Var1 = Var1 / Y
+
+  L1 = Var1
+  If L1 = 0 Then
+    Pressure_64 = Pressure_old
+    Exit Function
+  End If
+
+  'x = 1048576-up;
+  X = 1048576
+  S1 = Up
+  Z = S1
+  X = X - Z
+
+  'x = (((x<<31)-var2)*3125)/var1;
+  Y = 2 ^ 31
+  X = X * Y
+  X = X - Var2
+  Y = 3125
+  X = X * Y
+  X = X / Var1
+
+  'var1 = (dig_P9 * (x>>13) * (x>>13)) >> 25;
+  Z = X
+  Y = 2 ^ 13
+  Z = Z / Y
+  S1 = Dig_p9
+  Y = S1
+  Var1 = Y * Z
+  Var1 = Var1 * Z
+  Y = 2 ^ 25
+  Var1 = Var1 / Y
+
+  'var2 = (dig_P8 * x) >> 19;
+  S1 = Dig_p8
+  Y = S1
+  Var2 = Y * X
+  Y = 2 ^ 19
+  Var2 = Var2 / Y
+
+  'x = ((x + var1 + var2) >> 8) + (dig_P7<<4);
+  X = X + Var1
+  X = X + Var2
+  Y = 2 ^ 8
+  X = X / Y
+  S1 = Dig_p7
+  Y = S1
+  Z = 2 ^ 4
+  Y = Y * Z
+  X = X + Y
+
+  Y = 25.6
+  X = X / Y
+
+  Pressure_64 = X
+  Pressure_old = Pressure_64
+End Function
 '
 Slave_commandparser:
 'checks to avoid commandbuffer overflow are within commands !!
@@ -940,12 +946,12 @@ Select Case Command_b(1)
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;Klimasensor;V02.1;1;145;1;21;1-1"
+'Data "0;m;DK1RI;Klimasensor;V02.2;1;145;1;21;1-1"
       I2c_tx_busy = 2
       Tx_time = 1
       A_line = 0
       Number_of_lines = 1
-      Send_lines = 3
+      Send_line_gaps = 3
       Gosub Sub_restore
       If Command_mode = 1 Then Gosub Print_i2c_tx
       Gosub Command_received
@@ -955,8 +961,6 @@ Select Case Command_b(1)
 'liest Temperatur
 'read temperature
 'Data "1;ap,read temperature;1;12500,{-40.00 to 84.99};lin;DegC"
-      Gosub Read_data
-      Gosub Correct_temperature
       I2c_tx_busy = 2
       Tx_time = 1
       I2c_tx_b(1) = &H01
@@ -971,15 +975,12 @@ Select Case Command_b(1)
 'liest Feuchtigkeit
 'read humidity
 'Data "2;ap,read humidity;1;100001,{0.000 to 100.000};lin;%"
-      Gosub Read_data
-      Gosub Correct_temperature
-      Gosub Correct_humidity
       I2c_tx_busy = 2
       Tx_time = 1
       I2c_tx_b(1) = &H02
-      I2c_tx_b(2) = Humidity_b(4)
-      I2c_tx_b(3) = Humidity_b(3)
-      I2c_tx_b(4) = Humidity_b(2)
+      I2c_tx_b(2) = Humidity_b(3)
+      I2c_tx_b(3) = Humidity_b(2)
+      I2c_tx_b(4) = Humidity_b(1)
       I2c_write_pointer = 5
       If Command_mode = 1 Then Gosub Print_i2c_tx
       Gosub Command_received
@@ -989,15 +990,12 @@ Select Case Command_b(1)
 'liest Druck
 'read pressure
 'Data "3;ap,read pressure;1;1100001,{0.000 to 1100.000};lin;hPa"
-      Gosub Read_data
-      Gosub Correct_temperature
-      Gosub Correct_pressure
       I2c_tx_busy = 2
       Tx_time = 1
       I2c_tx_b(1) = &H03
-      I2c_tx_b(2) = Pressure_b(4)
-      I2c_tx_b(3) = Pressure_b(3)
-      I2c_tx_b(4) = Pressure_b(2)
+      I2c_tx_b(2) = Pressure_b(3)
+      I2c_tx_b(3) = Pressure_b(2)
+      I2c_tx_b(4) = Pressure_b(1)
       I2c_write_pointer = 5
       If Command_mode = 1 Then Gosub Print_i2c_tx
       Gosub Command_received
@@ -1112,9 +1110,9 @@ Select Case Command_b(1)
 'Befehl &H0A
 'schreibt Pause Zeit
 'write non active time
-'Data "10;oa,non activ time;b,{0,5,62.5,125,500,1000,10,20},ms"
+'Data "10;oa,non activ time;b,{0.5,62.5,125,500,1000,10,20},ms"
       If Commandpointer = 2 Then
-         If Command_b(2) < 8 Then
+         If Command_b(2) < 9 Then
             Shift Command_b(2), Left, 5
             Reg_F5 = Reg_F5 And &B00011111
             Reg_F5 = Reg_F5 OR Command_b(2)
@@ -1132,7 +1130,7 @@ Select Case Command_b(1)
    Case 11
 'Befehl &H0B
 'liest Pause Zeit
-'readnon active time
+'read non active time
 'Data "11;aa,as10"
       I2c_tx_busy = 2
       Tx_time = 1
@@ -1194,7 +1192,7 @@ Select Case Command_b(1)
       Set Spi_cs
       I2c_tx_busy = 2
       Tx_time = 1
-      I2c_tx_b(1) = &H0B
+      I2c_tx_b(1) = &H0E
       I2c_tx_b(2) = Spi_buffer_in(1)
       I2c_write_pointer = 3
       If Command_mode = 1 Then Gosub Print_i2c_tx
@@ -1226,7 +1224,7 @@ Select Case Command_b(1)
          If Command_b(2) < No_of_announcelines And Command_b(3) < No_of_announcelines Then
             I2c_tx_busy = 2
             Tx_time = 1
-            Send_lines = 2
+            Send_line_gaps = 2
             Number_of_lines = Command_b(3)
             A_line = Command_b(2)
             Gosub Sub_restore
@@ -1272,6 +1270,8 @@ Select Case Command_b(1)
             I2c_tx = ": i2c_buffer overflow: "
          Case 255
             I2c_tx = ": No error: "
+         Case Else
+            I2c_tx = ": other error: "
       End Select
       Tempc = Len (I2c_tx)
       For Tempb = Tempc To 1 Step - 1
@@ -1496,7 +1496,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Klimasensor;V02.1;1;145;1;21;1-1"
+Data "0;m;DK1RI;Klimasensor;V02.2;1;145;1;21;1-1"
 '
 Announce1:
 'Befehl &H01
@@ -1556,12 +1556,12 @@ Announce10:
 'Befehl &H0A
 'schreibt Pause Zeit
 'write non active time
-Data "10;oa,non activ time;b,{0,5,62.5,125,500,1000,10,20},ms"
+Data "10;oa,non activ time;b,{0.5,62.5,125,500,1000,10,20},ms"
 '
 Announce11:
 'Befehl &H0B
 'liest Pause Zeit
-'readnon active time
+'read non active time
 Data "11;aa,as10"
 '
 Announce12:
