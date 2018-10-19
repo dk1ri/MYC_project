@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
-'name : sprachausgabe_bascom.bas
-'Version V03.0, 20180126
+'name : sprachausgabe.bas
+'Version V03.1, 20181019
 'purpose : Play 10 voice/music amples from ELV MSM2 module
 'This Programm workes as I2C slave or using RS232
 'Can be used with  sprachausgabe Version V01.0 by DK1RI
@@ -29,7 +29,7 @@
 'under GPL (Gnu public licence)
 '-----------------------------------------------------------------------
 'Templates:
-'slave_core_V01.5
+'slave_core_V01.6
 '-----------------------------------------------------------------------
 'Used Hardware:
 ' RS232
@@ -42,9 +42,9 @@
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-$regfile = "m88pdef.dat"
+'$regfile = "m88pdef.dat"
 '$regfile = "m88def.dat"
-'$regfile = "m328pdef.dat"
+$regfile = "m328pdef.dat"
 $crystal = 20000000
 $baud = 19200
 'use baud rate
@@ -74,9 +74,7 @@ Const Cmd_watchdog_time = 200
 'Number of main loop * 256  before command reset
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
-Const Tx_timeout = 20
-'ca 5s: 10 for 10MHZ 20 for 20 MHz
-'Number of loops: 256 * 30 * Tx_timeout
+Const Tx_timeout = Cmd_watchdog_time * Tx_factor
 'timeout, when I2c_Tx_b is cleared and new commands allowed
 '
 Const No_of_announcelines = 11
@@ -128,7 +126,7 @@ Dim Announceline As Byte
 Dim A_line As Byte
 ' Announcline for 00 and F0 command
 Dim Number_of_lines As Byte
-Dim Send_lines As Byte
+Dim Send_line_gaps As Byte
 ' Temporaray Marker
 ' 0: idle; 1: in work; 2: F0 command; 3 : 00 command
 Dim I2c_tx As String * I2c_buff_length
@@ -151,7 +149,7 @@ Dim Error_cmd_no As Byte
 Dim Cmd_watchdog As Word
 'Watchdog for loop
 'Watchdog for I2c sending
-Dim Tx_time As Byte
+Dim Tx_time As Word
 Dim Command_mode As Byte
 '0: I2C input 1: seriell
 '
@@ -324,11 +322,8 @@ If TWCR.7 = 1 Then
             TWDR = I2c_tx_b(I2c_pointer)
             Incr I2c_pointer
             If I2c_pointer >= I2c_write_pointer Then
-               If Number_of_lines > 0 Then
-                  Gosub Sub_restore
-               Else
-                  Gosub Reset_i2c_tx
-               End If
+               Gosub Reset_i2c_tx
+               If Number_of_lines > 0 Then Gosub Sub_restore
             End If
          End If
       End If
@@ -397,7 +392,7 @@ RS232_active = RS232_active_eeram
 Usb_active = Usb_active_eeram
 Command_no = 1
 Error_cmd_no = 0
-Send_lines = 0
+Send_line_gaps = 0
 Gosub Command_received
 Gosub Reset_i2c_tx
 Gosub Reset_i2c
@@ -440,7 +435,7 @@ Return
 '
 Sub_restore:
 ' read one line
-Select Case Send_lines
+Select Case Send_line_gaps
    'select the start of text
    Case 1
       Tempd = 1
@@ -483,7 +478,7 @@ For Tempb = Tempc To 1 Step - 1
    Tempa = Tempb + Tempd
    I2c_tx_b(Tempa) = I2c_tx_b(Tempb)
 Next Tempb
-Select Case Send_lines
+Select Case Send_line_gaps
    Case 1
       I2c_tx_b(1) = Tempc
       I2c_write_pointer = Tempc + 2
@@ -493,7 +488,7 @@ Select Case Send_lines
       I2c_tx_b(1) = &H00
       I2c_tx_b(2) = Tempc
       I2c_write_pointer = Tempc + 3
-      Send_lines = 1
+      Send_line_gaps = 1
    Case 2
       'start of announceline(s), send 3 byte first
       I2c_tx_b(1) = &HF0
@@ -501,7 +496,7 @@ Select Case Send_lines
       I2c_tx_b(3) = Number_of_lines
       I2c_tx_b(4) = Tempc
       I2c_write_pointer = Tempc + 5
-      Send_lines = 1
+      Send_line_gaps = 1
 End Select
 Incr A_line
 If A_line >= No_of_announcelines Then A_line = 0
@@ -574,12 +569,12 @@ Select Case Command_b(1)
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;Sprachausgabe;V03.0;1;145;1;11;1-1"
+'Data "0;m;DK1RI;Sprachausgabe;V03.1;1;145;1;11;1-1"
       I2c_tx_busy = 2
       Tx_time = 1
       A_line = 0
       Number_of_lines = 1
-      Send_lines = 3
+      Send_line_gaps = 3
       Gosub Sub_restore
       If Command_mode = 1 Then Gosub Print_i2c_tx
       Gosub Command_received
@@ -681,7 +676,7 @@ Select Case Command_b(1)
          If Command_b(2) < No_of_announcelines And Command_b(3) < No_of_announcelines Then
             I2c_tx_busy = 2
             Tx_time = 1
-            Send_lines = 2
+            Send_line_gaps = 2
             Number_of_lines = Command_b(3)
             A_line = Command_b(2)
             Gosub Sub_restore
@@ -727,6 +722,8 @@ Select Case Command_b(1)
             I2c_tx = ": i2c_buffer overflow: "
          Case 255
             I2c_tx = ": No error: "
+         Case Else
+            I2c_tx = ": other error: "
       End Select
       Tempc = Len (I2c_tx)
       For Tempb = Tempc To 1 Step - 1
@@ -949,7 +946,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Sprachausgabe;V03.0;1;145;1;11;1-1"
+Data "0;m;DK1RI;Sprachausgabe;V03.1;1;145;1;11;1-1"
 '
 Announce1:
 'Befehl &H01 0 to 9
