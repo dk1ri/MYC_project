@@ -1,6 +1,8 @@
- MYC Interface für RC5A3 Rotorsteuerung von Create
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/rotorsteuerung_create.pdf
+ 
+MYC Interface für RC5A3 Rotorsteuerung von Create
 
-Author DK1RI, Version V03.3 20161112
+Author DK1RI, Version V04.2 20181019
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -11,13 +13,13 @@ Es gibt unterschiedliche Varianten der Elektronik der Originalsteuerung. Das vor
 
 Der Änderungsaufwand an der Originalschaltung sollte so gering als möglich sein; allerdings sind doch einige Eingriffe in die Originalschaltung nötig.
 Das Interface soll in das Originalgehäuse passen.
-Das Steuerung erfolgt über I2C Bus oder USB mit MYC Protokoll
+Das Steuerung erfolgt über I2C Bus, USB oder seriell (TTL Pegel, 19k2, 8N2) mit MYC Protokoll
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung und Bedienungshinweise
 
 Die Eagledaten stehen bei [1].
-Die Stromversorgung (12V) liefert das Steuergerät. Benötigt werden maximal 120mA zusätzlich.
+Die Stromversorgung (12V) liefert das Steuergerät. Benötigt werden maximal 80mA zusätzlich.
 
 Die Steuerung macht ein AVR Mikrocontroller.
 
@@ -74,6 +76,7 @@ Zunächst wird der Rotor in Position manuell wenige Grad vor den Linksanschlag ge
 Danach wird der Rotor um genau 360 Grad gedreht. Die Kompassanzeige sollte wieder bei der gleichen Anzeige stehen.  Auch diese Stellung soll wenige Grad vor dem Anschlag liegen (überprüfen!).
 Danach wird mit dem Befehl &H0C wieder  die zweite Spannung des Positonspotentiometers gemessen und beide Spannungswerte im EEPROM gespeichert. Damit ist die Steuerung geeicht und auch die Fehler der Spannungsteilerwiderstände kompensiert.
 Besser als die Ablesung der Antennenrichtung mit der Kompassanzeige ist die Überprüfung der wahren Antennenrichtung. Dadurch entfällt der Fehler, den die Kompassanzeige liefert.
+Die Befehle &H0B und &H0C stehen bei der normalen Anwendung im MYC System nicht zur Verfügung.
 
 Genauigkeit
 
@@ -90,54 +93,54 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RC5 rotator control;V04.1;1;120;1;24"
+Data "0;m;DK1RI;RC5 rotator control;V05.3;1;145;1;24:1-1"
 '
 Announce1:
 'Befehl &H01 0|1
 'Motorsteuerung aus /an schalten
 'control off / on
-Data "1;os,Device off on;0,off;1,on"
+Data "1;os,Device off on;1;0,off;1,on"
 '
 Announce2:
 'Befehl &H02
 'liest Antennenposition 0... 359
 'read antenna position
-Data "2;ap,antenna position,360;lin:degree"
+Data "2;ap,antenna position;1;360;lin:degree"
 '
 Announce3:
 'Befehl &H03 0|1
 'Manual / Preset switch
-Data "3;os;0,manual;1,preset"
+Data "3;os;1;0,manual;1,preset"
 '
 Announce4:
 'Befehl &H04 0 to 359
 'preset Antennerichtung; kann motor im preset mode starten
 'preset, real antenna direction may starts motor if preset mode
-Data "4;op,Preset Position;360;lin;degree"
+Data "4;op,Preset Position;1;360;lin;degree"
 '
 Announce5:
 'Befehl &H05
 'manuell startet den Motor ccw
 'manual start motor ccw
-Data "5;ou,Motor ccw;1,ccw"
+Data "5;ou,Motor ccw;1;0,idle;1,ccw"
 '
 Announce6:
 'Befehl &H06
 'manuell stoppt den Motor
 'manual stops motor
-Data "6;ou,Motor stop;1,stop"
+'Data "6;ou,Motor stop;1;0;idle;1,stop"
 '
 Announce7:
 'Befehl &H07
 'manuell startet den Motor cw
 'manual start motor cw
-Data "7;ou,Motor cw;1,cw"
+Data "7;ou,Motor cw;1;0,idle;1,cw"
 '
 Announce8:
 'Befehl &H08 0 to 359
 'schreibt Antenna_limit_direction 0 ... 359
 'write Antenna_limit_direction
-Data "8;op,Antenna_limit_direction;360;lin;degree"
+Data "8;op,Antenna_limit_direction;1;360;lin;degree"
 '
 Announce9:
 'Befehl &H09
@@ -149,25 +152,25 @@ Announce10:
 'Befehl &H0A
 'liest Werte
 'read values
-Data "10;aa,Values 1;b,controlon;b,Preset;b,Motor_cw;b,Motor_ccw;b,Limit"
+Data "10;aa,Values 1;b,controlon;b,Preset;b,Motor_cw;b,Motor_ccw;b,not_Limit;b,preset_limits"
 '
 Announce11:
 'Befehl &H0B
 'liest Werte
 'read values
-Data "11;aa,values 2;w,preset value;w,Ccw_correction;w.Cw_correction"
+Data "11;aa,values 2;w,preset value;w,Ccw_correction;w.Cw_correction,w,dir_rotor;w,preset_rotor"
 '
 Announce12:
 'Befehl &H0C
 'liest die Spannung an der ccw Grenze, Eichung (noch vor hardware Limit)
 'read voltage for ccw limit, calibration (before hardware limit)
-Data "12;ou;1,CCW calibration"
+Data "12;ou;1;0,idle;1,CCW calibration"
 '
 Announce13:
 'Befehl &H0D
 'liest die Spannung an der cw Grenze, Eichung (noch vor hardware Limit)
 'read voltage for cw limit, calibration (before hardware limit)
-Data "13;ou;1,CW calibration"
+Data "13;ou;1;0,idle;1,CW calibration"
 '
 Announce14:
 'Befehl &H0E
@@ -185,7 +188,7 @@ Announce16:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;100;24"
+Data "240;ln,ANNOUNCEMENTS;145;24"
 '
 Announce17:                                                  '
 'Befehl &HFC
@@ -203,13 +206,13 @@ Announce19:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,RS232,1;a,USB,1"
 '
 Announce20:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127};a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8N1;a,USB,1"
 '
 Announce21:
 ' - no operate command is done before Control_on is set
@@ -230,13 +233,12 @@ Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
 Pullup Widerstände für den I2C Bus (R1/R2)können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
 Wenn Geräte am I2C Bus nur 3.3V vertragen (zB der Raspberry),dürfen die Pullup Widerstände nicht bestückt werden.
 
+
 Fehlermeldungen
 
 Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
-
-
 
 Reset
 
@@ -244,8 +246,9 @@ Ist der Reset Jumper JP1 beim Anlegen der Versorgungsspannung überbrückt, werden
 
 Watchdog
 
-Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
-Nach jedem beendeten Befehl wird der gesamte Befehlspuffer gelöscht
+Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
 
 Software
 
@@ -255,12 +258,13 @@ Die Software wurde in BASCOM geschrieben [2]
 Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
-Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden. Beim Programmieren sollte der Jumper JP3 entfernt werden.
 
 USB Schnittstelle 
 
 Das Interface kann mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird auf der Unterseite der Interfaces verlötet: der USB Stecker zeigt nach innen. Die 4 inneren Pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP4 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden. Dazu wird der Modul über eine Stiftleiste verbunden. Der Modul sollte am Schluss verlötetet werden. USB Befestigung
 Die 5V Stromversorgung erfolgt dann über USB  Der Spannungsregler IC2, C2 und C3 entfallen.
+Anstelle des USB Moduls kann auch eine serielle Schnittstelle (TTL Pegel, nicht invertierend, 19k2, 8N1) angeschlossen werden.
 
 SMD
 
@@ -269,6 +273,8 @@ Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind 
 Stromversorgung
 
 Stromaufnahme ist ca. 120mA max. Die Stromversorgung übernimmt das Rotor Steuergerät, bzw der USB Modul (nur 5V)
+
+
 
 Leiterplattenbestückung, Gehäuseeinbau
 
@@ -284,7 +290,7 @@ Die Interfaceplatine wird in das Gehäuse der Rotorsteuerung eingebaut. Dazu ist 
 
 Die Platine wird in der Schale des Deckels mit drei Schrauben befestigt. Da das Interface dann sehr dicht an der nicht isolierten Netzsicherung liegt, ist diese unbedingt zu isolieren !!!
 Der Umbau der Spannungsversorgung ist oben beschrieben. Die beiden Kondensatoren sind „fliegend“ an der äußeren Lampenfassung angelötet. Dort ist auch der Anschluss der Stromversorgung des Interfaces. 
-Der I2C Anschluss wird als Kabelanschluss durch die Öffnung unterhalb der Sicherung geführt. Als Buchse verwende ich eine Kabelbuchse für einen 3-poligen 3,5mm Klinkenstecker.
+Der I2C / USB Anschluss wird als Kabelanschluss durch die Öffnung unterhalb der Sicherung geführt. Als Buchse für I2C verwende ich eine Kabelbuchse für einen 3-poligen 3,5mm Klinkenstecker.
 
 Anschlüsse
 
@@ -311,28 +317,24 @@ SL5 Motor
 4 orange	ccw, Anschluss 2  (rot) abtrennen und (orangen Draht) mit Anschluss 2 verbinden 
 5 gelb		ccw mit abgetrenntem Draht von Anschluss 2 (rot) verbinden 
 
-
-
-
-
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 3.2
-Bascom Version V04.1 
+Leiterplattenversion 3.3
+Bascom Version V05.3  
 
 Copyright
 
 Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
-Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
 [[1]	dk1ri.de/dhw/rotorsteuerung_create_eagle.zip
-[2]	dk1ri.de/dhw/rotorsteuerung_create_bascom.zip
+[2]	dk1ri.de/dhw/rotorsteuerung_create.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
 [5]	dk1ri.de/dhw/rotorsteuerung_widerstandsberechnung.zip
-
+[6]	dk1ri.de/myc/Definitions.pdf (englisch)
