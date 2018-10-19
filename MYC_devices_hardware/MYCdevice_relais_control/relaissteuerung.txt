@@ -1,6 +1,8 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/relaissteuerung.pdf
+
 Relaissteuerung
 
-Author DK1RI, Version V04.2, 20180118
+Author DK1RI, Version V04.2, 20181019
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -28,7 +30,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI; 4 Relais Bord;V04.0;1;100;1;32;1-1"
+Data "0;m;DK1RI; 4 Relais Bord;V04.1;1;100;1;32;1-1"
 '
 Announce1:
 'Befehl &H01
@@ -214,8 +216,7 @@ Announce31:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,4,{0 to 127}"
-'
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,4,{0 to 127}"'
 
 I2C
 
@@ -314,7 +315,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 02.1
-Bascom Version 04.0
+Bascom Version 04.1
 
 Copyright
 
@@ -326,7 +327,7 @@ The usage of this document is on own risk, there is no warranty.
 Referenzen
 
 1]	dk1ri.de/dhw/relaissteuerung_eagle.zip
-[2] 	dk1ri.de/dhw/relaissteuerung_bascom.zip
+[2] 	dk1ri.de/dhw/relaissteuerung.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
 [5]	dk1ri.de/myc/Definitions.pdf (englisch)
