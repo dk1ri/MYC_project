@@ -1,7 +1,9 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/textdisplay.pdf
+
 MYC Textdisplay
 					
 
-Author DK1RI, Version V02.1, 20180129
+Author DK1RI, Version V02.2, 20181019
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
@@ -31,7 +33,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Textdisplay;V03.0;1;175;1;19;1-1"
+Data "0;m;DK1RI;Textdisplay;V03.1;1;175;1;19;1-1"
 '
 Announce1:
 'Befehl &H01
@@ -134,7 +136,6 @@ Data "R !($1 $2 $3) IF $255&5 = 1"
 '
 Announce18:
 Data "R !($4 $5 $6) IF $255&5 = 0"
-
 
 I2C Adresse
 
@@ -245,7 +246,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V01.3
-Bascom Version V03.0
+Bascom Version V03.1
 
 Copyright
 
