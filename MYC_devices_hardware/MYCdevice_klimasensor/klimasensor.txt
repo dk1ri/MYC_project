@@ -1,6 +1,8 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/klimasensor.pdf
+
 Klimasensor mit MYC Protokoll
 
-Author DK1RI, Version V02.1, 20180118
+Author DK1RI, Version V02.3, 20181020
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -29,7 +31,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Klimasensor;V02.1;1;145;1;21;1-1"
+Data "0;m;DK1RI;Klimasensor;V02.2;1;145;1;21;1-1"
 '
 Announce1:
 'Befehl &H01
@@ -89,12 +91,12 @@ Announce10:
 'Befehl &H0A
 'schreibt Pause Zeit
 'write non active time
-Data "10;oa,non activ time;b,{0,5,62.5,125,500,1000,10,20},ms"
+Data "10;oa,non activ time;b,{0.5,62.5,125,500,1000,10,20},ms"
 '
 Announce11:
 'Befehl &H0B
 'liest Pause Zeit
-'readnon active time
+'read non active time
 Data "11;aa,as10"
 '
 Announce12:
@@ -150,7 +152,6 @@ Announce20:
 'eigene Individualisierung lesen
 'read individualization
 Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
-'
 
 I2C
 
@@ -222,7 +223,6 @@ Hat der I2C Bus nur 3.3V, kann auch eine Drahtbrücke zwischen Drain und Source v
 alle Teile müssen bestückt werden.
 Der Quarz muss eine kleine Version sein (HC48/U-S).
 
-
 Anschlüsse
 
 Power
@@ -238,7 +238,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 01.1
-Bascom Version 02.1
+Bascom Version 02.2
 
 Copyright
 
@@ -250,6 +250,7 @@ The usage of this document is on own risk, there is no warranty.
 Referenzen
 
 [1]	dk1ri.de/dhw/Klimasensor_eagle.zip
-[2]	dk1ri.de/dhw/Klimasensor_bascom.zip
+[2]	dk1ri.de/dhw/Klimasensor.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
+[5]	dk1ri.de/myc/Definitions.pdf (englisch)
