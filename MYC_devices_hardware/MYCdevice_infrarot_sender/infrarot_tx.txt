@@ -234,7 +234,7 @@ The usage of this document is on own risk, there is no warranty.
 Referenzen
 
 [1]	dk1ri.de/dhw/i2c_rs232_interface_eagle.zip
-[2]	dk1ri.de/dhw/infrarot_tx_bascom.zip
+[2]	dk1ri.de/dhw/infrarot_tx.zip
 [3]	dk1ri.de/myc/MYC.pdf 
 [4]	dk1ri.de/myc/Description.pdf (englisch)
 [5]	dk1ri.de/myc/Definitions.pdf (englisch)
