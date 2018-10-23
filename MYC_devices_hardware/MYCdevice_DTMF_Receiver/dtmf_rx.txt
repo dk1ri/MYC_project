@@ -1,7 +1,9 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/dhw/dtmf_rx.pdf
+
 DTMF Empfänger
 
 Author: DK1RI
-Version V02.01 20180116
+Version V02.2 20181022
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -175,13 +177,11 @@ DTMF (LP SL4)
 1	DTMF 
 5	GND
 
-
-
 Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V01.1
-Bascom Version V03.0
+Bascom Version V03.1
 
 Copyright
 
@@ -193,7 +193,7 @@ The usage of this document is on own risk, there is no warranty.
 Referenzen
 
 [1]	dk1ri.de/dhw/dtmf_rx_eagle.zip
-[2]	dk1ri.de/dhw/dtmf_rx_bascom.zip
+[2]	dk1ri.de/dhw/dtmf_rx.zip
 [3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/myc/Definitions.pdf (englisch)
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
