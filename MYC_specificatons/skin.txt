@@ -1,9 +1,11 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/skin.pdf
+
 MYC Skins
 
 Very preliminary
 
 Author: DK1RI
-Version V01.3 20161103
+Version V01.4.1 20181022
 This paper is published in  https://github.com/dk1ri  as well
 
 Introduction
@@ -14,7 +16,7 @@ For more details of the MYC system please check the reference.
 
 Definitions and formats
 
-see http://dk1ri.de/myc/Definitions.pdf
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 Some explanation
 
@@ -26,11 +28,12 @@ A skin in a MYC System may be one of the following:
 -	a full control program
 
 Terminal program
-A simple terminal  can be used to connect the CR. You must know the MYC syntax and find out the accepted commands. It is not comfortable but working. If there is no CR, you can use the I2C – RS232 converter to control FU with I2C interface. It is a restricted simulation of a CR. See  http://dk1ri.de/dhw/i2c_rs232_interface.pdf
+A simple terminal  can be used to connect the CR. You must know the MYC syntax and find out the accepted commands. It is not comfortable but working. If there is no CR, you can use the I2C – RS232 converter to control FU with I2C interface. It is a restricted simulation of a CR. See  https://dk1ri.de/dhw/i2c_rs232_interface.txt or https://dk1ri.de/dhw/i2c_rs232_interface.pdf
 
 Simple switch
-A simple simple or in general a device with a limited number of predefined functions has “r” (require to operate) and “s” (require to answer) announcements  only. Before initialization it is not defined, which function in a system a “r” or “s” command will have.
-Additionally a simple switch has the announcement of reserved commands only.
+A simple simple or in general a device with a limited number of predefined functions has “r” (require to operate) and “s” (require to answer) announcements  for communication with the CR only. The real function in a system of a “r” or “s” command is defined by rules.
+The device may have other o /a commands, wich are used during configuration. The commands are not transferred to the final anoouncement list. 
+Additionally a simple switch has the announcement of reserved command.
 It will find out the translated token for its “r” and “s” commands and react on infos for new announce-lists. It will get a reduced list with the own announcements and the CR announcements.
 “r” and “s” announcements  are not added to the full announcement-list sent to other devices.
 The rules-device will provide the rules to translate the “r” and “s” commands to commands of FU. It may be, that not all “r” and “s” commands result in an action of a FU. 
@@ -60,14 +63,15 @@ The usage of this document is on own risk, there is no warranty.
 
 Reference
 
-[1]	http://dk1ri.de/myc/MYC.pdf  (german)
-[2]	http://dk1ri.de/myc/MYC_en.pdf
-[3]	http://dk1ri.de/myc/Description.pdf
-[4]	http://dk1ri.de/myc/commands.pdf
-[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
-[6]	http://dk1ri.de/myc/Rules.pdf
-[7]	http://dk1ri.de/myc/commandrouter.pdf
-[8]	http://dk1ri.de/myc/Rules_device.pdf
-[9]	http://dk1ri.de/myc/skin.pdf
-[10]	http://dk1ri.de/myc/logicdevice.pdf
-[11]	http://dk1ri.de/myc/Definitions.pdf
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC_en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf

@@ -1,7 +1,9 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/commands.pdf
+
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V02.12.03 20180318
+Version V02.12.4 20181022
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -11,7 +13,7 @@ For more details of the MYC system please check the reference.
 
 Definitions and formats
 
-see http://dk1ri.de/myc/Definitions.pdf
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 Announcements
 
@@ -25,6 +27,7 @@ The I-line is inserted by the CR to the full announce-list for each device. It s
 Some operating commands may have an influence on the status of other commands. This is handled by rules as well.
 Rules lines start with "R" and are included in the full list.
 “Q” rules are sent by the RU to the command-router and are not included in the full announcement list. They are used for user management.
+“S” rules are used by devices during configuration and are not included in the full announcement list. They are used during configuration.
 
 Each announcement line contain the unique command-number, the command-type and properties as necessary; in this sequence. A special type of properties are optional <OPTION>. Some <OPTION> will not result in transmitted data and will be at the end of a line. This will be defined with the <OPTION>. The first <des> of these properties is the uppercase name of the <OPTION>, with must be defined.
 
@@ -33,7 +36,8 @@ Each command belongs to a command-type. Command-types have two letters: the firs
 Operation type
 Active operating is denoted by “o”, an answer request by “a”  as the first letter. If a function can operate and answer, the descriptions in the other announcement should be identical. For example a memory, which can be written and read, must have the same unique description, to allow other devices to identify, that it is the same memory. Alternatively the description can be "as5" eg, where 5 is the command-token of the other command (see also announcement / command optimizing below). The command type may also have the description ext5, which shows the relationship. The CR will resolve the “as” line and add a “ext” notation.
 The operation type “i” denotes information only. They have no data traffic.
-The “r” and “s” types are identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by simple SK  to denote what they can or want to send. For details see [9].
+The operation type “j” denotes information only. They have no data traffic. It is a operating command, which is used internally, usually by rules. An example is a reset under externally initiated conditions.
+The “r” and “s” types are identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by simple SK. The r command   denote what they can or want to send. The S command can be used by the LD to check a status at initialization. For details see [9]. These commands are not part of the announcelist.
 The “k” and “l” types are identical to the “o” and “a” type and therefore not mentioned in the list below. The CR will not include them in the full announce-list and also ignore them. They are used during a configuration phase of a device. The device will not have rules for these commands. So special care may be necessary when using them.
 
 Operating object / function
@@ -308,7 +312,7 @@ announce:	<c>;xm[<,des>]...[,<des>]; <ty>[,<des>]... [,<des>];m_cols[,<des>]...[
 												m_cols, … is the number of columns .. the device can handle
 												<des> may be the name of row/col,
 												any dimension is possible; 
-												position z of a element is x+y*(m_rows)  +...
+												position z of a element is x+y*(m_cols)  +...
 												fixed type <ty>
 operate command or answer / info:	<c><n><data>					write to / answer for position n
 answer command:			<c><n>						read position <n> (“0” based)
@@ -410,7 +414,7 @@ The CR checks all commands and parameters for validity but not for limitation gi
 That means, that the SK must check for answers and create an error if necessary.
 It should also check the status of the devices in reasonable time intervalls.
 
-Any command with correct syntax and parameters within the limits will be done or answered by a FU. In some cases a value may be not valid at that time. In these cases the FU will send non volid command-tokens.
+Any command with correct syntax and parameters within the limits will be done or answered by a FU. In some cases a value may be not valid at that time. In these cases the FU will send non valid command-tokens.
 Slow devices can ask for a longer wait time for the CR to send the answer (for I2C eg)
 The info command will be used by the CR to check if a device is ready after startup.
 
@@ -425,15 +429,15 @@ The usage of this document is on own risk, there is no warranty.
 
 Reference
 
-[1]	http://dk1ri.de/myc/MYC.pdf  (german)
-[2]	http://dk1ri.de/myc/MYC_en.pdf
-[3]	http://dk1ri.de/myc/Description.pdf
-[4]	http://dk1ri.de/myc/commands.pdf
-[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
-[6]	http://dk1ri.de/myc/Rules.pdf
-[7]	http://dk1ri.de/myc/commandrouter.pdf
-[8]	http://dk1ri.de/myc/Rules_device.pdf
-[9]	http://dk1ri.de/myc/skin.pdf
-[10]	http://dk1ri.de/myc/logicdevice.pdf
-[11]	http://dk1ri.de/myc/Definitions.pdf
-[12]	http://dk1ri.de/myc/spec_version.pdf
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC_en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf

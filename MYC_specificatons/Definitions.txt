@@ -1,7 +1,9 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/Definitions.pdf
+
 MYC Definitions, Abbreviations and Formats
 
 Author: DK1RI
-Version V01.03.01 20180318
+Version V01.03.02 20181022
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -92,18 +94,17 @@ The usage of this document is on own risk, there is no warranty.
 
 
 
-
-
-
 Reference
 
-[1]	http://dk1ri.de/myc/MYC.pdf  (german)
-[2]	http://dk1ri.de/myc/MYC_en.pdf
-[3]	http://dk1ri.de/myc/Description.pdf
-[4]	http://dk1ri.de/myc/commands.pdf
-[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
-[6]	http://dk1ri.de/myc/Rules.pdf
-[7]	http://dk1ri.de/myc/commandrouter.pdf
-[8]	http://dk1ri.de/myc/Rules_device.pdf
-[9]	http://dk1ri.de/myc/skin.pdf
-[10]	http://dk1ri.de/myc/logicdevice.pdf
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC_en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf

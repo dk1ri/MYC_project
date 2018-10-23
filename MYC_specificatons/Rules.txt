@@ -1,7 +1,9 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/Rules.pdf
+
 MYC Rules
 
 Author: DK1RI
-Version V01.9 20170129
+Version V01.11.1 20181022
 This project can be found in https://github.com/dk1ri  also.
 
 Preliminary !!!!!
@@ -15,18 +17,21 @@ Introduction
 This paper describes the the syntax of rules of the MYC system.
 For more details of the MYC system please check the reference.
 
-“R”-rules
+“R” , “S”-rules
 
-“R” rules start with “R”.
-A “R” rule may have one of these functions:
+Rules announcements start with “R” or “S” or “Q”
+“R” rules are valid always, “S” rules are used during configuration only and are not forwarded by the CR.
+A “R” / “S” rule may have one of these functions:
 By default all commands are working. A rules will show, when  a command is not working, if other commands created a specific status.
 By default commands are not executed by change of an status of another command. A rule can initiate this: eg the device can be switched off under special conditions.
-
-R-rules are used by the LD, which have the complete status of the system at any time and all rules and modify / initiate commands accordingly.
+	      It is not the intention to show all conditions. If a device is switched off, some values may be 
+	      set to “0”. Such a behavior is obvious and a rule may be used in specific cases only.
+ 
+These Rules are used by the LD, which have the complete status of the system at any time and all rules and modify / initiate commands accordingly.
 
 Limitation within a command should be described within the announcement of that command by <des>.
 
-A FU will have “R” rule announcements to inform about dependencies, which exist between the commands and status within the FU.
+A FU will have rule announcements to inform about dependencies, which exist between the commands and status within the FU.
 
 If there are dependencies between different devices,  a special rules-device RU will provide the rules.
 The rule will define, whether one or more commands are active or not, or that another command is executed.
@@ -36,6 +41,7 @@ The syntax of the rules should be very simple, Most probably the rules will be g
 All “R” rules are always handled by the LD in the sequence it get the rules, starting with rules of FU.
 
 The SK should understand the rules as well. This avoids sending not valid commands.
+
 "Q"-Rules
 
 “Q” rules are produced by the RU only and sent to the CR only and are not forwarded. They are used for user management. The CR block commands, if necessary, for a specific user who logged in.
@@ -50,12 +56,12 @@ Syntax is similar to "R" rules.
 
 General Rules behavior
 
-There are no rules for o / a commands of simple SK, which are used for test and initialization only.
 Each rule is one announcement line (for FU) or an (MYC string) answer or info of a “an” command (for RU).
 By default all commands are working. If a command should be disabled, there must be a rule. The rule  is R !<c> …
 Enabling is done by R !!<c> …
 If a command should be executed use R ?<c> …
 If a command should be be executed after another use ?<c> AFTER <c>. Example is a Webserver, where a command to read page is necessary after the loading command.
+If a command is executed if a condition occur use ?<c> IF … . Example is a reset under some conditions.
 
 Definitions for the rules syntax
 
@@ -150,14 +156,15 @@ The usage of this document is on own risk, there is no warranty.
 
 Reference
 
-[1]	http://dk1ri.de/myc/MYC.pdf  (german)
-[2]	http://dk1ri.de/myc/MYC_en.pdf
-[3]	http://dk1ri.de/myc/Description.pdf
-[4]	http://dk1ri.de/myc/commands.pdf
-[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
-[6]	http://dk1ri.de/myc/Rules.pdf
-[7]	http://dk1ri.de/myc/commandrouter.pdf
-[8]	http://dk1ri.de/myc/Rules_device.pdf
-[9]	http://dk1ri.de/myc/skin.pdf
-[10]	http://dk1ri.de/myc/logicdevice.pdf
-[11]	http://dk1ri.de/myc/Definitions.pdf
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC_en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
