@@ -1,9 +1,11 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/logicdevice.pdf
+
 MYC Logicdevice
 
 Preliminary
 
 Author: DK1RI
-Version V01.0 20161104
+Version V01.0.1 20181022
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -13,7 +15,7 @@ For more details of the MYC system please check the reference.
 
 Definitions and formats
 
-see http://dk1ri.de/myc/Definitions.pdf
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 The Idea
 
@@ -30,11 +32,13 @@ Description
 
 The LD can be described as a state-machine. It gets inputs (command with parameters), handles them using a defined  algorithm and the internal state, and send the result back to the CR. 
 The algorithm is defined by the rules from the RU.
+It also gets all answers from any attached device to update or check its state. This is realized via a second receive chanal, or by some sort of prefix for any packet. 
 The internal state reflect the state of the MYC system. If a state of a FU change without a command, the LD get a info, which will modify the internal state of the LD.
 The LD get commands, rules and infos with translated token. So there is no need to have the full announce-list.
 The LD will have the basic &H00 &HFD announcement only. This is used by the CR to check that the LD is alive: The CR answers with <c>&H04. The answer is sent as info with the translated &HFD.
 
 The LD will provide some special functions as providing time data. This is not yet defined.
+
 Copyright
 
 Dieses Dokument darf unverändert kopiert werden.
@@ -46,14 +50,15 @@ The usage of this document is on own risk, there is no warranty.
 
 Reference
 
-[1]	http://dk1ri.de/myc/MYC.pdf  (german)
-[2]	http://dk1ri.de/myc/MYC_en.pdf
-[3]	http://dk1ri.de/myc/Description.pdf
-[4]	http://dk1ri.de/myc/commands.pdf
-[5]	http://dk1ri.de/myc/Reserved_tokens.pdf
-[6]	http://dk1ri.de/myc/Rules.pdf
-[7]	http://dk1ri.de/myc/commandrouter.pdf
-[8]	http://dk1ri.de/myc/Rules_device.pdf
-[9]	http://dk1ri.de/myc/skin.pdf
-[10]	http://dk1ri.de/myc/logicdevice.pdf
-[11]	http://dk1ri.de/myc/Definitions.pdf
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC_en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
