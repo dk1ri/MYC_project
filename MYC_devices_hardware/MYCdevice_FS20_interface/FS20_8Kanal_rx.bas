@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : FS20_8Kanal_rx_bascom.bas
-'Version V05.0, 20180126
+'Version V05.1, 20180927
 'purpose : Programm for receiving FS20 Signals
 'Can be used with hardware FS20_interface V02.0 by DK1RI
 '
@@ -28,7 +28,7 @@
 'under GPL (Gnu public licence)
 '-----------------------------------------------------------------------
 'Templates:
-'slave_core_V01.5
+'slave_core_V01.6
 '-----------------------------------------------------------------------
 'Used Hardware:
 ' serial
@@ -42,7 +42,7 @@
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-$regfile = "m644pdef.dat"
+$regfile = "m644def.dat"
 $crystal = 20000000
 $baud = 19200
 'use baud rate
@@ -72,10 +72,8 @@ Const Cmd_watchdog_time = 200
 'Number of main loop * 256  before command reset
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
-Const Tx_timeout = 20
-'ca 5s: 10 for 10MHZ 20 for 20 MHz
-'Number of loops: 256 * 30 * Tx_timeout
-'timeout, when I2c_Tx_b is cleared and new commands allowed
+Const Tx_timeout = Cmd_watchdog_time * Tx_factor
+'           timeout, when I2c_Tx_b is cleared and new commands allowed
 '
 Const T_factor = 1953
 '20MHz / 1024 / 1953 = 10  Hz -> 100ms
@@ -126,7 +124,7 @@ Dim Announceline As Byte
 Dim A_line As Byte
 ' Announcline for 00 and F0 command
 Dim Number_of_lines As Byte
-Dim Send_lines As Byte
+Dim Send_line_gaps As Byte
 ' Temporaray Marker
 ' 0: idle; 1: in work; 2: F0 command; 3 : 00 command
 Dim I2c_tx As String * I2c_buff_length
@@ -149,17 +147,23 @@ Dim Error_cmd_no As Byte
 Dim Cmd_watchdog As Word
 'Watchdog for loop
 'Watchdog for I2c sending
-Dim Tx_time As Byte
+Dim Tx_time As Word
 Dim Command_mode As Byte
 '0: I2C input 1: seriell
 '
-Dim Switch_status As Byte
-Dim Switch_status_old As Byte
-Dim Mod_counter As Byte
-Dim Modus As Byte
+Dim Switchoff_time As Byte
+'contains waittime for switchoff
+Dim K as Byte
 Dim Timer_started as Bit
 Dim Switch As Byte
-Dim K As Word
+Dim Switch1 As Byte
+Dim Codelength As Byte
+' Number of blocks to transfer
+Dim Codepointer As Byte
+' pointer to aktiv block
+Dim Send_code(30) As Byte
+Dim Switch_status  As Byte
+Dim Switch_status_old As Byte
 '
 Blw = peek (0)
 If Blw.WDRF = 1 Then
@@ -274,8 +278,17 @@ End If
 Gosub Check_input_status
 '
 'check timer
-If Modus > 0 Then
+If Codelength > 0 Then
    If Timer_started = 0 Then
+      'After each transferred data: switch_off has set Timer_started = 0
+      Tempb = 3 * Codepointer
+      Switchoff_time = Send_code(Tempb)
+      Decr Tempb
+      Switch1 = Send_code(Tempb)
+      Decr Tempb
+      Switch = Send_code(Tempb)
+      Gosub Switch_on
+      Incr Codepointer
       Timer1 = 0
       Start Timer1
       Timer_started = 1
@@ -284,18 +297,19 @@ If Modus > 0 Then
    If Timer1 > T_factor Then
       Incr K
       Stop Timer1
-      If K >= Modus Then
+      If K >= Switchoff_time Then
          'Switch_off
-         PortA = &HFF
-         K = 0
-         Timer_started = 0
-         Modus = 0
+         Gosub Switch_off
+         If Codepointer >= Codelength Then Codelength = 0
+         ' This allow the next transfer command
       Else
+         'continue
          Timer1 = 0
          Start Timer1
       End If
    End If
 End If
+'
 '
 'RS232 got data?
 A = Ischarwaiting()
@@ -345,11 +359,8 @@ If TWCR.7 = 1 Then
             TWDR = I2c_tx_b(I2c_pointer)
             Incr I2c_pointer
             If I2c_pointer >= I2c_write_pointer Then
-               If Number_of_lines > 0 Then
-                  Gosub Sub_restore
-               Else
-                  Gosub Reset_i2c_tx
-               End If
+               Gosub Reset_i2c_tx
+               If Number_of_lines > 0 Then Gosub Sub_restore
             End If
          End If
       End If
@@ -418,7 +429,7 @@ RS232_active = RS232_active_eeram
 Usb_active = Usb_active_eeram
 Command_no = 1
 Error_cmd_no = 0
-Send_lines = 0
+Send_line_gaps = 0
 Gosub Command_received
 Gosub Reset_i2c_tx
 Gosub Reset_i2c
@@ -428,7 +439,7 @@ Command_mode = 0
 Announceline = 255
 I2c_tx_busy = 0
 '
-Modus = 0
+Switchoff_time = 0
 Timer_started = 0
 K = 0
 Return
@@ -463,18 +474,13 @@ Return
 '
 Sub_restore:
 ' read one line
-Select Case Send_lines
-   'select the start of text
-   Case 1
-      Tempd = 1
-   Case 3
-      Tempd = 2
-   Case 2
-      Tempd = 4
-End Select
+'Byte beyond restored data must be 0:
+Tempc = Len(I2c_tx)
+For Tempb = 1 To I2c_buff_length
+   I2c_tx_b(Tempb) = 0
+Next Tempb
 '
 Select Case A_line
-'
    Case 0
       Restore Announce0
    Case 1
@@ -495,41 +501,43 @@ Select Case A_line
       Restore Announce8
    Case 9
       Restore Announce9
+   Case 10
+      Restore Announce10
    Case Else
          'will not happen
 End Select
 Read I2c_tx
 Tempc = Len(I2c_tx)
 For Tempb = Tempc To 1 Step - 1
-   Tempa = Tempb + Tempd
+   Tempa = Tempb + Send_line_gaps
    I2c_tx_b(Tempa) = I2c_tx_b(Tempb)
 Next Tempb
-Select Case Send_lines
+Select Case Send_line_gaps
    Case 1
+      'additional announcement lines
       I2c_tx_b(1) = Tempc
       I2c_write_pointer = Tempc + 2
-      'additional announcement lines
-   Case 3
+      Send_line_gaps = 1
+      Incr A_line
+      I2c_write_pointer = Tempc + 2
+      If A_line >= No_of_announcelines Then A_line = 0
+   Case 2
       'start basic announcement
       I2c_tx_b(1) = &H00
       I2c_tx_b(2) = Tempc
       I2c_write_pointer = Tempc + 3
-      Send_lines = 1
-   Case 2
+   Case 4
       'start of announceline(s), send 3 byte first
       I2c_tx_b(1) = &HF0
       I2c_tx_b(2) = A_line
       I2c_tx_b(3) = Number_of_lines
       I2c_tx_b(4) = Tempc
       I2c_write_pointer = Tempc + 5
-      Send_lines = 1
+      Send_line_gaps = 1
+      Incr A_line
+      If A_line >= No_of_announcelines Then A_line = 0
 End Select
-Incr A_line
-If A_line >= No_of_announcelines Then A_line = 0
 Decr Number_of_lines
-'Else
-'happens, for &HF=xx00
-'send header only
 I2c_pointer = 1
 Return
 '
@@ -620,25 +628,57 @@ If I2c_Write_pointer = I2c_buff_length Then I2c_Write_pointer = 1
 Return
 '
 Switch_on:
-   Switch = Command_b(2)
    Select Case Switch
-      Case 0
-         Reset Ta1
       Case 1
-         Reset Ta2
+         Reset Ta1
       Case 2
-         Reset Ta3
+         Reset Ta2
       Case 3
-         Reset Ta4
+         Reset Ta3
       Case 4
-         Reset Ta5
+         Reset Ta4
       Case 5
-         Reset Ta6
+         Reset Ta5
       Case 6
-         Reset Ta7
+         Reset Ta6
       Case 7
+         Reset Ta7
+      Case 8
          Reset Ta8
    End Select
+   Select Case Switch1
+      Case 1
+         Reset Ta1
+      Case 2
+         Reset Ta2
+      Case 3
+         Reset Ta3
+      Case 4
+         Reset Ta4
+      Case 5
+         Reset Ta5
+      Case 6
+         Reset Ta6
+      Case 7
+         Reset Ta7
+      Case 8
+         Reset Ta8
+   End Select
+Return
+'
+Switch_off:
+   Set Ta1
+   Set Ta2
+   Set Ta3
+   Set Ta4
+   Set Ta5
+   Set Ta6
+   Set Ta7
+   Set Ta8
+   Switch = 0
+   Switch1 = 0
+   K = 0
+   Timer_started = 0
 Return
 '
 Slave_commandparser:
@@ -652,12 +692,12 @@ Select Case Command_b(1)
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;s;DK1RI;FS20_receiver;V05.0;1;145;1;11;1-1"
+'Data "0;s;DK1RI;FS20_receiver;V05.1;1;145;1;11;1-1"
       I2c_tx_busy = 2
       Tx_time = 1
       A_line = 0
       Number_of_lines = 1
-      Send_lines = 3
+      Send_line_gaps = 2
       Gosub Sub_restore
       If Command_mode = 1 Then Gosub Print_i2c_tx
       Gosub Command_received
@@ -668,6 +708,7 @@ Select Case Command_b(1)
 'read status of 8 switches and send as operate
 'Data "1;rr,8 switches;1;0;1;2;3;4;5.6,7"
       Error_no = 0
+      Error_cmd_no = Command_no
       'This command is sent only
       Gosub Command_received
 '
@@ -675,7 +716,7 @@ Select Case Command_b(1)
 'Befehl  &H02
 'liest Status aller 8 Schalter  MYC write!!
 'read status of all 8 switches  MYC write!!
-'Data "2;la,status all switches,for Test and Initialization;b"
+'Data "2;sa,status all switches,for Test and Initialization;b"
       I2c_tx_busy = 2
       Tx_time = 1
       I2c_tx_b(1) = &H02
@@ -693,68 +734,77 @@ Select Case Command_b(1)
       If Command_mode = 1 Then Gosub Print_i2c_tx
       Gosub Command_received
 '
-   Case 3
-'Befehl  &H03
-'schaltet ein /aus
-'switch on / off
-'Data "3;ku, switch for Test and Initialization;1;0;1;2;3;4;5.6,7"
-      If Modus = 0 Then
-         If Commandpointer >= 2 Then
-            If Command_b(2) < 8 Then
-               Modus = T_short
-               Gosub Switch_on
-            Else
-               Error_no = 4
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-      Else
-         Error_no = 0
-         Error_cmd_no = Command_no
-         Gosub Command_received
-      End If
-'
-   Case 4
-'Befehl  &H04
-'schaltet ein /aus  Anlernen
-'switch on / off learning
-'Data "4;ku, learning mode for Test and Initialization;1;0;1;2;3;4;5.6,7"
-      If Modus = 0 Then
-         If Commandpointer >= 2 Then
-            If Command_b(2) < 8 And Command_b(3) < 2  Then
-               Gosub Switch_on
-               Modus = T_long
-            Else
-               Error_no = 4
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-      Else
-         Error_no = 0
-         Error_cmd_no = Command_no
-         Gosub Command_received
-      End If
-'
-   Case 5
-'Befehl &H05
+   Case 237
+'Befehl &HED
 'busy, 1: keine Befehle akzeptiert
 'busy, 1: no commands accepted
-'Data "5;la,busy;a"
+'Data "237;la,busy;a"
       I2c_tx_busy = 2
       Tx_time = 1
-      I2c_tx_b(1) = &H05
+      I2c_tx_b(1) = &HEA
       I2c_write_pointer = 3
       Tempb = 0
-      If Modus > 0 Then Tempb = 1
+      If Codelength > 0 Then Tempb = 1
       I2c_tx_b(2) = Tempb
       If Command_mode = 1 Then Gosub Print_i2c_tx
       Gosub Command_received
+'
+   Case 238
+'Befehl  &HEE
+'schaltet ein /aus
+'switch on / off
+'Data "238;ku, switch for Test;1;0;1;2;3;4;5;6;7"
+      If Commandpointer >= 2 Then
+         If Command_b(2) < 8 Then
+            If Codelength = 0 Then
+               Send_code(1) = Command_b(2) + 1
+               Send_code(2) = 0
+               Send_code(3) = T_short
+               Codepointer = 1
+               Codelength = 1
+            Else
+               Error_no = 7
+               Error_cmd_no = Command_no
+            End If
+         Else
+            Error_no = 4
+            Error_cmd_no = Command_no
+         End If
+      Else
+         Incr Commandpointer
+      End If
+'
+   Case 239
+'Befehl  &HEF
+'schaltet ein /aus  Anlernen
+'switch on / off learning
+'Data "239;ku, learning mode for Test and Initialization;1;0;1;2;3;4;5;6;7"
+      If Switchoff_time = 0 Then
+         If Commandpointer >= 2 Then
+            If Command_b(2) < 8 And Command_b(3) > 0  Then
+               If Codelength = 0 Then
+                  Send_code(1) = Command_b(2) + 1
+                  Send_code(2) = 0
+                  Send_code(3) = T_modus
+                  Codepointer = 1
+                  Codelength = 1
+               Else
+                  Error_no = 7
+                  Error_cmd_no = Command_no
+               End If
+            Else
+               Error_no = 4
+               Error_cmd_no = Command_no
+            End If
+            Gosub Command_received
+         Else
+            Incr Commandpointer
+         End If
+      Else
+         Error_no = 0
+         Error_cmd_no = Command_no
+         Gosub Command_received
+      End If
 '
    Case 240
 'Befehl &HF0<n><m>
@@ -763,18 +813,21 @@ Select Case Command_b(1)
 'Data "240;ln,ANNOUNCEMENTS;145;11"
       If Commandpointer >= 3 Then
          If Command_b(2) < No_of_announcelines And Command_b(3) < No_of_announcelines Then
-            I2c_tx_busy = 2
-            Tx_time = 1
-            Send_lines = 2
-            Number_of_lines = Command_b(3)
-            A_line = Command_b(2)
-            Gosub Sub_restore
-            If Command_mode = 1 Then
-               Gosub Print_i2c_tx
-               While Number_of_lines > 0
-                  Gosub Sub_restore
+            If Command_b(3) > 0 Then
+               I2c_tx_busy = 2
+               Tx_time = 1
+               Send_line_gaps = 4
+               Number_of_lines = Command_b(3)
+               A_line = Command_b(2)
+               Gosub Sub_restore
+               If Command_mode = 1 Then
                   Gosub Print_i2c_tx
-               Wend
+                  While Number_of_lines > 0
+                     Gosub Sub_restore
+                     Gosub Print_i2c_tx
+                  Wend
+                  Gosub Reset_i2c_tx
+               End If
             End If
          Else
             Error_no = 4
@@ -782,6 +835,7 @@ Select Case Command_b(1)
          End If
          Gosub Command_received
       Else
+      print commandpointer
          Incr Commandpointer
       End If
 '
@@ -811,6 +865,8 @@ Select Case Command_b(1)
             I2c_tx = ": i2c_buffer overflow: "
          Case 255
             I2c_tx = ": No error: "
+         Case Else
+            I2c_tx = ": other error: "
       End Select
       Tempc = Len (I2c_tx)
       For Tempb = Tempc To 1 Step - 1
@@ -1035,7 +1091,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read
-Data "0;m;DK1RI;FS20_receiver;V05.0;1;145;1;11;1-1"
+Data "0;m;DK1RI;FS20_receiver;V05.1;1;145;1;11;1-1"
 '
 Announce1:
 'Befehl  &H01
@@ -1047,24 +1103,25 @@ Announce2:
 'Befehl  &H02
 'liest Status aller 8 Schalter  MYC write!!
 'read status of all 8 switches  MYC write!!
-Data "2;la,status all switches,for Test and Initialization;b"
+Data "2;sa,status all switches,for Test and Initialization;b"
 '
 Announce3:
-'Befehl  &H03
-'schaltet ein /aus
-'switch on / off
-Data "3;ku, switch for Test and Initialization;1;0;1;2;3;4;5.6,7"
-'
-Announce4:
-'Befehl  &H03'schaltet ein /aus  Anlernen
-'switch on / off learning
-Data "4;ku, learning mode for Test and Initialization;1;0;1;2;3;4;5.6,7"
-'
-Announce5:
-'Befehl &H05
+'Befehl &HED
 'busy, 1: keine Befehle akzeptiert
 'busy, 1: no commands accepted
-Data "5;la,busy;a"
+Data "237;la,busy;a"
+'
+Announce4:
+'Befehl  &HEE
+'schaltet ein /aus
+'switch on / off
+Data "238;ku, switch for Test;1;0;1;2;3;4;5;6;7"
+'
+Announce5:
+'Befehl  &HEF
+'schaltet ein /aus  Anlernen
+'switch on / off learning
+'Data "239;ku, learning mode for Test and Initialization;1;0;1;2;3;4;5;6;7"
 '
 Announce6:
 'Befehl &HF0<n><m>

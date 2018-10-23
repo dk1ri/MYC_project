@@ -1,7 +1,7 @@
 '-----------------------------------------------------------------------
-'name : Fs20_8_kanal_tx_bascom.bas
-'Version V01.1, 20180126
-'purpose : Programm for sending FS20 Signals
+'name : homematic_tx.bas
+'Version V01.1, 20181001
+'purpose : Programm for sending homematic Signals
 'Can be used with hardware FS20_interface V02.0 by DK1RI
 '
 'The Programm supports the MYC protocol
@@ -28,12 +28,12 @@
 'under GPL (Gnu public licence)
 '-----------------------------------------------------------------------
 'Templates:
-'slave_core_V01.5
+'slave_core_V01.6
 '-----------------------------------------------------------------------
 'Used Hardware:
 ' serial
 ' I2C
-' SPI
+' Timer1
 '-----------------------------------------------------------------------
 ' Inputs: see below
 ' Outputs : see below
@@ -45,7 +45,8 @@
 'Missing/errors:
 '
 '-----------------------------------------------------------------------
-$regfile = "m644pdef.dat"
+'$regfile = "m644pdef.dat"
+$regfile = "m1284pdef.dat"
 $crystal = 20000000
 $baud = 19200
 'use baud rate
@@ -75,13 +76,18 @@ Const Cmd_watchdog_time = 200
 'Number of main loop * 256  before command reset
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
-Const Tx_timeout = 20
-'ca 5s: 10 for 10MHZ 20 for 20 MHz
-'Number of loops: 256 * 30 * Tx_timeout
-'timeout, when I2c_Tx_b is cleared and new commands allowed
+Const Tx_timeout = Cmd_watchdog_time * Tx_factor
+' timeout, when I2c_Tx_b is cleared and new commands allowed
 '
-Const No_of_announcelines = 18
+Const No_of_announcelines = 13
 'announcements start with 0 -> minus 1
+'
+'
+Const T_factor = 1953
+'20MHz / 1024 / 1953 = 10  Hz -> 100ms
+'stop for Timer1
+Const T_Short = 2
+'0,2s
 '
 '************************
 Dim First_set As Eram Byte
@@ -120,7 +126,7 @@ Dim Announceline As Byte
 Dim A_line As Byte
 ' Announcline for 00 and F0 command
 Dim Number_of_lines As Byte
-Dim Send_lines As Byte
+Dim Send_line_gaps As Byte
 ' Temporaray Marker
 ' 0: idle; 1: in work; 2: F0 command; 3 : 00 command
 Dim I2c_tx As String * I2c_buff_length
@@ -143,15 +149,20 @@ Dim Error_cmd_no As Byte
 Dim Cmd_watchdog As Word
 'Watchdog for loop
 'Watchdog for I2c sending
-Dim Tx_time As Byte
+Dim Tx_time As Word
 Dim Command_mode As Byte
 '0: I2C input 1: seriell
 '
-Dim Kanal_mode as Byte
-'0, 4 Kanal, 1 8 Kanal
-Dim Kanal_mode_eeram as Eram Byte
-Dim Dim_start As Bit
-Dim Timer_start As Bit
+Dim Hmode As Byte
+' on /off (default, 1: Toggle, 2: Status
+Dim Hmode_eeram As Eram Byte
+Dim Switch As Byte
+Dim K as Byte
+Dim Kanal_mode As Byte
+Dim Kanal_mode_eeram As Eram Byte
+Dim Timer_started As Byte
+DIm Check_success As Byte
+DIm Transmit_error As Byte
 '
 Blw = peek (0)
 If Blw.WDRF = 1 Then
@@ -165,44 +176,23 @@ Config PortB.0 = Input
 PortB.0 = 1
 Reset__ Alias PinB.1
 '
-'The labels match the naming of the the ELV documentation, but not the eagle circuit !!
-Config Pinc.7 = Output
-Por1 Alias Portc.7
-Set Por1
-Config Pinc.6 = Output
-Por2 Alias Portc.6
-Set Por2
-Config Pinc.5 = Output
-Por3 Alias Portc.5
-Set Por3
-Config PINc.4 = Output
-Por4 Alias Portc.4
-Set Por4
-Config Pinc.3 = Output
-Por5 Alias Portc.3
-Set Por5
-Config Pinc.2 = Output
-Por6 Alias Portc.2
-Set Por6
-Config Pind.7 = Output
-Por7 Alias Portd.7
-Set Por7
-Config Pind.6 = Output
-Por8 Alias Portd.6
-Set Por8
+'These are the input parallel to the switches
+Config PortA = Output
+PortA = &HFF
 '
-Config Pind.2 = Output
-Str Alias Portd,2
-Config Pind.3 = Output
-Stg Alias Portd.3
-Config Pind.4 = Output
-Sts_ Alias PortD.3
+Config Portd.2 = Output
+Str_ Alias Portd.2
+Config Portd.3 = Output
+Stg_ Alias Portd.3
+Config Portd.4 = Output
+Sts_ Alias PortD.4
 Config Pind.5 = Input
-Y Alias PortD.5
 Config Pinb.4 = Input
-X Alias Portb.4
 '
 Config Watchdog = 2048
+'
+Config Timer1 = Timer, Prescale = 1024
+Stop Timer1
 '
 '**************** Main ***************************************************
 '
@@ -247,7 +237,40 @@ If J = 255 Then
    End If
 End If
 '
-'RS232 got data?
+'check timer
+If Timer_started = 1 Then
+   If Timer1 > T_factor Then
+      print Timer1
+      Print k
+      print switch
+      Stop Timer1
+      Decr K
+      If K = 0 Then
+         'Switch_off
+         Gosub Switch_off
+      Else
+         'continue
+         Timer1 = 0
+         Start Timer1
+      End If
+   End If
+End If
+'
+' check success
+If Check_success = 1 Then
+   If Sts_ = 0 Then
+      If Str_ = 1 And Stg_ = 0 Then
+         Transmit_error = 1
+         Check_success = 0
+      End If
+      If Str_ = 0 ANd Stg_ = 1 Then
+         Transmit_error = 0
+         Check_success = 0
+      End If
+   End If
+End If
+'
+      'RS232 got data?
 A = Ischarwaiting()
 If A = 1 Then
    A = Inkey()
@@ -295,11 +318,8 @@ If TWCR.7 = 1 Then
             TWDR = I2c_tx_b(I2c_pointer)
             Incr I2c_pointer
             If I2c_pointer >= I2c_write_pointer Then
-               If Number_of_lines > 0 Then
-                  Gosub Sub_restore
-               Else
-                  Gosub Reset_i2c_tx
-               End If
+               Gosub Reset_i2c_tx
+               If Number_of_lines > 0 Then Gosub Sub_restore
             End If
          End If
       End If
@@ -353,10 +373,8 @@ RS232_active_eeram = RS232_active
 USB_active = 1
 Usb_active_eeram = Usb_active
 '
-Kanal_mode = 0
-Kanal_mode_eeram = Kanal_mode
-'This should be the last
-'
+Kanal_mode_eeram = 0
+Hmode_eeram = 0
 'This should be the last
 First_set = 5
 'set at first use
@@ -371,7 +389,7 @@ RS232_active = RS232_active_eeram
 Usb_active = Usb_active_eeram
 Command_no = 1
 Error_cmd_no = 0
-Send_lines = 0
+Send_line_gaps = 0
 Gosub Command_received
 Gosub Reset_i2c_tx
 Gosub Reset_i2c
@@ -381,10 +399,12 @@ Command_mode = 0
 Announceline = 255
 I2c_tx_busy = 0
 '
-Wait 1
-Gosub Set_kanal_mode
-Dim_start = 0
-Timer_start = 0
+Hmode = Hmode_eeram
+Kanal_mode_eeram = Kanal_mode
+Switch = 0
+Timer_started = 0
+Check_success = 0
+Transmit_error = 0
 Return
 '
 Reset_i2c:
@@ -417,7 +437,7 @@ Return
 '
 Sub_restore:
 ' read one line
-Select Case Send_lines
+Select Case Send_line_gaps
    'select the start of text
    Case 1
       Tempd = 1
@@ -455,16 +475,6 @@ Select Case A_line
       Restore Announce11
    Case 12
       Restore Announce12
-   Case 13
-      Restore Announce13
-   Case 14
-      Restore Announce14
-   Case 15
-      Restore Announce15
-   Case 16
-      Restore Announce16
-   Case 17
-      Restore Announce17
    Case Else
          'will not happen
 End Select
@@ -474,7 +484,7 @@ For Tempb = Tempc To 1 Step - 1
    Tempa = Tempb + Tempd
    I2c_tx_b(Tempa) = I2c_tx_b(Tempb)
 Next Tempb
-Select Case Send_lines
+Select Case Send_line_gaps
    Case 1
       I2c_tx_b(1) = Tempc
       I2c_write_pointer = Tempc + 2
@@ -484,7 +494,7 @@ Select Case Send_lines
       I2c_tx_b(1) = &H00
       I2c_tx_b(2) = Tempc
       I2c_write_pointer = Tempc + 3
-      Send_lines = 1
+      Send_line_gaps = 1
    Case 2
       'start of announceline(s), send 3 byte first
       I2c_tx_b(1) = &HF0
@@ -492,7 +502,7 @@ Select Case Send_lines
       I2c_tx_b(3) = Number_of_lines
       I2c_tx_b(4) = Tempc
       I2c_write_pointer = Tempc + 5
-      Send_lines = 1
+      Send_line_gaps = 1
 End Select
 Incr A_line
 If A_line >= No_of_announcelines Then A_line = 0
@@ -512,250 +522,18 @@ Next Tempb
 Gosub Reset_I2c_tx
 Return
 '
-D1:
-If Dim_start = 1 Then
-   Reset Por1
-   Waitms 440
-Else
-   Set Por1
-End If
+Switch_on:
+   Porta = Switch
+   Timer1 = 0
+   Start Timer1
+   Timer_started = 1
 Return
 '
-D2:
-If Dim_start = 1 Then
-   Reset Por2
-   Waitms 440
-Else
-   Set Por2
-End If
-Return
-'
-D3:
-If Dim_start = 1 Then
-   Reset Por3
-   Waitms 440
-Else
-   Set Por3
-End If
-Return
-'
-D4:
-If Dim_start = 1 Then
-   Reset Por4
-   Waitms 440
-Else
-   Set Por4
-End If
-Return
-'
-D5:
-If Dim_start = 1 Then
-   Reset Por5
-   Waitms 440
-Else
-   Set Por5
-End If
-Return
-'
-D6:
-If Dim_start = 1 Then
-   Reset Por6
-   Waitms 440
-Else
-   Set Por6
-End If
-Return
-'
-D7:
-If Dim_start = 1 Then
-   Reset Por7
-   Waitms 440
-Else
-   Set Por7
-End If
-Return
-'
-D8:
-If Dim_start = 1 Then
-   Reset Por8
-   Waitms 440
-Else
-   Set Por8
-End If
-Return
-
-S1:
-Reset Por1
-Waitms 110
-Set Por1
-Return
-'
-S2:
-Reset Por2
-Waitms 110
-Set Por2
-Return
-'
-S3:
-Reset Por3
-Waitms 110
-Set Por3
-Return
-'
-
-S4:
-Reset Por4
-Waitms 110
-Set Por4
-Return
-'
-S5:
-Reset Por5
-Waitms 110
-Set Por5
-Return
-'
-S6:
-Reset Por6
-Waitms 110
-Set Por6
-Return
-'
-
-S7:
-Reset Por7
-Waitms 110
-Set Por7
-Return
-'
-S8:
-Reset Por8
-Waitms 110
-Set Por8
-Return
-'
-M12:
-Reset Por1
-Reset Por2
-Waitms 1100
-Set Por1
-Set Por2
-Return
-'
-M34:
-Reset Por3
-Reset Por4
-Waitms 1100
-Set Por3
-Set Por4
-Return
-'
-M56:
-Reset Por5
-Reset Por6
-Waitms 1100
-Set Por5
-Set Por6
-Return
-'
-M78:
-Reset Por7
-Reset Por8
-Waitms 110
-Set Por7
-Set Por8
-Return
-'
-T1:
-Reset Por1
-Reset Por2
-Waitms 1100
-Set Por2
-Waitms 200
-Set Por1
-Return
-'
-T2:
-Reset Por2
-Reset Por1
-Waitms 1100
-Set Por1
-Waitms 200
-Set Por2
-Set Por1
-Return
-'
-T3:
-Reset Por3
-Reset Por4
-Waitms 1100
-Set Por4
-Waitms 200
-Set Por3
-Return
-'
-T4:
-Reset Por4
-Reset Por3
-Waitms 1100
-Set Por3
-Waitms 200
-Set Por4
-Return
-'
-T5:
-Reset Por5
-Reset Por6
-Waitms 1100
-Set Por6
-Waitms 200
-Set Por5
-Return
-'
-T6:
-Reset Por6
-Reset Por5
-Waitms 1100
-Set Por5
-Waitms 200
-Set Por6
-Return
-'
-T7:
-Reset Por7
-Reset Por8
-Waitms 1100
-Set Por8
-Waitms 200
-Set Por7
-Return
-'
-T8:
-Reset Por8
-Reset Por7
-Waitms 110
-Set Por7
-Waitms 200
-Set Por8
-Return
-'
-Set_kanal_mode:
-If Kanal_mode = 0 Then
-   '4 Kanal
-   Reset Por1
-   Reset Por4
-   Wait 6
-   Set Por4
-   Set Por1
-Else
-   '8 Kanal
-   Reset Por2
-   Reset Por3
-   Wait 6
-   Set Por3
-   Set Por2
-
-End If
+Switch_off:
+   Porta = &HFF
+   Stop Timer1
+   Timer_started = 0
+   CHeck_success = 1
 Return
 '
 '+++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -770,304 +548,132 @@ Select Case Command_b(1)
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-'Data "0;m;DK1RI;FS20 8 chanal sender;V01.1;1;170;1;18"
+'Data "0;m;DK1RI;Homematic sender;V01.2;1;170;1;13"
       I2c_tx_busy = 2
       Tx_time = 1
       A_line = 0
       Number_of_lines = 1
-      Send_lines = 3
+      Send_line_gaps = 3
       Gosub Sub_restore
       If Command_mode = 1 Then Gosub Print_i2c_tx
       Gosub Command_received
 '
-     Case 1
+   Case 1
 'Befehl &H01
-'schaltet kanäle aus
-'switch chanals off
-'Data "1;or,Aus;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
-         If Commandpointer >= 2 Then
-            If Kanal_mode = 0 Then
-               If Command_b(2) < 4 Then
-                  Stop Watchdog
-                  If Command_b(2) = 0 Then Gosub S1
-                  If Command_b(2) = 1 Then Gosub S3
-                  If Command_b(2) = 2 Then Gosub S5
-                  If command_b(2) = 3 Then Gosub S7
-                  Start Watchdog
+'schaltet kanäle aus / an
+'switch chanals off / on
+'Data "1;or;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+      If Commandpointer >= 3 Then
+         If Kanal_mode = 0 Then
+            If Command_b(2) < 4 Then
+               If Command_b(3) < 2 Then
+                  Tempb = Command_b(2) * 2
+                  ' 0 2 4 6
+                  If Command_b(3) = 1  Then Incr Tempb
+                  ' 1 3 5 7 -> on
+                  Switch = 1
+                  If Tempb > 0 Then Shift Switch, Left, Tempb
+                  K = T_short
+                  Gosub Switch_on
                Else
                   Error_no = 4
                   Error_cmd_no = Command_no
                End If
             Else
-               Error_no = 0
+               Error_no = 4
                Error_cmd_no = Command_no
             End If
-            Gosub Command_received
          Else
-            Incr Commandpointer
+            Error_no = 0
+            Error_cmd_no = Command_no
          End If
+         Gosub Command_received
+      Else
+         Incr Commandpointer
+      End If
 '
-      Case 2
+   Case 2
 'Befehl &H02
-'schaltet Kanäle  ein
-'switch chanals on
-'Data "2;or,Ein;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
-         If Commandpointer >= 2 Then
-            If Kanal_mode = 0 Then
-               If Command_b(2) < 4 Then
-                  Stop Watchdog
-                  If Command_b(2) = 0 Then Gosub S2
-                  If Command_b(2) = 1 Then Gosub S4
-                  If Command_b(2) = 2 Then Gosub S6
-                  If command_b(2) = 3 Then Gosub S8
-                  Start Watchdog
-               Else
-                  Error_no = 4
-                  Error_cmd_no = Command_no
-               End If
-            Else
-               Error_no = 0
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 3
-'Befehl &H03
 'schaltet Kanäle an / aus
 'switch chanals on / off
-'Data "3;or,Ein/Aus;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8"
-         If Commandpointer >= 2 Then
-            If Kanal_mode = 1 Then
-               If Command_b(2) < 8 Then
-                  Stop Watchdog
-                  If Command_b(2) = 0 Then Gosub S1
-                  If Command_b(2) = 1 Then Gosub S2
-                  If Command_b(2) = 2 Then Gosub S3
-                  If command_b(2) = 3 Then Gosub S4
-                  If Command_b(2) = 4 Then Gosub S5
-                  If Command_b(2) = 5 Then Gosub S6
-                  If Command_b(2) = 6 Then Gosub S7
-                  If command_b(2) = 7 Then Gosub S8
-                  Start Watchdog
-               Else
-                  Error_no = 4
-                  Error_cmd_no = Command_no
-               End If
+'Data "2;ou,Ein/Aus;1;0;1,Kanal1;2,Kanal2;3,Kanal3;4,Kanal4;5,Kanal5;6,kanal7;7,Kanal7;8,Kanal8"
+      If Commandpointer >= 2 Then
+         If Kanal_mode = 1 Then
+            If Command_b(2) < 9 And Command_b(2) > 0 Then
+               Tempb = Command_b(2) - 1
+               Switch = 1
+               If Tempb > 0 Then Shift Switch, Left, Tempb
+               K = T_short
+               Gosub Switch_on
             Else
-               Error_no = 0
+               Error_no = 4
                Error_cmd_no = Command_no
             End If
-            Gosub Command_received
          Else
-            Incr Commandpointer
-         End If
-'
-      Case 4
-'Befehl &H04
-'dimmt kanäle ab
-'dim chanals down
-'Data "4;or,dimmt ab;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
-         If Commandpointer >= 2 Then
-            If Kanal_mode = 0 Then
-               If Command_b(2) < 4 Then
-                  Stop Watchdog
-                  Toggle  Dim_start
-                  If Command_b(2) = 0 Then Gosub D1
-                  If Command_b(2) = 1 Then Gosub D3
-                  If Command_b(2) = 2 Then Gosub D5
-                  If command_b(2) = 3 Then Gosub D7
-                  Start Watchdog
-               Else
-                  Error_no = 4
-                  Error_cmd_no = Command_no
-               End If
-            Else
-               Error_no = 0
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 5
-'Befehl &H05
-'dimmt kanäle  auf
-'dims chanals up
-'Data "5;or,dimmt auf;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
-         If Commandpointer >= 2 Then
-            If Kanal_mode = 0 Then
-               If Command_b(2) < 4 Then
-                  Stop Watchdog
-                  Toggle Dim_start
-                  If Command_b(2) = 0 Then Gosub D2
-                  If Command_b(2) = 1 Then Gosub D4
-                  If Command_b(2) = 2 Then Gosub D6
-                  If command_b(2) = 3 Then Gosub D8
-                  Start Watchdog
-               Else
-                  Error_no = 4
-                  Error_cmd_no = Command_no
-               End If
-            Else
-               Error_no = 0
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 6
-'Befehl &H06
-'dimmt kanäle  auf/ab
-'dims chanals up/down
-'Data "6;or,dimmt auf/ab;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8"
-         If Commandpointer >= 2 Then
-            If Kanal_mode = 1 Then
-               If Command_b(2) < 8 Then
-                  Stop Watchdog
-                  Toggle Dim_start
-                  If Command_b(2) = 0 Then Gosub D1
-                  If Command_b(2) = 1 Then Gosub D2
-                  If Command_b(2) = 2 Then Gosub D3
-                  If command_b(2) = 3 Then Gosub D4
-                  If Command_b(2) = 4 Then Gosub D5
-                  If Command_b(2) = 5 Then Gosub D6
-                  If Command_b(2) = 6 Then Gosub D7
-                  If command_b(2) = 7 Then Gosub D8
-                  Start Watchdog
-               Else
-                  Error_no = 4
-                  Error_cmd_no = Command_no
-               End If
-            Else
-               Error_no = 0
-            End If
-            Gosub Command_received
+            Error_no = 0
             Error_cmd_no = Command_no
-         Else
-            Incr Commandpointer
          End If
+         Gosub Command_received
+      Else
+         Incr Commandpointer
+      End If
 '
-      Case 7
-'Befehl &H07
-'Timer für 4 Kanal Mode
-'Timer for 4 chanal mode
-'Data "7;or,Timer start/stop;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4""
-         If Commandpointer >= 2 Then
-            If Command_b(2) < 4 Then
-               If Kanal_mode = 0 Then
-                  Stop Watchdog
-                  Toggle  Timer_start
-                  If Command_b(2) = 0 Then Gosub M12
-                  If Command_b(2) = 1 Then Gosub M34
-                  If Command_b(2) = 2 Then Gosub M56
-                  If command_b(2) = 3 Then Gosub M78
-                  Start Watchdog
-               Else
-                  Error_no = 0
-                  Error_cmd_no = Command_no
-               End If
-            Else
-               Error_no = 4
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
-'
-      Case 8
-'Befehl &H08
-'Timer für 8 Kanal Mode
-'Timer for 8 chanal modef
-'Data "8;or,Timer start/stop;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8""
-         If Commandpointer >= 2 Then
-            If Command_b(2) < 8 Then
-               If Kanal_mode = 1 Then
-                  Stop Watchdog
-                  Toggle  Timer_start
-                  If Command_b(2) = 0 Then Gosub T1
-                  If Command_b(2) = 1 Then Gosub T2
-                  If Command_b(2) = 2 Then Gosub T3
-                  If command_b(2) = 3 Then Gosub T4
-                  If Command_b(2) = 4 Then Gosub T5
-                  If Command_b(2) = 5 Then Gosub T6
-                  If Command_b(2) = 6 Then Gosub T7
-                  If command_b(2) = 7 Then Gosub T8
-                  Start Watchdog
-               Else
-                  Error_no = 0
-                  Error_cmd_no = Command_no
-               End If
-            Else
-               Error_no = 4
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
-         Else
-            Incr Commandpointer
-         End If
+   Case 3
+'Befehl  &H03
+'liest Transmiterror
+'read Transmiterror
+'Data "3;ar,last command with error;1;0,ok,error"
+      I2c_tx_busy = 2
+      Tx_time = 1
+      I2c_tx_b(1) = &H04
+      I2c_tx_b(2) = Transmit_error
+      I2c_write_pointer = 3
+      If Command_mode = 1 Then Gosub Print_i2c_tx
+      Gosub Command_received
 '
 
-      Case 9
-'Befehl &H09
-'schreiben 1: 4 / 2: 8 Kanalmode
-'write 1: 4 / 2:8 chanalmode
-'Data "9;os;1;0,4 Kanal;1,8 Kanal"
-         If Commandpointer >= 2 Then
-            If Command_b(2) < 2 Then
-              Stop Watchdog
-              Select Case Command_b(2)
-                 Case 0
-                    If Kanal_mode = 1 Then
-                       Kanal_mode = 0
-                       Kanal_mode_eeram = 0
-                    End If
-                 Case 1
-                    If Kanal_mode = 0 Then
-                       Kanal_mode = 1
-                       Kanal_mode_eeram = 1
-                    End If
-               End Select
-               Start Watchdog
-            Else
-               Error_no = 4
-               Error_cmd_no = Command_no
-            End If
-            Gosub Command_received
+   Case 238
+'Befehl  &HEE
+'schreibt mode 0 default: an /aus, 1: Toggle, 2: Statusmode
+'write mode 0 default:on / off, Toggle, 2: Statusmode
+'Data "238;ks,scanmode;1;0,off / on;1,togglemode;2,status"
+      If Commandpointer = 2 Then
+         If Command_b(2) < 3  Then
+            Hmode = Command_b(2)
+            Hmode_eeram = Hmode
          Else
-            Incr Commandpointer
+            Error_no = 4
+            Error_cmd_no = Command_no
          End If
-'
-      Case 10
-'Befehl &H0A
-'lesen 4 / 8 Kanalmodemode
-'read 4 / 8 chanal mode
-'Data "10,as,as9"
-         I2c_tx_busy = 2
-         Tx_time =1
-         I2c_tx_b(1) = &H0A
-         I2c_tx_b(2) = Kanal_mode
-         I2c_write_pointer = 3
-         If Command_mode = 1 Then Gosub Print_i2c_tx
          Gosub Command_received
+      Else
+         Incr Commandpointer
+      End If
+'
+   Case 239
+'Befehl  &HEF
+'liest mode
+'read mode
+'Data "239;ls,as238"
+      I2c_tx_busy = 2
+      Tx_time = 1
+      I2c_tx_b(1) = &HEE
+      I2c_tx_b(2) = Hmode
+      I2c_write_pointer = 3
+      If Command_mode = 1 Then Gosub Print_i2c_tx
+      Gosub Command_received
 '
       Case 240
    Case 240
 'Befehl &HF0<n><m>
 'liest announcements
 'read m announcement lines
-'Data "240;ln,ANNOUNCEMENTS;145;18"
+'Data "240;ln,ANNOUNCEMENTS;145;13"
       If Commandpointer >= 3 Then
          If Command_b(2) < No_of_announcelines And Command_b(3) < No_of_announcelines Then
             I2c_tx_busy = 2
             Tx_time = 1
-            Send_lines = 2
+            Send_line_gaps = 2
             Number_of_lines = Command_b(3)
             A_line = Command_b(2)
             Gosub Sub_restore
@@ -1113,6 +719,8 @@ Select Case Command_b(1)
             I2c_tx = ": i2c_buffer overflow: "
          Case 255
             I2c_tx = ": No error: "
+         Case Else
+            I2c_tx = ": other error: "
       End Select
       Tempc = Len (I2c_tx)
       For Tempb = Tempc To 1 Step - 1
@@ -1337,99 +945,69 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;FS20 8 chanal sender;V01.1;1;145;1;18"
+Data "0;m;DK1RI;Homematic sender;V01.2;1;145;1;13"
 '
 Announce1:
 'Befehl &H01
-'schaltet kanäle aus
-'switch chanals off
-Data "1;or,Aus;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+'schaltet kanäle aus / an
+'switch chanals off / on
+Data "1;or;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
 '
 Announce2:
 'Befehl &H02
-'schaltet Kanäle  ein
-'switch chanals on
-Data "2;or,Ein;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
-'
-Announce3:
-'Befehl &H03
 'schaltet Kanäle an / aus
 'switch chanals on / off
-Data "3;or,Ein/Aus;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8"
+Data "2;ou,Ein/Aus;1;0;1,Kanal1;2,Kanal2;3,Kanal3;4,Kanal4;5,Kanal5;6,kanal7;7,Kanal7;8,Kanal8"
+'
+Announce3:
+'Befehl  &H03
+'liest Transmiterror
+'read Transmiterror
+Data "3;ar,last command with error;1;0,ok,error"
 '
 Announce4:
-'Befehl &H04
-'dimmt kanäle ab
-'dim chanals down
-Data "4;or,dimmt ab;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+'Befehl  &HEE
+'schreibt mode 0 default: an /aus, 1: Toggle, 2: Statusmode
+'write mode 0 default:on / off, Toggle, 2: Statusmode
+Data "238;ks,scanmode;1;0,off / on;1,togglemode;2,status"
 '
 Announce5:
-'Befehl &H05
-'dimmt kanäle  auf
-'dims chanals up
-Data "5;or,dimmt auf;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4"
+'Befehl  &HEF
+'liest mode
+'read mode
+Data "239;ls,as28"
 '
 Announce6:
-'Befehl &H06
-'dimmt kanäle  auf/ab
-'dims chanals up/down
-Data "6;or,dimmt auf/ab;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8"
-'
-Announce7:
-'Befehl &H07
-'Timer für 4 Kanal Mode
-'Timer for 4 chanal mode
-Data "7;or,Timer start/stop;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4""
-'
-Announce8:
-'Befehl &H08
-'Timer für 8 Kanal Mode
-'Timer for 8 chanal modef
-Data "8;or,Timer start/stop;1;0,Kanal1;1,Kanal2;2,Kanal3;3,Kanal4;4,Kanal5;5,kanal6;6,Kanal7;7,Kanal8""
-'
-Announce9:
-'Befehl &H09
-'schreiben 1: 4 / 2: 8 Kanalmode
-'write 1: 4 / 2:8 chanalmode
-Data "9;os;1;0,4 Kanal;1,8 Kanal"
-'
-Announce10:
-'Befehl &H0A
-'lesen 4 / 8 Kanalmodemode
-'read 4 / 8 chanal mode
-Data "10,as,as9"
-'
-Announce11:
 'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
 'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;18"
+Data "240;ln,ANNOUNCEMENTS;145;13"
 '
-Announce12:                                                  '
+Announce7:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce13:                                                  '
+Announce8:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce14:
+Announce9:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;a,USB,1"
 '
-Announce15:
+Announce10:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
 Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
-Announce16:
-Data "R !$1 !$2 !$4 !$5 !$7 If $10 = 1"
-Announce17:
-Data "R !$3 !$6 !$8 IF $10 = 0"
+Announce11:
+Data "R !$1 If $239 = 1"
+Announce12:
+Data "R !$2 IF $239 = 0"
