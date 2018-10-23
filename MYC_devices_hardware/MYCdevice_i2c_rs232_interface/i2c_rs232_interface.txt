@@ -1,6 +1,8 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/dhw/i2c_rs232_interface.pdf
+
 I2C zu RS232 / USB Interface
 
-Author DK1RI, Version V03.5, 20170815
+Author DK1RI, Version V03.7, 20181022
 This project can be found in https://github.com/dk1ri  as well.
 
 Einleitung
@@ -15,7 +17,7 @@ Beschreibung
 
 Es gibt eine Firmwareversion als I2C Master und eine als Slave.
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
-Die Stromversorgung ist 7- 10V, Stromaufnahme ca. 20mA max.
+Die Stromversorgung ist 7- 10V, Stromaufnahme ca. 20mA max oder über USB.
 Als Testinterface wird an der RS232 Schnittstelle (19,2kB, 8N1) oder an der USB Schnittstelle ein Rechner mit Terminalprogramm angeschlossen .
 
 Einbindung in das MYC System
@@ -25,7 +27,7 @@ Wenn dann das gleiche Interface als Slave angeschlossen wird, arbeitet das Maste
 Das Interface nimmt auf der Befehlsschnittstelle (I2C beim Slave, seriell beim Master) Daten entgegen und interpretiert das erste Zeichen als Befehl und handelt entsprechend. Wird ein Befehl oder Parameter als ungültig erkannt, wird das nächste Zeichen als neuer Befehl interpretiert.
 Der Befehl wird ausgeführt, wenn er mit Parametern komplett und gültig erkannt wurde.
 Ein nicht vollständiger Befehl wird nach ca 1 s gelöscht.
-Die Strings – maximal 252 Zeichen - müssen mit der Zahl der Bytes - 1 Byte - beginnen!
+Die Strings – maximal 250 Zeichen - müssen mit der Zahl der Bytes - 1 Byte - beginnen!
 
 I2C als Slave :
 
@@ -111,13 +113,13 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RS232_I2C_interface Master;V05.0;1;170;1;20"
+Data "0;m;DK1RI;RS232_I2C_interface Master;V05.0;1;120;1;20;1-1"
 '
 Announce1:
 'Befehl &H01 <s>
 'string an angeschlossenes device schicken, Myc_mode = 0
 'write string to device
-Data "1;oa;252"
+Data "1;oa;250"
 '
 Announce2:
 'Befehl &H02
@@ -129,13 +131,13 @@ Announce3:
 'Befehl &H10
 'übersetzes 0 des slave Myc_mode = 1
 'translated 0 of slave
-Data "16;m;DK1RI;RS232_I2C_interface Slave;V04.0;1;170;8;13"
+Data "16;m;DK1RI;RS232_I2C_interface Slave;V04.0;1;90;1;8;1-1"
 '
 Announce4:
 'Befehl &H11 <s>
 'übersetzes 1 des slave Myc_mode = 1 I2C nach RS232
 'translated 1 of slave I2C to RS232
-Data "17,oa;252"
+Data "17,oa;250"
 '
 Announce5:
 'Befehl &H12
@@ -156,10 +158,7 @@ Announce7:
 Data "20;aa,MYC INFO;b,ACTIVE"
 '
 Announce8:
-'Befehl &H15 <n>
-'übersetzes 255 des slave Myc_mode = 1
-'translated 255 of slave,
-Data "21;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
+Data "I;DK1RI;RS232_I2C_interface Master;V05.0;Device 1;1;DK1RI;Rs232_i2c_interface Slave;V05.0;Device 1;1"
 '
 Announce9:
 'Befehl &HEC <0..127>
@@ -189,7 +188,7 @@ Announce13:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-'Data "240;an,ANNOUNCEMENTS;100;20"
+Data "240;ln,ANNOUNCEMENTS;120;20"
 '
 Announce14:                                                 '
 'Befehl &HFC
@@ -213,7 +212,7 @@ Announce17:
 'Befehl &HFF <n> :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
 Announce18:
 Data "R !($1 $2) IF $239=1"
@@ -221,11 +220,6 @@ Data "R !($1 $2) IF $239=1"
 Announce19:
 Data "R !($16 $17 $18 $19 $20) IF $239=0"
 '
-Announce20:
-Data "R !$254&2&&0 IF $255&5=0"
-'
-Announce21:
-Data "R !$254&5&&0 IF $255&2=0"
 
 Slave:
 
@@ -233,25 +227,25 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read to I2C
-Data "0;m;DK1RI;Rs232_i2c_interface Slave;V04.2.0;170;1;8"
+Data "0;m;DK1RI;Rs232_i2c_interface Slave;V05.0;1;90;1;8;1-1"
 '
 Announce1:
 'Befehl &H01 <s>
 'Sendet Daten von I2C nach RS232
 'read data from I2C, write to RS232 (write to device)
-Data "1,oa;253"
+Data "1,oa;250"
 '
 Announce2:
 'Befehl &H02
 'liest Daten von RS232 nach I2C
 'read data from RS232, write to I2C  (read from device)
-Data "2,aa,253"
+Data "2,aa,250"
 '
 Announce3:
 'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;170;8"
+'announcement aller Befehle lesen
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;90;8"
 '
 Announce4:                                                  '
 'Befehl &HFC
@@ -275,16 +269,14 @@ Announce7:
 'Befehl &HFF <0 .. 3> :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,1,{0 to 127}"
 '
-Announce8:
-Data " 254&2 IF $255&2=0"
 
 Regeln
 
-Es gibt vier Zeilen mit Regeln für den Master und eine für den Slave.
+Es gibt vier Zeilen mit Regeln für den Master.
 Abhängig vom Myc_mode funktionieren einige Befehle nicht.
-Weitere Regeln beschreiben, was passiert, wenn die Befehlsschnittstellen abgeschaltet werden: beim Master lassen sich nicht beidie Schnittstellen gleichzeitig abschalten; beim Slave funktioniert der Befehl zum Einschalten immert.
+Weitere Regeln beschreiben, was passiert, wenn die Befehlsschnittstellen abgeschaltet werden: beim Master lassen sich nicht bei die Schnittstellen gleichzeitig abschalten.
 
 I2C Adresse
 
@@ -300,6 +292,8 @@ Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 
+
+
 Reset
 
 Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
@@ -307,10 +301,9 @@ Der Reset hat eine Verzögerungszeit von 1 Sekunde.
 
 Watchdog
 
-Die Befehlseingabe muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden.  Mit dem "letzten Fehler" Befehl kann man Eingabefehler sehen. Er zeigt die aktuelle Befehlsnummer und die des Fehlers.
-Nach jedem beendeten Befehl wird der gesamte Befehlspuffer gelöscht
-Weiterhin müssen die I2C Daten des Slave innerhalb einer Sekunde abholt werden.
-Es gibt einen allgemeinen Reset, wenn die Abfrageschleife länger als 2 Sekunde dauert.
+Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
 
 Software
 
@@ -341,8 +334,6 @@ Es gibt einen nicht getesteten Leiterplattenentwurf für eine recht kleine Leiter
 Stromversorgung
 
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
-
-
 Bestückung der Leiterplatte
 
 Da die Leiterplatte auch für andere Anwendungen eingesetzt werden kann, brauchen nur folgende Bauteile  bestückt werden:
@@ -379,8 +370,8 @@ Tip	SCL
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V02.0
-Bascom Version V05.0 für Master und Slave
+Leiterplattenversion V02.1
+Bascom Version V05.1 für Master und Slave
 
 Copyright
 
@@ -391,10 +382,8 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[1]	dk1ri.de/dhw/i2c_rs232_interface_eagle.zip
-[2]	dk1ri.de/dhw/i2c_rs232_interface_bascom.zip
-[3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/dhw/i2c_rs232_interface_eagle_minimal.zip
-[6]	dk1ri.de/myc/Reseved_tokens.pdf
-[7]	dk1ri.de/myc/Definitions.pdf (englisch)
+[1]	https://www.dk1ri.de/dhw/i2c_rs232_interface_eagle.zip
+[2]	https://www.dk1ri.de/dhw/i2c_rs232_interface.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
