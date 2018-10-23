@@ -1,6 +1,8 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/electronic_load.pdf
+
 Eine elektronische Last mit MYC Protokoll
 
-Author DK1RI, Version V02.2 20180810
+Author DK1RI, Version V02.3 20181022
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -510,10 +512,10 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[1]	dk1ri.de/dhw/electronic_load_eagle.zip
-[2]	dk1ri.de/dhw/electronic_load_bascom.zip
-[3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/dhw/electronic_load_calculation.pdf
+[1]	https://www.dk1ri.de/dhw/electronic_load_eagle.zip
+[2]	https://www.dk1ri.de/dhw/electronic_load.zip
+[3]	http://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
 [6]	dk1ri.de/dhw/electronic_load_external_ciruit.png
 [7]	dk1ri.de/myc/Definitions.pdf (englisch)
