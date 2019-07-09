@@ -1,36 +1,39 @@
 Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/relaissteuerung.pdf
 
-Relaissteuerung
+MYC Relaissteuerung
 
-Author DK1RI, Version V04.2, 20181019
+Author DK1RI, Version V05.1, 20190709
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
-Die Rechnersteuerung erfolgt über I2C Bus mit MYC Protokoll
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung
 
 Die Eagledaten stehen bei [1].
 Als Stromversorgung (7-12V) werden  maximal 150mA benötigt 
-Die Steuerung macht ein AVR Mikrocontroller.
+Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 
-Diese Leiterplatte hat vier Relais mit je zwei Umschaltkontakten, 7 digitale Eingänge und 4 Eingänge, die sich jeweils analog (1024 Stufen Auflösung) oder digital auslesen lasen.Beim Analogbetrieb liegt die Eingangsspannung zwischen 0  und  5V (nicht isoliert und nicht geschützt mit pullup Widerständen). Der Eingangsspannungsbereich ist auf 0 - 1,1V umschaltbar. Der  Eingangsspannungsbereich gilt für alle Eingänge, da die Referenzspannung umgeschaltet wird.
+Diese Leiterplatte hat vier Relais mit je zwei Umschaltkontakten, 7 digitale Eingänge und 4 Eingänge, die sich jeweils analog (1024 Stufen Auflösung) oder digital auslesen lasen. Beim Analogbetrieb liegt die Eingangsspannung zwischen 0  und  5V (nicht isoliert und nicht geschützt mit pullup Widerständen). Der Eingangsspannungsbereich ist auf 0 - 1,1V umschaltbar. Der  Eingangsspannungsbereich gilt für alle Eingänge, da die Referenzspannung umgeschaltet wird.
 Der Eingangsspannungsbereich wird im EERAM gespeichert.
-Die Kondensatoren an den Eingängen müssen an die Verwendung angepasst werden. Hohe Werte begrenzen möglicherweise den Frequenzbereich.
+Die Kondensatoren an den Eingängen müssen an die Verwendung angepasst werden. Hohe Werte begrenzen möglicherweise den Frequenzbereich und verhindern die Programmierung des Prozessors über ISP.
+Da mit Version V04.0 der Leiterplatte die Beschreibung der Anschlüsse  geändert wurde, ist die aktuelle Firmware nicht mit älteren Leiterplatten verwendbar! 
 
-Die Relaisausgänge sind nicht für das Schalten hoher Spannungen (> 60V) geeignet, da der Abstand zum Groundfläche sehr klein ist!!!
+Die Relaisausgänge sind nicht für das Schalten hoher Spannungen (> 60V) geeignet !!!
 
-Befehle
+Einbindung in das MYC System
 
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
 
 Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI; 4 Relais Bord;V04.1;1;100;1;32;1-1"
+Data "0;m;DK1RI; 4 Relais Bord;V05.0;1;190;1;32;1-1"
 '
 Announce1:
 'Befehl &H01
@@ -76,58 +79,58 @@ Data"7;as,INP7;1;0,0;1,1"
 '
 Announce8:
 'Befehl &H08
-'liest analog Wert INP8
-'read analog INP8
-Data "8;ap,INP8;1;1024;lin;-"
+'liest digital Wert INP8
+'read digital INP8
+Data "8;as,INP8;1;0,0;1,1"
 '
 Announce9:
 'Befehl &H09
-'liest digital Wert INP8
-'read digital INP8
-Data "9;as,INP8;1;0,0;1,1"
+'liest digital Wert INP9
+'read digital INP9
+Data "9;as,INP9;1;0,0;1,1"
 '
 Announce10:
 'Befehl &H0A
-'liest analog Wert IN9
-'read analog INP9
-Data "10;ap,INP9;1;1024;lin;-"
+'liest digital Wert INP10
+'read digital INP10
+Data "10;as,INP10;1;0,0;1,1"
 '
 Announce11:
 'Befehl &H0B
-'liest digital Wert INP9
-'read digital INP9
-Data "11;as,INP9;1;0,0;1,1"
+'liest digital Wert INP11
+'read digital INP11
+Data "11;as,INP11;1;0,0;1,1"
 '
 Announce12:
 'Befehl &H0C
-'liest analog Wert IN10
-'read analog INP10
-Data"12;ap,INP10;1;1024;lin;-"
+'liest analog Wert INP1
+'read analog INP1
+Data "12;ap,INP1;1;1024;lin;-"
 '
 Announce13:
 'Befehl &H0D
-'liest digital Wert INP10
-'read digital INP10
-Data "13;as,INP10;1;0,0;1,1"
+'liest analog Wert INP2
+'read analog INP2
+Data "13;ap,INP2;1;1024;lin;-"
 '
 Announce14:
 'Befehl &H0E
-'liest analog Wert IN11
-'read analog INP11
-Data"14;ap,INP11;1;1024;lin;-"
+'liest analog Wert INP3
+'read analog INP3
+Data "14;ap,INP3;1;1024;lin;-"
 '
 Announce15:
 'Befehl &H0F
-'liest digital Wert INP11
-'read digital INP11
-Data "15;as,INP11;1;0,0;1,1"
+'liest analog Wert INP4
+'read analog INP4
+Data "15;ap,INP4;1;1024;lin;-"
 '
 Announce16:
 'Befehl &H10
 'liest digital alle
 'read digital all
 Data"16;am,all;w,{0 to 4095}"
-
+'
 Announce17:
 'Befehl &H11
 'schaltet Relais1
@@ -192,7 +195,7 @@ Announce27:
 'Befehl &HF0
 'announcement aller Befehle lesen
 'read announcement lines
-Data "240;ln,ANNOUNCEMENTS;100;32"
+Data "240;ln,ANNOUNCEMENTS;190;32"
 '
 Announce28:
 'Befehl &HFC
@@ -210,124 +213,179 @@ Announce30:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,4,{0 to 127}"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,serial,1"
 '
 Announce31:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,4,{0 to 127}"'
-
-I2C
-
-Die Default Adresse ist 4 .
-Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
-Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
-Wenn Geräte am I2C Bus nur 3.3V vertragen (zB der Raspberry), muss dieses Interface auch mit 3.3V (78L03 statt 78L05) versorgt werden (Quarzfrequenz <= 10MHz!)
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,serial,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 
 Fehlermeldungen
 
 Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
 Reset
 
-Ist der Reset Jumper JP1 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
-
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
 
 Watchdog
 
-Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
-Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
-Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller ATMEGA8 oder größer.
-Das Interface erfolgt über I2C Bus mit MYC Protokoll. (siehe [3])
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
+Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
-Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
-Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden. Die Blockkondesatoren C14, C15, und C16 sollten erst nach der Programmierung bestückt werden und der Jumper J3 während der Programmierung entfernt werden.
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen. Der Programmierstecker wird auf die pins 1-6 gesteckt.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 sollte während der Programmierung entfernt werden.
+
+Serielle (RS232 / USB) Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+I2C Schnittstelle 
+
+Die Default Adresse ist 4.
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 
 SMD
 
-Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ großen Bauteile (1206).
+Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ große Bauteile.
+
+Stromversorgung
+
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 150mA max. 
+
+Bestückung der Leiterplatte 
+
+Verwendung von ISP:
+JP6
+
+Mit I2C:
+Siehe I2C oben.
+
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2 nicht bestückt werden!
 
 Anschlüsse
 
-Ansicht auf die Steckerleiste, von links nach rechts:
-X1
+Ansicht: RS232, I2C , Stromanschluss vorne, Leitungsanschlüsse hinten, von links nach rechts:
+
+X3
+1	Relais1 Kontakt 1 Ruhe 
+2	Relais1 Kontakt 1 Mittelanschluss
+3	Relais1 Kontakt 1 aktiv
+4	Relais1 Kontakt 2 Ruhe 
+5	Relais1 Kontakt 2 Mittelanschluss
+6	Relais1 Kontakt 2 aktiv
+7	Relais2 Kontakt 1 Ruhe 
+8	Relais2 Kontakt 1 Mittelanschluss
+9	Relais2 Kontakt 1 aktiv
+10	Relais2 Kontakt 2 Ruhe 
+11	Relais2 Kontakt 2 Mittelanschluss
+12	Relais2 Kontakt 2 aktiv
+
+X4
+1	Relais3 Kontakt 1 Ruhe 
+2	Relais3 Kontakt 1 Mittelanschluss
+3	Relais3 Kontakt 1 aktiv
+4	Relais3 Kontakt 2 Ruhe 
+5	Relais3 Kontakt 2 Mittelanschluss
+6	Relais3 Kontakt 2 aktiv
+7	Relais4 Kontakt 1 Ruhe 
+8	Relais4 Kontakt 1 Mittelanschluss
+9	Relais4 Kontakt 1 aktiv
+10	Relais4 Kontakt 2 Ruhe 
+11	Relais4 Kontakt 2 Mittelanschluss
+12	Relais4 Kontakt 2 aktiv
+
+X5
 12	GND
-11	Eingang 1 digital
-10	Eingang 2 digital
-9	Eingang 3 digital
-8	Eingang 4 digital
-7	Eingang 5 digital
+1	Eingang 1 analog/digital
+2	Eingang 2 analog/digital
+3	Eingang 3 analog/digital
+4	Eingang 4 analog/digital
+5	Eingang 5 digital
 6	Eingang 6 digital
-5	Eingang 7 digital
-3	Eingang 8 analog/digital
-3	Eingang 9 analog/digital
-2	Eingang 10 analog/digital
-1	Eingang 11 analog/digital
+7	Eingang 7 digital
+8	Eingang 8 digital
+9	Eingang 9 digital
+10	Eingang 10 digital
+11	Eingang 11 digital
 
-X2
-12	Relais1 Kontakt 1 aktiv 
-11	Relais1 Kontakt 1 Mittelanschluss
-10	Relais1 Kontakt 1 Ruhe
-9	Relais1 Kontakt 2 aktiv 
-8	Relais1 Kontakt 2 Mittelanschluss
-7	Relais1 Kontakt 2 Ruhe
-6	Relais2 Kontakt 1 aktiv 
-5	Relais2 Kontakt 1 Mittelanschluss
-4	Relais2 Kontakt 1 Ruhe
-3	Relais2 Kontakt 2 aktiv 
-2	Relais2 Kontakt 2 Mittelanschluss
-1	Relais2 Kontakt 2 Ruhe
+Power
+Tip	12V
+Ring	GND
 
-X2
-12	Relais3 Kontakt 1  aktiv
-11	Relais3 Kontakt 1 Mittelanschluss
-10	Relais3 Kontakt 1 Ruhe
-9	Relais3 Kontakt 2  aktiv
-8	Relais3 Kontakt 2 Mittelanschluss
-7	Relais3 Kontakt 2 Ruhe
-6	Relais4 Kontakt 1  aktiv
-5	Relais4 Kontakt 1 Mittelanschluss
-4	Relais4 Kontakt 1 Ruhe 
-3	Relais4 Kontakt 2  aktiv
-2	Relais4 Kontakt 2 Mittelanschluss
-1	Relais4 Kontakt 2 Ruhe
+RS232 (Buchse)
+5	GND
+2	TX (PC Eingang)
+3	RX (PC Ausgang)
 
-SL1
+I2C
 1	GND
-2	8-12V
-3	GND
-4	SCL
-5	SDA
+2	SCL
+3	SDA
 
 Während des normalen Betriebs muss der Jumper J3 gesteckt sein.
+
+Jumper
+
+JP1 		Power
+JP2 		I2C: 3V/5V Umschaltung
+JP3		SDA Überbrückung (ohne IC3)
+JP4		SCL Überbrückung (ohne IC3)
+JP5		Reset
+JP6		ISP
+JP7		Anschluss für USB Modul
+
+
 
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 02.1
-Bascom Version 04.1
+Leiterplattenversion 04.0
+Bascom Version 05.0
 
 Copyright
 
 Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
-Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie / Gewährleistung / Produkthaftung  übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
 1]	dk1ri.de/dhw/relaissteuerung_eagle.zip
-[2] 	dk1ri.de/dhw/relaissteuerung.zip
+[2] 	dk1ri.de/dhw/relaissteuerung_basom.zip
 [3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/myc/Definitions.pdf (englisch)
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	https://dk1ri.de/myc/common_1.7.zip
