@@ -2,41 +2,38 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Infrarot (RC5) Empfänger
 
-Author DK1RI, Version V03.2, 20181020
+Author DK1RI, Version V04.0, 20190710
 This project can be found in https://github.com/dk1ri also.
 
 Einleitung
 
-Dieses Interface ist eine Konverter von Infrarot (RC5) Signalen auf MYC Protokoll über I2C (Slave) / RS232 / USB
-Im „no_myc“ Mode arbeitet das Interface als einfacher RC5 - ASCII Wandler.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung
 
-Die Eagle Daten stehen unter  [1].
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max.
+Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Die Befehle zur Steuerung müssen binär eingegeben werden; er erfolgt keine Wandlung.
-MYC mode (default oder mit Befehl &H14H00):
-Im MYC mode erfolgt die Ausgabe der empfangenen RC5 Signale als Antwort auf den Befehl &H01:
+Dieses Interface ist eine Konverter von Infrarot (RC5) Signalen auf MYC Protokoll über I2C (Slave) / RS232 / USB
+Die Ausgabe der empfangenen RC5 Signale als Antwort auf den Befehl &H01:
 Die Ausgabe erfolgt im Hex Format:
 010401020304
-01 ist der Befehl; 04: 4 Bytes 01, 02, 03 und 04)
-Es werden nur RC5 Daten an die eingestellte RC5 Adresse (Default 1, änderbar mir dem Befehl &H02) gespeichert.
+01 ist der Befehl; 04: 4 Bytes: 01, 02, 03 und 04)
+Es werden nur RC5 Daten an die eingestellte RC5 Adresse (Default 1, änderbar mir dem Befehl &H02xx) gespeichert.
 Mit dem Lesebefehl &H01 wird der Rc5buffer gelöscht.
-Nicht MYC mode (mit Befehl &H14&H01):
-Im nicht_MYC mode werden RC5 Adresse und RC5 Befehl dezimal  (vier Ziffern) auf die serielle Schnittstelle ausgegeben.
-Die MYC Befehle funktionieren nicht. Zur Rückkehr in den MYC mode muss an der seriellen Schnittstelle &H14 oder an der I2C Schnittstelle &H14&H00 eingegeben werden.
-Die nicht_MYC Funktion geht nur mit der seriellen Schnittstelle. Die I2C Schnittstelle funktioniert unverändert.
-Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+Im nicht_MYC mode - einstellbar mit &HEE01 - werden RC5 Adresse und RC5 Befehl dezimal  (vier Ziffern) nur auf die serielle Schnittstelle sofort ausgegeben. Die weitere Steuerung  funktioniert unverändert.
+Einbindung in das MYC System
 
-Befehle
-
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
-
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
 Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Infrared (RC5) receiver;V04.1;1;145;1;11;1-1"
+Data "0;m;DK1RI;Infrared (RC5) receiver;V04.2;1;145;1;11;1-1"
 '
 Announce1:
 'Befehl  &H01
@@ -57,16 +54,16 @@ Announce3:
 Data "3;aa,as2"
 '
 Announce4:
-'Befehl  &H14
+'Befehl  &HEE
 'schaltet MYC / no_MYC mode
 'switches MYC / no_MYC mode
-Data "20;oa,no_myc;a"
+Data "2238;oa,no_myc;a"
 '
 Announce5:
-'Befehl  &H15
+'Befehl  &HEF
 'liest MYC / no_MYC mode
 'read MYC / no_MYC mode
-Data "21;aa,as20"
+Data "239;aa,as238"
 '
 Announce6:
 'Befehl &HF0<n><m>
@@ -90,19 +87,14 @@ Announce9:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,SERIAL,1"
 '
 Announce10:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
-
-I2C
-
-Die Default Adresse ist 6
-Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
-Pullup Widerstände für den I2C Bus (R8/R9) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+'
 
 Fehlermeldungen
 
@@ -113,75 +105,78 @@ Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
 Reset
 
-Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
 
 Watchdog
 
-Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
-Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
-Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8.
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
+Das aktuelle Bascom Programm verwendet einen Atmega8.
 Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
-Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
-Um der Prozessor von der Stromversorgung der übrigen Schaltung zu trennen, muss der Jumper JP1 entfernt werden.
-Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp müssen ggf angepasst werden. Der Quarz hat eine Frequenz von 8MHz.
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 sollte während der Programmierung entfernt werden.
+
+Serielle (RS232 / USB) Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+Bei Verwendung der RS232 Schnittstelle muss bei Jumper JP8 und JP9 ist jeweils Pin1 und Pin2 überbrückt werden.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+I2C Schnittstelle 
+
+Die Default Adresse ist 6
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt.
 
 Infrarot Eingang
 
 Am Infrarot Eingang muss ein geeigneter Empfänger SFH506 oder ähnlich angeschlossen werden.
-Bei mir funktionierte der TSOP1835, allerdings auch nur mit 22uF zwischen + und – und 47k Pullup direkt am Empfänger. Der Speisewiderstand ist 270 Ohm. Eine Begründung für dieses Verhalten fehlt.
-
-RS232 Schnittstelle
-
-Bei Bedarf und entsprechender Bestückung kann auch die RS232/USB Schnittstelle zur Befehlseingabe verwendet  werden. Die Erkennung der aktiven Schnittstelle (I2C / seriell) erfolgt automatisch. Sofern ein Befehl nicht komplett gesendet wurde und die andere Schnittstelle sendet Daten, wird der alte Befehl abgebrochen. Daher kann eine gleichzeitige Verwendung beider Schnittstellen zu Fehlern führen.
-Schnittstellenparameter: 19k2 8N1
-Für RS232 muss bei Jumper JP7 und JP8 ist jeweils Pin1 und Pin2  überbrückt werden.
-
-USB Schnittstelle
-
-Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt seitlich nach außen. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP9 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden.
-Die Stromversorgung erfolgt dann über USB.
-
-SMD
-
-Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ große Kondensatoren (1206).
+Bei mir funktionierte der TSOP1835, allerdings auch nur mit 22uF zwischen + und – und Speisewiderstand von 270 Ohm. Diese Bauteile wurden direkt am Infrarot Empfänger angebracht.
 
 Stromversorgung
 
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 30mA. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber. Die RS232 Buchse, die Stromversorgungsbuchse und der Spannungsregler dürfen dann nicht bestückt werden.
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. 
+Alternativ erfolgt die Stromversorgung über USB
 
-LEDs
-
-Die LEDs müssen nicht bestückt werden. LED1 zeigt nur, daß der Prozessor läuft und blinkt.
-LED2 zeigt, daß ein Infrarot Signal empfangen wurde.
 
 Bestückung der Leiterplatte
 
-Da die Leiterplatte auch für andere Anwendungen eingesetzt werden kann, brauchen nur folgende Bauteile  bestückt werden:
-IC1, Q1 (8MHz), C3 – C6, JP1 (muss für Normalbetrieb überbrückt werden), 
- SL4
+Da die Leiterplatte auch für andere Anwendungen eingesetzt werden kann, brauchen nur folgende Bauteile  bestückt werden: X1, D1, IC1, IC2, Q1, C1 – C5, C10, JP1(muss für Normalbetrieb überbrückt werden), R3, R4, SL4.
 
 Verwendung von ISP:
 JP6
 
-nur mit RS232 Schnittstelle:
-IC2, IC3, D1, C1, C2, C7 – C10, JP7, JP8 (jeweils Pin1 und Pin 2 überbrücken), X1, X4 (Buchse)
+Mit I2C:
+Siehe I2C oben.
 
-nur mit USB
-UM2102
-
-nur I2C
-R8, R9 nach Bedarf, X2, X3, IC3, D1, C1, C2
-
-Als Quarz muss ein 8MHz Quarz verwendet werden!
-
-Weitere Bestückung erleichtert Tests..
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC4 und C6 – C9, JP8, JP9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf auch X1, D1, C1, IC2  nicht bestückt werden!
 
 Anschlüsse
 
@@ -194,21 +189,31 @@ RS232 (Buchse)
 2	Jumper
 3	Jumper
 
-I2C Stereo (2 x 3,5mm Klinke)
-Sleeve	GND
-Ring	SDA
-Tip	SCL
+I2C (SL1, SL2)
+1	GND
+2	SCL
+3	SDA
 
 Infrarot (SL4)
-2	Infrarot Daten 
+2	Infrarot 
 4	5V
 5	GND
+
+Jumper
+
+JP1 		Power
+JP2 		I2C: 3V/5V Umschaltung
+JP3		SDA Überbrückung (ohne IC3)
+JP4		SCL Überbrückung (ohne IC3)
+JP5		Reset
+JP6		pin1 – 6: ISP, pin10 : SS für den SPI Anschluss 
+JP7		Anschluss für USB Modul
 
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 02.0
-Bascom Version 04.1
+Leiterplattenversion V05.1
+Bascom Version V04.2
 
 Copyright
 
@@ -221,6 +226,7 @@ Referenzen
 
 [1]	dk1ri.de/dhw/i2c_rs232_interface_eagle.zip
 [2]	dk1ri.de/dhw/infrarot_rx.zip
-[3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/myc/Definitions.pdf (englisch)
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	https://dk1ri.de/myc/common_1.7.zip
