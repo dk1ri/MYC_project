@@ -11,6 +11,7 @@ End If
 #IF Processor = "8"
         Config PinB.2 = Input
         Reset__ Alias PinB.2
+	Set PortB.2
         Pin_sda Alias PinC.4
         Pin_scl Alias PinC.5
         Port_sda Alias PortC.4
@@ -18,6 +19,7 @@ End If
 #ELSEIF  Processor = "4"
         Config PinB.4 = Input
         Reset__ Alias PinB.4
+	Set PortB.4
         Pin_sda Alias PinC.1
         Pin_scl Alias PinC.0
         Port_sda Alias PortC.1
@@ -25,6 +27,7 @@ End If
 #ELSEIF  Processor = "A"
         Config PinB.1 = Input
         Reset__ Alias PinB.1
+	Set PortB.1
         Pin_sda Alias PinC.1
         Pin_scl Alias PinC.0
         Port_sda Alias PortC.1
