@@ -3,10 +3,13 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 DTMF Sende - Empfänger
 
 Author: DK1RI
-Version V02.2  20181022
+Version V03.0  20190802
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
+
+Da das IC MT8880 kaum noch lieferbar ist, wird dieses Board nicht weiterentwickelt.
+Ein DTMF Sender ist vorhanden, der Empfänger mit Software Decoder ist in Planung.
 
 Dieses Interface ist eine Konverter von DTMF Signalen auf MYC Protokoll über I2C (Slave) / seriell / USB
 Das Interface kann DTMF Signale senden und empfangen.
@@ -14,26 +17,27 @@ Im „no_myc“ Mode arbeitet das Interface als einfacher DTMF - ASCII – DTMF Wandle
 
 Beschreibung
 
-Die Eagle Datenstehen unter  [1].
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20 max.
+Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 
 Die Befehle zur Steuerung müssen binär eingegeben werden; er erfolgt keine Wandlung; die DTMF Werte aber als ASCII Werte
 Die ausgegebenen DTMF Signale sind 50ms lang mit ca 100ms Pause (Burst Mode)
 Im MYC Mode sind die eingegebenen DTMF Daten ein String, beginnend mit der (binären) Stringlänge. Die Stringlänge ist maximal 251.
 &H02&H04ABCD		DTMF Ausgabe: &H04; 4 Bytes: ABCD
-Der DTMFempfang ist bis 251 DTMF-Zeichen gepuffert, sowohl im MYC als auch im nicht MYC Mode. Alte Daten werden überschrieben.
+Der DTMF-Empfang ist bis 251 DTMF-Zeichen gepuffert. Alte Daten werden überschrieben.
 Nach dem MYC Protokoll kopiert der Lesebefehl &H01 die empfangenen DTMF Daten in den Lesepuffer. Ist die serielle / USB Schnittelle aktiv, werden die Daten da ausgegeben. Ist I2C aktiv können die Daten vom Master ausgelesen werden können. Werden mehr Zeichen ausgelesen als vorhanden sind, wird &H80 ausgegeben.
 Die Umschaltung in den No-MYC-Mode erfolgt mit &HEE&H01
-Im No_MYC mode werden die Ziffern 0 -9 *, # und A - D (oder a - d) direkt ohne Stringlänge auf der seriellen / USB Schnittstelle ein- und ausgegeben. Andere Zeichen werden ohne Fehlermeldung ignoriert.
+Im No_MYC mode werden die Ziffern 0 -9 *, # und A - D (oder a - d) direkt ohne Stringlänge auf der seriellen / USB Schnittstelle ein- und ausgegeben. Andere Zeichen werden ohne Fehlermeldung ignoriert. Es kann immer nur 1 Zeichen eingegeben werden. Zeichen, die eingegeben werden, bevor das DTMF Zeichen ausgegeben wurde, werden möglicherweise ignoriert.
+Empfangene Zeichen werden sofort an der seriellen Schnittstelle ausgegeben. 
 Die Rückkehr in den MYC Mode erfolgt mit Space (&H20)
 Die Umschaltung des MYC_mode ist ein Konfigurationsparameter und wird in einem MYC System  vom Commandrouter nicht weitergegeben.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
-Befehle
+Einbindung in das MYC System
 
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Folgende Befehle werden von der I2C / USB Schnittstelle akzeptiert:
-Dies ist eine Kopie aus dem Bascom Programm:
-
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
 
 Announce0:
 'Befehl &H00 1 Byte / -
@@ -87,88 +91,94 @@ Announce8:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,17,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,17,{0 to 127};a,SERIAL,1"
 '
 Announce9:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,17,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
-
-I2C
-
-Die Default Adresse ist 17.
-Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
-Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,17,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 
 Fehlermeldungen
 
 Der Befehl &HFC liefert den letzten Fehler im Format:
-aktuelle Befehlsnummer - Fehler – letzte Befehlsnummer vor Auftritt des Fehlers
-Dazu werden die empfangenen Befehle von 1 bis 254 umlaufend gezählt.
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
 Reset
 
-Ist der Reset Jumper JP2 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
 
 Watchdog
 
-Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
-Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
-Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller Atmega328 oder größer
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega328 oder größer.
+Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
-Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
-Um der Prozessor von der Stromversorgung der übrigen Schaltung zu trennen, muss der Jumper JP3 entfernt werden.
-Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 sollte während der Programmierung entfernt werden.
+
+Serielle (RS232 / USB) Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+I2C Schnittstelle 
+
+Die Default Adresse ist 17
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ große Bauteile.
 
 DTMF
 
 Die DTMF Signale entsprechen der Norm.
 Der DTMF Ausgang ist nicht gleichspannungsfrei und nicht kapazitiv entkoppelt, der Eingang ist entkoppelt.
 
-USB Schnittstelle
-
-Das Interface kann mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird auf der Unterseite der Interfaces verlötet: der USB Stecker zeigt vorne. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP1 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden oder mit Hilfe einer Stiftleiste mit etwas Abstand voneinander zu befestigen. Die Bauteileseite des USB Moduls zeigt nach unten; die Leiterbahnseiten beider Leiterplatten zeigen zueinander.
-Die Stromversorgung erfolgt dann über USB.
-
-SMD
-
-Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ großen Kondensatoren (1206) und optional die SOT23 LED.
 
 Stromversorgung
 
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 30mA. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
-
-LEDs
-
-Die LED muss nicht bestückt werden. LED1 zeigt nur, dass der Prozessor läuft und blinkt.
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. 
+Alternativ erfolgt die Stromversorgung über USB
 
 Bestückung der Leiterplatte
 
-LED1, R3 sind nur für Tests und brauchen nicht bestückt werden.
-R7 / R8 sollen zusammen 374 Ohm ergeben. Eine Möglichkeit, diesen Wert zu erreichen, ist die Verwendung von 390Ohm und 10k . Dies ergibt 375,3 Ohm.
-Wegen des Speicherbedarfs muss als Prozessor ein Atmega328 verwendet werden.
-Je nach gewünschter Schnittstelle müssen nur folgende Bauteile bestückt werden:
-
-Mit USB
-UM2102 (siehe USB); X1, D1, IC1, C1, C2 entfallen
-
-mit  I2C
-X2, X3
-R1, R2 I2C Pullups nach Bedarf:
- 
 Verwendung von ISP:
-JP5
+JP6
 
+Mit I2C:
+Siehe I2C oben.
 
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2 nicht bestückt werden! X1, D1 und C1 braucht auch nicht bestückt werden.
+
+R7 / R8 sollen zusammen 374 Ohm ergeben. Eine Möglichkeit, diesen Wert zu erreichen, ist die Verwendung von 390Ohm und 10k . Dies ergibt 375,3 Ohm.
 
 Anschlüsse
 
@@ -176,21 +186,34 @@ Power
 Tip	12V
 Ring	GND
 
-I2C Stereo (2 x 3,5mm Klinke)
-Sleeve	GND
-Ring	SDA
-Tip	SCL
+I2C
+1	GND
+2	SCL
+3	SDA
 
-DTMF (LP SL4)
-1	DTMF Eingang
+DTMF (SL4)
+1	GND
 2	DTMF Ausgang
-5	GND
+3	DTMF Eingang
+
+Jumper
+
+JP1 		Power
+JP2 		I2C: 3V/5V Umschaltung
+JP3		SDA Überbrückung (ohne IC3)
+JP4		SCL Überbrückung (ohne IC3)
+JP5		Reset
+JP6		pin1 – 6: ISP, pin10 : SS für den SPI Anschluss 
+JP7		Anschluss für USB Modul
+
+
+
 
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 01.2
-Bascom Version 03.1
+Leiterplattenversion V04.1
+Bascom Version V04.0
 
 Copyright
 
@@ -202,7 +225,8 @@ The usage of this document is on own risk, there is no warranty.
 Referenzen
 
 [1]	dk1ri.de/dhw/dtmf_trx_eagle.zip
-[2]	dk1ri.de/dhw/dtmf_trx.zip
-[3]	dk1ri.de/myc/MYC.pdf 
+[2]	dk1ri.de/dhw/dtmf_trx_bascom.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	https://dk1ri.de/myc/common_1.7.zip
