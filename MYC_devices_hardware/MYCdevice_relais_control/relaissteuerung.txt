@@ -2,23 +2,20 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Relaissteuerung
 
-Author DK1RI, Version V05.1, 20190709
+Author DK1RI, Version V05.1, 20190806
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
 Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
-Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
-Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden. Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung
 
 Die Eagledaten stehen bei [1].
-Als Stromversorgung (7-12V) werden  maximal 150mA benötigt 
+Als Stromversorgung (7-12V) werden  maximal 150mA benötigt.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
-
-Diese Leiterplatte hat vier Relais mit je zwei Umschaltkontakten, 7 digitale Eingänge und 4 Eingänge, die sich jeweils analog (1024 Stufen Auflösung) oder digital auslesen lasen. Beim Analogbetrieb liegt die Eingangsspannung zwischen 0  und  5V (nicht isoliert und nicht geschützt mit pullup Widerständen). Der Eingangsspannungsbereich ist auf 0 - 1,1V umschaltbar. Der  Eingangsspannungsbereich gilt für alle Eingänge, da die Referenzspannung umgeschaltet wird.
-Der Eingangsspannungsbereich wird im EERAM gespeichert.
+Diese Leiterplatte hat vier Relais mit je zwei Umschaltkontakten, 7 digitale Eingänge und 4 Eingänge, die sich jeweils analog (1024 Stufen Auflösung) oder digital auslesen lasen. Beim Analogbetrieb liegt die Eingangsspannung zwischen 0  und  5V (nicht isoliert und nicht geschützt mit pullup Widerständen). Der Eingangsspannungsbereich ist auf 0 - 1,1V umschaltbar. Der  Eingangsspannungsbereich gilt für alle Eingänge, da die Referenzspannung umgeschaltet wird. Der Eingangsspannungsbereich wird im EERAM gespeichert.
 Die Kondensatoren an den Eingängen müssen an die Verwendung angepasst werden. Hohe Werte begrenzen möglicherweise den Frequenzbereich und verhindern die Programmierung des Prozessors über ISP.
 Da mit Version V04.0 der Leiterplatte die Beschreibung der Anschlüsse  geändert wurde, ist die aktuelle Firmware nicht mit älteren Leiterplatten verwendbar! 
 
@@ -213,13 +210,13 @@ Announce30:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,serial,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1"
 '
 Announce31:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,serial,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 
 Fehlermeldungen
 
@@ -234,11 +231,10 @@ Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden
 
 Watchdog
 
-Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
-Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert. Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
 Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
 Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
-Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset. 
 
 Software
 
@@ -249,7 +245,7 @@ Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verze
 
 Programmierung des Prozessors
 
-Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen. Der Programmierstecker wird auf die pins 1-6 gesteckt.
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
 Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
 Der Jumper J1 sollte während der Programmierung entfernt werden.
 
@@ -263,16 +259,15 @@ I2C Schnittstelle
 
 Die Default Adresse ist 4.
 Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
-Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k – 10k).
 Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
 Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
-Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
-Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
-Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt.
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen.
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen.
 Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
-SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
-Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
-Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden.
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt. Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet. 
 
 SMD
 
