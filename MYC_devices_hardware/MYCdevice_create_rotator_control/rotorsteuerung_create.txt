@@ -2,26 +2,26 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
  
 MYC Interface für RC5A3 Rotorsteuerung von Create
 
-Author DK1RI, Version V04.2 20181019
-This project can be found in https://www.github.com/dk1ri also.
+Author DK1RI, Version V05.0 20190823
+This project can be found in https://www.github.com/dk1ri
 
 Einleitung
 
-Im geöffneten Gerät sind personengefährdende Spannungen direkt zugänglich. Das Öffnen des Geräts und der Einbau des Interfaces ist nur Personen mit ausreichender fachlicher Qualifikation gestattet.
+In der geöffneten Rotorsteuerung sind personengefährdende Spannungen direkt zugänglich. Das Öffnen des Geräts und der Einbau des Interfaces ist nur Personen mit ausreichender fachlicher Qualifikation gestattet.
 Der Einbau des Interfaces und der Umbau der Originalschaltung erfordert das Verständnis der Schaltung des Rotorsteuergerätes.
 Es gibt unterschiedliche Varianten der Elektronik der Originalsteuerung. Das vorliegende Interface gilt nur für eine Version aus den 90er Jahren. Weitere Details im Text.
 
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Der Änderungsaufwand an der Originalschaltung sollte so gering als möglich sein; allerdings sind doch einige Eingriffe in die Originalschaltung nötig.
 Das Interface soll in das Originalgehäuse passen.
-Das Steuerung erfolgt über I2C Bus, USB oder seriell (TTL Pegel, 19k2, 8N2) mit MYC Protokoll
-Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung und Bedienungshinweise
 
-Die Eagledaten stehen bei [1].
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung (12V) liefert das Steuergerät. Benötigt werden maximal 80mA zusätzlich.
-
-Die Steuerung macht ein AVR Mikrocontroller.
+Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 
 Wenn die Motorsteuerung des Interfaces aktiv ist, schaltet ein Relais um von Durchleitung von Originalsteuerung zum Motor auf die Interfacesteuerung zum Motor.
 Dazu  muss nach dem Einschalten ein Aktivierungsbefehl (&H0101) gegeben werden. Dann funktionieren die CW/CCW und Preseteinstellung der Originalsteuerung nicht mehr. 
@@ -61,6 +61,8 @@ Die Spannung am Rotorpotentiometer wurde mit VR1 und VR2 auf dem Interface auf +
 Bei Verwendung des Interfaces sollte die Rotorsteuerung mit „MAN“ eingeschaltet werden. Das verringert den Stromverbrauch.
 Nochmal der Hinweis: Es kann auch Varianten der Original-Steuerung geben. Der Umbau und Einbau des Interfaces muss dann anders erfolgen.
 
+
+
 Potentiometerspannung
 
 Wie oben beschrieben, schwankt die Spannung am Rotorpotentiometer sehr stark. Beide Spannungen schwanken symmetrisch um den Nullpunkt. Die Werte der Spannung ändern sich auch mit dem Schalten der Relais.
@@ -81,19 +83,20 @@ Die Befehle &H0B und &H0C stehen bei der normalen Anwendung im MYC System nicht 
 Genauigkeit
 
 Der AD Wandler selbst hat eine Genauigkeit von ca. 0,4 Grad. Da die 360 Grad aber nicht einer vollen Drehung des Potentiometer entsprechen und auch die Temperaturtoleranzen zu berücksichtigen sind, ist die erreichbare Genauigkeit aber geringer. 
-Außerdem gibt es einen systembedingten Linearitätsfehler (<1 %) durch die Art der Messschaltung, da der schaltungstechnische Ersatzwiderstand des  Rotor-Potentiometers nicht konstant ist. Durch die hohen Werte von R9 - R11, Ry wird der Effekt verringert. Dieser Fehler wird auch weitestgehend durch die Firmware kompensiert. Bei Verwendung anderer Widerstände muss diese Korrektur neu berechnet werden. Wer das rechnen will, kann zum Beispiel das LTSpice (TM) Modell und die Tabelle verwenden [5]. 
+Außerdem gibt es einen systembedingten Linearitätsfehler (<1 %) durch die Art der Messschaltung, da der schaltungstechnische Ersatzwiderstand des  Rotor-Potentiometers nicht konstant ist. Durch die hohen Werte von R9 - R11, Ry wird der Effekt verringert. Dieser Fehler wird auch weitestgehend durch die Firmware kompensiert. Bei Verwendung anderer Widerstände muss diese Korrektur neu berechnet werden. Wer das rechnen will, kann zum Beispiel das LTSpice (TM) Modell und die Tabelle verwenden [7]. 
 Der größte Fehler dürfte aber durch die Nichtlinearität des Potentiometers entstehen. Die Genauigkeit des Interface ist also nicht viel besser als die des Originalgeräts.
 
-Befehle
 
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
+Einbindung in das MYC System
+
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
 
 Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RC5 rotator control;V05.3;1;145;1;24:1-1"
+Data "0;m;DK1RI;RC5 rotator control;V06.0;1;145;1;24:1-1"
 '
 Announce1:
 'Befehl &H01 0|1
@@ -206,13 +209,13 @@ Announce19:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,SERIAL,1"
 '
 Announce20:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8N1;a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8N1"
 '
 Announce21:
 ' - no operate command is done before Control_on is set
@@ -226,55 +229,68 @@ Announce23:
 'No Preset If hardwarelimit
 Data "R !$3 IF $14=1"
 
-I2C
-
-Die Default Adresse ist 2 .
-Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
-Pullup Widerstände für den I2C Bus (R1/R2)können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
-Wenn Geräte am I2C Bus nur 3.3V vertragen (zB der Raspberry),dürfen die Pullup Widerstände nicht bestückt werden.
-
-
 Fehlermeldungen
 
 Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
 Reset
 
-Ist der Reset Jumper JP1 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
 
 Watchdog
 
-Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
-Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
-Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller ATMEGA168 oder größer
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
+Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
-Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
-Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden. Beim Programmieren sollte der Jumper JP3 entfernt werden.
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 sollte während der Programmierung entfernt werden.
 
-USB Schnittstelle 
+Serielle (RS232 / USB) Schnittstelle
 
-Das Interface kann mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird auf der Unterseite der Interfaces verlötet: der USB Stecker zeigt nach innen. Die 4 inneren Pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP4 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden. Dazu wird der Modul über eine Stiftleiste verbunden. Der Modul sollte am Schluss verlötetet werden. USB Befestigung
-Die 5V Stromversorgung erfolgt dann über USB  Der Spannungsregler IC2, C2 und C3 entfallen.
-Anstelle des USB Moduls kann auch eine serielle Schnittstelle (TTL Pegel, nicht invertierend, 19k2, 8N1) angeschlossen werden.
+Schnittstellenparameter: 19k2 8N1
+Die Signale stehen mit TTL Pegel an JP7 zur Verfügung.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird mit einem Zwischenstecker verlötet (siehe Bild).
+Die Stromversorgung erfolgt dann über USB.
+
+I2C Schnittstelle 
+
+Die Default Adresse ist 2
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+Bei Bestückung mit der USB Schnittstelle muss die 5V Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
 
 SMD
 
-Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur  relativ großen Kondensatoren  (1206) .
+Die Leiterplatte ist teilweise mit SMD bestückt.
+
 
 Stromversorgung
 
 Stromaufnahme ist ca. 120mA max. Die Stromversorgung übernimmt das Rotor Steuergerät, bzw der USB Modul (nur 5V)
-
-
 
 Leiterplattenbestückung, Gehäuseeinbau
 
@@ -282,15 +298,17 @@ Offenbar gibt es mehrere Varianten der Elektronik der Originalsteuerung. Weitere
 Das folgende gilt für meine Version:
 
 Die Dioden und Transistoren sind unkritisch. 
-Die SMD Kondensatoren können auch kleiner sein, 4,7u oder 10u reichen auch.
-Der Prozessor ist ein ATMega168 oder größer.
-Der Widerstände Ry muss 145kOhm betragen und kann aus bis zu 3 Widerständen zusammengesetzt werden: zum Beispiel 143kOhm und 2.2kOhm in Reihe. Das ist ausreichend genau.
+Der Widerstände Ry muss 145kOhm betragen und kann aus bis zu 3 Widerständen zusammengesetzt werden: zum Beispiel 143kOhm und 2.2kOhm oder 1.8kOhm in Reihe. Das ist ausreichend genau.
 
 Die Interfaceplatine wird in das Gehäuse der Rotorsteuerung eingebaut. Dazu ist das Gerät vom Stromnetz zu trennen !! Es sind unbedingt entsprechende VDE Sicherheitsrichtlinien zu beachten (die ein Funkamateur kennen sollte).
 
 Die Platine wird in der Schale des Deckels mit drei Schrauben befestigt. Da das Interface dann sehr dicht an der nicht isolierten Netzsicherung liegt, ist diese unbedingt zu isolieren !!!
 Der Umbau der Spannungsversorgung ist oben beschrieben. Die beiden Kondensatoren sind „fliegend“ an der äußeren Lampenfassung angelötet. Dort ist auch der Anschluss der Stromversorgung des Interfaces. 
-Der I2C / USB Anschluss wird als Kabelanschluss durch die Öffnung unterhalb der Sicherung geführt. Als Buchse für I2C verwende ich eine Kabelbuchse für einen 3-poligen 3,5mm Klinkenstecker.
+Der I2C / USB Anschluss wird als Kabelanschluss durch die Öffnung unterhalb der Sicherung geführt. 
+Bei Verwendung des USB Moduls wird IC4 nicht bestückt.
+2 Bilder des Aufbaus: siehe [8], [9]-
+
+
 
 Anschlüsse
 
@@ -317,11 +335,21 @@ SL5 Motor
 4 orange	ccw, Anschluss 2  (rot) abtrennen und (orangen Draht) mit Anschluss 2 verbinden 
 5 gelb		ccw mit abgetrenntem Draht von Anschluss 2 (rot) verbinden 
 
+Jumper
+
+JP1 		Power
+JP2 		I2C: 3V/5V Umschaltung
+JP3		SDA Überbrückung (ohne IC3)
+JP4		SCL Überbrückung (ohne IC3)
+JP5		Reset
+JP6		ISP
+JP7		Anschluss für USB Modul
+
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 3.3
-Bascom Version V05.3  
+Leiterplattenversion 4.0
+Bascom Version V06.0  
 
 Copyright
 
@@ -333,8 +361,11 @@ The usage of this document is on own risk, there is no warranty.
 Referenzen
 
 [[1]	dk1ri.de/dhw/rotorsteuerung_create_eagle.zip
-[2]	dk1ri.de/dhw/rotorsteuerung_create.zip
-[3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/dhw/rotorsteuerung_widerstandsberechnung.zip
-[6]	dk1ri.de/myc/Definitions.pdf (englisch)
+[2]	dk1ri.de/dhw/rotorsteuerung_create_bascom.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	dk1ri.de/myc/common_1.7.zip
+[7]	dk1ri.de/dhw/rotorsteuerung_widerstandsberechnung.zip
+[8]	dk1ri.de/dhw/rotor1.jpg
+[9]	dk1ri.de/dhw/rotor2.jpg
