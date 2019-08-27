@@ -1,44 +1,47 @@
 Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/sprachausgabe.pdf
 
-Sprachausgabe
+MYC Sprachausgabe
 
-Author DK1RI, Version V01.7 20181019
+Author DK1RI, Version V02.0 20190827
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
-Dieses Interface ist bindet das Sprachausgabe Modul MSM2 von ELV in das MYC System ein.
-Das Interface arbeitet als Slave am I2C Bus oder kann über RS232 /USB gesteuert werden.
+Dieses Interface ist bindet das Sprachausgabe Modul MSM4 von ELV in das MYC System ein.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Dieses Interface ist ein Beispiel dafür, wie mit minimalem Entwicklungsaufwand eine Funktion in das MYC System integriert werden kann. Eine neu entwickelte Leiterplatte mit eigener Software ist sicher billiger zu realisieren, aber wesentlich aufwendiger.
 
 Beschreibung
 
-Die Eagle Daten der Leiterplatte stehen unter  [1].
-Als Sprachausgabemodul wird der MSM2 von ELV verwendet.
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA, je nach Ausgangsleistung.
-Die Steuerung des Interfaces kann, abhängig von der Bestückung über I2C, RS232 oder USB erfolgen
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60 max.
+Die Steuerung kann über I2C, USB oder RS232 erfolgen.
+Als Sprachausgabemodul wird der MSM4 von ELV verwendet.
+Details zur Bedienung stehen in den Unterlagen zudem Modul (Bitte unbedingt lesen!)
 Die Befehle und Parameter müssen binär eingegeben werden; es erfolgt keine Wandlung.
-Das Sprachmodul muss initialisiert werden; das Interface funktioniert daher erst ca 15 Sekunden nach dem Einschalten.
-Die unterschiedlichen Modi (>10 s Tastendruck) können auch gesteuert werden, dauern aber ca 12 Sekunden.
-Wird der Befehl &H01 oder &H02 gesendet, während noch eine Sprachausgabe läuft, wird diese unterbrochen.
+Die unterschiedlichen Modi (>10 s Tastendruck) können eingestellt werden, das dauert aber circa 11 Sekunden. Der Tastenmodus (2+3  bis 2+9) wird im EEPROM gespeichert und beim Einschalten auch wieder eingestellt. Der Tastenmodus kann auch gelesen werden.
+Das Sprachmodul wird beim Start auf letzten Tastenmode initialisiert. Das dauert 11 Sekunden. Dazu kommen 5 Sekunden bis sich das Modul selbst initialisiert hat.
+Beim Lesen der anderen Modi (&H04) wird nur während der Übertragungszeit der Mode angezeigt, sonst 0. 
+Der Kopfhörerausgang ist nicht gleichspannungsfrei. Ein hochohmiger Kopfhörer kann aber angeschlossen werden.
 
-Befehle
+Einbindung in das MYC System
 
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
 						
 Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Sprachausgabe;V03.1;1;145;1;11;1-1"
+Data "0;m;DK1RI;Sprachausgabe;V04.0;1;145;1;13;1-1"
 '
 Announce1:
 'Befehl &H01 0 to 9
 'spielt Sprache/Musik
 'play voice/music
-Data "1;os,sound;1;0;1;2;3;4;5;6;7;8;9"
+Data "1;os,,sound;1;0;1;2;3;4;5;6;7;8;9"
 '
 Announce2:
 'Befehl &H02 0 to 9
@@ -50,116 +53,141 @@ Announce3:
 'Befehl &H03 0 to 8
 'Modi
 'set modes
-Data "3;ou,modi;1;0,2;1,3;2.4;3,5;4,6;5,7;6,8;7,9;8,10"
+Data "3;ou,modi;1;0,idle; 1,12;2,1+3;3.1+4;4,1+5;5,1+6;6,1+7;7,1+8;8,1+9;9,1+10;10,2+10"
 '
 Announce4:
 'Befehl &H04
-'liest Modus
-' read mode
-Data "4;au,as3"
+'Modus Uebertragung
+' read mode transmission
+Data "4;as,mode transmission;1;0,idle; 1,12;2,1+3;3.1+4;4,1+5;5,1+6;6,1+7;7,1+8;8,1+9;9,1+10;10,2+10;11,2+x"
 '
 Announce5:
+'Befehl &H03 0 to 8
+'Modi
+'set modes
+Data "3;ot,modi;1;0,idle; 1,12;2,1+3;3.1+4;4,1+5;5,1+6;6,1+7;7,1+8;8,1+9;9,1+10; 10,2+10"
+'
+Announce6:
+'Befehl &H04
+'liest Modus
+' read mode
+Data "6;au,as5"
+'
+Announce7:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;11"
+Data "240;ln,ANNOUNCEMENTS;145;13"
 '
-Announce6:                                                  '
+Announce8:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce7:                                                  '
+Announce9:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce8:
+Announce10:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,20,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,20,{0 to 127};,SERIAL,1"
 '
-Announce9:
+Announce11:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,20,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,20,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 '
-Announce10:
-Data "R !$1 !$2 If $3&1 > 0"
-
-I2C
-
-Die Default Adresse ist 20 / &H14
-Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
-Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
-Wenn Geräte am I2C Bus nur 3.3V vertragen (zB der Raspberry), dürfen die Pullup Widerstände nicht bestückt werden.
+Announce12:
+Data "R !$1 !$2 !R3 !R5 If $4 > 0"
 
 Fehlermeldungen
 
 Der Befehl &HFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
 Reset
 
-Ist der Reset Jumper JP4 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
 
 Watchdog
 
-Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
-Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
-Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
+Das aktuelle Bascom Programm verwendet einen Atmega88P.
 Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
+
 
 Programmierung des Prozessors
 
-Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker vorhanden.
-Um der Prozessor von der Stromversorgung der übrigen Schaltung zu trennen, muss der Jumper JP1 entfernt werden.
-Die Fuses müssen möglicherweise programmiert werden (sh Bascom Programm) !! Prozessortyp und Frequenz müssen ggf angepasst werden.
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 sollte während der Programmierung entfernt werden.
+Sicherheitshalber sollte auch der MSM4 Modul während der Programmierung entfernt werden!
+(Ich habe einen Modul wahrscheinlich so zerstört, was sich dadurch äußert, dass die LEDs beim Einschalten an bleiben)
 
-RS232 Schnittstelle
+Serielle (RS232 / USB) Schnittstelle
 
 Schnittstellenparameter: 19k2 8N1
-I2C und RS232 / USB können nicht gleichzeitig verwendet. Der Befehlspuffer wird gelöscht, wenn die Schnittstelle gewechselt wird.
-
-USB Schnittstelle
-
-Das Interface kann alternativ mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt seitlich nach außen. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 poligen Verbinder JP9 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
 Die Stromversorgung erfolgt dann über USB.
+
+I2C
+
+Die Default Adresse ist 20 / &H14
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
 
 SMD
 
-Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur  relativ großen Kondensatoren und Widerstände (1206).
+Die Leiterplatte ist teilweise mit SMD bestückt. 
 
 Stromversorgung
 
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA max. Bei Verwendung des USB Moduls erfolgt die Stromversorgung darüber.
-
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60mA max.
+Alternativ erfolgt die Stromversorgung über USB
 
 Bestückung der Leiterplatte
 
-Alle Bauteile außer den unten genannten müssen immer bestückt werden.
-
-Mit USB Schnittstelle entfällt:
-X1, D1, IC2, C1, IC3, C7 – C10 X4 (Buchse)
-
-Ohne ISP:
+Verwendung von ISP:
 JP6
 
-ohne I2C Schnittstelle:
-X2, X3
-R8, R9 nach Bedarf
+Mit I2C:
+Siehe I2C oben.
 
-Wird der Modul als Fertiggerät gekauft, zeigen die Anschlusspins nach „oben“. Der Anschluss an das Interface muss dann über ein Flachbandkabel erfolgen: die Buchsen des Kabels sind auf der gleichen Seite. Der Verbinder JP12 / JP13 ist dann eine Buchsenleiste, die mit einer Stiftleiste ( erhöht wird.
-Verwendet man einen Bausatz, wird die Stiftleiste im Modul nach unten zeigend eingelötet. JP12 / JP13 ist eine Buchsenleiste. 
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2 nicht bestückt werden! X1, D1 und C1 braucht auch nicht bestückt werden.
+
+Wird der Modul nicht als Fertiggerät gekauft, kann der Stecker wie beim Fertiggerät eingelötet werden, wie das Bild in der Anleitung zeigt (auf der Seite der zweiten Leiterplatte). Der Modul wird auf der Leiterbahnseite der MYC Leiterplatte aufgesteckt, und liegt dann unter der Leiterplatte. Da so sehr wenig Platz zwischen Leiterplatte und Modul ist, sollte der Modul auf eine Buchsenleiste gesteckt und isoliert werden. 
+JP8 / JP9 ist diese Buchsenleiste. 
+Dieser Aufbau ist zwar klein,hat den Nachteil, dass  die LEDs des Soundmodul nicht direkt sichtbar sind und zur Einstellung des Potentiometers der Modul entfernt werden muss.
+Der Modul kann auch über ein Flachbandkabel angeschlossen werden.
+Beim Modul als Bausatz kann man auch den Stecker auf der anderen Seite anlöten und lötet die Buchsenleiste dann auf die Bauteileseite des Interface.
 
 Anschlüsse
 
@@ -169,24 +197,35 @@ Ring	GND
 
 RS232 (Buchse)
 5	GND
-2	zum Computer
-3	vom Computer
+2	TX (PC Eingang)
+3	RX (PC Ausgang)
 
-I2C (2 x 3,5mm Klinke, Stereo)
-Sleeve	GND
-Ring	SDA
-Tip	SCL
+I2C (SL1, SL2)
+1	GND
+2	SCL
+3	SDA
 
 8Ohm Lautsprecher (3,5mm Klinke, Stereo)
 Sleeve	1
 Ring	2
 Tip	2
 
+Jumper
+
+JP1 		Power
+JP2 		I2C: 3V/5V Umschaltung
+JP3		SDA Überbrückung (ohne IC3)
+JP4		SCL Überbrückung (ohne IC3)
+JP5		Reset
+JP6		ISP
+JP7		Anschluss für USB Modul
+JP8/JP9 	MSM4 Anschluss
+
 Versionen
 
 Diese Beschreibung gilt für die 
-Leiterplattenversion 01.0
-Bascom Version 03.1
+Leiterplattenversion 02.0
+Bascom Version 04.0
 
 Copyright
 
@@ -197,8 +236,8 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[[1]	dk1ri.de/dhw/sprachausgabe_eagle.zip
-[2]	dk1ri.de/dhw/sprachausgabe.zip
-[3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/myc/Definitions.pdf (englisch)
+[[1]	dk1ri.de/dhw/MYC_sprachausgabe_eagle.zip
+[2]	dk1ri.de/dhw/MYC_sprachausgabe_bascom.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
