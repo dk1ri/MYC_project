@@ -3,8 +3,10 @@
 '
 'twint set?
 If TWCR.7 = 1 Then
+B_temp1 = TWSR
+print B_temp1
    ' TWSR.0:2 are 0, no blanking with &HF8 necessary
-   ' the following TWSR values will occur only (all action use ack, no multiple master / arbitration):
+   ' only the following TWSR values will occur (all action use ack, no multiple master / arbitration):
    ' 60 -> start read, 80-> data read, A0 -> stop read
    ' A8 -> start, load data, B8 -> data written, C8 -> stop
    ' only two of them require actions (&H80 und &HA8)
@@ -23,7 +25,7 @@ If TWCR.7 = 1 Then
       Else
          I2c_not_ready_to_receive
       End If
-   Elseif TWSR = &HA8 Then
+   Elseif TWSR = &HB8 Then
       'slave send:
       'a slave send command must always be completed (or until timeout)
       'incoming commands are ignored as long as tx is not empty
