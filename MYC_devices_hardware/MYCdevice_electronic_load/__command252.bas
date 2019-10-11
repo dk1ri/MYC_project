@@ -19,3 +19,7 @@
             Tx = ": FET not active: "
          Case 17
             Tx = ": calibrate current too low: "
+	Case 18
+	    Tx = ": ADC I2C error: "
+	Case 19
+	    Tx = ": Voltage too high: "

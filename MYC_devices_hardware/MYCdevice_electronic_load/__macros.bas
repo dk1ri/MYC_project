@@ -37,3 +37,11 @@ Macro Calibrate_current_too_low
    Error_no = 17
    Error_cmd_no = Command_no
 End Macro
+Macro Adc_i2c_error
+   Error_no = 18
+   Error_cmd_no = Command_no
+End Macro
+Macro Voltage_too_high
+   Error_no = 19
+   Error_cmd_no = Command_no
+End Macro
