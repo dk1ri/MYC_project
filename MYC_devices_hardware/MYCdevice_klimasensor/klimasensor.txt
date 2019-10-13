@@ -1,32 +1,32 @@
 Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/klimasensor.pdf
 
-Klimasensor mit MYC Protokoll
+MYC Klimasensor
 
-Author DK1RI, Version V02.3, 20181020
+Author DK1RI, Version V03.0, 20191013
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
 Dies ist die Beschreibung eines Klimasensors mit dem Sensor BME280
-Das Gerät wird mit dem MYC Protokoll über den I2C Bus oder RS232 / USB gesteuert.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Das Interface (grosse Leiterplatte) arbeitet als Slave am I2C Bus oder kann über RS232 /USB gesteuert werden. Die kleine Leiterplatte hat nur ein USB Interface.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
  
 Beschreibung
 
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20 max.
+Die Steuerung kann über I2C, USB oder RS232 erfolgen (kleine Version: nur USB).
 Die Schaltung verwendet das Sparkfun BM280 Hookup Modul (TM).
-Es gibt zwei Versionen der Leiterplatte: die kleine Version hat nur eine USB Schnittstelle, die größere kann auch mit I2C bestückt werden.
-
-Hinweise zur Bedienung
-
 Neben dem Auslesen von Temperatur, Feuchte und Luftdruck können auch die Parameter des BME280 geändert werden. Die genauen Auswirkungen müssen im Datenblatt nachgelesen werden.
 Die Default - Einstellung sollte für viele Anwendungen passen.
 Ein Reset liest auch die Korrekturdaten. Dies ist nötig, wenn der Sensormodul gewechselt wird.
 
-Befehle
+Einbindung in das MYC System
 
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Folgende Befehle werden von der I2C  / RS232 / USB Schnittstelle akzeptiert; dies ist eine Kopie aus dem Bascom Programm:
-	
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
+
 Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
@@ -145,25 +145,21 @@ Announce19:
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,RS232,1;a,USB,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,SERIAL,1"
 '
 Announce20:
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
-
-I2C
-
-Die Default Adresse ist 22 (&H16).
-Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 128) geändert werden.
-Pullup Widerstände für den I2C Bus (R8/R9) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen.
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+'
 
 Fehlermeldungen
 
 Der Befehl &HFC liefert den letzten Fehler im Format:
-aktuelle Befehlsnummer - Fehler – letzte Befehlsnummer vor Auftritt des Fehlers
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
 Reset
 
@@ -171,53 +167,72 @@ Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden
 
 Watchdog
 
-Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
-Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
-Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
 Software
 
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
+Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
-Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker (JP6) vorhanden.
-Die Programmierung darf nur mit entferntem Sensor durchgeführt werden.
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
 Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 sollte während der Programmierung entfernt werden.
+Die Programmierung darf nur mit entferntem Sensor durchgeführt werden.
 
-Serielle / USB Schnittstelle
+Serielle (RS232 / USB) Schnittstelle
 
-Die Schaltung kann mit der USB Platine UM2102 von ELV bestückt werden. Diese liefert 5V und 3.3V Die große Leiterplattenversion kann statt des USB Moduls auch mit seriellen Daten gesteuert werden (19k2 8N1, TTL Pegel). Ein (invertierender) Pegelwandler und RS232 Stecker ist allerdings nicht vorhanden.
- 
+Schnittstellenparameter: 19k2 8N1.
+Alternativ (große Version) zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+I2C
+
+Die I2C Schnittstelle ist nur auf der großen Leiterplatte vorhanden. Die Default Adresse ist 22 (&H16).
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k – 10k).
+Da der Prozessor mit 3.3V arbeitet, muss auch der I2C Bus mit dieser Spannung arbeiten. Hat der externe I2C Bus 5 V, muss der Pegelwandler (PCA9517), R1, R2, R5, R6, JP2 bestückt werden.
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Wenn auf den 5V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
+
 SMD
 
-Die Leiterplatte ist teilweise mit SMD bestückt, außer Prozessor in der „kleinen“ Version nur recht große  Bauteile (1206).
+Die Leiterplatte ist teilweise mit SMD bestückt.
+
 
 Stromversorgung
 
-Die Stromversorgung ist 11 - 12V, Stromaufnahme ca. 20mA ohne USB oder über USB.
+Die Stromversorgung ist 7 - 12V, Stromaufnahme ca. 20mA ohne USB oder über USB.
 Prozessor und und BME280 werden mit 3.3V versorgt. Der Quarz darf daher nicht mehr als 10MHz haben.
 
 Bestückung der Leiterplatte
 
-Bei Verwendung von ISP muss JP6 bestückt werden.
-
-Folgende Bauteile sind abhängig vom verwendeten Interface zu bestücken:
-
-Bei beiden Versionen wird der USB Modul auf der Bestückungsseite angebracht, der Sensor auf der Leiterbahnseite.
-
 „große“ Version:
+Verwendung von ISP:
+JP6
 
-mit USB:
-UM2102
-es entfällt: X1, X3, D1, C1, DC1, IC2 
-Der USB Modul wird plan auf der Oberseite der Platine angelötet. USB Modul und Leiterplatte müssen voneinander isoliert werden.
-Der Sensormodul wird mit einer Stiftleiste versehen. Die 6 polige Buchsenleiste ist auf der Unterseite. Nach dem Aufstecken des Sensormoduls liegt der Modul unter der Leiterplatte, zeigt also zu Mitte hin. Der Sensor der Sensorplatine liegt außen, also unten.
+Mit I2C:
+Siehe I2C oben.
 
-mit I2C: 
-R8, R9: nach Bedarf. R8, R9, Q2, Q3 für 5V Kompatibilität. X2, X3
-Hat der I2C Bus nur 3.3V, kann auch eine Drahtbrücke zwischen Drain und Source von Q2, Q3 eingelötet werden 
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2 und DC1 nicht bestückt werden! X1, D1 und C1, R8, R9 braucht auch nicht bestückt werden.
+
+Der USB Modul wird isoliert auf der Bestückungsseite angebracht,.
+Der Sensormodul wird mit einer Stiftleiste versehen. Die 6 polige Buchsenleiste ist auf der Oberseite. Nach dem Aufstecken des Sensormoduls liegt der Modul zur Leiterplattenmitte, der Sensor liegt außen /oben.
 
 „kleine“ Version:
 alle Teile müssen bestückt werden.
@@ -229,28 +244,43 @@ Power
 Tip	12V
 Ring	GND
 
-I2C (2 x 3,5mm Klinke Stereo)
-Sleeve	GND
-Ring	SDA
-Tip	SCL
+I2C (SL1, SL2)
+1	GND
+2	SCL
+3	SDA
+
+Jumper
+
+JP1 		Power
+JP2 		I2C: 3V/5V Umschaltung
+JP3		SDA Überbrückung (ohne IC3)
+JP4		SCL Überbrückung (ohne IC3)
+JP5		Reset
+JP6		ISP 
+JP7/JP8	Anschluss für USB Modul
+JP9/JP10	Klimasensor
 
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 01.1
-Bascom Version 02.2
+Leiterplattenversion V02.0
+Bascom Version V03.0
+
+
 
 Copyright
 
 Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
-Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie / Gewährleistung / Produkthaftung  übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
 [1]	dk1ri.de/dhw/Klimasensor_eagle.zip
-[2]	dk1ri.de/dhw/Klimasensor.zip
-[3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	dk1ri.de/myc/Definitions.pdf (englisch)
+[2]	dk1ri.de/dhw/Klimasensor_bascom.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	https://dk1ri.de/myc/common_1.7.zip
+
