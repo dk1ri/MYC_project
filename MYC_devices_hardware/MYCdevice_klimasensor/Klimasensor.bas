@@ -1,5 +1,5 @@
 'name : Klimasensor_bascom.bas
-'Version V03.0, 20191013
+'Version V03.0, 20191014
 'purpose : Program for mesuring temperature, humidity and pressure with the BME280 sensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware Klimasensor Version V02.0 by DK1RI
@@ -143,6 +143,8 @@ Declare Function Pressure_64() As Dword
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
