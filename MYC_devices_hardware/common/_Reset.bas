@@ -8,7 +8,7 @@ Reset_:
 Wait 1
 Dev_number_eeram = 1
 Dev_name_eeram = "Device 1"
-Adress_eeram = I2c_address * 2
+Adress_eeram = I2c_address
 I2C_active_eeram = 1
 Serial_active_eeram = 1
 '
