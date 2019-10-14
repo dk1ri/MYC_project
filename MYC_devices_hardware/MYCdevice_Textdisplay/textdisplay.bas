@@ -1,5 +1,5 @@
 'name : textdisplay.bas
-'Version V03.2 20190725
+'Version V03.2 20191014
 'purpose : Textdisplay
 'Can be used with hardware textdisplay Version V03.0 by DK1RI
 '
@@ -38,7 +38,7 @@ $include "common_1.7\_Processor.bas"
 Const Processor = "8"
 Const Command_is_2_byte = 1
 '1...127:
-Const I2c_address = 8
+Const I2c_address = 16
 Const No_of_announcelines = 17
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
@@ -63,6 +63,8 @@ Dim B_chars_eeram As Eram Byte
 '
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
