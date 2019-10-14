@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : electronic_load.bas
-'Version V04.0, 20191011
+'Version V04.0, 20191014
 'purpose : This is a electronic load for 7 fets IRFP150
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware electronic_load V04.1 by DK1RI
@@ -100,7 +100,7 @@ $initmicro
 Const Processor = "4"
 Const Command_is_2_byte = 0
 '1...127:
-Const I2c_address = 21
+Const I2c_address = 42
 Const No_of_announcelines = 49
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
@@ -298,6 +298,8 @@ Dim Temp_dw_b4 As Byte At Temp_dw + 3 Overlay
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 Gosub reset_load
