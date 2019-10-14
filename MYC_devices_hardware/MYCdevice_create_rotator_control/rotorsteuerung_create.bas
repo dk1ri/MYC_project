@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rotorsteuerung_create_bascom.bas
-'Version V06.0, 20190807
+'Version V06.0, 20191014
 'purpose : Programm for control a Create RC5 Rotator
 'Can be used with hardware rotorsteuerung_create V04.0 by DK1RI
 '
@@ -44,7 +44,7 @@ $include "common_1.7\_Processor.bas"
 Const Processor = "8"
 Const Command_is_2_byte = 0
 '1...127:
-Const I2c_address = 2
+Const I2c_address = 4
 Const No_of_announcelines = 24
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
@@ -105,6 +105,8 @@ Dim Temp_single As Single
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
