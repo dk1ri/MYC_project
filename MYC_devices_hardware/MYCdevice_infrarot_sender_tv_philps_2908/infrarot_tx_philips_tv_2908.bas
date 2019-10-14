@@ -1,5 +1,5 @@
 'name : infrarot_tx _philips_tv_2908.bas
-'Version V05.0, 20190710
+'Version V05.0, 20191014
 'purpose : Programm to send RC5 Codes to Philips TV 2908
 'This Programm workes as I2C slave or serial interface
 'Can be used with hardware rs232_i2c_interface Version V05.0 by DK1RI
@@ -41,7 +41,7 @@ $include "common_1.7\_Processor.bas"
 Const Processor = "8"
 Const Command_is_2_byte    = 0
 '1...127:
-Const I2c_address = 15
+Const I2c_address = 30
 Const No_of_announcelines = 47
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
@@ -59,6 +59,8 @@ Dim Rc5_adress As Byte
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
@@ -85,7 +87,7 @@ $include "common_1.7\_Init.bas"
 '
 '----------------------------------------------------
 $include "common_1.7\_Subs.bas"
-$include "common_1.7\_Sub_reset_i2c.bas"      
+$include "common_1.7\_Sub_reset_i2c.bas"
 '
 '----------------------------------------------------
 Send_rc5:
