@@ -1,5 +1,5 @@
 'name : sprachausgabe.bas
-'Version V04.0 20190827
+'Version V04.0 20191014
 'purpose : Play 10 voice/music amples from ELV MSM4 module
 'This Programm workes as I2C slave or using RS232
 'Can be used with  sprachausgabe Version V02.0 by DK1RI
@@ -38,7 +38,7 @@ $include "common_1.7\_Processor.bas"
 Const Processor = "8"
 Const Command_is_2_byte    = 0
 '1...127:
-Const I2c_address = 20
+Const I2c_address = 40
 Const No_of_announcelines = 12
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
@@ -73,6 +73,8 @@ Dim Pressed As Byte
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 Wait 5
