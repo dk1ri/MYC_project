@@ -1,5 +1,5 @@
 'name : dtmf_receiver.bas
-'Version V04.0, 20190806
+'Version V04.0, 20191014
 'purpose : Programm for receiving DTMF Signals
 'This Programm workes as I2C slave, or serial
 'Can be used with hardware dtmf_receiver Version V04.1 by DK1RI
@@ -32,7 +32,7 @@ $include "common_1.7\_Introduction_master_copyright.bas"
 ' Detailed description
 '
 '----------------------------------------------------
-$regfile = "m88pdef.dat"
+$regfile = "m88def.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
@@ -45,7 +45,7 @@ $include "common_1.7\_Processor.bas"
 Const Processor = "8"
 Const Command_is_2_byte    = 0
 '1...127:
-Const I2c_address = 16
+Const I2c_address = 32
 Const No_of_announcelines = 9
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
@@ -71,6 +71,8 @@ Dim Dtmf_write_pointer As Byte
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.0 = Input
+Reset__ Alias PinB.0
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
