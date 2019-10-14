@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rtc_bascom.bas
-'Version V03.0, 20191012
+'Version V03.0, 20191014
 'purpose : Programm as realtime clock using the ELV RTC-DCF module
 'The interface communicates with the module via SPI
 'This Programm can be controlled via I2C or serial
@@ -45,7 +45,7 @@ Const Processor = "8"
 Const Command_is_2_byte    = 0
 '1...127:
 Const I2c_address = 38
-Const No_of_announcelines = 19
+Const No_of_announcelines = 36
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
@@ -91,6 +91,8 @@ Dim Start_delay As Dword
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
