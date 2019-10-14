@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : infrarot_rx_bascom.bas
-'Version V04.2, 20190710
+'Version V04.2, 20191014
 'purpose : Programm for receiving infrared RC5 Signals
 'This Programm workes as I2C slave, or serial
 'Can be used with hardware i2c_rs232_interface Version V05.0 by DK1RI
@@ -44,7 +44,7 @@ $include "common_1.7\_Processor.bas"
 Const Processor = "8"
 Const Command_is_2_byte    = 0
 '1...127:
-Const I2c_address = 6
+Const I2c_address = 12
 Const No_of_announcelines = 11
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
@@ -71,6 +71,8 @@ Dim Rc5_writepointer As Byte
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
