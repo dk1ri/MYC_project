@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : relaisteuerung_basom.bas
-'Version V05.0, 20190709
+'Version V05.0, 20191014
 'purpose : Control of a board with 4 Relais and 11 Inputs
 'Can be used with hardware relaisteuerung Version V03.0 by DK1RI
 'Pin description was changed with V03,0, so it is not compatible with earlier boards!!
@@ -46,7 +46,7 @@ $include "common_1.7\_Processor.bas"
 Const Processor = "8"
 Const Command_is_2_byte = 0
 '1...127:
-Const I2c_address = 4
+Const I2c_address = 8
 Const No_of_announcelines = 32
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
@@ -63,6 +63,8 @@ Dim Adc_reference_eeram As Eram Byte
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
+Config PinB.2 = Input
+Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
