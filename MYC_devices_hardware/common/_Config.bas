@@ -1,5 +1,5 @@
 ' blw, Config
-'1.7.0, 190607
+'1.7.0, 191016
 '
 Blw = peek (0)
 If Blw.WDRF = 1 Then
@@ -9,7 +9,14 @@ Else
 End If
 '
 #IF Processor = "8"
-	Set Reset__
+        Pin_sda Alias PinC.4
+        Pin_scl Alias PinC.5
+        Port_sda Alias PortC.4
+        Port_scl Alias PortC.5
+#ELSEIF Processor = "9"
+'for new designs and in case of mods: instead of "8"
+	Config PinB.2 = Input
+	Reset__ Alias PinB.2
         Pin_sda Alias PinC.4
         Pin_scl Alias PinC.5
         Port_sda Alias PortC.4
@@ -17,7 +24,6 @@ End If
 #ELSEIF  Processor = "4"
         Config PinB.4 = Input
         Reset__ Alias PinB.4
-	Set Reset__
         Pin_sda Alias PinC.1
         Pin_scl Alias PinC.0
         Port_sda Alias PortC.1
@@ -25,7 +31,6 @@ End If
 #ELSEIF  Processor = "A"
         Config PinB.1 = Input
         Reset__ Alias PinB.1
-	Set Reset__
         Pin_sda Alias PinC.1
         Pin_scl Alias PinC.0
         Port_sda Alias PortC.1

@@ -6,6 +6,7 @@ Tx_pointer = 1
 Tx_write_pointer = 1
 Tx_busy = 0
 Tx_time = 0
+TWDR = Not_valid_cmd
 Return
 '
 Command_received:
