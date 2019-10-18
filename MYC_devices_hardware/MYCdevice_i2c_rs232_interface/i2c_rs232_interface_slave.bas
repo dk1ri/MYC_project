@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_slave.bas
-'Version V06.0, 20191014
+'Version V06.0, 20191017
 'purpose : I2C-RS232_interface Slave
 'This Programm workes as I2C slave
 'Can be used with hardware rs232_i2c_interface Version V05.0 by DK1RI
@@ -38,7 +38,7 @@ $include "common_1.7\_Processor.bas"
 '
 ' 8: for 8/32pin, ATMEGAx8; 4 for 40/44pin, ATMEGAx4 packages
 ' used for reset now: different portnumber of SPI SS pin
-Const Processor = "8"
+Const Processor = "9"
 Const Command_is_2_byte    = 0
 ' 1 ... 127:
 Const I2c_address = 2
@@ -61,8 +61,6 @@ Dim Rs232_pointer As Byte
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
-Config PinB.2 = Input
-Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
@@ -155,7 +153,7 @@ $include "common_1.7\_Sub_reset_i2c.bas"
          Next B_temp2
          Rs232_pointer = 0
          'all bytes transfered to I2c_tx
-         Tx_busy = 1
+         Tx_busy = 2
       Else
         Not_valid_at_this_time
       End If
