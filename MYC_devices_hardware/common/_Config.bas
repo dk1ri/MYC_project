@@ -22,8 +22,8 @@ End If
         Port_sda Alias PortC.4
         Port_scl Alias PortC.5
 #ELSEIF  Processor = "4"
-        Config PinB.4 = Input
-        Reset__ Alias PinB.4
+        Config PinB.2 = Input
+        Reset__ Alias PinB.2
         Pin_sda Alias PinC.1
         Pin_scl Alias PinC.0
         Port_sda Alias PortC.1
