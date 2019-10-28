@@ -1,5 +1,5 @@
 'name : Klimasensor_bascom.bas
-'Version V03.0, 20191014
+'Version V03.0, 20191028
 'purpose : Program for mesuring temperature, humidity and pressure with the BME280 sensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware Klimasensor Version V02.0 by DK1RI
@@ -30,7 +30,7 @@ $include "common_1.7\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 $regfile = "m168def.dat"
-'for ATMega328
+'for ATMega328P
 '
 '-----------------------------------------------------
 $crystal = 10000000
@@ -40,7 +40,7 @@ $include "common_1.7\_Processor.bas"
 '
 ' 8: for 8/32pin, ATMEGAx8; 4 for 40/44pin, ATMEGAx4 packages
 ' used for reset now: different portnumber of SPI SS pin
-Const Processor = "8"
+Const Processor = "9"
 Const Command_is_2_byte    = 0
 '1...127:
 Const I2c_address = 44
@@ -143,8 +143,6 @@ Declare Function Pressure_64() As Dword
 $include "common_1.7\_Macros.bas"
 '
 '----------------------------------------------------
-Config PinB.2 = Input
-Reset__ Alias PinB.2
 $include "common_1.7\_Config.bas"
 '
 '----------------------------------------------------
@@ -798,7 +796,7 @@ Announce0:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Klimasensor;V02.2;1;145;1;21;1-1"
+Data "0;m;DK1RI;Klimasensor;V03.0;1;145;1;21;1-1"
 '
 Announce1:
 'Befehl &H01
