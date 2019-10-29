@@ -17,6 +17,7 @@ End If
 'for new designs and in case of mods: instead of "8"
 	Config PinB.2 = Input
 	Reset__ Alias PinB.2
+	Set PortB.2
         Pin_sda Alias PinC.4
         Pin_scl Alias PinC.5
         Port_sda Alias PortC.4
