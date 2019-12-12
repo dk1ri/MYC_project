@@ -9958,12 +9958,12 @@ www.irf.com&lt;p&gt;
 </net>
 <net name="N$15" class="0">
 <segment>
-<pinref part="IC1" gate="G$1" pin="(PCINT12/OC0B/!SS!)PB4"/>
-<wire x1="111.76" y1="271.78" x2="149.86" y2="271.78" width="0.1524" layer="91"/>
-<wire x1="149.86" y1="271.78" x2="149.86" y2="281.94" width="0.1524" layer="91"/>
+<wire x1="149.86" y1="266.7" x2="149.86" y2="281.94" width="0.1524" layer="91"/>
 <wire x1="149.86" y1="281.94" x2="170.18" y2="281.94" width="0.1524" layer="91"/>
 <pinref part="JP5" gate="A" pin="1"/>
 <wire x1="170.18" y1="289.56" x2="170.18" y2="281.94" width="0.1524" layer="91"/>
+<pinref part="IC1" gate="G$1" pin="(PCINT10/INT2/AIN0)PB2"/>
+<wire x1="111.76" y1="266.7" x2="149.86" y2="266.7" width="0.1524" layer="91"/>
 </segment>
 </net>
 </nets>

@@ -2,13 +2,8 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Icom IC7300 Interface für das MYC Protokoll
 
-Author DK1RI, Version V01.0, 20190320
+Author DK1RI, Version V02.0, 20191212
 This paper is published in https://github.com/dk1ri  as well.
-
-Vorläufige Version
-
-Zur Zeit gibt es nur die Softwareversion, die unter Windows mit USB Schnittstelle  getestet wurde, aber noch nicht auf Raspberry.
-Die Firmware für die Hardwareversion fehlt.
 
 Einleitung
 
@@ -17,34 +12,27 @@ Es gibt zwei Versionen:
 Software:
 Das Programm nimmt die MYC Befehle über die Tastatur oder Ethernet Schnittstelle über Telnet entgegen und gibt die CIV Befehle über den USB Port aus. Der Transceiver wird direkt an die USB Schnittstelle oder über einen USB -> RS232Wandler  ? CIV Pegelwandler an die Remote Buchse angeschlossen.
 Hardware:
-Das Interface arbeitet als Slave am I2C Bus.
-Das Interface kann auch bei entsprechender Bestückung der Leiterplatte Eingaben an der RS232 oder USB Schnittstelle annehmen.
-Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer.
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Der Transceiver wird an der Remote Buchse angeschlossen. 
+
+Dieses Interface kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehlslisten sind für die Sofwareversion und Hardwareversion leicht unterschiedlich und stehen bei den Programmen in v_announcelist..py beziehungsweise _announcements.bas .
 
 Beschreibung
 
 Das Interface setzt MYC Befehle in das CIV Protokoll um.
+Das Interface verwendet die Befehle der Version des Handbuchs A7292-4EX-6a  (2018). Es gibt leichte Änderungen gegenüber älteren Versionen. Daher sollte das Radio auch die neueste Softwareversion haben.
 Es werden die meisten CIV Befehle des Radios direkt unterstützt. 
-Ausnahmen:
-Statt Daten bei der Bandstack Funktion zu schreiben, gibt es nur einen Kopierbefehl. Da es aber keine Möglichkeit gibt, diese Daten in den VFO zu kopieren, macht diese Funktion wenig Sinn.
-Die Wasserfall Daten konnten nicht gelesen werden, da dazu eine Baudrate von 115200 Baud nötig ist. Dies hat bei mir nicht funktioniert.
-Der CIV Befehl 271E ist im wesentlich identisch zu 1a050112 – 1a050150 und wurde weggelassen..
-Einige Funktionen sind für remote Betrieb nicht sinnvoll oder lassen sich auch durch eine geeignete Benutzeroberfläche realisieren.  Diese Funktionen wurden aber trotzdem vorgesehen.
+Das Handbuch enthält einige Fehler und Ungenauigkeiten. Details dazu und Abweichungen dazu bei den MYC Befehlen stehen in [7]
 
 Hinweise zur Bedienung
 
 Die Befehle sind meist eine direkte Übersetzung der CIV Befehle. Daraus ergeben sich Einschränkungen bei der Bedienung:
-Einige Befehle arbeiten abhängig von den aktuellen Einstellungen: zum Beispiel wirkt die Einstellung des DSP nur auf die aktuelle Betriebsart , zum Beispiel SSB. Das Interface liefert dann als Antwort auf einen operate Befehl eine weitere Info mit den nötigen Einstellungen. Dies ist aber (noch) nicht in allen solchen Fällen realisiert.
-Die Beschreibung der CIV Schnittstelle im Hanual ist an einigen Stellen fehlerhaft oder unvollständig und hat einige Ungereimtheiten:
-Bei einigen Einstellungen stimmt an den Einstellgrenzen der gelesen Wert nicht mit der Einstellung überein: Zum Beispiel ergibt die Einstellung des NR levels von 0 einen Rückgabewert von 8.
-Die USB Schnittstelle der Transceivers lässt sich mit dem Befehl „USB serial Funktion: RTTY“  abschalten, was bei der Softwareversion zur Funktionsunfähigkeit führt.
-Die Abfrage der Memory Inhalte liefert einen Fehler, wenn das Memory leer ist.Um die Zahl der Regeln zu reduzieren, werden leere Memories beim Einschalten mit dem Inhalt vorherigen Memory gefüllt. Eine leere erste Speicherstelle erhält einen Defaultwert im 20m Band. 
-Ein geänderter Memory Inhalt wird erst übernommen (wenn der Transceiver im Memory mode ist), wenn zweimal V/M gedrückt wird oder der entsprechende CIV Befehl gegeben wird. Das macht das Interface automatisch.
-Der Lesebefehl 1e00 liefert 11 Bänder zum senden. Der Befehl 1e01 liefert nur 9 Bänder bis einschließlich 10m.
-Der Befehl 1a0057 sollte auf 0 bleiben. Einige Befehle liefern andernfalls eine Info, die aber bisher nicht den richtigen Befehlen zugeordnet wird (wird in eine späteren Version geändert)
-Der Befehl 2711 geht nicht
-Diese Fehler werden hoffentlich in späteren Firmware Versionen behoben.
+Einige Befehle arbeiten abhängig von den aktuellen Einstellungen: Dies ist für in den Regeln abgebildet, und die Befehle wirken dannauch nicht (soweit ich das erkannt habe :) ).
+
+Beim Start des Interfaces muss das Radio an sein und mit dem Interface verbunden sein!
+
+Der Befehl 798 / Ausgabe einer Sprachdatei funktioniert nur, wenn eine entsprechende Karte mit Dateien vorhanden ist. Dies ist durch Regeln mit darstellbar, gibt aber einen CIV Fehler.
 
 Softwareversion:
 Zum Betrieb unter Windows muss Python 3.6 installiert werden.
@@ -60,28 +48,21 @@ Die CIV Adresse sollte auf 0x94 stehen. Bei anderer Adresse muss die Konfigurati
 Bei der Initialisierung wird der VFO Mode eingeschaltet, USB echo abgeschaltet und alle leeren Memoryplätze beschrieben.
 Bei Verwendung der Tastatur erfolgt die Befehlseingabe erfolgt mit HEX Zahlen (00 bis ff)
 
-Hardware:
+Hardwareversion:
 Das Interface unterstützt keine Kollisionserkennung auf dem ICOM Bus. Daher darf nur 1 Radio an den CIV-Bus angeschlossen werden. Während des Remote Betriebs sollten daher auch keine manuellen Einstellungen am Gerät vorgenommen werden. Die CIV Schnittstelle verwendet 19200 Baud 8N1.
 Die Befehlseingabe erfolgt binär. Der Wertebereich der Befehlsparameter ist bei den Befehlsbeschreibungen angegeben.
+Es muss Menu ? Set ? Connectors ? CI-V ? CI-V USB Port  auf „Link to [REMOTE]“ gesetzt werden.
+Außerdem sollte Menu ? Set ? Connectors ? CI-V CIV tarnsceive off sein
 
-Befehle
+Einbindung in das MYC System
 
-Zu Details zum MYC Protokoll und zur Bedienung siehe [3] und [4] (aktuell).
-Die Befehlsliste  Ic7300_befehle ist eine Kopie aus dem Bascom / Python Programm.
+Details zum MYC System stehen in [3].
+Die Befehlsliste  steht im Python / Bascom Programm (v_announcelist..py beziehungsweise _announcements.bas) .
 
-I2C (Hardwareversion)
-
-Die Default Adresse ist 23 (&H17).
-Mit dem Befehl &HFFFE03<n> kann die Adresse in n (1 … 127) geändert werden.
-Pullup Widerstände für den I2C Bus (R1/R2) können bei Bedarf bestückt werden. Der Gesamtwiderstand am Bus sollte zwischen 1 und 10 kOhm liegen. 
-Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
-Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6 entfallen und JP3 und JP4 wird bestückt.
-Ganz ohne I2C kann auch X2, X3, R3, R4 entfallen.
-Bei anderer I2C Spannung kann R5 / R6 angepasst werden.
 
 Fehlermeldungen
 
-Der Befehl &HFC liefert den letzten Fehler im Format:
+Der Befehl &HFFFC liefert den letzten Fehler im Format:
 aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
@@ -92,15 +73,17 @@ Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden
 
 Watchdog
 
-Die Befehlseingabe und Ausführung muss in weniger als 1 Sekunde beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
-Bei einem Lesebefehl müssen die Daten innerhalb von 10 Sekunden vom I2C Master abgeholt werden – wenn die I2C Schnittstelle gerade verwendet wird. Danach werden die Daten gelöscht. Diese Zeit kann mit dem Wert Tx_factor im Bascom Programm geändert werden. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
-Es gibt einen kompletten Reset, wenn die Hauptschleife länger als 2 Sekunde dauert, zum Beispiel, wenn die I2C Schnittstelle nicht korrekt arbeitet.
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFFFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein kompletter Restart. Das bedeutet, dass bei einem Kurzschluss auf der I2C Leitung das Interface nicht funktioniert!
 
 Software
 
-Die Softwareversion wurde mit Pycharm 18.03 entwiclet.
-Bei der Hardwareverion übernimmt die Steuerung ein AVR Mikrocontroller Atmega1284
-Die Software dazu wurde in BASCOM geschrieben [2]
+Die Softwareversion wurde mit Pycharm 18.03 entwickelt [1]
+Bei der Hardwareversion übernimmt die Steuerung ein AVR Mikrocontroller Atmega1284
+Die Software dazu wurde in BASCOM geschrieben [8]
 
 Programmierung des Prozessors (Hardwareversion)
 
@@ -108,15 +91,27 @@ Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
 Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
 Der Jumper J1 sollte während der Programmierung entfernt werden.
 
-Serielle Schnittstelle (Hardwareversion)
+Serielle (RS232 / USB) Schnittstelle (Hardwareversion)
 
 Schnittstellenparameter: 19k2 8N1
-I2C und seriell / USB können nicht gleichzeitig verwendet. Der Befehlspuffer wird gelöscht, wenn die Schnittstelle gewechselt wird.
-
-USB Schnittstelle (Hardwareversion)
-
-Das Interface kann alternativ zur RS232 Schnittstelle mit der USB Platine UM2102 von ELV bestückt werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden.USB Platine und Interface müssen voneinander isoliert werden.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
 Die Stromversorgung erfolgt dann über USB.
+I2C  und RS232 / USB können nicht gleichzeitig verwendet. Der Befehlspuffer wird gelöscht, wenn die Schnittstelle gewechselt wird.
+
+I2C Schnittstelle (Hardwareversion)
+
+Die Default Adresse ist 23 (&H17)
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird ein reset gestartet. Einige I2C-Master setzen nach der Datenübertragung den Bus nicht entsprechend der Spezifikation auf„Idle“ zurück, was zu regelmäßigen resets führt.
 
 SMD (Hardwareversion)
 
@@ -132,10 +127,11 @@ Bestückung der Leiterplatte (Hardwareversion)
 Verwendung von ISP:
 JP6
 
-I2C Pullups R1 / R2 nach Bedarf,  siehe auch I2C oben.
+Mit I2C:
+Siehe I2C oben.
 
-Mit USB Schnittstelle:
-Bei Verwendung des USB Moduls UM2102 wird  X1, D1, IC2, IC4 und C1, C6 - C9 nicht bestückt.
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2 nicht bestückt werden!
 
 Anschlüsse (Hardwareversion)
 
@@ -144,11 +140,14 @@ Tip	12V
 Ring	GND
 
 RS232 (Buchse)
+5	GND
+2	TX (PC Eingang)
+3	RX (PC Ausgang)
 
-I2C Stereo (2 x 3,5mm Klinke)
-Sleeve	GND
-Ring	SDA
-Tip	SCL
+I2C
+1	GND
+2	SCL
+3	SDA
 
 Jumper (Hardwareversion)
 
@@ -163,7 +162,7 @@ JP7		Anschluss für USB Modul
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V02.0
+Leiterplattenversion V03.1
 Bascom Version V01.0
 Softwareversion (Python) V01.0
 
@@ -180,4 +179,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[5]	https://dk1ri.de/dhw/Ic7300_anouncements.zip
+[6]	https://dk1ri.de/myc/common_1.8.zip
+[7]	https://dk1ri.de/dhw/7300_bugs.txt
+[8]	https://dk1ri.de/dhw/IC7300_interface_bascom.zip
