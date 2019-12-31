@@ -8,3 +8,4 @@ Wait 1
 'to start BM280
 Gosub Start_BM280
 Gosub Write_config
+Gosub Read_correction

@@ -1,15 +1,15 @@
 'name : Klimasensor_bascom.bas
-'Version V03.0, 20191028
+'Version V03.1, 20112230
 'purpose : Program for mesuring temperature, humidity and pressure with the BME280 sensor
 'This Programm workes as I2C slave or with serial protocol
-'Can be used with hardware Klimasensor Version V02.0 by DK1RI
+'Can be used with hardware Klimasensor Version V02.1 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ' To run the compiler the directory comon_1,7 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.7\_Introduction_master_copyright.bas"
+$include "common_1.8\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -25,24 +25,24 @@ $include "common_1.7\_Introduction_master_copyright.bas"
 'Missing/errors:
 '
 '------------------------------------------------------
-'
 ' Detailed description
 '
 '----------------------------------------------------
 $regfile = "m168def.dat"
-'for ATMega328P
+'for ATMega168
+'$regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 10000000
-$include "common_1.7\_Processor.bas"
+$include "common_1.8\_Processor.bas"
 '
 '----------------------------------------------------
 '
 ' 8: for 8/32pin, ATMEGAx8; 4 for 40/44pin, ATMEGAx4 packages
 ' used for reset now: different portnumber of SPI SS pin
-Const Processor = "9"
-Const Command_is_2_byte    = 0
-'1...127:
+Const Processor = "8"
+Const Command_is_2_byte = 0
+'2...254:
 Const I2c_address = 44
 Const No_of_announcelines = 21
 'announcements start with 0 -> minus 1
@@ -50,7 +50,7 @@ Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
 '
 '----------------------------------------------------
-$include "common_1.7\_Constants_and_variables.bas"
+$include "common_1.8\_Constants_and_variables.bas"
 '
 'BM280:
 Const Reg_F2_default = &B00000101
@@ -64,7 +64,7 @@ Const Reg_F5_default = &B00010000
 'Filter = 100 Filter coefficient 16 (slow)
 'spi3w = 0
 '
-Dim Tl AS Long
+Dim Tl As Long
 Dim L1 As Long
 Dim HVar1 As Long
 Dim HVar2 As Long
@@ -137,38 +137,40 @@ Dim Reg_F4_eeram As Eram Byte
 Dim Reg_F5 As Byte
 Dim Reg_F5_eeram As Eram Byte
 '
-Declare Function Pressure_64() As Dword
+Dim Var1 As Double
+Dim Var2 As Double
+Dim X As Double
+Dim Y As Double
+Dim Z As Double
+Dim S1 As Single
+Dim L11 As Long
+'----------------------------------------------------
+$include "common_1.8\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Macros.bas"
+$include "common_1.8\_Config.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Config.bas"
+$include "common_1.8\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Main.bas"
+$include "common_1.8\_Loop_start.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Loop_start.bas"
-'
-'----------------------------------------------------
-$include "common_1.7\_Serial.bas"
-'----------------------------------------------------
-$include "common_1.7\_I2c.bas"
+$include "common_1.8\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.7\_Reset.bas"
+$include "common_1.8\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Init.bas"
+$include "common_1.8\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Subs.bas"
-$include "common_1.7\_Sub_reset_i2c.bas"
+$include "common_1.8\_Subs.bas"
 '
 '----------------------------------------------------
 Write_config:
@@ -406,513 +408,268 @@ Correct_humidity:
    Humidity = HVar1 / 1.024
 Return
 '
-Function Pressure_64() As Dword
-  Local Var1 As Double
-  Local Var2 As Double
-  Local X As Double
-  Local Y As Double
-  Local Z As Double
-  Local S1 As Single
-  Local L1 As Long
+Pressure_64:
+   'var1 = t_fine - 128000
+   S1 = T_fine
+   Y = S1
+   X = 128000
+   Var1 = Y - X
 
-  'var1 = t_fine - 128000
-  S1 = T_fine
-  Y = S1
-  X = 128000
-  Var1 = Y - X
+   'var2 = var1 * var1 * dig_P6
+   Var2 = Var1 * Var1
+   S1 = Dig_p6
+   X = S1
+   Var2 = Var2 * X
 
-  'var2 = var1 * var1 * dig_P6
-  Var2 = Var1 * Var1
-  S1 = Dig_p6
-  X = S1
-  Var2 = Var2 * X
+   'var2 = var2 + ((var1*dig_P5)<<17);
+   S1 = Dig_p5
+   X = S1
+   X = Var1 * X
+   Y = 2 ^ 17
+   X = X * Y
+   Var2 = Var2 + X
 
-  'var2 = var2 + ((var1*dig_P5)<<17);
-  S1 = Dig_p5
-  X = S1
-  X = Var1 * X
-  Y = 2 ^ 17
-  X = X * Y
-  Var2 = Var2 + X
+   'var2 = var2 + (dig_P4<<35);
+   S1 = Dig_p4
+   X = S1
+   Y = 2 ^ 35
+   X = X * Y
+   Var2 = Var2 + X
 
-  'var2 = var2 + (dig_P4<<35);
-  S1 = Dig_p4
-  X = S1
-  Y = 2 ^ 35
-  X = X * Y
-  Var2 = Var2 + X
+   'var1 = ((var1 * var1 * dig_P3)>>8) + ((var1 * dig_P2)<<12);
+   X = Var1 * Var1
+   S1 = Dig_p3
+   Z = S1
+   X = X * Z
+   Y = 2 ^ 8
+   X = X / Y
 
-  'var1 = ((var1 * var1 * dig_P3)>>8) + ((var1 * dig_P2)<<12);
-  X = Var1 * Var1
-  S1 = Dig_p3
-  Z = S1
-  X = X * Z
-  Y = 2 ^ 8
-  X = X / Y
+   S1 = Dig_p2
+   Z = S1
+   Y = Var1 * Z
+   Z = 2 ^ 12
+   Y = Y * Z
+   Var1 = X + Y
 
-  S1 = Dig_p2
-  Z = S1
-  Y = Var1 * Z
-  Z = 2 ^ 12
-  Y = Y * Z
-  Var1 = X + Y
+   'var1 = ((1<<47)+var1)*dig_P1>>33;
+   X = &H800000000000
+   X = X + Var1
+   S1 = Dig_p1
+   Z = S1
+   Var1 = X * Z
+   Y = 2 ^ 33
+   Var1 = Var1 / Y
 
-  'var1 = ((1<<47)+var1)*dig_P1>>33;
-  X = &H800000000000
-  X = X + Var1
-  S1 = Dig_p1
-  Z = S1
-  Var1 = X * Z
-  Y = 2 ^ 33
-  Var1 = Var1 / Y
+   L11 = Var1
+   If L11 = 0 Then
+      X = Pressure_old
+   Else
+      'x = 1048576-up;
+      X = 1048576
+      S1 = Up
+      Z = S1
+      X = X - Z
 
-  L1 = Var1
-  If L1 = 0 Then
-    Pressure_64 = Pressure_old
-    Exit Function
-  End If
+      'x = (((x<<31)-var2)*3125)/var1;
+      Y = 2 ^ 31
+      X = X * Y
+      X = X - Var2
+      Y = 3125
+      X = X * Y
+      X = X / Var1
 
-  'x = 1048576-up;
-  X = 1048576
-  S1 = Up
-  Z = S1
-  X = X - Z
+      'var1 = (dig_P9 * (x>>13) * (x>>13)) >> 25;
+      Z = X
+      Y = 2 ^ 13
+      Z = Z / Y
+      S1 = Dig_p9
+      Y = S1
+      Var1 = Y * Z
+      Var1 = Var1 * Z
+      Y = 2 ^ 25
+      Var1 = Var1 / Y
 
-  'x = (((x<<31)-var2)*3125)/var1;
-  Y = 2 ^ 31
-  X = X * Y
-  X = X - Var2
-  Y = 3125
-  X = X * Y
-  X = X / Var1
+      'var2 = (dig_P8 * x) >> 19;
+      S1 = Dig_p8
+      Y = S1
+      Var2 = Y * X
+      Y = 2 ^ 19
+      Var2 = Var2 / Y
 
-  'var1 = (dig_P9 * (x>>13) * (x>>13)) >> 25;
-  Z = X
-  Y = 2 ^ 13
-  Z = Z / Y
-  S1 = Dig_p9
-  Y = S1
-  Var1 = Y * Z
-  Var1 = Var1 * Z
-  Y = 2 ^ 25
-  Var1 = Var1 / Y
+      'x = ((x + var1 + var2) >> 8) + (dig_P7<<4);
+      X = X + Var1
+      X = X + Var2
+      Y = 2 ^ 8
+      X = X / Y
+      S1 = Dig_p7
+      Y = S1
+      Z = 2 ^ 4
+      Y = Y * Z
+      X = X + Y
 
-  'var2 = (dig_P8 * x) >> 19;
-  S1 = Dig_p8
-  Y = S1
-  Var2 = Y * X
-  Y = 2 ^ 19
-  Var2 = Var2 / Y
-
-  'x = ((x + var1 + var2) >> 8) + (dig_P7<<4);
-  X = X + Var1
-  X = X + Var2
-  Y = 2 ^ 8
-  X = X / Y
-  S1 = Dig_p7
-  Y = S1
-  Z = 2 ^ 4
-  Y = Y * Z
-  X = X + Y
-
-  Y = 25.6
-  X = X / Y
-
-  Pressure_64 = X
-  Pressure_old = Pressure_64
-End Function
+      Y = 25.6
+      X = X / Y
+   Pressure_old = X
+   End If
+   Pressure = X
+Return
 '
 '----------------------------------------------------
-   $include "common_1.7\_Commandparser.bas"
+   $include "_Commands.bas"
+'
+Commandparser:
+'checks to avoid commandbuffer overflow are within commands !!
+#IF Command_is_2_byte = 1
+   $include "common_1.8\_Commandparser.bas"
+#ENDIF
+'
+   If Command_b(1) < &HF0 Then
+      On Command_b(1) Gosub 00,01,02,03,04,05,06,07,08,09,0A,0B,0C,0D,0E,0F
+   Else
+      Select Case Command_b(1)
 '
 '-----------------------------------------------------
-   Case 1
-'Befehl &H01
-'liest Temperatur
-'read temperature
-'Data "1;ap,read temperature;1;12500,{-40.00 to 84.99};lin;DegC"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H01
-      Tx_b(2) = Temperature_b(2)
-      Tx_b(3) = Temperature_b(1)
-      Tx_write_pointer = 4
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 2
-'Befehl &H02
-'liest Feuchtigkeit
-'read humidity
-'Data "2;ap,read humidity;1;100001,{0.000 to 100.000};lin;%"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H02
-      Tx_b(2) = Humidity_b(3)
-      Tx_b(3) = Humidity_b(2)
-      Tx_b(4) = Humidity_b(1)
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 3
-'Befehl &H03
-'liest Druck
-'read pressure
-'Data "3;ap,read pressure;1;1100001,{0.000 to 1100.000};lin;hPa"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H03
-      Tx_b(2) = Pressure_b(3)
-      Tx_b(3) = Pressure_b(2)
-      Tx_b(4) = Pressure_b(1)
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 4
-'Befehl &H04 0 to 5
-'schreibt Oversampling Feuchte
-'write Oversampling humidity
-'Data "4;oa,oversampling humidity;b,{0,1,2,4,8,16}"
-      If Commandpointer = 2 Then
-         If Command_b(2) < 6 Then
-            Reg_F2 = Command_b(2)
-            Reg_F2_eeram = Reg_F2
-            Gosub Write_config
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 5
-'Befehl &H05
-'liest Oversampling Feuchte
-'read Oversampling humidity
-'Data "5;aa,as4"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H05
-      Tx_b(2) = Reg_F2
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 6
-'Befehl &H06 0 to 5
-'schreibt Oversampling Druck
-'write Oversampling pressure
-'Data "6;oa,oversampling pressure;b,{0,1,2,4,8,16}"
-       If Commandpointer >= 2 Then
-         If Command_b(2) < 6 Then
-            Shift Command_b(2), Left, 2
-            Reg_F4 = Reg_F4 And &B11100011
-            Reg_F4 = Reg_F4 OR Command_b(2)
-            Reg_F4_eeram = Reg_F4
-            Gosub Write_config
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 7
-'Befehl &H07
-'liest Oversampling Druck
-'read Oversampling pressure
-'Data "7;aa,as6"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H07
-      B_temp1 = Reg_F4
-      B_temp1 = B_temp1 AND &B00011100
-      Shift B_temp1, Right, 2
-      Tx_b(2) = B_temp1
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 8
-'Befehl &H08
-'schreibt Oversampling Temperatur
-'write Oversampling Temperature
-'Data "8;oa,oversampling Temperatur;b,{0,1,2,4,8,16}"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 6 Then
-            Shift Command_b(2), Left, 5
-            Reg_F4 = Reg_F4 And &B00011111
-            Reg_F4 = Reg_F4 OR Command_b(2)
-            Reg_F4_eeram = Reg_F4
-            Gosub Write_config
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-      Case 9
-'Befehl &H09
-'liest Oversampling Temperatur
-'read Oversampling Temperatur
-'Data "1;aa,as8"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H09
-      B_temp1 = Reg_F4
-      B_temp1 = B_temp1 AND &B11100000
-      Shift B_temp1, Right, 5
-      Tx_b(2) = B_temp1
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 10
-'Befehl &H0A
-'schreibt Pause Zeit
-'write non active time
-'Data "10;oa,non activ time;b,{0.5,62.5,125,500,1000,10,20},ms"
-      If Commandpointer = 2 Then
-         If Command_b(2) < 8 Then
-            Shift Command_b(2), Left, 5
-            Reg_F5 = Reg_F5 And &B00011111
-            Reg_F5 = Reg_F5 OR Command_b(2)
-            Reg_F5_eeram = Reg_F5
-            Gosub Write_config
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 11
-'Befehl &H0B
-'liest Pause Zeit
-'read non active time
-'Data "11;aa,as10"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H0B
-      B_temp1 = Reg_F5
-      B_temp1 = B_temp1 AND &B11100000
-      Shift B_temp1, Right, 5
-      Tx_b(2) = B_temp1
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 12
-'Befehl &H0C
-'schreibt Filter
-'write Filter
-'Data "12;oa,filter;b,{0,2,4,8,16}"
-      If Commandpointer = 2 Then
-         If Command_b(2) < 5 Then
-            Shift Command_b(2), Left, 2
-            Reg_F5 = Reg_F5 And &B11100011
-            Reg_F5 = Reg_F5 OR Command_b(2)
-            Reg_F5_eeram = Reg_F5
-            Gosub Write_config
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 13
-'Befehl &H0D
-'liest Filter
-'read Filter
-'Data "13;aa,as12"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H0D
-      B_temp1 = Reg_F5
-      B_temp1 = B_temp1 AND &B00011100
-      Shift B_temp1, Right, 2
-      Tx_b(2) = B_temp1
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 14
-'Befehl &H0E
-'liest ID
-'read ID
-'Data "14;aa,read ID;b"
-      Spi_buffer(1) = &HD0
-      Reset Spi_cs
-      Spiout Spi_buffer(1) , 1
-      Spiin Spi_buffer_in(1) , 1
-      Set Spi_cs
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H0E
-      Tx_b(2) = Spi_buffer_in(1)
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 15
-'Befehl &H0F
-'Reset
-'Reset
-'Data "15;ot,reset;0"
-      Stop Watchdog
-      Spi_buffer(1) = &H60
-      'E0 MSB reset for write
-      Reset Spi_cs
-      Spi_buffer(2) = &HB6
-      Spiout Spi_buffer(1) , 2
-      Set Spi_cs
-      Gosub Start_BM280
-      Gosub Read_correction
-      Start Watchdog
-      Gosub Command_received
-'
+$include "common_1.8\_Command_240.bas"
 '
 '-----------------------------------------------------
-$include "common_1.7\_Command_240.bas"
+$include "common_1.8\_Command_252.bas"
 '
 '-----------------------------------------------------
-$include "common_1.7\_Command_252.bas"
+$include "common_1.8\_Command_253.bas"
 '
 '-----------------------------------------------------
-$include "common_1.7\_Command_253.bas"
+$include "common_1.8\_Command_254.bas"
 '
 '-----------------------------------------------------
-$include "common_1.7\_Command_254.bas"
+$include "common_1.8\_Command_255.bas"
 '
 '-----------------------------------------------------
-$include "common_1.7\_Command_255.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_End.bas"
+$include "common_1.8\_End.bas"
 '
 ' ---> Rules announcements
 'announce text
 '
-Announce0:
+Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
 Data "0;m;DK1RI;Klimasensor;V03.0;1;145;1;21;1-1"
 '
-Announce1:
+'Announce1:
 'Befehl &H01
 'liest Temperatur
 'read temperature
 Data "1;ap,read temperature;1;12500,{-40.00 to 84.99};lin;DegC"
 '
-Announce2:
+'Announce2:
 'Befehl &H02
 'liest Feuchtigkeit
 'read humidity
 Data "2;ap,read humidity;1;100001,{0.000 to 100.000};lin;%"
 '
-Announce3:
+'Announce3:
 'Befehl &H03
 'liest Druck
 'read pressure
 Data "3;ap,read pressure;1;1100001,{0.000 to 1100.000};lin;hPa"
 '
-Announce4:
+'Announce4:
 'Befehl &H04 0 to 5
 'schreibt Oversampling Feuchte
 'write Oversampling humidity
 Data "4;oa,oversampling humidity;b,{0,1,2,4,8,16}"
 '
-Announce5:
+'Announce5:
 'Befehl &H05
 'liest Oversampling Feuchte
 'read Oversampling humidity
 Data "5;aa,as4"
 '
-Announce6:
+'Announce6:
 'Befehl &H06 0 to 5
 'schreibt Oversampling Druck
 'write Oversampling pressure
 Data "6;oa,oversampling pressure;b,{0,1,2,4,8,16}"
 '
-Announce7:
+'Announce7:
 'Befehl &H07
 'liest Oversampling Druck
 'read Oversampling pressure
 Data "7;aa,as6"
 '
-Announce8:
+'Announce8:
 'Befehl &H08
 'schreibt Oversampling Temperatur
 'write Oversampling Temperature
 Data "8;oa,oversampling Temperatur;b,{0,1,2,4,8,16}"
 '
-Announce9:
+'Announce9:
 'Befehl &H09
 'liest Oversampling Temperatur
 'read Oversampling Temperatur
 Data "1;aa,as8"
 '
-Announce10:
+'Announce10:
 'Befehl &H0A
 'schreibt Pause Zeit
 'write non active time
 Data "10;oa,non activ time;b,{0.5,62.5,125,500,1000,10,20},ms"
 '
-Announce11:
+'Announce11:
 'Befehl &H0B
 'liest Pause Zeit
 'read non active time
 Data "11;aa,as10"
 '
-Announce12:
+'Announce12:
 'Befehl &H0C
 'schreibt Filter
 'write Filter
 Data "12;oa,filter;b,{0,2,4,8,16}"
 '
-Announce13:
+'Announce13:
 'Befehl &H0D
 'liest Filter
 'read Filter
-Data "13;aa,as12"
+'Data "13;aa,as12"
 '
-Announce14:
+'Announce14:
 'Befehl &H0E
 'liest ID
 'read ID
 Data "14;aa,read ID;b"
 '
-Announce15:
+'Announce15:
 'Befehl &H0F
 'Reset
 'Reset
-'Data "15;ot,reset;0"
+Data "15;ot,reset;0"
 '
-Announce16:
+'Announce16:
 'Befehl &HF0<n><m>
 'liest announcements
 'read m announcement lines
 Data "240;ln,ANNOUNCEMENTS;145;21"
 '
-Announce17:
+'Announce17:
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce18:
+'Announce18:
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
+'Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce19:
+'Announce19:
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,SERIAL,1"
 '
-Announce20:
+'Announce20:
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization

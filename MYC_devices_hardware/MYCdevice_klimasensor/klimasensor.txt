@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Klimasensor
 
-Author DK1RI, Version V03.0, 20191013
+Author DK1RI, Version V03.2, 20191230
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -15,7 +15,7 @@ Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl könn
 Beschreibung
 
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20 max.
+Die Stromversorgung ist 12V +-10%, Stromaufnahme ca. 20 max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen (kleine Version: nur USB).
 Die Schaltung verwendet das Sparkfun BM280 Hookup Modul (TM).
 Neben dem Auslesen von Temperatur, Feuchte und Luftdruck können auch die Parameter des BME280 geändert werden. Die genauen Auswirkungen müssen im Datenblatt nachgelesen werden.
@@ -178,7 +178,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.8 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -198,12 +198,12 @@ I2C
 Die I2C Schnittstelle ist nur auf der großen Leiterplatte vorhanden. Die Default Adresse ist 22 (&H16).
 Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
 Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k – 10k).
-Da der Prozessor mit 3.3V arbeitet, muss auch der I2C Bus mit dieser Spannung arbeiten. Hat der externe I2C Bus 5 V, muss der Pegelwandler (PCA9517), R1, R2, R5, R6, JP2 bestückt werden.
-Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Da der Prozessor mit 3.3V arbeitet, muss auch der interne I2C Bus mit dieser Spannung arbeiten. 
+Mit JP2 kann festgelegt werden, ob der externe I2C Bus mit 3V oder 5V betrieben wird.
 Wenn auf den 5V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
-Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Ganz ohne I2C kann auch SL1, SL2, JP2, JP3, JP4, R1, R2, R5, R6 entfallen. 
 Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
-Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden. 
 SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
@@ -216,7 +216,7 @@ Die Leiterplatte ist teilweise mit SMD bestückt.
 
 Stromversorgung
 
-Die Stromversorgung ist 7 - 12V, Stromaufnahme ca. 20mA ohne USB oder über USB.
+Die Stromversorgung ist 12V +-10%, Stromaufnahme ca. 20mA ohne USB oder über USB.
 Prozessor und und BME280 werden mit 3.3V versorgt. Der Quarz darf daher nicht mehr als 10MHz haben.
 
 Bestückung der Leiterplatte
@@ -263,10 +263,8 @@ JP9/JP10	Klimasensor
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V02.0
-Bascom Version V03.0
-
-
+Leiterplattenversion V02.1
+Bascom Version V03.1
 
 Copyright
 
@@ -282,5 +280,5 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.7.zip
+[6]	https://dk1ri.de/myc/common_1.8.zip
 
