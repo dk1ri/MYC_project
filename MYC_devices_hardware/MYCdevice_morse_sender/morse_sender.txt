@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Morse Sender
 
-Author DK1RI, Version V02.0, 20190709
+Author DK1RI, Version V02.1, 20191228
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -27,20 +27,18 @@ MYC_mode, default  (&H0600)
 Die Befehlsdaten müssen binär eingegeben werden; er erfolgt keine Wandlung, hier als Beispiel im HEX Format:
 010447465737
 01 ist der Befehl zur Morse  Ausgabe. 04 ist die Länge des nachfolgenden Strings test
-
+Die Zeichen werden auf der seriellen Schittstelle ausgegeben. Werden weitere Befehle eingegeben, bevor alles Zeichen ausgegeben wurden, gehen diese verloren.
 Es können 250 Zeichen maximal am Stück übertragen werden; die Länge des Strings wird mit einem Byte übertragen.
-Nach Eingabe eines Strings muss man warten, bis die Morse Signale übertragen wurden. Andernfalls gehen Eingabedaten verloren. 
 
 Direkt_mode, nicht MYC Mode (&H0601):
-Alle erlaubten Morsezeichen, die an der seriellen Schnittstelle in ASCII eingegeben werden,werden in Morsezeichen umgesetzt, sobald ein LF (&H0A) empfangen wurde.
-An der seriellen Schnittstelle kann dieser Mode mit &H0600 oder &H0602 … &H0608 verlassen werden.
-Während der Ausgabe der Morsezeichen ist  eine Eingabe über I2C nicht möglich.
+Alle erlaubten Morsezeichen werden in Morsezeichen umgesetzt, sobald ein LF (&H0A) empfangen wurde.
+Die Zeichen werden auf der seriellen Schittstelle ausgegeben.
+Dieser Mode kann mit &H0600 oder &H0602 … &H0608 verlassen werden.
+Befehle können auch vor einem LF eingeben werden, sofern sie keine morsbaren Zeichen enthalten.
 
-
-Verschiedene 5 er Gruppen (&H0602 bis &H0608):
+Verschiedene  er Gruppen (&H0602 bis &H0608):
 Es gibt die Möglichkeit, 5er Gruppen mit verschiedenen Zeichensätzen auszugeben
-Die Eingabe von Befehlen über RS232/USB ist eingeschränkt möglich: Die Befehlsauswertung erfolgt nach jedem Morsezeichen. Auch hier ist zu beachten, dass während des Senden eines Morsezeichen nur 1 Byte gepuffert werden kann. Ein Wechsel des Modes zum Beispiel &H0600 funktioniert.
-Ein Eingabe von Befehlen über I2C ist nicht möglich.
+Der Modes kann mit &H0600 beendet werden. Befehle können eingeben werden.
 
 Einbindung in das MYC System
 
@@ -203,8 +201,6 @@ Stromversorgung
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. 
 Alternativ erfolgt die Stromversorgung über USB
 
-
-
 Bestückung der Leiterplatte
 
 Da die Leiterplatte auch für andere Anwendungen eingesetzt werden kann, brauchen nur folgende Bauteile  bestückt werden: X1, D1, IC1, IC2, Q1, C1 – C5, C10, JP1(muss für Normalbetrieb überbrückt werden), R3, R4, SL4, ohne Tiefpass: R15=0
@@ -252,9 +248,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V05.1
-Bascom Version V04.0
-
-
+Bascom Version V04.1
 
 Copyright
 
@@ -270,4 +264,4 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.7.zip
+[6]	https://dk1ri.de/myc/common_1.8.zip
