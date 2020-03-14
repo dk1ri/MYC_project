@@ -1,0 +1,15 @@
+20200315:
+
+02: not implemented
+1A01: bandstack missing
+11A04 Errorin Filter table
+1A050182 Server adress or name? 
+1A050191 main/sub control or data?
+1A050222 - 210 Frequenzbereichstimmt nicht
+1A0261 Description missmatch
+1A07 not used (later?) Satellite memory content
+1B00 1B01xas 7300? check
+1F00: on page 19 is denoted as 1F01
+1F01:  Description missing
+2700: not implemented (scope data)
+271E not implemented
