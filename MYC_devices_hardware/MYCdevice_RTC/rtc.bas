@@ -1,18 +1,18 @@
 '-----------------------------------------------------------------------
 'name : rtc_bascom.bas
-'Version V03.0, 20191014
+'Version V03.2, 20200428
 'purpose : Programm as realtime clock using the ELV RTC-DCF module
 'The interface communicates with the module via SPI
 'This Programm can be controlled via I2C or serial
-'Can be used with hardware MYC_rtc Version V03.0 by DK1RI
+'Can be used with hardware MYC_rtc Version V03.1 by DK1RI
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,7 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1,10 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.7\_Introduction_master_copyright.bas"
+$include "common_1.10\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -20,8 +20,7 @@ $include "common_1.7\_Introduction_master_copyright.bas"
 ' serial
 ' I2C
 '-----------------------------------------------------
-' Inputs /Outputs : see file __config
-' For announcements and rules see Data section at the end
+' Inputs / Outputs : see file __config.bas
 '
 '------------------------------------------------------
 'Missing/errors:
@@ -35,23 +34,20 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.7\_Processor.bas"
+$include "common_1.10\_Processor.bas"
 '
 '----------------------------------------------------
 '
-' 8: for 8/32pin, ATMEGAx8; 4 for 40/44pin, ATMEGAx4 packages
-' used for reset now: different portnumber of SPI SS pin
-Const Processor = "8"
-Const Command_is_2_byte    = 0
 '1...127:
-Const I2c_address = 38
-Const No_of_announcelines = 36
-'announcements start with 0 -> minus 1
-Const Tx_factor = 10
-' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
+Const I2c_address = 19
+Const No_of_announcelines = 9
+Const Tx_factor = 15
+' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
+Const S_length = 35
 '
 '----------------------------------------------------
-$include "common_1.7\_Constants_and_variables.bas"
+$include "__use.bas"
+$include "common_1.10\_Constants_and_variables.bas"
 '
 Const Length_spi = 11
 Const Length_spi_1 = Length_spi - 1
@@ -88,22 +84,20 @@ Dim Spi_bytes as Byte
 Dim Start_delay As Dword
 '
 '----------------------------------------------------
-$include "common_1.7\_Macros.bas"
+$include "common_1.10\_Macros.bas"
 '
 '----------------------------------------------------
-Config PinB.2 = Input
-Reset__ Alias PinB.2
-$include "common_1.7\_Config.bas"
+$include "common_1.10\_Config.bas"
 '
 '----------------------------------------------------
 Spiinit
 Start_delay = 1
 '
 '----------------------------------------------------
-$include "common_1.7\_Main.bas"
+$include "common_1.10\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Loop_start.bas"
+$include "common_1.10\_Loop_start.bas"
 '
 '----------------------------------------------------
 If Start_delay > 0 Then
@@ -116,23 +110,20 @@ If Start_delay > 0 Then
 End If
 '
 '----------------------------------------------------
-$include "common_1.7\_Serial.bas"
-'----------------------------------------------------
-$include "common_1.7\_I2c.bas"
+$include "common_1.10\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.7\_Reset.bas"
+$include "common_1.10\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Init.bas"
+$include "common_1.10\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Subs.bas"
-$include "common_1.7\_Sub_reset_i2c.bas"
+$include "common_1.10\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -263,155 +254,13 @@ Return
 '
 '
 '----------------------------------------------------
-   $include "common_1.7\_Commandparser.bas"
+$include "_Commands.bas"
+$include "common_1.10\_Commands_required.bas"
+'
+$include "common_1.10\_Commandparser.bas"
 '
 '-----------------------------------------------------
+' End
 '
-   Case 1
-'Befehl  &H01
-'liest Uhrzeit
-'read time
-'Data "1;aa,read time;t"
-      Tx_busy = 2
-      Tx_time = 1
-         Waitus 70
-      Reset PortB.2
-      For B_temp1 = 1 To 7
-         B_temp2 = B_temp1 + 191
-         'read register 0 to 6
-         Spiout B_temp2, 1
-         Waitus 70
-         Spiin Spi_buffer(B_temp1), 1
-         Waitus 70
-      Next B_temp1
-      Set PortB.2
-      Gosub Calculate_unix_time
-      Tx_b(1) = &H01
-      Tx_write_pointer = 10
-      If Command_mode = 1 Then  Gosub Print_tx
-      Gosub Command_received
-'
-   Case 2
-'Befehl  &H02 <0..14><m>
-'schreibt register
-'write register
-'Data "2;om,write register;b;15"
-      If Commandpointer >= 3 Then
-         If Command_b(2) < 15 Then
-            Spi_buffer1 = String(Length_spi, 0)
-            Spi_buffer(1) = Command_b(2) + 128
-            Spi_buffer(2) =  Command_b(3)
-            Reset PortB.2
-            Spiout Spi_buffer(1), 1
-            Waitus 70
-            Spiout Spi_buffer(2), 1
-            Waitus 70
-            Set PortB.2
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 3
-'Befehl  &H03 <0..14>
-'liest register
-'read register
-'Data "3;am,as2"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 15 Then
-            Tx_busy = 2
-            Tx_time = 1
-            Spi_buffer(1) = Command_b(2) + 192
-            Reset PortB.2
-            Waitus 70
-            Spiout Spi_buffer(1), 1
-            Waitus 70
-            Spi_buffer1 = String(Length_spi, 0)
-            Spiin Spi_buffer(1), 1
-            Waitus 70
-            Set PortB.2
-            Tx_b(1) = &H03
-            Tx_b(2) = Command_b(2)
-            Tx_b(3) = Spi_buffer(1)
-            TX_write_pointer = 4
-            If Command_mode = 1 Then Gosub Print_tx
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_240.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_252.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_253.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_254.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_255.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_End.bas"
-'
-' ---> Rules announcements
-Announce0:
-'Befehl &H00
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;RTC;V03.0;1;145;1;9;1-1"
-'
-Announce1:
-'Befehl  &H01
-'liest Uhrzeit
-'read time
-Data "1;aa,read time;t"
-'
-Announce2:
-'Befehl  &H02 <0..14><m>
-'schreibt register
-'write register
-Data "2;om,write register;b;15"
-'
-Announce3:
-'Befehl  &H03 <0..14>
-'liest register
-'read register
-Data "3;am,,as2"
-'
-Announce4:
-'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;9"
-'
-Announce5:                                                  '
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-Announce6:                                                  '
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-Announce7:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{0 to 127};a,SERIAL,1"
-'
-Announce8:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+$include "_announcements.bas"
 '

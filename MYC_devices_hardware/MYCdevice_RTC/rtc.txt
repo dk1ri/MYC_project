@@ -2,20 +2,19 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Realtime Clock mit DCF
 
-Author DK1RI, Version V03.0, 20191011
+Author DK1RI, Version V03.1, 20200429
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
 Dieses Interface ist bindet das RTC DCF  Modul von ELV in das MYC System ein.
 Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
-Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 / USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung und Bedienung
 
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
-Die Stromversorgung ist 12V+-10%, Stromaufnahme ca. 20mA max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Als Realtime Modul wird der RTC-DCF Modul von ELV verwendet.
 Das Modul wird als Arduino Shield verwendet, dadurch wird die Leiterplatte zwar etwas größer, aber so entfällt die Pegelwandlung.
@@ -31,62 +30,60 @@ Einbindung in das MYC System
 Details zum MYC System stehen in [3].
 Folgende Befehle werden akzeptiert:
 
-Announce0:
+Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;RTC;V03.0;1;145;1;9;1-1"
+Data "0;m;DK1RI;RTC;V03.2;1;145;1;9;1-1"
 '
-Announce1:
+'Announce1:
 'Befehl  &H01
 'liest Uhrzeit
 'read time
 Data "1;aa,read time;t"
 '
-Announce2:
+'Announce2:
 'Befehl  &H02 <0..14><m>
 'schreibt register
 'write register
 Data "2;om,write register;b;15"
 '
-Announce3:
+'Announce3:
 'Befehl  &H03 <0..14>
 'liest register
 'read register
 Data "3;am,,as2"
 '
-Announce4:
+'Announce4:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
 Data "240;ln,ANNOUNCEMENTS;145;9"
 '
-Announce5:                                                  '
+'Announce5:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce6:                                                  '
+'Announce6:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce7:
+'Announce7:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{0 to 127};a,SERIAL,1"
 '
-Announce8:
+'Announce8:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
 Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 '
-
-
 
 Fehlermeldungen
 
@@ -112,7 +109,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -156,7 +153,6 @@ Da der Modul  mit SPI gesteuert wird, brauchen die Steckerleisten ST2 und ST4 we
 Auf dem Modul müssen die 4 Lötbrücken für SPI überbrückt werden.
 Der Schalter des Moduls muss auf 10xxxxxx (S1 – S8) - SPI mode - eingestellt werden.
 
-
 Bestückung der Leiterplatte
 
 Verwendung von ISP:
@@ -170,6 +166,7 @@ Bei Verwendung der RS232 Schnittstelle alle Bauteile bestückt. Alternativ dazu k
 Die Buchsen ST1 –  ST4 nehmen das RTC Modul auf und sollten daher passende Höhe haben.
 ST2 und ST4 werden (elektrisch) nicht benötigt.
 JP1 muss für Normalbetrieb überbrückt werden.
+
 
 Anschlüsse
 
@@ -195,14 +192,13 @@ JP3		SDA Überbrückung (ohne IC3)
 JP4		SCL Überbrückung (ohne IC3)
 JP5		Reset
 JP6		ISP 
-JP7/ JP8	Anschluss für USB Modul
-
+JP7 / JP8	Anschluss für USB Modul
 
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V03.0
-Bascom Version V03.0
+Leiterplattenversion V03.1
+Bascom Version V03.2
 
 Copyright
 
@@ -218,5 +214,4 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.7.zip
-
+[6]	https://dk1ri.de/myc/common_1.10.zip
