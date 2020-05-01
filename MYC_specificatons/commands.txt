@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V02.12.5 20190320
+Version V02.12.6 20200501
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -153,7 +153,7 @@ Some functions can be accessed with different methods. A oscillator can be contr
 number of stacks
 If a function with the same effect appears multiple for a FU, announcements can be simplified using he stack feature. The command works on one function at a time. This may simplify the HI. If you have a lot of switches selecting 4 values eg, the HI  may provide a additional selection with the number of the  switch.
 The number_of_stack parameter is not transmitted if there is one stack only.
-The number_of_stack parameter can be uses for switches and range controlled functions.
+The number_of_stack parameter can be uses for switches and range controlled functions and the parameter is mandatory.
 announcement example:	2;os;2;0,off;1,on
 command example:		0x020x010x01
 This will switch on the 2nd switch.
@@ -163,6 +163,11 @@ Sometimes one command has different functions. This can be handled by splitting 
 Announcement example:	2;os;2,P,R;0,off;1,on;0,1k;1,2k
 command example:		0x020x000x01
 This will switch P off and R to 2k with one command.
+
+This can also be used to denote switch matrices:
+Announcement example:	2;os;2,in,out;0;1;0;1
+command example:		0x020x000x01
+This will connect input 0 to output 1
 
 List of Standardized Command-types
 
@@ -204,45 +209,45 @@ OPTION for  all switches:
 												Number of positions must match the product of the dimensions
 												<ty> is a stringlength (not used)
 
- 
+In this case parameter for the two switches must be given for the operating command.
 
-announce:	<c>;xr[,<des>]...[,<des>];number_of_stacks;pos0[,<des>]...[;posn,[<des>]][;<OPTION>...]
-announce:	<c>;xr[,<des>]...[,<des>];number_of_stacks;pos0[,<des>]...[;posn,[<des>]];pos0[,<des>]...[;posn,[<des>][;<OPTION>...]
+announce:	<c>;xr[,<des>]...[,<des>];number_of_stacks;0[,<des>]...[;n,[<des>]][;<OPTION>...]
+announce:	<c>;xr[,<des>]...[,<des>];number_of_stacks;0[,<des>]...[;n,[<des>]];pos0[,<des>]...[;posn,[<des>][;<OPTION>...]
 												reset (0) or set (1)  posm (number from 0 to n)
 												1st <des> for reset, 2nd for set, if different.
 Operate command or answer / info: 	<c>0|1							simple switch (pos0 in announcement only) 0 must be 													omitted and 1 stack
 					<c><n>0|1						reset or set set position <n>, 1 stack
 					<c><m><n>0|1					reset or set set position <n> of stack <m>
-					<c><n>0|1<n>0|1						for multiple function
+					<c><n>0|1<m>0|1					for multiple function
 answer command:			<c>							simple switch  (pos0 in announcement only)
 					<c><n>						read reset or set of position <n>
 
-announce:	<c>;xs[,<des>]...[,<des>];number_of_stacks;pos0[,<des>];...posn[.<des>][;<OPTION>...]
-announce:	<c>;xs[,<des>]...[,<des>];number_of_stacks;pos0[,<des>];...posn[.<des>];pos0[,<des>];...posn[.<des>][;<OPTION>...]
+announce:	<c>;xs[,<des>]...[,<des>];number_of_stacks;0[,<des>];...n[.<des>][;<OPTION>...]
+announce:	<c>;xs[,<des>]...[,<des>];number_of_stacks;0[,<des>];...n[.<des>];pos0[,<des>];...posn[.<des>][;<OPTION>...]
 												set one out of n positions active,  reset others; 2 or more 													positions required.
 Operate command or answer / info: 	<c><n>						set position <n>, reset the others, <n> needed always, 1 stack
 answer command:			<c><m><n>						with m stacks
 					<c><n><n>
 
 
-announce:	<c>;ot[,<des>]...[,<des>];number_of_stacks;[pos0[,<des>];...posn[,<des>][;<OPTION>...]
-announce:	<c>;ot[,<des>]...[,<des>];number_of_stacks;[pos0[,<des>];...posn[,<des>];[pos0[,<des>];...posn[,<des>][;<OPTION>...]
+announce:	<c>;ot[,<des>]...[,<des>];number_of_stacks;[0[,<des>];...n[,<des>][;<OPTION>...]
+announce:	<c>;ot[,<des>]...[,<des>];number_of_stacks;[0[,<des>];...n[,<des>];[pos0[,<des>];...posn[,<des>][;<OPTION>...]
 												set one of n positions active toggling one position to the next
 												one active at a time, can be an extension of a os command.
-												2 or more positions required
+												With one position: switch on – off – on ...
 Operate command or answer / info:	<c>							toggling for all stacks
 					
 
-announce:	<c>;at[,<des>]...[,<des>];number_of_stacks;pos0[,<des>];...posn[.<des>][;<OPTION>...]
-announce:	<c>;at[,<des>]...[,<des>];number_of_stacks;pos0[,<des>];...posn[.<des>];pos0[,<des>];...posn[.<des>][;<OPTION>...]
+announce:	<c>;at[,<des>]...[,<des>];number_of_stacks;0[,<des>];...n[.<des>][;<OPTION>...]
+announce:	<c>;at[,<des>]...[,<des>];number_of_stacks;0[,<des>];...n[.<des>];pos0[,<des>];...posn[.<des>][;<OPTION>...]
 												read active position; one out of n 
 												works as  the “as” command. 
-												2 or more positions required
+												One position : read on / off
 command:	<c>
 answer / info:	<c><n>									position <n> is active
 
-announce:	<c>;ou[,<des>]...[<,des>];number_of_stacks;pos0[,<des>];...;posn[,<des>][;<OPTION>...]
-announce:	<c>;ou[,<des>]...[<,des>];number_of_stacks;pos0[,<des>];...;posn[,<des>];pos0[,<des>];...;posn[,<des>][;<OPTION>...]
+announce:	<c>;ou[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>][;<OPTION>...]
+announce:	<c>;ou[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>];pos0[,<des>];...;posn[,<des>][;<OPTION>...]
 												set one of n positions momentary active, pos0 is idle always
 												pos0 and pos1 required as minimum.
 command:	<c>										push button switch,  no parameter, if there is pos0 and pos1 
@@ -251,7 +256,7 @@ command:	<c>										push button switch,  no parameter, if there is pos0 and po
 		<c><n><n>									for multiple function
 This command may change the internal state of the device. The device must inform the SK by appropriate info about this.
 
-announce:	<c>;au[,<des>]...[<,des>];number_of_stacks;pos0[,<des>];...;posn[,<des>][;<OPTION>...]
+announce:	<c>;au[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>][;<OPTION>...]
 												read active position; one out of n 
 												If the internal momentary switching takes a while, the state 
 												can be checked by this command.  If finished, returns pos0.
@@ -281,7 +286,7 @@ Operate command or answer / info:	<c><m><n>					go to / read n of mth stack
 					<c><n>					go to n for one stack; 0 for  one stack only must be omitted
 answer command:			<c><m>					mth stack m = 1 omitted
 
-The stacknumber > 1 is used if more one identical range controls are available and should be addressed individually. The <des> show the names of  the stacks.
+The number_of_stacks > 1 is used if more one identical range controls are available and should be addressed individually. The <des> show the names of  the stacks. number_of_stacks is “0-based, and not transmitted if  number_of_stacks = 1.
 
 for <sequence> the following is defined:
 lin:	linear numbering
@@ -327,7 +332,9 @@ The number of elements of a memory are defined in the announcement. Any number i
 
 A device may have some internal memory, which stores the state of another command or memory and is not readable directly. To write and restore to these memories two ou commands can be used. Because the restore command may change the state of device, the device must send appropriate infos.
 
-operating commands
+When accessing a memory with the type string, the access is done with the complete string. There is no access to positions within the string.
+The answer of a read command will have will provide the complete string with stringlength.
+
 announce:	<c>;xm[<,des>]...[,<des>]; <ty>[,<des>]... [,<des>];m_cols[,<des>]...[,<des>];[<m_row[,<des>]...[,<des>]]...
 												write a memory element of type <ty> with optional restrictions 
 												as given in <des> of <ty>
@@ -339,10 +346,11 @@ announce:	<c>;xm[<,des>]...[,<des>]; <ty>[,<des>]... [,<des>];m_cols[,<des>]...[
 												fixed type <ty>
 operate command or answer / info:	<c><n><data>					write to / answer for position n
 answer command:			<c><n>						read position <n> (“0” based)
+					<c><n><l>						read <l> bytes from position <n> for STRING memory
 
 announce:	<c>;xn,[,ext<c>]...[,<des>]; <ty>[,<des>]... [,<des>];m_cols[,<des>]...[,<des>];[<m_row[,<des>]...[,<des>]]...
 												sequential access mode for memory 
-												may work as extension to a om command 
+												may work as extension to a xm command 
 												string s are transmitted with the individual stringlength
 operate command or answer / info:	<c><n><m><data>					write m elements to memory, starting at position n (“0” based)
 												<m> and <n> must not exceed the number of elements
@@ -377,6 +385,7 @@ operate command or answer / info:	<c><n><m><data>					write m elements to memory
 												m = 0 means no data transfer
 												If end of memory is reached next element is written to n=0.
 answer command:			<c><n><m>						read m elements from memory, start at position n (“0” based)
+
 
 
 More about Descriptions
