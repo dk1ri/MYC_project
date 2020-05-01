@@ -15,4 +15,4 @@
             b_Chars_eeram = b_Chars
             Gosub Config_lcd
             Gosub Command_received
-         Else_Incr_Commandpointer
+         End If
