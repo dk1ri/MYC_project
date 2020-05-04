@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Klimasensor
 
-Author DK1RI, Version V03.2, 20191230
+Author DK1RI, Version V03.3, 20200504
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -178,14 +178,14 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.8 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
 Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
 Der Jumper J1 sollte während der Programmierung entfernt werden.
-Die Programmierung darf nur mit entferntem Sensor durchgeführt werden.
+Die Programmierung darf nur mit entferntem Sensor durchgeführt werden. Da die Programmierung meist mit 5V erfolgt, würde der Sensor zerstört!!
 
 Serielle (RS232 / USB) Schnittstelle
 
@@ -217,7 +217,7 @@ Die Leiterplatte ist teilweise mit SMD bestückt.
 Stromversorgung
 
 Die Stromversorgung ist 12V +-10%, Stromaufnahme ca. 20mA ohne USB oder über USB.
-Prozessor und und BME280 werden mit 3.3V versorgt. Der Quarz darf daher nicht mehr als 10MHz haben.
+Prozessor und BME280 werden mit 3.3V versorgt. Der Quarz darf daher nicht mehr als 10MHz haben.
 
 Bestückung der Leiterplatte
 
@@ -232,7 +232,7 @@ Mit serieller Schnittstelle:
 Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2 und DC1 nicht bestückt werden! X1, D1 und C1, R8, R9 braucht auch nicht bestückt werden.
 
 Der USB Modul wird isoliert auf der Bestückungsseite angebracht,.
-Der Sensormodul wird mit einer Stiftleiste versehen. Die 6 polige Buchsenleiste ist auf der Oberseite. Nach dem Aufstecken des Sensormoduls liegt der Modul zur Leiterplattenmitte, der Sensor liegt außen /oben.
+Der Sensormodul wird mit einer Stiftleiste versehen. Die 6 polige Buchsenleiste ist auf der Oberseite. Nach dem Aufstecken des Sensormoduls liegt der Modul zur Leiterplattenmitte, der Sensor liegt außen / oben.
 
 „kleine“ Version:
 alle Teile müssen bestückt werden.
@@ -264,7 +264,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V02.1
-Bascom Version V03.1
+Bascom Version V03.3
 
 Copyright
 
@@ -280,5 +280,5 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.8.zip
+[6]	https://dk1ri.de/dhw/common_1.10.zip
 
