@@ -1,0 +1,348 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/Feinstaubsensor.pdf
+
+Feinstaub Messung für das MYC Protokoll
+					
+
+Author DK1RI, Version V01.0, 20200511
+This project can be found in https://www.github.com/dk1ri
+
+Einleitung
+
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+Dieses Interface kam durch eine Anregung durch einen Artikel in der Zeitschrift ELV (2019/6) zustande.
+
+Beschreibung und Bedienung
+
+Als Leiterplatte wird die für das ICOM Interface verwendet
+Die Stromversorgung ist 7- 9V, Stromaufnahme ca. 100 max.
+Die Steuerung kann über I2C, USB oder RS232 erfolgen.
+Es wird der gleiche Sensor wie in dem ELV Artikel verwendet: Sensirion SPS30 ab Firmware 2.1.
+Der Sensor ist aber anders als da nicht auf der gleichen Leiterplatte montiert, und es gibt auch kein Display.
+Details zu der Funktion des Sensors können in dem Artikel oder im Datenblatt des Sensors nachgelesen werden.
+Der Prozessor ATMEGA1284 wird verwendet, da er 2 serielle Hardware Schnittstellen hat und 16kB RAM. Dies erlaubt die Speicherung von 770 Messwerten.
+Das Messintervall beträgt 3s, 10s, 1min, 10min, 30min und 60min.
+Jeder Messwert benötigt 20 Byte, es können also nur 770 Messwerte gespeichert werden (Das ELV Original hat einen zusätzlichen 4MBit Speicher und kann daher mehr Messwerte speichern). 
+Ist der Speicher voll, werden alte Daten überschrieben.
+Beim Auslesen des Speichers kommt der neueste Messwert zuerst.
+Da das Interface auch keine Uhr hat, muss die Messzeit an Hand der auslesbaren Intervallzeit berechnet werden. Beim Ändern der Messintervallzeit , Start, Stop, Reset und Abschalten gehen die gespeicherten Daten verloren.
+Das Auslesen erfolgt in Blöcken von maximal 124 Werten, beginnend mit den neuesten Daten.
+Bei einem Messintervall von einer Minute gibt der Befehl 
+&H0100FF0005 
+5 Werte der Massekonzentration von vor 255 – 259 Minuten aus.
+Entsprechend  dem MYC Protokoll muss der Startmesswert und die Zahl der Messwerte als 2 Byte Wert eingegeben werden. Die Limitierung der Länge auf 124 Byte wird durch Regeln bestimmt.
+Der Grund für die Limitierung ist der begrenzte Speicher bei der I2C Übertragung.
+Der Befehl &H14 liefert die neue Daten, wenn der letzte Abruf  länger als eine Minute zurücklag.
+
+Einbindung in das MYC System
+
+Details zum MYC System stehen in [3].
+Folgende Befehle werden akzeptiert:
+Announce:
+'Befehl &H00
+'basic annoumement wird gelesen
+'basic announcement is read
+Data "0;m;DK1RI;Feinstaubsensor;V01.0;1;50;1;29;1-1"
+'
+'Announce1:
+'Befehl &H01
+'liest Konzentration 1.0
+'read concentration 1.0
+Data "1;an,read mass concentration 1.0;1;w,ug/cbm;770"
+'
+'Announce2:
+'Befehl &H02
+'liest Konzentration 2.5
+'read concentration 2.5
+Data "2;an,read mass concentration 2.5;1;w,ug/cbm;770"
+'
+'Announce3:
+'Befehl &H02
+'liest Konzentration 4.0
+'read concentration 4.0
+Data "3;an,read mass concentration 4.0;1;w,ug/cbm;770"
+'
+'Announce4:
+'Befehl &H04
+'liest Konzentration 10
+'read concentration 10
+Data "4;an,read mass concentration 10;1;w,ug/cbm;770"
+'
+'Announce5:
+'Befehl &H05
+'liest Konzentration 0.5
+'read concentration 0.5
+Data "5;an,read number concentration 0.5;1;w,/cbcm;770"
+'
+'Announce6:
+'Befehl &H06
+'liest Konzentration 1.0
+'read concentration 1.0
+Data "6;an,read number concentration 1.0;1;w,/cbcm;770"
+'
+'Announce7:
+'Befehl &H07
+'liest Konzentration 2.5
+'read concentration 2.5
+Data "7;an,read number concentration 2.5;1;w,/cbcm;770"
+'
+'Announce8:
+'Befehl &H08
+'liest Konzentration 4.0
+'reed concentration 4.0
+Data "8;an,read number concentration 4.0;1;w,/cbcm;770"
+'
+'Announce9:
+'Befehl &H09
+'liest Konzentration 10
+'read concentration 10
+Data "9;an,read number concentration 10;1;w,/cbcm;770"
+'
+'Announce10:
+'Befehl &H0A
+'typische GrÃ¶sse
+'typical size
+Data "10;an,typical size;1;w,um;770"
+'
+'Announce11:
+'Befehl &H0B
+'Messintervall
+'measunring time
+Data "11;os,measunring time;1;0,3s;1,10s;2,30s;3;1min;4,10min;5,30min;6,60min"
+'
+'Announce12:
+'Befehl &H0C
+'Messintervall
+'measunring time
+Data "12;as,as11"
+'
+'Announce13:
+'Befehl &H0D
+'start / beendet Messung
+'start /stop measurement
+Data "13;os,'start / stop measurement;1;0,off;1,on"
+'
+'Announce14:
+'Befehl &H0E
+'Reinigung Intervall
+'cleaning interval
+Data "14;op,cleaning interval;1;700000,s"
+'
+'Announce15:
+'Befehl &H0F
+'Reinigung Intervall
+'cleaning time
+Data "15;aa,as14"
+'
+'Announce16:
+'Befehl &H10
+'startet Reinigung
+'start cleaning
+Data "16;ou,start cleaning;0,,idle;1,start"
+'
+'Announce17:
+'Befehl &H11
+'Product Name
+'Product Name
+Data "17;aa,Product Name;1,31"
+'
+'Announce18:
+'Befehl &H12
+'Version
+'Version
+Data "18;aa,Version;1,31"
+'
+'Announce19:
+'Befehl &H13
+'Serial Number
+'Serial Number
+Data "19;aa,PSerial Number;1,31"
+'
+'Announce20:
+'Befehl &H14
+'alle Originaldaten
+'all original data
+Data "20;oa,all data;1;50"
+'
+'Announce21:
+'Befehl &H15
+'Reset
+'reset
+Data "21;ot,reset;1;0,idle;1,reset"
+'
+'Announce22:
+'Befehl &H16
+'Status Register
+'status register
+Data "22;aa,status register;1;10"
+'
+'Announce23:
+'Befehl &HF0<n><m>
+'liest announcements
+'read m announcement lines
+Data "240;ln,ANNOUNCEMENTS;145;29"
+'
+'Announce24:
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;40,last_error"
+'
+'Announce25:
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+'Data "253;aa,MYC INFO;b,ACTIVE"
+'
+'Announce26:
+'Befehl &HFE <n><data>
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{0 to 127};a,SERIAL,1"
+'
+'Announce27:
+'Befehl &HFF <n>
+'eigene Individualisierung lesen
+'read individualization
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+'
+'Announce28:
+Data "R !($1 TO $10) IF ($1 TO $10)&1 > 127"
+'
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
+
+Reset
+
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+
+Watchdog
+
+Es gibt einen kompletten Hardware -reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
+Das aktuelle Bascom Programm verwendet einen Atmega1284.
+Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 und sollte während der Programmierung entfernt werden.
+
+Serielle (RS232 / USB) Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+I2C Schnittstelle 
+
+Die Default Adresse ist 28
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt.
+
+Stromversorgung
+
+Die Stromversorgung ist 7- 9V, Stromaufnahme ca. 100mA max. 
+Durch den recht hohen Strom des Sensors ist die Eingangsspannung begrenzt, um die Verlustleistung des Reglers nicht zu überschreiten.
+Alternativ erfolgt die Stromversorgung über USB.
+Wenn der Feinstaubsensor ohne PC betrieben werden soll, kann die Stromversorgung auch über USB erfolgen. Dann können die Daten aber nur über I2C abgerufen werden, da beim Abtrennen der Stromversorgung und Anschluss an den PC die Daten verloren gehen.
+Die Stromversorgung kann auch über X1 (7-9V) erfolgen und die Datenabfrage statt über RS232 über USB erfolgen. Dann muss Jumper J8 offen bleiben!
+ 
+Bestückung der Leiterplatte 
+
+Verwendung von ISP:
+JP6
+
+Mit I2C:
+Siehe I2C oben.
+
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2 nicht bestückt werden! X1, D1 und C1 braucht auch nicht bestückt werden.
+
+R7 – R11, Q2, Q3, Q4 und X5 wird nicht bestückt.
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+RS232 (Buchse)
+5	GND
+2	TX (PC Eingang)
+3	RX (PC Ausgang)
+
+I2C (SL1, SL2)
+1	GND
+2	SCL
+3	SDA
+
+Ser2 (Anschluss des Feinstaub Sensors)
+1	5V
+2	Seriel out
+3	Serial in
+4	-
+5	GND
+
+Jumper
+
+JP1 		Power
+JP2 		I2C: 3V/5V Umschaltung
+JP3		SDA Überbrückung (ohne IC3)
+JP4		SCL Überbrückung (ohne IC3)
+JP5		Reset
+JP6		ISP 
+JP7		Anschluss für USB Modul
+JP8		USB Spannung, immer geschlossen, außer bei externer Spannungsversorgung mit USB Modul.
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion ICOM_Interface V03.2
+Bascom Version V01.0 
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Referenzen
+
+[1]	http://www.dk1ri.de/dhwMYC_icom_eagle.zip
+[2]	http://www.dk1ri.de/dhw/Feinstaubsensor_bascom.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
+[6]	https://dk1ri.de/dhw/common_1.10.zip
+
