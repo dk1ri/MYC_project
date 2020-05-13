@@ -1,14 +1,14 @@
 '-----------------------------------------------------------------------
 'name : morse_sender.bas
-'Version V04.1, 20191227
-'Can be used with hardware i2c_rs232_interface Version V05.0 by DK1RI
+'Version V04.2, 20200513
+'Can be used with hardware i2c_rs232_interface Version V05.1 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,7 must be copied to the directory of this file!
+' To run the compiler the directory comon_1,10 must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.8\_Introduction_master_copyright.bas"
+$include "common_1.10\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -16,9 +16,7 @@ $include "common_1.8\_Introduction_master_copyright.bas"
 ' serial
 ' I2C
 '-----------------------------------------------------
-' Inputs Outputs: see __config file
-' Morseout at OCA Timer1 pin
-' For announcements and rules see Data section at the end
+' Inputs / Outputs : see file __config.bas
 '
 '------------------------------------------------------
 'Missing/errors:
@@ -32,7 +30,7 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.8\_Processor.bas"
+$include "common_1.10\_Processor.bas"
 '
 '----------------------------------------------------
 ' 8: for 8/32pin, ATMEGAx8; 4 for 40/44pin, ATMEGAx4 packages
@@ -42,9 +40,9 @@ Const Command_is_2_byte    = 0
 '2...254:
 Const I2c_address = 36
 Const No_of_announcelines = 15
-'announcements start with 0 -> minus 1
-Const Tx_factor = 10
-' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
+Const Tx_factor = 15
+' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
+Const S_length = 32
 '
 Const All_chars_ = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ.,:;?-_()'=+/@"
 Const Cystal = 20000000
@@ -52,7 +50,8 @@ Const Initial_speed = 7
 Const Initial_frequency = 6
 '
 '----------------------------------------------------
-$include "common_1.8\_Constants_and_variables.bas"
+$include "__use.bas"
+$include "common_1.10\_Constants_and_variables.bas"
 '
 '----------------------------------------------------
 '
@@ -95,20 +94,20 @@ Dim Morse_read_pointer As Byte
 Dim Morse_buffer_b(stringlength) As Byte At Morse_buffer Overlay
 '
 '----------------------------------------------------
-$include "common_1.8\_Macros.bas"
+$include "common_1.10\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.8\_Config.bas"
+$include "common_1.10\_Config.bas"
 '
 '----------------------------------------------------
 '
 ' procedures at start
 '
 '----------------------------------------------------
-$include "common_1.8\_Main.bas"
+$include "common_1.10\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.8\_Loop_start.bas"
+$include "common_1.10\_Loop_start.bas"
 '
 '----------------------------------------------------
 'Specific actions
@@ -151,45 +150,38 @@ If New_data > 0 Then
       Select Case Morse_mode
          Case 1
             ' Commandpointer is >= 1
-            If Command_b(1) > 9 And Command_b(1) < 239 Then
+            If Command_b(Command_pointer) > 7 And Command_b(Command_pointer) < 239 Then
                ' find Lf
-               B_temp1 = 1
-               B_temp2 = Commandpointer + 1
-               While B_temp1 <= B_temp2 And Command_b(B_temp1) <> Lf
-                  Incr B_temp1
-               Wend
-               If B_temp1 < B_temp2 Then
+            '   B_temp1 = 1
+             '  B_temp2 = Command_pointer + 1
+              ' While B_temp1 <= B_temp2 And Command_b(B_temp1) <> Lf
+               '   Incr B_temp1
+             '  Wend
+               If Command_b(Command_pointer) = Lf Then
                   ' LF found
-                  For B_temp1 = 1 To Commandpointer
+                  For B_temp1 = 1 To Command_pointer
                      If Morse_buffer_pointer < Stringlength Then
                         Incr Morse_buffer_pointer
                         Morse_buffer_b(Morse_buffer_pointer) = Command_b(B_temp1)
                      End If
                   Next B_temp1
                   Morse_read_pointer = 1
-                  Gosub Commandparser
+                  Command_pointer = 0
                End If
             Else
                ' is any command parameter
-               If Command_b(1) <> 254 And Serial_active = 0 And I2c_active = 0 Then
-                  Commandpointer = 0
-               Else
-                  Gosub Commandparser
-               End If
+               Morse_mode = 0
+               Gosub Check_command
             End If
          Case Else
-            If Command_b(1) <> 254 And Serial_active = 0 And I2c_active = 0 Then
-               Commandpointer = 0
-            Else
-               Gosub Commandparser
-            End If
+            Morse_mode = 0
+            Gosub Check_command
       End Select
    End If
    New_data = 0
 End If
 '
 If Tx_pointer > Tx_write_pointer Then
-   Gosub Reset_tx
    If Number_of_lines > 0 Then Gosub Sub_restore
 End If
 '
@@ -197,22 +189,46 @@ Stop Watchdog                                               '
 Goto Loop_
 '----------------------------------------------------
 ' not used:
-'$include "common_1.8\_Main_end.bas"
+'$include "common_1.10\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.8\_Reset.bas"
+$include "common_1.10\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.8\_Init.bas"
+$include "common_1.10\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.8\_Subs.bas"
+$include "common_1.10\_Subs.bas"
 '
 '----------------------------------------------------
+'
+Check_command:
+      If Command_b(1) = 0 Then
+         Gosub Commandparser
+      Else
+            If Command_b(1) = &HFF And Command_b(2) = 254 Then
+               Commandpointer = Command_pointer
+               Gosub Commandparser
+            Else
+               If Serial_active = 1 And Command_mode = 1 Then
+                  Commandpointer = Command_pointer
+                  Gosub Commandparser
+               Else
+                  If I2c_active = 1 And Command_mode = 2 Then
+                     Commandpointer = Command_pointer
+                     Gosub Commandparser
+                  Else
+                     Command_pointer = 0
+                     Not_valid_at_this_time
+                  End If
+               End If
+            End If
+      End If
+Return
 '
 Send_morse_code:
    'send 1 morse character
@@ -316,38 +332,15 @@ Dash = 3 * Dot
 Return
 '
 '----------------------------------------------------
-   $include "_Commands.bas"
+$include "_Commands.bas"
+$include "common_1.10\_Commands_required.bas"
 '
-Commandparser:
-'checks to avoid commandbuffer overflow are within commands !!
-#IF Command_is_2_byte = 1
-   $include "common_1.8\_Commandparser.bas"
-#ENDIF
-'
-   If Command_b(1) < &HF0 Then
-      On Command_b(1) Gosub 00,01,02,03,04,05,06,07
-   Else
-      Select Case Command_b(1)
+$include "common_1.10\_Commandparser.bas"
 '
 '-----------------------------------------------------
-$include "common_1.8\_Command_240.bas"
+' End
 '
-'-----------------------------------------------------
-$include "common_1.8\_Command_252.bas"
-'
-'-----------------------------------------------------
-$include "common_1.8\_Command_253.bas"
-'
-'-----------------------------------------------------
-$include "common_1.8\_Command_254.bas"
-'
-'-----------------------------------------------------
-$include "common_1.8\_Command_255.bas"
-'
-'-----------------------------------------------------
-$include "common_1.8\_End.bas"
-'
-' ---> Rules announcements
+$include "_announcements.bas"
 '
 Morse:
 Data ".-.-.-"                                               '.     0
@@ -400,91 +393,4 @@ Data ".--"                                                  'W
 Data "-..-"                                                 'X
 Data "-.--"                                                 'Y
 Data "--.."                                                 'Z      49
-'
-'announce text
-'
-Announce:
-'Befehl &H00
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;morse sender;V04.0;1;190;1;15;1-1"
-'
-'Announce1:
-'Befehl  &H01 <s>
-'I2C / serial String als Morse senden
-'send I2C / serial String as Morse
-Data "1;oa,send morse;250,{.,\,,:,\;,?,-,_,(,),',=,+,/,@,0 to 10,a to z, A to Z}"
-'
-'Announce2:
-'Befehl  &H02 0 to 19
-'Geschwindigkeit schreiben
-'write speed
-Data "2;op,morse speed;1;20,{5 to 100};lin;Wpm"
-'
-'Announce3:
-'Befehl  &H03
-'Geschwindigkeit lesen
-'read speed
-Data "3;ap,as2"
-'
-'Announce4:
-'Befehl  &H04
-'Frequenz schreiben 100 - 2000Hz
-'write frequency
-Data "4;op,morse frequency;1;20,{100 to 2000};lin;Hz"
-'
-'Announce5:
-'Befehl  &H05
-'Frequenz lesen
-'read frequency
-Data "5;ap,as4"
-'
-'Announce6:
-
-'Befehl  &H06
-'Mode einstellen, Myc, direkteingabe, 5er Gruppen
-'set mode
-Data "6;os,mode;1;0,myc mode;1,morse input;2,0 to 9;3,a to f;4,g to l;5,m to s;6,t to z;7,special;8,all"
-'
-'Announce7:
-'Befehl  &H07
-'Morse mode lesen
-'read morse mode
-Data "7;as,as6"
-'
-'Announce8:
-'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;190;15"
-'
-'Announce9:                                                  '
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce10:                                          '
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce11:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1"
-'
-'Announce12:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
-'
-'Announce13:
-Data "R !* IF $6&1"
-'
-'Announce14:
-Data "R &6 IF $6&1"
 '

@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Morse Sender
 
-Author DK1RI, Version V02.1, 20191228
+Author DK1RI, Version V02.2, 20200512
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -33,102 +33,102 @@ Es können 250 Zeichen maximal am Stück übertragen werden; die Länge des Strings 
 Direkt_mode, nicht MYC Mode (&H0601):
 Alle erlaubten Morsezeichen werden in Morsezeichen umgesetzt, sobald ein LF (&H0A) empfangen wurde.
 Die Zeichen werden auf der seriellen Schittstelle ausgegeben.
-Dieser Mode kann mit &H0600 oder &H0602 … &H0608 verlassen werden.
-Befehle können auch vor einem LF eingeben werden, sofern sie keine morsbaren Zeichen enthalten.
+Dieser Mode wird durch einen gültigen Befehlscode (&H00 bis &H07, >= &H240 sofort verlassen..
 
-Verschiedene  er Gruppen (&H0602 bis &H0608):
+Verschiedene  5er Gruppen (&H0602 bis &H0608):
 Es gibt die Möglichkeit, 5er Gruppen mit verschiedenen Zeichensätzen auszugeben
-Der Modes kann mit &H0600 beendet werden. Befehle können eingeben werden.
+Der Mode wird durch eine beliebige weitere Eingabe beendet.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
 Folgende Befehle werden akzeptiert::
 
-Announce0:
+Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;morse sender;V04.0;1;190;1;15;1-1"
+Data "0;m;DK1RI;morse sender;V04.2;1;190;1;15;1-1"
 '
-Announce1:
+'Announce1:
 'Befehl  &H01 <s>
 'I2C / serial String als Morse senden
 'send I2C / serial String as Morse
 Data "1;oa,send morse;250,{.,\,,:,\;,?,-,_,(,),',=,+,/,@,0 to 10,a to z, A to Z}"
 '
-Announce2:
+'Announce2:
 'Befehl  &H02 0 to 19
 'Geschwindigkeit schreiben
 'write speed
 Data "2;op,morse speed;1;20,{5 to 100};lin;Wpm"
 '
-Announce3:
+'Announce3:
 'Befehl  &H03
 'Geschwindigkeit lesen
 'read speed
 Data "3;ap,as2"
 '
-Announce4:
+'Announce4:
 'Befehl  &H04
 'Frequenz schreiben 100 - 2000Hz
 'write frequency
 Data "4;op,morse frequency;1;20,{100 to 2000};lin;Hz"
 '
-Announce5:
+'Announce5:
 'Befehl  &H05
 'Frequenz lesen
 'read frequency
 Data "5;ap,as4"
 '
-Announce6:
+'Announce6:
 
 'Befehl  &H06
 'Mode einstellen, Myc, direkteingabe, 5er Gruppen
 'set mode
 Data "6;os,mode;1;0,myc mode;1,morse input;2,0 to 9;3,a to f;4,g to l;5,m to s;6,t to z;7,special;8,all"
 '
-Announce7:
+'Announce7:
 'Befehl  &H07
 'Morse mode lesen
 'read morse mode
 Data "7;as,as6"
 '
-Announce8:
+'Announce8:
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
 Data "240;ln,ANNOUNCEMENTS;190;15"
 '
-Announce9:                                                  '
+'Announce9:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce10:                                          '
+'Announce10:                                          '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce11:
+'Announce11:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,serial,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,18,{0 to 127};a,SERIAL,1"
 '
-Announce12:
+'Announce12:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,serial,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,18,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 '
-Announce13:
+'Announce13:
 Data "R !* IF $6&1"
 '
-Announce14:
+'Announce14:
 Data "R &6 IF $6&1"
+'
 
 Regeln
 
@@ -158,7 +158,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168.
 Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -248,7 +248,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V05.1
-Bascom Version V04.1
+Bascom Version V04.2
 
 Copyright
 
@@ -264,4 +264,4 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.8.zip
+[6]	https://dk1ri.de/dhw/common_1.10.zip
