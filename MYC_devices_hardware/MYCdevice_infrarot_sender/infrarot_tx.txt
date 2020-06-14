@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Infrarot Sender
 
-Author DK1RI, Version V05.0, 20190710
+Author DK1RI, Version V05.1 20200614
 This project can be found in https://github.com/dk1ri also.
 
 Einleitung
@@ -22,11 +22,14 @@ Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Es wird die gleiche Leiterplatte wie für das I2C_RS232_Interface verwendet
 Das Programm ist nur das Framework, weitere MYC Befehle des Gerätes müssen nach Bedarf eingefügt werden. Man kann aber Befehle für Infrarot Codes direkt entsprechend den MYC Regeln eingeben.
 
+Grundsätzliche Bedienung
+
 Die Daten müssen im MYC mode binär eingegeben werden; hier im HEX Format:
 &H01&H01
 01 ist der Befehl zur Infrarot RC5 Ausgabe. 01 ist ein Infrarot Code. Es wird immer nur ein Zeichen übertragen. Die RC5 / RC6 Adresse wird mit den Befehlen &H03 / &H05 geändert. Default ist 1.
 
 Im nicht-MYC mode müssen die RC5 Befehle (00 bis 63) dezimal als 2 Dezimalziffern von 0 - 9 über die serielle Schnittstelle eingeben werden. Rückkehr zum MYC mode erfolgt durch Eingabe von &H20 (Space Taste). 
+Die RC5 Signale werden sofort ausgegeben, Während dieser Zeit erfolgt keine Zwischenspeicherung weiterer Eingabedaten.
 Nicht gültige Eingaben werden ohne Fehlermeldung ignoriert.
 Die RC5 Adresse wird mit dem Befehl &H03<&H01 - &H31> im MYC mode festgelegt.  Die I2C Schnittstelle ist vom nicht-MYC mode nicht betroffen.
 
@@ -35,85 +38,85 @@ Einbindung in das MYC System
 Details zum MYC System stehen in [3].
 Folgende Befehle werden akzeptiert:
 
-nnounce0:
+Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
 Data "0;m;DK1RI;IR_sender;V05.0;1;145;1;14;1-1"
 '
-Announce1:
+'Announce1:
 'Befehl &H01   0-63
 'als RC5 Signal senden 1 Zeichen
 'send 1 IR signal
 Data "1;oa,send RC5;b,{&H00 to &H3F}"
 '
-Announce2:
+'Announce2:
 'Befehl &H02   0-255
 'als RC6 Signal senden, 8 bit
 'send as RC6 signal, 8 bit
 Data "2;oa,send RC6;b"
 '
-Announce3:
+'Announce3:
 'Befehl &H03   0-31
 'RC5 Adresse schreiben
 'write RC5 adress
 Data "3;oa,rc5adress;b,{0 to 31}"
 '
-Announce4:
+'Announce4:
 'Befehl &H04
 'RC5 Adresse lesen
 'read RC5 adress
 Data "4;aa,as3"
 '
-Announce5:
+'Announce5:
 'Befehl &H05   0-255
 'RC6 Adresse schreiben, 8 bit
 'write RC6 adress, 8 bit
 Data "5;oa,rc6adress;b"
 '
-Announce6:
+'Announce6:
 'Befehl &H06
 'RC6 Adresse lesen
 'read RC6 adress
 Data "6;oa,as5"
 '
-Announce7:
-'Befehl &H238  0,1
+'Announce7:
+'Befehl &H07  0,1
 'no_myc schreiben
 'write no_myc
-Data "238;oa,write no_myc;a"
+Data "7;oa,write no_myc;a"
 '
-Announce8:
-'Befehl &HEF
+'Announce8:
+'Befehl &H08
 'no_myc lesen
 'read no_myc
-Data "239;aa,as238"
+Data "8;aa,as7"
 '
-Announce9:
+'Announce9:
 'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
 'read m announcement lines
 Data "240;ln,ANNOUNCEMENTS;145;14"
 '
-Announce10:
+'Announce10:
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce11:
+'Announce11:
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce12:
+'Announce12:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,5,{0 to 127};a,SERIAL,1"
 '
-Announce13:
+'Announce13:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
@@ -144,7 +147,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega8.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -173,8 +176,6 @@ Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und 
 SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
-
-
 
 SMD
 
@@ -225,14 +226,14 @@ JP2 		I2C: 3V/5V Umschaltung
 JP3		SDA Überbrückung (ohne IC3)
 JP4		SCL Überbrückung (ohne IC3)
 JP5		Reset
-JP6		pin1 – 6: ISP, pin10 : SS für den SPI Anschluss 
+JP6		ISP
 JP7		Anschluss für USB Modul
 
 Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 05.1
-Bascom Version 05.0
+Bascom Version 05.1
 
 'Copyright
 
@@ -247,5 +248,5 @@ Referenzen
 [2]	https://www.dk1ri.de/dhw/infrarot_tx_bascom.zip
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
-[5]	https://dk1ri.de/myc/Definitions.txt oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.7.zip
+[5]	https://dk1ri.de/myc/Definitionsbetont oder https://dk1ri.de/myc/Definitions .pdf (englisch)
+[6]	https://dk1ri.de/dhw/common_1.10.zip
