@@ -2,7 +2,7 @@
 'name : relaisteuerung_basom.bas
 'Version V05.1, 20200502
 'purpose : Control of a board with 4 Relais and 11 Inputs
-'Can be used with hardware relaisteuerung Version V04.0 by DK1RI
+'Can be used with hardware relaisteuerung Version V05.0 by DK1RI
 'Pin description was changed with V03,0, so it is not compatible with earlier boards!!
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
