@@ -1,17 +1,17 @@
 '-----------------------------------------------------------------------
 'name : electronic_load.bas
-'Version V04.0, 20191014
+'Version V04.2, 20200630
 'purpose : This is a electronic load for 7 fets IRFP150
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware electronic_load V04.1 by DK1RI
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory common_1,7 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory common_1,10 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.7\_Introduction_master_copyright.bas"
+$include "common_1.10\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -21,7 +21,6 @@ $include "common_1.7\_Introduction_master_copyright.bas"
 ' SPI
 '-----------------------------------------------------
 ' Inputs /Outputs : see file __config
-' For announcements and rules see Data section at the end
 '
 '------------------------------------------------------
 'Missing/errors:
@@ -38,6 +37,7 @@ $include "common_1.7\_Introduction_master_copyright.bas"
 ' (10mOhm resistor for measuring)
 ' (50 + 10 mOhm) * 30A = 1,8V
 ' If current (per FET) is lower, lower voltage can be used.
+' The Fets will not swich on if the voltage is below 400mV.
 '
 'Most internal calculation are in V, A and W and Ohm and use single variables.
 
@@ -48,7 +48,7 @@ $include "common_1.7\_Introduction_master_copyright.bas"
 'The el load will not switch on for voltages below 400mV.
 '
 'The full scale range of the AD Converter is .256V. This limits the current to 25.6A with 10mOhm resistor.
-'The current resolution is 25.6A / 32767 = 0.78mA
+'The current resolution is 25.6A / 32767 = 0.78mA  (15bit)
 '
 'The voltage resolution is nominal 3mV ( 90V / 32700)
 '
@@ -70,21 +70,51 @@ $include "common_1.7\_Introduction_master_copyright.bas"
 '
 'There are two phases: startup and regulation.
 'During startup the FET voltage is increased by a specific value for all FETs in turn.
-' After the first overshot the Gate voltage is increased /decreased for  the FET with the current most away from the
+' After the first overshot the Gate voltage is increased /decreased for the FET with the current most away from the
 'required value as required.
 'The check of current / power for overload is done on a per FET base after each measurement.
 '
 'Each ADC handles two chanals. The input of the ADC must be configured for each chanal, and after a wait time
 'the data can be read.
-' After starting measurement:
-'- configure ACD (MUX) for chanal 0, start timer1
+'All active Fets are measured always in two loops: adc_chanal1: U, Fetno 2,4,6 than adc_chanal0:  Fetno 1,3,5,7,
+' check and modfication is made after the secont loop:
+'
+'- configure ADCs (MUX) for chanal 0, start timer1
 '- after Timer1 = 32 (860SPS, start), 350 (128SPS, regulation):
-'- read data, configure ACD (MUX) for chanal 1, start timer1 again
+'- read data of all available ADCs, configure ADC (MUX) for chanal 1, start timer1 again
 '- after Timer1 = 32 (860SPS, start), 350 (128SPS, regulation):
-'- read data,
+'- read data, do check and analyze
+'- configure ADC (MUX) for chanal 0, start timer1 again
+'..
 '- analyze data
-'- configure ACD (MUX) for chanal 0, start timer1 again
 ' ...
+'
+:
+'Calculation of resistors:
+'Voltage (90V):
+' R38 = 100, R39 = 5k6 ; R38||R39 = 98,24561
+' Umes = V * R38||R39 / (33k + 1k5 + R38||R39) = 90 * 98,24561 * (33k + 1k5 + 98,24561) = 0,255565 V
+' nominal error = 0.255565 / 0,256 = 0,,16%
+'
+'
+'Fetvoltage:
+'For Fet control
+'Vin- = 0... 5V        Voutmust = 10V ... 3V        (Threshhold Voltage is 4V about at 50V 100mA)
+'
+'complete formula for subtraction amplifier (for IC11D):
+'Vout = V+ * ((R18 + R17)*R8))/((R7+R8) * R17) - V- * R18 /R17
+'real circuit:
+'          V+           9        V
+'         R18 =        12        kOhm
+'        R999 =         8,2      kOhm
+'          R7 =         1,3      kOhm
+'          R8 =         1        kOhm
+'       VIN-1 =         0        V
+'      Vin- 2 =         4,75     V
+'       Vin-3 =         5        V
+'Vout for Vin = 0V        9,63944856839873
+'Vout for Vin = 4,75V     2,68822905620361
+'Vout for Vin = 5V        2,32237539766702
 '
 '----------------------------------------------------
 $regfile = "m328pdef.dat"
@@ -92,25 +122,23 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.7\_Processor.bas"
+$include "common_1.10\_Processor.bas"
 '
 $initmicro
 '----------------------------------------------------
 '
-Const Processor = "4"
-Const Command_is_2_byte = 0
 '1...127:
-Const I2c_address = 42
-Const No_of_announcelines = 49
-'announcements start with 0 -> minus 1
-Const Tx_factor = 10
-' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
+Const I2c_address = 21
+Const No_of_announcelines = 52
+Const Tx_factor = 15
+' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
+Const S_length = 32
 '
 'If other FETs are used or less then 7 FETs are installed, the constants must be modified.
 'Modification of announcements may be necessary as well.
 '
 'el load specific Constants:
-Const Max_power_default = 150.0
+Const Max_power_default = 50.0
 '50W per fet, this must be a save value
 Const Max_cooling = 300.0
 'limit by cooling
@@ -137,7 +165,7 @@ Const On_off_time_default_ = On_off_time_default / 100
 Const Minimum_voltage_ = 0.4
 '400mV necessary to switch on the load
 Const Minimum_voltage_v = 0.001
-'for volgae mode
+'for voltage mode
 '
 Const Da_resolution = 4095
 'for MCP4921 12 Bit
@@ -159,7 +187,7 @@ Const Hyst_default = 0.001
 Const Hyst_on_default = 0
 '
 ' connected to SDA
-Const Adc_adress_F1_U = &B10010100
+Const Adc_adress_F1_U  = &B10010100
 ' connected to SCL
 Const Adc_adress_F3_F2 = &B10010110
 ' connected to GND
@@ -187,7 +215,8 @@ Const Timer1_250 = 255    ' > 8ms not used
 Const Timer1_128 = 350    ' > 15,6ms
 '
 '----------------------------------------------------
-$include "common_1.7\_Constants_and_variables.bas"
+$include "__use.bas"
+$include "common_1.10\_Constants_and_variables.bas"
 '
 ' Electronic load specific variables
 Dim Active_fets As Byte
@@ -261,7 +290,7 @@ Dim Current_max As Word
 Dim El_mode as Byte
 'default: 0: off, 1: V, 2:I, 3: P, 4: R, 5: Testmode for command 227, 6: calibrate V, 8: calibrate I
 ' 6: Voltage calibration, 7: current calibration
-Dim El_load_sequence As Byte
+'Dim El_load_sequence As Byte
 Dim Timer1_value As Word
 '
 Dim Error_req As Byte
@@ -295,130 +324,93 @@ Dim Temp_dw_b3 As Byte At Temp_dw + 2 Overlay
 Dim Temp_dw_b4 As Byte At Temp_dw + 3 Overlay
 '
 '----------------------------------------------------
-$include "common_1.7\_Macros.bas"
+$include "common_1.10\_Macros.bas"
 '
 '----------------------------------------------------
-Config PinB.2 = Input
-Reset__ Alias PinB.2
-$include "common_1.7\_Config.bas"
-'
-Gosub reset_load
-'----------------------------------------------------
-$include "common_1.7\_Main.bas"
+$include "common_1.10\_Config.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Loop_start.bas"
+$include "common_1.10\_Main.bas"
 '
 '----------------------------------------------------
-'Splitting to different subs is necessary to avoid possible loss of command data
-Select Case El_load_sequence
-   Case 11
-      Adc_chanal = 0
-      Gosub Send_i2c_config
-      Tcnt1 = 0
-      Start Timer1
-      El_load_sequence = 12
-   Case 10
-      Gosub Modify_if_necessary
-      El_load_sequence = 11
-   Case 9
-      Gosub Calculate
-      El_load_sequence = 10
-   Case 8
-      If Active_fets.5 = 1 Then
-         Measure_fet = 6
-         Adc_adress = Adc_adress_F7_F6
-         Gosub Receive_adc_data
-      End If
-      El_load_sequence = 9
-   Case 7
-      If Active_fets.3 = 1 Then
-         Measure_fet = 4
-         Adc_adress = Adc_adress_F5_F4
-         Gosub Receive_adc_data
-      End If
-      El_load_sequence = 8
-   Case 6
+$include "common_1.10\_Loop_start.bas"
+'
+'----------------------------------------------------
+'
+If Tcnt1 >= Timer1_value Then
+   Stop Timer1
+   If Adc_chanal = 1 Then
+      Current_min = &H7FFF
+      Current_max = 0
+      Adc_adress = Adc_adress_F1_U
+      ' voltage
+      Measure_v = 1
+      Gosub Receive_adc_data
+      If Temp_w > &H7FFF Then Temp_w = 0
+      Voltage_w = Temp_w
       If Active_fets.1 = 1 Then
          Measure_fet = 2
          Adc_adress = Adc_adress_F3_F2
          Gosub Receive_adc_data
       End If
-      El_load_sequence = 7
-   Case 5
-      If Tcnt1 >= Timer1_value Then
-         Stop Timer1
-         Adc_adress = Adc_adress_F1_U
-         ' voltage
-         Measure_v = 1
-         Gosub Receive_adc_data
-         If Temp_w > &H7FFF Then Temp_w = 0
-         Voltage_w = Temp_w
-         El_load_sequence = 6
-      End If
-   Case 4
-      Adc_chanal = 1
-      Gosub Send_i2c_config
-      Tcnt1 = 0
-      Start Timer1
-      El_load_sequence = 5
-   Case 3
-      If Active_fets.6 = 1 Then
-         Measure_fet = 7
-         Adc_adress = Adc_adress_F7_F6
-         Gosub Receive_adc_data
-      End If
-      El_load_sequence = 4
-   Case 2
-      If Active_fets.4 = 1 Then
-         Measure_fet = 5
+      If Active_fets.3 = 1 Then
+         Measure_fet = 4
          Adc_adress = Adc_adress_F5_F4
          Gosub Receive_adc_data
       End If
-      El_load_sequence = 3
-   Case 1
+      If Active_fets.5 = 1 Then
+         Measure_fet = 6
+         Adc_adress = Adc_adress_F7_F6
+         Gosub Receive_adc_data
+      End If
+      ' chanal for next measurement
+      Adc_chanal = 0
+      Gosub Send_i2c_config
+   Else
+      If Active_fets.0 = 1 Then
+         Measure_fet = 1
+         Adc_adress = Adc_adress_F1_U
+         Gosub Receive_adc_data
+      End If
       If Active_fets.2 = 1 Then
          Measure_fet = 3
          Adc_adress = Adc_adress_F3_F2
          Gosub Receive_adc_data
       End If
-      El_load_sequence = 2
-   Case 0
-      If Tcnt1 >= Timer1_value Then
-         Stop Timer1
-         Current_min = &H7FFF
-         Current_max = 0
-         If Active_fets.0 = 1 Then
-            Measure_fet = 1
-            Adc_adress = Adc_adress_F1_U
-            Gosub Receive_adc_data
-            End If
-         El_load_sequence = 1
+      If Active_fets.4 = 1 Then
+         Measure_fet = 5
+         Adc_adress = Adc_adress_F5_F4
+         Gosub Receive_adc_data
       End If
-   Case 12
-      El_load_sequence = 0
-End Select
+      If Active_fets.6 = 1 Then
+         Measure_fet = 7
+         Adc_adress = Adc_adress_F7_F6
+         Gosub Receive_adc_data
+      End If
+      Adc_chanal = 1
+      Gosub Send_i2c_config
+      Gosub Calculate
+      Gosub Modify_if_necessary
+   End If
+'
+   Tcnt1 = 0
+   Start Timer1
+End If
 If On_off_mode > 0 Then Gosub Operate_On_off_mode
 '
 '----------------------------------------------------
-$include "common_1.7\_Serial.bas"
-'
-'----------------------------------------------------
-$include "common_1.7\_I2c.bas"
-'
-'----------------------------------------------------
+$include "common_1.10\_Main_end.bas"
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.7\_Reset.bas"
+$include "common_1.10\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Init.bas"
+$include "common_1.10\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.7\_Subs.bas"
-$include "common_1.7\_Sub_reset_i2c.bas"
+$include "common_1.10\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -523,10 +515,11 @@ Minimum_voltage = Minimum_voltage_
 ' At start Fetnumber is set to 1 if active_fets.0  = 1
 Fet_number = 7
 Set Led
-'
-' set Adc_chanal = 0:
-El_load_sequence = 4
 Adc_speed = 0
+Stop Timer1
+Adc_chanal = 0
+Tcnt1 = 0
+Start Timer1
 Return
 '
 Modify_if_necessary:
@@ -874,11 +867,11 @@ If Measure_v = 0 Then
    Current_w(Measure_fet) = Temp_w
    Current(Measure_fet) = Temp_w * Calc_i(Measure_fet)
    Power_(Measure_fet) = Voltage * Current(Measure_fet)
-   If Current(Fet_number) > Max_current Then
+   If Current(Measure_fet) > Max_current Then
       Actual_Current_too_high
       Gosub  Reset_load
    Else
-      If Power_(Fet_number) > Max_power Then
+      If Power_(Measure_fet) > Max_power Then
          Actual_power_too_high
          Gosub  Reset_load
       End If
@@ -888,1172 +881,13 @@ Measure_v = 0
 Return
 '
 '----------------------------------------------------
-   $include "common_1.7\_Commandparser.bas"
+$include "_Commands.bas"
+$include "common_1.10\_Commands_required.bas"
+'
+$include "common_1.10\_Commandparser.bas"
 '
 '-----------------------------------------------------
+' End
 '
-   Case 1
-'Befehl &H01 (resolution 1mV);  1 byte / 4 byte
-'lese aktuelle Spannung
-'read actual voltage
-'Data "1;ap,read actual voltage;1;90001,{0.000 to 90.000};lin;V"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_dw = Voltage * 1000
-      Tx_b(1) = &H01
-      Tx_b(2) = Temp_dw_b3
-      Tx_b(3) = Temp_dw_b2
-      Tx_b(4) = Temp_dw_b1
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
+$include "_announcements.bas"
 '
-   Case 2
-'Befehl &H02; 1 byte / 4 byte
-'liest gesamten Strom (1Bit -> 1mA)
-'read all current
-'Data "2;ap,read actual current;1;175001,{0.000 to 175.000};lin;A"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_single = All_current * 1000
-      Temp_dw = Temp_single
-      Tx_b(1) = &H02
-      Tx_b(2) = Temp_dw_b3
-      Tx_b(3) = Temp_dw_b2
-      Tx_b(4) = Temp_dw_b1
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 3
-'Befehl &H03  0 - 6 (resolution 1mA); 2 byte / 4 byte
-'liest aktuellen Strom eines FETs
-'read actual current of a FET
-'Data "3;ap,read actual current;7;25001,{0.000 to 25.000};lin;A"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 7 Then
-            Tx_busy = 2
-            Tx_time = 1
-            B_temp1 = Command_b(2) + 1
-            Temp_single = Current(B_temp1) * 1000
-            Temp_w = Temp_single
-            Tx_b(1) = &H03
-            Tx_b(2) = Command_b(2)
-            Tx_b(3) = High(Temp_w)
-            Tx_b(4) = Low(Temp_w)
-            Tx_write_pointer = 5
-            If Command_mode = 1 Then Gosub Print_tx
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 4
-'Befehl &H04  (resolution 1mW); 1 byte / 4 byte
-'liest gesamte Leistung
-'read all power
-'Data "4;ap,read actual power;1;350001,{0.000 to 350.000};lin;W"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_single = All_power * 1000
-      Temp_dw = Temp_single
-      Tx_b(1) = &H04
-      Tx_b(2) = Temp_dw_b3
-      Tx_b(3) = Temp_dw_b2
-      Tx_b(4) = Temp_dw_b1
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 5
-'Befehl &H05  0 - 6 (resolution 1mW); 2 byte / 4 Byte
-'liest aktuelle Leistung eines FETs
-'read actual power of a FET
-'Data "5;ap,read actual power;7;5001,{0.000 to 50.000};lin;W"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 7 Then
-            Tx_busy = 2
-            Tx_time = 1
-            B_temp1 = Command_b(2) + 1
-            Temp_single = Power_(B_temp1) * 1000
-            Temp_w = Temp_single
-            Tx_b(1) = &H05
-            Tx_b(2) = Command_b(2)
-            Tx_b(3) = High(Temp_w)
-            Tx_b(4) = Low(Temp_w)
-            Tx_write_pointer = 5
-            If Command_mode = 1 Then Gosub Print_tx
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 6
-'Befehl &H06 (resolution mOhm); 1 byte / 5 byte
-'liest aktuellen Widerstand
-'read actual resistor
-'Data "6;ap,read actual resistor;1;120000000,{1 To 12000000};lin;mOhm"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_single = Resistance * 1000
-      Temp_dw = Temp_single
-      Tx_b(1) = &H06
-      Tx_b(2) = Temp_dw_b4
-      Tx_b(3) = Temp_dw_b3
-      Tx_b(4) = Temp_dw_b2
-      Tx_b(5) = Temp_dw_b1
-      Tx_write_pointer = 6
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 7
-'Befehl &H07 (resolution 1mV);  4 byte
-'gewuenschte Spannung schreiben
-'write required voltage
-'Data "7;op,reqired voltage;1;89601,{0.400 to 80.000};lin;V"
-      If Commandpointer >= 4 Then
-         Temp_dw_b1 = command_b(4)
-         'low byte first
-         Temp_dw_b2 = command_b(3)
-         Temp_dw_b3 = command_b(2)
-         Temp_dw_b4 = 0
-         If Temp_dw < 79600 Then
-            If Active_fets > 0 Then
-               Gosub Reset_load
-               Required_v = Temp_dw / 1000
-               Required_v = Required_v + 0.4
-               If Voltage > Required_v Then
-                  El_mode = 1
-                  Temp_single = Required_v * Hyst
-                  Required_v_p  = Required_v + Temp_single
-                  Required_v_m  = Required_v - Temp_single
-                  If Required_v_m < 0 Then Required_v_m = 0
-                  Gosub Dac_startup
-                  Minimum_voltage = Minimum_voltage_v
-               Else
-                  Voltage_too_high
-               End If
-            Else
-               No_active_fet
-            End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 8
-'Befehl &H08 (resolution 1mV);  1 byte / 4 byte
-'gewuenschte Spannung lesen
-'read required voltage
-'Data "1;ap,as7"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_single = Required_v - 0.4
-      Temp_single = Temp_single * 1000
-      Temp_dw = Temp_single
-      Tx_b(1) = &H08
-      Tx_b(2) = Temp_dw_b3
-      Tx_b(3) = Temp_dw_b2
-      Tx_b(4) = Temp_dw_b1
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 9
-'Befehl &H09 0 - 21000 (1mA resolution); 4 byte / -
-'gewuenschten Strom
-'required current
-'Data "9;op,required current;1;154001,{0.00 To 182.000};lin;A"
-      If Commandpointer >= 4 Then
-         Temp_dw = 0
-         Temp_dw_b1 = command_b(4)
-         'low byte first
-         Temp_dw_b2 = command_b(3)
-         Temp_dw_b3 = command_b(2)
-         Temp_dw_b4 = 0
-         If Temp_dw <= 182000 Then
-            If Temp_dw > 0 Then
-               If Voltage > Minimum_voltage Then
-                  If Active_fets > 0 Then
-                     Gosub Reset_load
-                     If Temp_dw > 0 Then
-                        Required_i = Temp_dw / 1000
-                        If Required_i < Max_total_current Then
-                           El_mode = 2
-                           Temp_single = Required_i * Hyst
-                           Required_i_p  = Required_i + Temp_single
-                           Required_i_m  = Required_i - Temp_single
-                           If Required_i_m < 0 Then Required_i_m = 0
-                           Gosub Dac_startup
-                        Else
-                           Required_current_too_high
-                           Required_i = 0
-                        End If
-                     End If
-                  Else
-                     No_active_fet
-                  End If
-               Else
-                  Voltage_too_low
-               End If
-            End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 10
-'Befehl &H0A  (1mA resolution); 1 byte / 4 byte
-'gewuenschten Strom lesen
-'read required current
-'Data "10;ap,as9"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_dw  = Required_i * 1000
-      Tx_b(1) = &H0A
-      Tx_b(2) = Temp_dw_b3
-      Tx_b(3) = Temp_dw_b2
-      Tx_b(4) = Temp_dw_b1
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 11
-'Befehl &H0B 0 - 140000 (1mW resolution); 4 byte / -
-'gewuenschte Leistung
-'required power
-'Data "11;op,required power;1;300001,{0.00 To 300.000};lin;W"
-      If Commandpointer >= 4 Then
-         Temp_dw = 0
-         Temp_dw_b1 = command_b(4)
-         'low byte first
-         Temp_dw_b2 = command_b(3)
-         Temp_dw_b3 = command_b(2)
-         If Temp_dw <= 300000 Then
-            If Temp_dw > 0 Then
-               If Voltage > Minimum_voltage Then
-                  If Active_fets > 0 Then
-                     Gosub Reset_load
-                     If Temp_dw > 0 Then
-                        Required_p = Temp_dw / 1000
-                        If Required_p < Power_of_all_fets And Required_p < Max_cooling Then
-                           El_mode = 3
-                           Temp_single = Required_p * Hyst
-                           Required_p_p  = Required_p + Temp_single
-                           If Required_p_p > Power_of_all_fets  Then Required_p_p = Power_of_all_fets
-                           Required_p_m  = Required_i - Temp_single
-                           If Required_p_m < 0 Then Required_p_m = 0
-                           Gosub Dac_startup
-                        Else
-                           Required_power_too_high
-                           Required_p = 0
-                        End If
-                     End If
-                  Else
-                     No_active_fet
-                  End If
-               Else
-                  Voltage_too_low
-               End If
-            End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 12
-'Befehl &H0C (1mW resolution); 1 byte / 4 byte
-'gewuenschte Leistung lesen
-'read required power
-'Data "12;ap,as11"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_dw = Required_p * 1000
-      Tx_b(1) = &H0C
-      Tx_b(2) = Temp_dw_b3
-      Tx_b(3) = Temp_dw_b2
-      Tx_b(4) = Temp_dw_b1
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-
-   Case 13
-'Befehl &H0D 10mOhm - 120kOhm (resolution 1mOhm); 5 byte / -
-'gewuenschten Widerstand schreiben
-'write required resistor
-'Data "13;op,required resistor:1;119999990,{0.01 To 120000.000};lin;Ohm"
-      If Commandpointer >= 5 Then
-         Temp_dw_b1 = command_b(5)
-         'low byte first
-         Temp_dw_b2 = command_b(4)
-         Temp_dw_b3 = command_b(3)
-         Temp_dw_b4 = Command_b(2)
-         If Temp_dw < 119999990 Then
-            If Voltage > Minimum_voltage Then
-                  If Active_fets > 0 Then
-                     Temp_dw = Temp_dw + 10
-                     Gosub Reset_load
-                     Required_r = Temp_dw / 1000
-                     El_mode = 4
-                     Temp_single = Required_r * Hyst
-                     Required_r_p  = Required_r + Temp_single
-                     If Required_r_p > 120000  Then Required_r_p = 120000
-                     Required_r_m  = Required_r - Temp_single
-                     If Required_r_m < 0.001 Then Required_r_m = 0.001
-                     Gosub Dac_startup
-                  Else
-                     No_active_fet
-                  End If
-               Else
-                  Voltage_too_low
-               End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 14
-'Befehl &H0E (resolution 10mOhm); 1 byte / 5 byte
-'gewuenschter Widerstand lesen
-'read required resistor
-'Data "14;ap,as13"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_dw = Required_r * 1000
-      Temp_dw = Temp_dw - 10
-      Tx_b(1) = &H0E
-      Tx_b(2) = Temp_dw_b4
-      Tx_b(3) = Temp_dw_b3
-      Tx_b(4) = Temp_dw_b2
-      Tx_b(5) = Temp_dw_b1
-      Tx_write_pointer = 6
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 15
-'Befehl &H0F 0|1|2; 2 byte / -
-'Wechsellast schreiben
-'write on /off mode
-'Data "15;or,on off mode;1;0,off;1,regulated;2,fixed"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 3  Then
-            If El_mode > 0 And El_mode < 5 Then
-               On_off_mode = Command_b(2)
-               On_off_counter = 0
-               Off_on = 0
-            Else
-               Not_valid_at_this_time
-            End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 16
-'Befehl &H10; 1 byte / 2 byte
-'Wechsellast lesen
-'read on /off mode
-'Data "16;ar,as15"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H10
-      Tx_b(2) = On_off_mode
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 17
-'Befehl &H11; 4 byte / -
-'Zeit für Wechsellast schreiben
-'write time for on - off mode
-'Data "17;op,time for on off mode;1;1000,{0.01 To 10.00};lin;s"
-      If Commandpointer >= 3 Then
-         Temp_w = Command_b(2) * 256
-         Temp_w = Temp_w + Command_b (3)
-         If Temp_w < 1000 Then
-            On_off_time = Temp_w + 1
-            On_off_time = On_off_time * On_off_time_default_
-            On_off_time_eeram = On_off_time
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 18
-'Befehl &H12; 1 byte / 4 byte
-'Zeit für Wechsellast lesen
-'read time for on - off mode
-'Data "18;ap,as17"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_dw = On_off_time / On_off_time_default_
-      Temp_w = Temp_dw -1
-      Tx_b(1) = &H12
-      Tx_b(2) = High(Temp_w)
-      Tx_b(3) = Low(Temp_w)
-      Tx_write_pointer = 4
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 19
-'Befehl &H13; 1 byte / 1 byte + string
-'Betriebsart lesen
-'read mode
-'Data "19;aa,read mode;b,{idle,V,I,P,R};20"
-      If Commandpointer >= 2 Then
-         Tx_busy = 2
-         Tx_time = 1
-         Tx_b(1) = &H13
-         Tx_b(2) = Command_b(2)
-         If Command_b(2) = 0 Then
-            Tx_b(3) =  El_mode
-            Tx_write_pointer = 4
-         Else
-            Select Case El_mode
-               Case 0
-                  B_temp1 = 7
-                  Temps = "0: idle"
-               Case 1
-                  B_temp1 = 15
-                  Temps = "1: voltage mode"
-               Case 2
-                  B_temp1 = 15
-                  Temps = "2: current mode"
-               Case 3
-                  B_temp1 = 13
-                  Temps = "3: power mode"
-               Case 4
-                  B_temp1 = 16
-                  Temps = "4: resistor mode"
-               Case 5
-                  B_temp1 = 12
-                  Temps = "5: test mode"
-               Case 6
-                  B_temp1 = 22
-                  Temps = "6: voltage calibra"
-               Case 7
-                  B_temp1 = 22
-                  Temps = "7: current calibra"
-            End Select
-            Tx_b(3) = B_temp1
-            B_temp2 = 4
-            For B_temp3 = 1 To B_temp1
-               Tx_b(B_temp2) = Temps_b(B_Temp3)
-               Incr B_Temp2
-            Next B_Temp3
-            Tx_write_pointer = B_temp1 + 4
-         End If
-         If Command_mode = 1 Then Gosub Print_tx
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 20
-'Befehl &H14; 1 byte / -
-'schaltet Last ab
-'switch off
-'Data "20;ou,switch off;1;0,idle;1,off"
-      Gosub Reset_load
-      Gosub Command_received
-'
-   Case 21
-'Befehl &H15; 2 byte / -
-'Hysterese an schreiben
-'write hysteresys on
-'Data "21;or;hysteresys;1;0,off;1,on"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 2 Then
-            Hyst_on = Command_b(2)
-            Hyst_on_eeram = Hyst_on
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 22
-'Befehl &H16; 1 byte / 2 byte
-'Hysterese an lesen
-'read hysteresys on
-'Data "22;ar,as21"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H16
-      Tx_b(2) = Hyst_on
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 23
-'Befehl &H17; 2 byte / -
-'Hysterese schreiben
-'write hysteresys
-'Data "23;op;hysteresys;1;100,{0,1 To 10};lin;%"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 100 Then
-            Hyst = Command_b(2) + 1
-            Hyst = Hyst / 1000
-            Hyst_eeram = Hyst
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 24
-'Befehl &H18; 1 byte / 2 byte
-'Hysterese lesen
-'read hysteresys
-'Data "24;ap,as23"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_single = Hyst * 1000
-      Temp_single = Temp_single - 1
-      Tx_b(1) = &H18
-      Tx_b(2) = Temp_single
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-  Case 25
-'Befehl &H19 (0 to 127); 2  byte / -
-'Aktive FETs binaer schreiben
-'write active FETS binary
-'Data "25;ka,active FETs, binary;b,127,{0 To 127}"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 128 Then
-            Active_fets = Command_b(2)
-            Active_fets_eeram = Active_fets
-            Gosub Count_number_of_active_fets
-            Gosub Reset_load
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 26
-'Befehl &H1A; 1 byte / 2 Byte
-'Aktive Fets binaer lesen
-'read active FETS binary
-'Data "26;aa,as25"
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H1A
-      Tx_b(2) = Active_fets
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 27
-'Befehl &H1B; 1 byte / 2 Byte
-'Zahl der aktiven Fets lesen
-'read number of active FETs
-'Data "27;ar,read number of active FETs;1;b,{1 to 7}
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &H1B
-      Tx_b(2) = Number_of_active_fets
-      Tx_write_pointer = 3
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 28
-'Befehl &H1C; 1 byte / 4 byte
-'Maximale Leistung pro Fet lesen
-'read maximum power per FET
-'Data "28;lp,maximum power per FET;1;150001,150000,{0 to 150,000};lin;Watt"
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_dw = Max_power * 1000
-      Tx_b(1) = &H1C
-      Tx_b(2) = Temp_dw_b3
-      Tx_b(3) = Temp_dw_b2
-      Tx_b(4) = Temp_dw_b1
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 227
-'Befehl &HE3; 3 byte / -
-'Maximale Leistung pro Fet
-'maximum power per FET
-'Data "227;kp;maximum power per FET;1;150001,15000.{0 to 150,000};lin;Watt"
-      If Commandpointer >= 4 Then
-         Temp_dw = 0
-         Temp_dw_b1 = command_b(4)
-         'low byte first
-         Temp_dw_b2 = command_b(3)
-         Temp_dw_b3 = command_b(2)
-         Temp_single = Temp_dw / 1000
-         ' W
-         If Temp_single <= 150000 Then
-            Max_power = Temp_single
-            Max_power_eeram = Max_power
-            Gosub Reset_load
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_incr_commandpointer
-'
-   Case 228
-'Befehl &HE4 0 to 6 , 0 to 4095; 4 byte / -
-'Fet control register einstellen
-'set fet control register
-'Data "228;km,set fet control register;6;w,{0 To 4095}"
-      If Commandpointer >= 4 Then
-         If Command_b(2) < 7 Then
-            W_temp1 = Command_b(3) * 256
-            W_temp1 = W_temp1 + Command_b(4)
-            If W_temp1 <= Da_resolution Then
-               Gosub Is_fet_active
-               If Error_req = 0 Then
-                  Gosub Reset_load
-                  Fet_number = Command_b(2) + 1
-                  Dac_out_voltage(Fet_number) = W_temp1
-                  Gosub Send_to_fet
-                  El_mode = 5
-               Else
-                  Fet_not_active
-               End If
-            Else
-               Parameter_error
-            End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 229
-'Befehl &HE5; 2 byte / 4 byte
-'Fet control register lesen
-'read fet control register
-'Data "229; lm,as228"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 7 Then
-            Gosub Is_fet_active
-            If Error_req = 0 Then
-               Tx_busy = 2
-               Tx_time = 1
-               Tx_b(1) = &HE5
-               Tx_b(2) = Command_b(2)
-               B_temp1 = Command_b(2) + 1
-               Tx_b(3) = High(Dac_out_voltage(B_temp1))
-               Tx_b(4) = Low(Dac_out_voltage(B_temp1))
-               Tx_write_pointer = 5
-               If Command_mode = 1 Then Gosub Print_tx
-            Else
-               Fet_not_active
-            End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 230
-'Befehl &HE6 0 to 90000; 4 byte / -
-'Spannung für Spannungseichung schreiben
-'write voltage for voltage calibration
-'Data "230;ap,calibration voltage;1;70001,{20000 To 90000};lin:mV"
-      If Commandpointer >= 4 Then
-         Temp_dw_b1 = command_b(4)
-         'low byte first
-         Temp_dw_b2 = command_b(3)
-         Temp_dw_b3 = command_b(2)
-         Temp_dw_b4 = 0
-          'mV
-         If Temp_dw < 70000 Then
-            Temp_dw = Temp_dw + 20000
-            Temp_single = Temp_dw
-            Calibrate_u = Temp_single / 1000
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 231
-'Befehl &HE7; 1 byte / 4 byte
-'Spannung für Spannungseichung lesen
-'read voltage for calibration
-'Data "231;la,as230"
-      Temp_single = Calibrate_u
-      Temp_single = Temp_single * 1000
-      Temp_single = Temp_single - 20000
-      Temp_dw = Temp_single
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &HE7
-      Tx_b(2) = Temp_dw_b3
-      Tx_b(3) = Temp_dw_b2
-      Tx_b(4) = Temp_dw_b1
-      Tx_write_pointer = 5
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 232
-'Befehl &HE8; 1 byte / -
-'Spannung eichen
-'calibrate Voltage
-'Data "232;ku,calibrate voltage;1;0,,idle;1 calibrate voltage"
-      If Voltage > Minimum_voltage Then
-         Gosub Reset_load
-         El_mode = 6
-         Gosub Next_fet_to_use
-      Else
-         Voltage_too_low
-      End If
-      Gosub Command_received
-'
-   Case 233
-'Befehl &HE9:1 byte / 2 byte
-'Spannungseichung lesen
-'read voltage calibration
-'Data "234;lp,read voltage calibration;1;4000,{0.8000 To 1.2000};lin;-" :
-      Tx_busy = 2
-      Tx_time = 1
-      Temp_single = Correction_u + 0.2
-      Temp_single =  Correction_u * 10000
-      Temp_single = Temp_single - 8000
-      If Temp_single < 0 Then Temp_single = 0
-      Temp_w = Temp_single
-      Tx_b(1) = &HE9
-      Tx_b(2) = High(Temp_w)
-      Tx_b(3) = Low(Temp_w)
-      Tx_write_pointer = 4
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 234
-'Befehl &HEA 0 to 30000; 3 byte / -
-'Strom für Stromeichung schreiben
-'write current for current calibration
-'Data "234;op,current for calibration;1;20001,{2000 To 22000};lin:mA"
-      If Commandpointer >= 3 Then
-         Temp_w = Command_b(2) * 256
-         Temp_w = Temp_w + Command_b(3)
-         If Temp_w < 20000 Then
-            Temp_w = Temp_w + 2000
-            Temp_single = Temp_w
-            Calibrate_i = Temp_single / 1000
-            ' Ampere
-         Else
-            Calibrate_current_too_low
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 235
-'Befehl &HEB; 1 byte / 3 byte
-'Strom für Stromeichung lesen
-'read current for calibration
-'Data "235;ap,as234"
-      Temp_single =  Calibrate_i * 1000
-      Temp_w = Temp_single
-      Temp_w = Temp_w - 2000
-      Tx_busy = 2
-      Tx_time = 1
-      Tx_b(1) = &HEB
-      Tx_b(2) = High(Temp_w)
-      Tx_b(3) = Low(Temp_w)
-      Tx_write_pointer = 4
-      If Command_mode = 1 Then Gosub Print_tx
-      Gosub Command_received
-'
-   Case 236
-'Befehl &HEC 0 - 6 ; 2 byte / -
-'Fet kurzschliessen
-'shorten FET
-'Data "236;ku,shorten Fet;0,FET1;1,FET2;2,FET3;3FET4;4,FET5;5,FET6;6,FET7"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 7 Then
-            Gosub Reset_load
-            Gosub Is_fet_active
-            If Error_req = 0 Then
-               Fet_number = Command_b(2) + 1
-               Dac_out_voltage(Fet_number) = 0
-               Gosub Send_to_fet
-               El_mode = 5
-               Gosub Next_fet_to_use
-            End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 237
-'Befehl &HED 0 - 6 ; 2 byte / -
-'Strom eichen
-'calibrate Current
-'Data "236;ku,calibrate current;0,FET1;1,FET2;2,FET3;3FET4;4,FET5;5,FET6;6,FET7"
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 7 Then
-            Gosub Is_fet_active
-            If Error_req = 0 Then
-               Fet_number = Command_b(2) + 1
-               El_mode = 7
-            Else
-               Fet_not_active
-            End If
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'
-   Case 238
-'Befehl &HEE; 2 byte / 4 byte
-'Stromeichung lesen
-'read current calibration
-'Data "237;lp,read current calibration;7;4000,{0.8000 To 1.2000};lin;-" :
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 7 Then
-            Tx_busy = 2
-            Tx_time = 1
-            B_temp1 = Command_b(2) + 1
-            Temp_single = Correction_i(B_temp1)
-            Temp_single = Temp_single * 10000
-            Temp_single =Temp_single - 8000
-            If Temp_single < 0 Then Temp_single = 0
-            Temp_w = Temp_single
-            Tx_b(1) = &HEE
-            Tx_b(2) = Command_b(2)
-            Tx_b(3) = High(Temp_w)
-            Tx_b(4) = Low(Temp_w)
-            Tx_write_pointer = 5
-            If Command_mode = 1 Then Gosub Print_tx
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else_Incr_Commandpointer
-'-----------------------------------------------------
-$include "common_1.7\_Command_240.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_252.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_253.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_254.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_Command_255.bas"
-'
-'-----------------------------------------------------
-$include "common_1.7\_End.bas"
-'
-' ---> Rules announcements
-'
-Announce0:
-'Befehl &H00; 1 byte / 1 byte + string
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;electronic load for 7 IRFP150;V04.0;1;145;1;49;1-1"
-'
-Announce1:
-'Befehl &H01 (resolution 1mV);  1 byte / 4 byte
-'lese aktuelle Spannung
-'read actual voltage
-Data "1;ap,read actual voltage;1;90001,{0.000 to 90.000};lin;V"
- '
-Announce2:
-'Befehl &H02; 1 byte / 4 byte
-'liest gesamten Strom (1Bit -> 1mA)
-'read all current
-Data "2;ap,read actual current;1;175001,{0.000 to 175.000};lin;A"
-'
-Announce3:
-'Befehl &H03  0 - 6 (resolution 1mA); 2 byte / 4 byte
-'liest aktuellen Strom eines FETs
-'read actual current of a FET
-Data "3;ap,read actual current;7;25001,{0.000 to 25.000};lin;A"
-'
-Announce4:
-'Befehl &H04  (resolution 1mW); 1 byte / 4 byte
-'liest gesamte Leistung
-'read all power
-Data "4;ap,read actual power;1;350001,{0.000 to 350.000};lin;W"
-'
-Announce5:
-'Befehl &H05  0 - 6 (resolution 1mW); 2 byte / 4 Byte
-'liest aktuelle Leistung eines FETs
-'read actual power of a FET
-Data "5;ap,read actual power;7;5001,{0.000 to 50.000};lin;W"
-'
-Announce6:
-'Befehl &H06 (resolution mOhm); 1 byte / 5 byte
-'liest aktuellen Widerstand
-'read actual resistor
-Data "6;ap,read actual resistor;1;120000000,{1 To 12000000};lin;mOhm"
-'
-Announce7:
-'Befehl &H07 (resolution 1mV);  4 byte
-'gewuenschte Spannung schreiben
-'write required voltage
-Data "7;op,reqired voltage;1;89601,{0.400 to 90.000};lin;V"
-'
-Announce8:
-'Befehl &H08 (resolution 1mV);  1 byte / 4 byte
-'gewuenschte Spannung lesen
-'read required voltage
-Data "1;ap,as7"
-'
-Announce9:
-'Befehl &H09 0 - 21000 (1mA resolution); 4 byte / -
-'gewuenschten Strom
-'required current
-Data "9;op,required current;1;154001,{0.00 To 182.000};lin;A"
-'
-Announce10:
-'Befehl &H0A  (1mA resolution); 1 byte / 4 byte
-'gewuenschten Strom lesen
-'read required current
-Data "10;ap,as9"
-'
-Announce11:
-'Befehl &H0B 0 - 140000 (1mW resolution); 4 byte / -
-'gewuenschte Leistung
-'required power
-Data "11;op,required power;1;300001,{0.00 To 300.000};lin;W"
-'
-Announce12:
-'Befehl &H0C (1mW resolution); 1 byte / 4 byte
-'gewuenschte Leistung lesen
-'read required power
-Data "12;ap,as11"
-'
-Announce13:
-'Befehl &H0D 10mOhm - 120kOhm (resolution 1mOhm); 5 byte / -
-'gewuenschten Widerstand schreiben
-'write required resistor
-Data "13;op,required resistor:1;119999990,{0.01 To 120000.000};lin;Ohm"
-'
-Announce14:
-'Befehl &H0E (resolution 10mOhm); 1 byte / 5 byte
-'gewuenschter Widerstand lesen
-'read required resistor
-Data "14;ap,as13"
-'
-Announce15:
-'Befehl &H0F 0|1|2; 2 byte / -
-'Wechsellast schreiben
-'write on /off mode
-Data "15;or,on off mode;1;0,off;1,regulated;2,fixed"
-'
-Announce16:
-'Befehl &H10; 1 byte / 2 byte
-'Wechsellast lesen
-'read on /off mode
-Data "16;ar,as15"
-'
-Announce17:
-'Befehl &H11; 4 byte / -
-'Zeit für Wechsellast schreiben
-'write time for on - off mode
-Data "17;op,time for on off mode;1;1000,{0.01 To 10.00};lin;s"
-'
-Announce18:
-'Befehl &H12; 1 byte / 4 byte
-'Zeit für Wechsellast lesen
-'read time for on - off mode
-Data "18;ap,as17"
-'
-Announce19:
-'Befehl &H13; 1 byte / 1 byte + string
-'Betriebsart lesen
-'read mode
-Data "19;aa,read mode;b,{idle,V,I,P,R};20"
-'
-Announce20:
-'Befehl &H14; 1 byte / -
-'schaltet Last ab
-'switch off
-Data "20;ou,switch off;1;0,idle;1,off"
-'
-Announce21:
-'Befehl &H15; 2 byte / -
-'Hysterese an schreiben
-'write hysteresys on
-Data "21;or;hysteresys;1;0,off;1,on"
-'
-Announce22:
-'Befehl &H16; 1 byte / 2 byte
-'Hysterese an lesen
-'read hysteresys on
-Data "22;ar,as21"
-'
-Announce23:
-'Befehl &H17; 2 byte / -
-'Hysterese schreiben
-'write hysteresys
-Data "23;op;hysteresys;1;100,{0,1 To 10};lin;%"
-'
-Announce24:
-'Befehl &H18; 1 byte / 2 byte
-'Hysterese lesen
-'read hysteresys
-Data "24;ap,as23"
-'
-Announce25:
-'Befehl &H19 (0 to 127); 2  byte / -
-'Aktive FETs binaer schreiben
-'write active FETS binary
-Data "25;ka,active FETs, binary;b,127,{0 To 127}"
-'
-Announce26:
-'Befehl &H1A; 1 byte / 2 Byte
-'Aktive Fets binaer lesen
-'read active FETS binary
-Data "26;aa,as25"
-'
-Announce27:
-'Befehl &H1B; 1 byte / 2 Byte
-'Zahl der aktiven Fets lesen
-'read number of active FETs
-Data "27;ar,read number of active FETs;1;b,{1 to 7}"
-'
-Announce28:
-'Befehl &H1C; 1 byte / 4 byte
-'Maximale Leistung pro Fet lesen
-'read maximum power per FET
-Data "28;lp,maximum power per FET;1;150001,15000,{0 to 150,000};lin;Watt"
-'
-Announce29:
-'Befehl &HE3; 3 byte / -
-'Maximale Leistung pro Fet
-'maximum power per FET
-Data "227;kp;maximum power per FET;1;150001,15000,{0 to 150,000};lin;Watt"
-'
-Announce30:
-'Befehl &HE4 0 to 6 , 0 to 4095; 4 byte / -
-'Fet control register einstellen
-'set fet control register
-Data "228;km,set fet control register;6;w,{0 To 4095}"
-'
-Announce31:
-'Befehl &HE5; 2 byte / 4 byte
-'Fet control register lesen
-'read fet control register
-Data "229; lm,as228"
-'
-Announce32:
-'Befehl &HE6 0 to 90000; 4 byte / -
-'Spannung für Spannungseichung schreiben
-'write voltage for voltage calibration
-Data "230;ap,calibration voltage;1;70001,{20000 To 90000};lin:mV"
-'
-Announce33:
-'Befehl &HE7; 1 byte / 4 byte
-'Spannung für Spannungseichung lesen
-'read voltage for calibration
-Data "231;la,as230"
-'
-Announce34:
-'Befehl &4E8; 1 byte / -
-'Spannung eichen
-'calibrate Voltage
-Data "232;ku,calibrate voltage;1;0,,idle;1 calibrate voltage"
-'
-Announce35:
-'Befehl &HE9:1 byte / 2 byte
-'Spannungseichung lesen
-'read voltage calibration
-Data "234;lp,read voltage calibration;1;4000,{0.8000 To 1.2000};lin;-" :
-'
-Announce36:
-'Befehl &HEA 0 to 30000; 3 byte / -
-'Strom für Stromeichung schreiben
-'write current for current calibration
-Data "234;op,current for calibration;1;20001,{2000 To 22000};lin:mA"
-'
-Announce37:
-'Befehl &HEB; 1 byte / 3 byte
-'Strom für Stromeichung lesen
-'read current for calibration
-Data "235;ap,as234"
-'
-Announce38:
-'Befehl &HEC 0 - 6 ; 2 byte / -
-'Fet kurzschliessen
-'shorten FET
-Data "236;ku,shorten Fet;0,FET1;1,FET2;2,FET3;3FET4;4,FET5;5,FET6;6,FET7"
-'
-Announce39:
-'Befehl &HED 0 - 6 ; 2 byte / -
-'Strom eichen
-'calibrate Current
-'Data "236;ku,calibrate current;0,FET1;1,FET2;2,FET3;3FET4;4,FET5;5,FET6;6,FET7"
-'
-Announce40:
-'Befehl &HEE; 2 byte / 4 byte
-'Stromeichung lesen
-'read current calibration
-Data "237;lp,read current calibration;7;4000,{0.8000 To 1.2000};lin;-" :
-'
-Announce41:
-'Befehl &HF0<n><m>
-'liest announcements
-'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;49"
-'
-Announce42:
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-Announce43:
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-Announce44:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{0 to 127};a,SERIAL,1"
-'
-Announce45:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
-'
-Announce46:
-' Undervoltage
-Data "R !$9 !$11 !$13 IF $1<400"
-'
-Announce47:
-' Undervoltage
-Data "R !$7 IF $1<10"
-'
-Announce48:
-' On - off mode only during operation
-Data "R $15 IF $19>0 AND $19<5"
-'
-Announce49:
-' Switch off, if power is exceeded
-Data "R $20=1! IF $4>$27*$27"
-'
-Announce50:
-' Switch off, if current is exceeded
-Data "R $20=1! IF $2&*>150000"
-'
-Announce51:
-Data "S !E8 IF $1<400"

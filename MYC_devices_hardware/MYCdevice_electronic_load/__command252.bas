@@ -1,25 +1,25 @@
 ' additional error messages
-' 190611
+' 20200520
 '
          Case 9
-            Tx = ": voltage too low: "
+            Temps = ": voltage too low: "
          Case 10
-            Tx = ": required power too high: "
+            Temps = ": required power too high: "
          Case 11
             Tx = ": required current too high: "
          Case 12
-            Tx = ": actual power too high: "
+            Temps = ": actual power too high: "
          Case 13
-            Tx = ": no active FETs: "
+            Temps = ": no active FETs: "
          Case 14
-            Tx = ": actual current too high: "
+            Temps = ": actual current too high: "
          Case 15
-            Tx = ": out of limit: "
+            Temps = ": out of limit: "
          Case 16
-            Tx = ": FET not active: "
+            Temps = ": FET not active: "
          Case 17
-            Tx = ": calibrate current too low: "
-	Case 18
-	    Tx = ": ADC I2C error: "
-	Case 19
-	    Tx = ": Voltage too high: "
+            Temps = ": calibrate current too low: "
+        Case 18
+            Temps = ": ADC I2C error: "
+        Case 19
+            Temps = ": Voltage too high: "
