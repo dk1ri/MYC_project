@@ -1,11 +1,11 @@
 ' additional init
 ' 190825
 '
-Moduss = Moduss_eeram
+Config_at_start = 2
 Gosub Control_sound_off
-'set last mode
-Time_ = T_long
-Time2 = 6
-Voicea = 2
-Voiceb = Moduss + 3
+'set idle mode (1+9)
+Time_ = T_10s
+Time2 = 5
+Voicea = 1
+Voiceb = 9
 Gosub Control_sound

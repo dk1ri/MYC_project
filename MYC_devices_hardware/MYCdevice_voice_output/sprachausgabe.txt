@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Sprachausgabe
 
-Author DK1RI, Version V02.0 20190827
+Author DK1RI, Version V02.2 20200822
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -19,92 +19,79 @@ Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 60 max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Als Sprachausgabemodul wird der MSM4 von ELV verwendet.
+
+Grundsätzliche Bedienung
+
 Details zur Bedienung stehen in den Unterlagen zudem Modul (Bitte unbedingt lesen!)
 Die Befehle und Parameter müssen binär eingegeben werden; es erfolgt keine Wandlung.
-Die unterschiedlichen Modi (>10 s Tastendruck) können eingestellt werden, das dauert aber circa 11 Sekunden. Der Tastenmodus (2+3  bis 2+9) wird im EEPROM gespeichert und beim Einschalten auch wieder eingestellt. Der Tastenmodus kann auch gelesen werden.
-Das Sprachmodul wird beim Start auf letzten Tastenmode initialisiert. Das dauert 11 Sekunden. Dazu kommen 5 Sekunden bis sich das Modul selbst initialisiert hat.
-Beim Lesen der anderen Modi (&H04) wird nur während der Übertragungszeit der Mode angezeigt, sonst 0. 
-Der Kopfhörerausgang ist nicht gleichspannungsfrei. Ein hochohmiger Kopfhörer kann aber angeschlossen werden.
+Die unterschiedlichen Modi (>10 s Tastendruck) können eingestellt werden, das dauert aber circa 11 Sekunden.
+Im Normalmode werden mit &H01xx die Musikstücke abgespielt, mit &02xx die Playlisten.
+Die Lautstärkeänderung hat nicht funktioniert und wurd nicht vorgesehen.
+Die Modi sind mit &H03xx änderbar. Das dauert jeweils circa 11 Sekunden.
+Der Tastenmodus 2 und 3 (2+5, 2+6) steht nicht zur Verfügung. Der Software Upgrade ist mit dem Interface nicht möglich.
+Die eingestellten Modi nach Tabelle2 können nicht gelesen werden. Beim Start wird der „idle Mode“ und der Tastaturmode 0 eingestellt. Das dauert circa 30 Sekunden.
+Beide Anschlüsse des Kopfhörerausgangs ist nicht gleich-spannungsfrei. Ein hochohmiger Kopfhörer kann aber angeschlossen werden. Ein Anschluss an einen externen Verstärker sollte immer über einen isolierenden Trenntrafo erfolgen.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
 Folgende Befehle werden akzeptiert:
+
 						
-Announce0:
+Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Sprachausgabe;V04.0;1;145;1;13;1-1"
+Data "0;m;DK1RI;Sprachausgabe;V04.1;1;145;1;9;1-1"
 '
-Announce1:
+'Announce1:
 'Befehl &H01 0 to 9
 'spielt Sprache/Musik
 'play voice/music
-Data "1;os,,sound;1;0;1;2;3;4;5;6;7;8;9"
+Data "1;ou,,sound;1;0,idle;1;2;3;4;5;6;7;8;9;10"
 '
-Announce2:
+'Announce2:
 'Befehl &H02 0 to 9
 'spielt Playliste
 'play playlist
-Data "2;os,playlist;1;0;1;2;3;4;5;6;7;8;9"
+Data "2;ou,playlist;1;0,idle;1;2;3;4;5;6;7;8;9;10"
 '
-Announce3:
+'Announce3:
 'Befehl &H03 0 to 8
 'Modi
 'set modes
-Data "3;ou,modi;1;0,idle; 1,12;2,1+3;3.1+4;4,1+5;5,1+6;6,1+7;7,1+8;8,1+9;9,1+10;10,2+10"
+Data "3;ou,mode;1;0,idle;1,1+3;2.1+4;3,1+5;4,1+6;5,1+7;6,1+8;7,1+9;8,1+10;9,2+3;10,2+4;11,2+7;12,2+8;13,2+9;14,2+10"
 '
-Announce4:
-'Befehl &H04
-'Modus Uebertragung
-' read mode transmission
-Data "4;as,mode transmission;1;0,idle; 1,12;2,1+3;3.1+4;4,1+5;5,1+6;6,1+7;7,1+8;8,1+9;9,1+10;10,2+10;11,2+x"
-'
-Announce5:
-'Befehl &H03 0 to 8
-'Modi
-'set modes
-Data "3;ot,modi;1;0,idle; 1,12;2,1+3;3.1+4;4,1+5;5,1+6;6,1+7;7,1+8;8,1+9;9,1+10; 10,2+10"
-'
-Announce6:
-'Befehl &H04
-'liest Modus
-' read mode
-Data "6;au,as5"
-'
-Announce7:
+'Announce4:
 'Befehl &HF0<n><m>
-'liest announcements
+'liest announceme4ts
 'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;13"
+Data "240;ln,ANNOUNCEMENTS;145;9"
 '
-Announce8:                                                  '
+'Announce5:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-Announce9:                                                  '
+'Announce6:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-Announce10:
+'Announce7:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,20,{0 to 127};,SERIAL,1"
 '
-Announce11:
+'Announce8:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
 Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,20,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 '
-Announce12:
-Data "R !$1 !$2 !R3 !R5 If $4 > 0"
 
 Fehlermeldungen
 
@@ -130,8 +117,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega88P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
-
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.11 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -221,11 +207,12 @@ JP6		ISP
 JP7		Anschluss für USB Modul
 JP8/JP9 	MSM4 Anschluss
 
+
 Versionen
 
 Diese Beschreibung gilt für die 
 Leiterplattenversion 02.0
-Bascom Version 04.0
+Bascom Version 04.1
 
 Copyright
 
@@ -237,7 +224,8 @@ The usage of this document is on own risk, there is no warranty.
 Referenzen
 
 [[1]	dk1ri.de/dhw/MYC_sprachausgabe_eagle.zip
-[2]	dk1ri.de/dhw/MYC_sprachausgabe_bascom.zip
+[2]	dk1ri.de/dhw/Sprachausgabe_bascom.zip
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	https://dk1ri.de/myc/common_1.11.zip
