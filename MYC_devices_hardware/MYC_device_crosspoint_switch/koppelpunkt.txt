@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 8 x 8 Audio / Video Koppelpunkt
 
-Author DK1RI, Version V01.2, 20200513
+Author DK1RI, Version V01.4, 20200826
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -21,7 +21,7 @@ Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Das Interface kann als 8x8 Koppelpunkt, als 8x4 Koppelpunkt (Teilbestückung) oder als zweifach 4x4 Koppelpunkt verwendet werden (zum Beispiel um ein Audio und Video mit einem Interface zu verarbeiten).
 Auch ein 3fach 8x8 Koppelpunkt (Video + Stereo) ist mit 2 weiteren teilbestückten Leiterplatten möglich.
 Die Eingänge können mit einem Kopppelkondensator (bis 22uF) versehen werden. Dieser kann für analoge Videosignale auch überbrückt werden.
-Der Eingangswiderstand beträgt.75Ohm, kann aber geaendert werden
+Der Eingangswiderstand beträgt.75Ohm, kann aber geändert werden
 Die Ausgangsimpedanz beträgt 75 Ohm. Die Impedanz kann durch andere Widerstände geändert werden.
 
 Messwerte
@@ -29,32 +29,41 @@ Messwerte
 Messegeräte: HMO3524, HMS3010, SDG6022X
 Verstärkung	75Ohm Last		1 +- 1dB
 		 hochohmige Last	2
-Begrenzung des Ausgangssignal	ca 8Vpp
+Begrenzung des Ausgangssignals	ca 8Vpp
 Frequenzgang +- 1dB			48MHz *
 		-3dB			56MHz *
 Nachbarkanaldämpfung (bis50Mz)	> -20dB *
-Nachbarkanaldämpfung (bis18Mz)	> -35dB *
+Nachbarkanaldämpfung (bis18Mz)	> -40dB *
 
 * mit HMS3010 (50Ohm)
 
 Grundsätzliche Bedienung:
 
+Ein Ausgang kann nur mit einem Eingang verbunden sein, ein Eingang aber mit mehreren Ausgängen.
 Es gibt drei Modes, einstellbar mit:
-&H0800	: 8x8 Koppelpunkt; die Umschaltbefehle sind &H01, &H02, &H03
-&H0801	: 8x4 Koppelpunkt; die Umschaltbefehle sind &H04, &H05, &H06
-&H0803	: 4x4 Koppelpunkt; die Umschaltbefehle sind &H07, &H08, &H09
+&H0800	: 8x8 Koppelpunkt; die Umschaltbefehle sind &H01, &H02
+&H0801	: 8x4 Koppelpunkt; die Umschaltbefehle sind &H03, &H04
+&H0803	: 4x4 Koppelpunkt; die Umschaltbefehle sind &H05, &H06
 Der Mode ist lesbar mit &H09 ,
 Der Mode wird normalerweise nur bei der Inbetriebnahme eingestellt und ist daher in einem MYC System nicht veränderbar.
 
-Beim 4x4 Koppelpunkt werden die Ausgänge 4 – 8 wie die Ausgänge 1 bis 4 geschaltet. Wenn also Ausgang 1 mit Eingang 1 verbunden ist, ist auch Ausgang 5 mit Eingang 5 verbunden. Die kann in einen Video / Audio System verwendet werden.
+Die Ausgänge sind immer aktiv. Wird ein Ausgang mit Eingang 0 verbunden, ist der auf GND.
 
-Ein Ausgang wird mit einem Eingang verbunden:
-&H010207	verbindet Eingang 6 mit Ausgang 3
-&H010400	verbindet Ausgang 5 mit GND
+Beim 8x4 Koppelpunkt werden die Ausgänge 5 – 8 wie die Ausgänge 1 bis 4 geschaltet. Wenn also Ausgang 1 mit Eingang 7 verbunden ist, ist auch Ausgang 5 mit Eingang 7 verbunden.
+
+Beim 4x4 Koppelpunkt werden die Ausgänge 5 – 8 wie die Ausgänge 1 bis 4 geschaltet. Wenn also Ausgang 1 mit Eingang 1 verbunden ist, ist der Ausgang 5 mit Eingang 5 verbunden. Dies kann in einen Video / Audio System verwendet werden.
+
+Ein Ausgang schaltet auf einen anderen Eingang um:
+&H010207	verbindet Ausgang 2 mit  Eingang 7
+&H010400	verbindet Ausgang 4 mit GND
+&H010004	schaltet alle Ausgänge, die mit Eingang 4 verbunden waren, an GND
 Verbinden aller Ausgänge gleichzeitig:
 &H020101010103030303 	verbindet Ausgang 1 - 4 mit Eingang1; Ausgang 5 – 8 mit Eingang 3
-Mit &H07 wird der Schaltstatus gelesen:
+Mit &H07 wird der Schaltstatus der Ausgänge gelesen:
 &H070101010103030303
+
+Defaultmässig sind beim Start alle Eingänge (intern) mit GND verbunden. Dies kann mit 
+&H0A0102030405060708 geändert werden. Bei diesem Beispiel werden alle Ausgänge mit Eingängen der gleichen Nummer verbunden.
 
 Einbindung in das MYC System
 
@@ -65,49 +74,49 @@ Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;crosspoint;V01.0;1;180;1;20"
+Data "0;m;DK1RI;crosspoint;V01.3;1;180;1;20"
 '
 'Announce1:
 'Befehl &H01
 'schaltet 1 Ausgang 8x8
 'switch 1 output 8x8
-Data "1;os,8x8;2,in,out;8;0,GND;1;2;3;4;5;6;7;8"
+Data "1;os,8x8;2,out,in;2;0,GND;1;2;3;4;5;6;7;8"
 '
 'Announce2:
 'Befehl  &H02
 'schaltet alle Ausgänge 8x8
 'switch all outputs 8x8
-Data "2;om,8x8;1;9,GND,1-8;lin;-;9,GND,1-8;lin;-;9,GND,1-8;lin;-;9,GND,1-8;lin;-;9,GND,1-8;lin;-;9,GND,1-8;lin;-;9,GND,1-8;lin;-;9,GND,1-8;lin;-"
+Data "2;om,8x8;1;b,{GND,1 To 8};9"
 '
 'Announce3:
 'Befehl &H03
 'schaltet 1 Ausgang 8x4
 'switch 1 output 8x4
-Data "3;os,8x4;2,in,out;4;0,GND;1;2;3;4;5;6;7;8"
+Data "3;os,8x4;2,out,in;2;0,GND;1;2;3;4;5;6;7;8"
 '
 'Announce4:
 'Befehl  &H04
 'schaltet alle Ausgänge 8x4
-'switch all outputs 8x4;1;9,GND,1-8;lin;-;9,GND,1-8;lin;-;9,GND,1-8;lin;-;9,GND,1-8;lin;-"
-Data "4;om,8x4;1;10,off,GND,1-8;lin;-;10,off,GND,1-8;lin;-;10,off,GND,1-8;lin;-;10,off,GND,1-8;lin;-"
+'switch all outputs 8x4
+Data "4;om,8x4;1;b,{GND,1 To 8};4"
 '
 'Announce5:
 'Befehl  &H05
 'schaltet 1 Ausgang 4x4
 'switch 1 output 4x4
-Data "5;os,4x4;2,in,out;4;0,GND;1;2;3;4"
+Data "5;os,4x4;2,out,in;2;0,GND;1;2;3;4"
 '
 'Announce6:
 'Befehl  &H06
 'schaltet alle Ausgänge 4x4
 'switch all outputs 4x4
-Data "6;om,4x4;;1;5,GND,1-4;lin;-;5,GND,1-4;lin;-;5,GND,1-4;lin;-;5,GND,1-4;lin;-" 
+Data "6;om,4x4;1;b,{GND,1 To 4};04"
 '
 'Announce7:
 'Befehl  &H07
 'liest status für alle Ausgänge
 'read status for all outputs
-Data "7;am,as1"
+Data "7;am,as2"
 '
 'Announce8:
 'Befehl  &H08
@@ -122,40 +131,52 @@ Data "8;ks,mode;1;0,8x8;1,8x4;2,4x4"
 Data "9;ls,as8"
 '
 'Announce10:
+'Befehl  &H0A
+'schreibt Startbedingung 8x8
+'write startcondition 8x8
+Data "10;om,startcondition;1:b,{GND,1 To 8};8"
+'
+'Announce11:
+'Befehl  &H0B
+'liest Startbedingung 8x8
+'read startcondition 8x8
+Data "11;am,as10"
+'
+'Announce12:
 'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
 'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;180;18"
+Data "240;ln,ANNOUNCEMENTS;180;20"
 '
-'Announce11:                                                  '
+'Announce13:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-'Announce12:                                                  '
+'Announce14:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-'Announce13:
+'Announce15:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,27,{0 to 127};a,RS232,1;a,USB,1"
 '
-'Announce14:
+'Announce16:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
 Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,27,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
-'Announce15:
+'Announce17:
 Data "R !$1,!$2 If $9 = 1 Or $9 = 2"
 'Announce18:
 Data "R !$3,!$4 If $9 = 0 Or $9 = 2"
-'Announce16:
+'Announce19:
 Data "R !$5,!$6 If $9 = 0 Or $9 = 1"
 
 Fehlermeldungen
@@ -182,7 +203,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.11 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -193,7 +214,7 @@ Der Jumper J1 sollte während der Programmierung entfernt werden.
 Serielle (RS232 / USB) Schnittstelle
 
 Schnittstellenparameter: 19k2 8N1.
-Alternativ (große Version) zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. USB Platine und Interface müssen voneinander isoliert werden.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. USB Platine und Interface müssen voneinander isoliert werden.
 
 I2C
 
@@ -201,7 +222,7 @@ Die Default Adresse ist 27 (&H1B).
 Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
 Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k – 10k).
 Mit JP2 kann festgelegt werden, ob der externe I2C Bus mit 3V oder 5V betrieben wird.
-Wenn auf den 5V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
 Ganz ohne I2C kann auch SL1, SL2, JP2, JP3, JP4, R1, R2, R5, R6 entfallen. 
 Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
 Mit IC3 muss R1 / R2 (<=10k) bestückt werden. 
@@ -226,15 +247,16 @@ Mit I2C:
 Siehe I2C oben.
 
 Mit serieller Schnittstelle:
-Bei Verwendung der RS232 Schnittstelle wird IC2, C6 – C9 und X4 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden.
+Bei Verwendung der RS232 Schnittstelle wird IC2, C6 – C9 und SL3 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden.
 Der USB Modul wird isoliert auf der Bestückungsseite angebracht,. Die mittleren 4 Anschlüsse werden mit JP7 verlötet.
 
-Bei Teilbestückung mit nur einem Koppelpunkt (8x4 oder 4x4) entfällt IC7, IC8, R19 – R 30, X 25 – X 28.
-Die Kondensatoren C20 – C28 müssen nur eingebaut werden, wenn die Eingänge entkoppelt werden solle, zum Beispiel für Audio Signale. Die Lötbrücken SJ1 – SJ8 bleiben dann offen. Andernfalls müssen sie überbrückt werden.
+Bei Teilbestückung mit nur einem Koppelpunkt (8x4 oder 4x4) entfällt IC7, IC8, R19 – R30, X25 – X28.
+Die Kondensatoren C20 – C28 müssen nur eingebaut werden, wenn die Eingänge entkoppelt werden sollen, zum Beispiel für Audio Signale. Die Lötbrücken SJ1 – SJ8 bleiben dann offen. Andernfalls müssen sie überbrückt werden.
 
 Eine Leiterplatte kann die Steuerung von zwei weiteren übernehmen, wenn die Steuerung gleich ist: zum Beispiel bei einem 3fach 8x8 Koppelpunkt. Bei den gesteuerten Leiterplatten wird die Steuerung und Stromversorgung nicht bestückt: diese erfolgt über JP8. Es müssen also nur IC5—8, C20-28 (bei Bedarf), C12, C13, C16 – C19, R7-30 und die BNC Buchsen bestückt werden.
 
 R31 bis R38 bestimmen die Eingangsimpedanz. Der Wert kann geändert werden.
+R7, R10, R13, R16, R19;R22, R25 bestimmen die Ausgangsimpedanz. Der Wert kann geändert werden.
 
 Anschlüsse
 
@@ -251,7 +273,7 @@ I2C (SL1, SL2)
 Kanal1:	X11		SJ1		X21
 Kanal2:	X12		SJ2		X22
 Kanal3:	X13		SJ3		X23
-Kanal4:	14		SJ4		X24
+Kanal4:	X14		SJ4		X24
 Kanal5:	X15		SJ5		X25
 Kanal6:	X16		SJ6		X26
 Kanal7:	X17		SJ7		X27
@@ -271,8 +293,8 @@ JP8		Steuerung weiterer Leiterplatten
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V01.0
-Bascom Version V01.2
+Leiterplattenversion V02.0
+Bascom Version V01.3
 
 Copyright
 
@@ -281,6 +303,8 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
+
+
 Referenzen
 
 [1]	dk1ri.de/dhw/koppelpunkt_eagle.zip
@@ -288,5 +312,5 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.10.zip
+[6]	https://dk1ri.de/dhw/common_1.11.zip
 
