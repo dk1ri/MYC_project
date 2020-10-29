@@ -4,7 +4,7 @@ Rules-device
 Preliminary
 
 Author: DK1RI
-Version V01.2.1 20181022
+Version V01.02.02 20201029
 This paper is published in https://github.com/dk1ri as well
 
 Introduction
@@ -49,7 +49,7 @@ User management may be done via a GUI more easy.
 System wide commands
 
 These are commands like “switch on all lights in a room “ with one command.
-The RU provide these commands by announcement 
+The RU provide these commands using  announcement
 
 Others
 
@@ -79,7 +79,7 @@ The usage of this document is on own risk, there is no warranty.
 Reference
 
 [1]	https://dk1ri.de/myc/MYC.pdf  (german)
-[2]	https://dk1ri.de/myc/MYC_en.pdf
+[2]	https://dk1ri.de/myc/MYC.en.pdf
 [3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
 [4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
 [5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
@@ -90,3 +90,8 @@ Reference
 [10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
 [11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 [12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf
+

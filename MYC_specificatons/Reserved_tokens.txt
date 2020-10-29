@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Reserved Commands
 
 Author: DK1RI
-Version V01.20.4 20181022
+Version V01.20.06 20201028
 This paper is published in https://github.com/dk1ri as well
 
 Introduction
@@ -13,7 +13,7 @@ For more details of the MYC system please check the reference.
 
 Definitions and formats
 
-see  http://dk1ri.de/myc/Definitions.pdf
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 Overview
 
@@ -31,7 +31,7 @@ The basic announcement is called with the one byte command 0x00.
 announce:	0;<dt>;MANUFACTURER;DEVICEDESCRIPTION;VERSION;NUMBER_OF_DEVICES;LINELENGTH; COMMAND_BYTES;NUMBER_OF_ANNOUNCELINES;SPEC_VERSION
 
 command:	0x00
-answer / info:	0x00<basic announcement line>	<basic announcement line> as string <s>	
+answer / info:	0x00<basic announcement line>	<basic announcement line> as string <s> (with one byte length)	
 
 The announcement is fixed and therefore the announce-line do not describe the format of the command but is the content, which is transmitted as answer of the command 0x00.
 The length of the string is a one byte string-length. The 0x00 announcement is limited therefore to 255 Bytes.
@@ -202,44 +202,53 @@ OPTION>							comment:
 <n>,NUMBER,<DEFAULT>				actual number, mandatory write/read
 <n>,DISPLAYSIZE,<DEFAULT>,{<size1>,..}		<DEFAULT> is positional parameter of sizex
 								<sizex> something like 16x2, 1024p
-<a>,I2C|RS232|CAN|RC5|RC6| 				
-USB|TELNET|HTTP|HTTPS|TERMINAL|			Multiple interfaces start with one of these types, followed by the other parameters.
-SSH|RADIO,USBM|TELNETM|HTTPM|HTTPSM|	0: not active; 1:  active
-TERMINALM|SSHM|RADIOM,<DEFAULT>		The “M” Interfaces are used by CR only and support multiuser access.
+<a>,I2C|RS232|CAN|RC5|RC6|SPI				
+USB|TELNET|HTTP|HTTPS|TERMINAL|			Interfaces a device can have, followed by the other parameters.
+SSH|RADIO							0: not active; 1:  active
+								The CR may add a “M” to the label if it supports multiuser access.
 
 Defined Interfaces:
 
- <a>,I2CI2CM;<DEFAULT>;
+a,SERIAL,<DEFAULT>					general  serial Interface, may have other options as below.
+
+ a,I2C|,<DEFAULT>;
  b,ADRESS,<DEFAULT>{1 to 127}			{1 to 127}, mandatory
 
-<a>RS232|RS232M,<DEFAULT>;				default: auto, 8N1
- b.BAUDRATE,<DEFAULT>,{auto,19200,...}		Baudrate, optional
- 3,NUMBER_OF_BITS,{8N1}				something like this, optional
- b,COMPORT							COM Port number, optional
+a,SPI,<DEFAULT>;						slave!
+a,DATA_ORDER<DEFAULT>;				0:MSB first, 1: LSB first,  mandatory
+a,POLARITY,>DEFAULT>	;				when idle: 0:clock low, 1: clock high,  mandatory
+a,PHASE,<DEFAULT>					 mandatory
 
- <a>,TELNET|TELNETM,<DEFAULT>;			server !!
-<a>,SSH,<DEFAULT>					server !!
- w,PORT							portnumber, optional
-<s>,ADRESS							IP adress or DNS Name, mandatory						
- b,TIMEOUT,<default>					Timeout, optional				
+a,RS23,<DEFAULT>;					default: auto, 8N1
+b.BAUDRATE,<DEFAULT>,{0,19200,...};		Baudrate, optional. 0 is auto
+3,NUMBER_OF_BITS,{8N1};				something like this, optional
+b.COMPORT							COM Port number, mandatory
 
-<a>,HTTP|HTTPM,<DEFAULT>;				server !!
-<s>,ADRESS							madatory
-b,TIMEOUT,<DEFAULT>					Timeout (optional)
+a,TELNET|TELNETM,<DEFAULT>			server !!
 
-<a>,TERMINAL|TERMINALM,<DEFAULT>;		usually for CR only, interface, from where the program is called, no other options.
+a,SSH,<DEFAULT>;						server !!
+w,PORT,<DEFAULT>;					portnumber, optional
+s,ADRESS,<DEFAULT>;					IP address or DNS Name, mandatory						
+b,TIMEOUT,<DEFAULT>					Timeout, optional				
 
-<a>,USB|USBM,<DEFAULT>;				slave
+a,HTTP|,<DEFAULT>;					server !!
+s,ADRESS,<DEFAULT>;					mandatory
+b,TIMEOUT,<DEFAULT>					Timeout,optional
 
- <a>,RC5|RC5M,<DEFAULT>;
- b,ADRESS,<DEFAULT>,{1 to 32}				mandatory
- <a>,RC6,<DEFAULT>;
+a,TERMINAL|,<DEFAULT>				usually for CR only, interface, from where the program is called, no other options.
+
+a,USB,<DEFAULT>;						slave
+
+a,RC5,<DEFAULT>;
+b,ADRESS,<DEFAULT>,{1 to 32}				mandatory
+
+a,RC6,<DEFAULT>;
 b,ADRESS,<DEFAULT>,{1 to 64}				mandatory
 
-<a>,CAN|CANM,<DEFAULT>;
- b,ADRESS,<DEFAULT>
+a,CAN,<DEFAULT>;
+b,ADRESS,<DEFAULT>					 mandatory
 
-<a>RADIO|RADIOM,<DEFAULT>				Wireless interface
+a,RADIO,<DEFAULT>					Wireless interface
 
 I-announcements
 
@@ -259,7 +268,7 @@ If the output buffer of a device is polled by the CR – in case of I2C for exampl
 device will answer with the not valid command token. This token is &H80 for one byte command token; &H8080 for 2 byte …
 This token is not used otherwise by the device and not mentioned  in the announcement list.
 
-Copyright	
+Copyright
 
 Dieses Dokument darf unverändert kopiert werden.
 Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
@@ -271,7 +280,7 @@ The usage of this document is on own risk, there is no warranty.
 Reference
 
 [1]	https://dk1ri.de/myc/MYC.pdf  (german)
-[2]	https://dk1ri.de/myc/MYC_en.pdf
+[2]	https://dk1ri.de/myc/MYC.en.pdf
 [3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
 [4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
 [5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
@@ -282,3 +291,7 @@ Reference
 [10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
 [11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 [12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf

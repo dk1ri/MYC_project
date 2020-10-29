@@ -1,0 +1,67 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/skin.pdf
+
+MYC Security
+Author: DK1RI
+Version V01.02.01 20201028
+This paper is published in  https://github.com/dk1ri  as well
+
+Introduction
+
+This paper describes some security aspects of a MYC system.
+For usage, handling and environment for MYC system see [1] - [5]
+
+Definitions and formats
+
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+
+Some explanation
+
+Security is one of the most important aspects of a control system.
+The MYC is a OSI layer 7 protocol and defines the commands and their methods only. Nothing about security is defined. Nevertheless there is one aspect: there is no readable text (except when strings are transmitted), all data are binary and someone reading the transmitted data, must know the connected device as well.
+A MYC system can be hirarchical. A tampered subsystem can deliver wrong data, but cannot send commands to other subsystems. This helps security as well.
+The other OSI layers can be choosen by demand and they will define the system security.
+The following should give some rules how to increase system security.
+
+Funcs, Devices and Programs
+
+Devices are designed to accept their valid command with their valid parameters only. Any other data are ignored and may produce a error message.
+This is also valid for interfaces to other systems as FS20, ZWAVE and others.
+The devices are connected to the command-router (up to now) by cables. It it assumed, that this system works in a save environment. 
+If this cannot be guaranteed modified devices with built in encryption must be used (not available yet). The command-router also must communicate with this format. The same is valid for wireless devices.
+For the rules-device and logic-device the same apply.
+The behaviour of programs is similar to this of devices. If programs run on the same computer as the command-router secure message transfer usually is no problem. Otherwise encryption is recommended.
+
+Command-router
+
+The command-router communicates with the userinterface usually via internet. So at this point ssh and login processes must be provided. The MYC protocol define a command for login but says nothing about the implementation.  The command-router also communicate by MYC commands only and ignore all non valid commands and parameters. 
+The login to subsystems can also be used to avoid, that a user can access any subsystem.
+
+Webserver and Userinterface
+
+For these the common rules as for secure websites apply.
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Reference
+
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC.en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf

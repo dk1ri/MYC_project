@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC System Description, Handling and Environment
 
 Author: DK1RI
-Version V01.08.02 20181022
+Version V01.08.03 20201027
 This paper is published in https://github.com/dk1ri as well
 
 Introduction
@@ -13,7 +13,7 @@ For more details of the MYC system please check the reference.
 
 Definitions and formats
 
-see http://dk1ri.de/myc/Definitions.pdf
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 Some explanation
 
@@ -22,7 +22,7 @@ It also can control any program, which has a MYC protocol interface.
 It can be used as a ”glue” to combine so called microservices.
 It can control data stream devices and also handle streams in a very simple manner, but this is not the intention of the MYC protocol.
 The MYC protocol is a pure semantic protocol.
-It has no acknowledge, error correction, encryption, routing, connecting and sequencing and user management, This must be done in the other communication layers. But it can control devices with this function.
+It has no acknowledge, error correction, encryption, routing, connecting and sequencing and simple user management only, This must be done in the other communication layers. But the protocol can control devices with this function.
 MYC data packets have no header, no end marker. All data packets have a well defined length; so begin and end can be found.
 There are commands with or without answer and infos, which are sent without command.
 There are some meta commands to control the system and for simplification.
@@ -32,19 +32,18 @@ Any device will ignore unknown or non-valid data immediately after detection. Th
 All devices are  connected together via the CR, which routes the data to other devices or handles them by itself.
 A MYC system can be part of another MYC system.
 
-A MYC system contains a set of devices with a MYC protocol interface. Controlling and controlled device can be a hardware or programs. Controlled devices are called a “func”. Controlling devices are called “skins”.
+A MYC system contains a set of devices with a MYC protocol interface. Controlling and controlled device can be a hardware or programs. Controlling devices are called “skins”.  Controlled devices are called a “func”.
 There are three more devices in a system,which exist only once in a MYC system.
 
 Skin devices, SK, can be multiple in a MYC system:
 The skin device initiate commands.
-A normal skin device (SK) can handle one user, it may be a human interface. This human interfaces - like a web server – may handle more than one SK.
-A simple skins is handled in a different way than normal skins. Those devices are simple switches or actors.
-The implementation of the human interface is not decided. It can be a simple terminal program or a Web Server / Browser.
-Announcements of SK are not shown in the full announcement list. So only the CR may send commands to SK
+Some skin devices can handle one user, it may be a human interface. Other SK - like a web server – may handle more than one human interface.
+A simple skin (SS) is handled in a different way than normal skins. Those devices are simple switches or actors.
+For more details see [9]
 
 Functions, Func, FU, can be multiple in a MYC system:
-A FU will respond to commands with a action or with sending a answer back. 
-Info can be sent by a FU without a command and is routed to the LD and SK. This may be useful for metering info eg, or if a device is operated manually. A info informs the LD about changed values or errors.
+A FU will respond to commands with an action or with sending an answer back. 
+Info can be sent by a FU without a command and is routed to the LD and SK. This may be useful for metering info eg, or if a function device is operated manually. An info informs the LD about changed values or errors.
 Because some transmission protocols (like I2C in normal mode) do not allow slave devices to send by themselves, the CR must poll the devices in this case with special command and forward info to the LD / SK.
 
 Command-router CR, one in a system:
@@ -54,7 +53,7 @@ The command-router do not accept any command except own reserved commands. All o
 The command-router must know all devices belonging to its system and have the connect information.
 Depending on the implementation of the CR, it get the connect information from a device (ie some database), or it knows the connect info by itself.
 As an option the CR do not send the list of all commands of all devices but will only send the basic announcements. A requesting SK calculate the tokens of the missing commands, if it knows the commands already. If these devices do not know the details of the individual devices, it will send a command for details or ask for the complete list.
-Simple SK with a limited predefined command set (as switches) will not ask for a full list.
+Simple SS with a limited predefined command set (as switches) will not ask for a full list.
 The CR also checks for new devices and check for devices not active anymore from time to time.
 
 Rules-device, RU, one a MYC system
@@ -78,18 +77,18 @@ At start up, the CR will find a list of all known devices. It will communicate w
 The CR may have the announcements of all devices from previous connections.
 If a announcement for a FU is missing, it will ask for this by sending a 0xxxf0 command. 
 It will ask the actual announce-list of lower level CR as well by sending a 0x00, will get the 0x00<announcement> answer with correct commandtokenlength and then send a 0xxxf0 command. 
-Then it will build the full announcement-list. Announcements of SK and higher level CR are not included and so no device can be send to them except the CR.
+Then it will build the full announcement-list. Announcements of SK and higher level CR are not included and so no device can be send to them except the CR. Announcements of SK are included but not sent to SK. There are gaps in the numbering instead.
 For 2 seconds after starting, the CR will have no other communication.  This ensures, that SK, LD and RU fall to startup mode.
 To inform the device, that the CR is ready, it send a 3 byte 0xfd0x010x04 ready info to SK, RU, LD and higher level CR.
 All devices, which require the complete announcement-list, will send a 0x00 command and after getting the answer with correct commandtokenlength send the 0xxxf0 or 0xxxf1 command.
 The CR will answer with the actual list. 
-Each user has a individual SK. But if the SK is implemented by a web server eg, this web server may deliver more than one SK. The web server therefore may need a multiple user access to the CR via one interface. The web server  must request a channel number for each SK by sending a 0xxxfd<n> via channel 0. n is the position of <USERNUMBER>  in the announcement. The answer is a channel number > 0, which will be open until USERTIMEOUT. All communication with interfaces supporting multi-channel is done by preceding the communication by the (one byte) channel-number. Interfaces supporting multi-channel have a “M” at the end: as USBM in the INDIVIDUALIZATION announcement of the CR.
+Each user has an individual SK. But if the SK is implemented by a web server eg, this web server may deliver more than one SK. The web server therefore may need a multiple user access to the CR via one interface. The web server  must request a channel number for each SK by sending a 0xxxfd<n> via channel 0. n is the position of <USERNUMBER>  in the announcement. The answer is a channel number > 0, which will be open until USERTIMEOUT. All communication with interfaces supporting multi-channel is done by preceding the communication by the (one byte) channel-number. Interfaces supporting multi-channel have a “M” at the end: as USBM in the INDIVIDUALIZATION announcement of the CR.
 Other interfaces have no channel-number.
 The CR do not keep track on commands of the different interfaces / channels. So by default all interfaces will get all answers and infos. Multi-channel interfaces will get it via channel 255 only and the interface must handle the distribution to the SK.
-If this is restricted by by 0xxxf9 ANSWERS, the CR will send individual infos / answers.
+If this is restricted by 0xxxf9 ANSWERS, the CR will send individual infos / answers.
 
 The rules device will send all actual rules to the LD, if necessary.
-The LD must get the actual state of the complete system and will ask the devices, or set a default as defined by the rules.  The LD will not send own commands, It may responf to a busy request 0hFd with 0h04.
+The LD must get the actual state of the complete system and will ask the devices, or set a default as defined by the rules.  The LD will not send own commands, It may respond to a busy request 0hfd with 0h04.
 Because all answers are sent to SK as well as default,  SK has the actual state as well.
 This ends the system startup procedure.
 
@@ -104,7 +103,7 @@ When the CR create a new command-list, with added or removed devices without ren
 Data transfer and data flow
 
 The MYC protocol send commands / properties with a defined length. The length is defined by the used command-token and the corresponding announcement.
-If a answer is sent by a FU, the length is defined as well, because the answer is preceded by the command-token.
+If an answer is sent by a FU, the length is defined as well, because the answer is preceded by the command-token.
 It is not necessary, that the CR wait for answers, because any answers and info can be associated to a command. But for polled devices the CR do not know anything about the FUs buffer. So in this case the CR will request the answer before sending the next answer command.  The time for requesting the complete answer is limited to 1 second (default).
 Multiuser mode for the interface is not part of the MYC protocol but implemented in this way by the CR.
 If the interface is in multi user mode, command, answers and info are preceded by the one byte channel number. 0 is the administrative channel for the interface and 0xff the answer / info channel to all. The SK must distribute the answers and info by itself. By default all answers and infos are sent via channel 0xff. 
@@ -114,21 +113,21 @@ Data format for answers and info is identical.
 
 The CR will  communicate with FU using the original command-token of the FU. Communication with other devices use the translated token of the full announcelist.
 
-The LD get all accepted commands from SK and higher level CR, also all infos and answers (as info). It will send commands to the devices and infos to SK and CR. Because the CR cannot distinguish between commands and info, these are preceded by a one byte direction identifier: fe: CR -> LD -> device, ff: device -> LD -> SK
+The LD get all accepted commands from SK and higher level CR, also all infos and answers to SK. It will send commands to the devices and answer / infos to SK via CR. Because the CR cannot distinguish between commands and answers / info, these are preceded by a one byte direction identifier: fe: LD -> CR ? device, ff: LD ? CR -> SK
 
-There is no limitation for the number of devices and SK by the MYC protocol. But a real CR may get more data  from the SK than the CR can handover to the devices. So the CR may stop data data input by sending a STOP command (0xxxf9) to the SK, if a limit is reached. The actual limit is 10kByte .
+There is no limitation for the number of devices and SK by the MYC protocol. But a real CR may get more data  from the SK than the CR can handover to the devices. So the CR may stop data data input by sending a STOP command (0xxxf9) to the SK, if a limit is reached. The actual limit is 10kByte.
 
 Security
 
 Security is one of the most important aspects of a control system.
-The MYC is a OSI layer 7 protocol and defines the commands and their methods only. Nothing about security is defined. Nevertheless there are some aspects: 
+MYC is a OSI layer 7 protocol and defines the commands and their methods only. Nothing about security is defined. Nevertheless there are some aspects: 
 There is no readable text (except when strings are transmitted), all data are binary and someone reading the transmitted data, must know the connected device and their announcements as well. 
 The system is hierarchical: Because a FU checks any byte and discard any unknown data, it is not easy to insert meaningful bad code. The FU should be designed in a way, that the configured interface is active only. So the CR is the only interface and the CR will discard any unknown answers.
 The other OSI layers can be chosen by demand and they will define the system security.
 The following should give some rules how to increase system security.
 Funcs, RU, LD
-Funcs are designed to accept their valid command with their valid parameters only. Any other data are ignored immediately and may produce a error message.
-This is also valid for subsystems as FS20, ZWAVE and others connected via a  MYC interface.
+Funcs are designed to accept their valid command with their valid parameters only. Any other data are ignored immediately and may produce an error message.
+This is also valid for subsystems as FS20, ZWAVE and others connected via a MYC interface.
 The devices are connected to the CR (up to now) by cables. It it assumed, that this system works in a save environment. 
 If this cannot be guaranteed modified devices with built in encryption must be used (not available yet). The command-router also must communicate with this format. The same is valid for wireless devices.
 For RU and LD the same apply.
@@ -150,7 +149,7 @@ The usage of this document is on own risk, there is no warranty.
 Reference
 
 [1]	https://dk1ri.de/myc/MYC.pdf  (german)
-[2]	https://dk1ri.de/myc/MYC_en.pdf
+[2]	https://dk1ri.de/myc/MYC.en.pdf
 [3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
 [4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
 [5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
@@ -161,3 +160,7 @@ Reference
 [10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
 [11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 [12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf

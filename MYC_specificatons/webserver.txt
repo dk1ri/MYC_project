@@ -1,0 +1,64 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/webserver.pdf
+
+Webserver for a MYC System
+
+Author: DK1RI
+Version V01.01.01 20201027
+This paper is published in  https://github.com/dk1ri  as well
+
+Introduction
+
+This paper describes a skin using a webserver in a MYC system.
+For more details of the MYC system please check the reference.
+
+Definitions and formats
+
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+
+Status
+
+Apache webserver on Raspberrrey set up
+Basics of website started
+
+Some explanation
+
+This webserver can use all function delivered by the system via the full announce-list.
+The webserver read the announcelist andcreate a page . Each commandtype will produce a specific default input or output field, which depends on the parameters as well.
+The user calls his own individual web site and get his personal web layout.
+Because functions may disappear when a device disappears, the page will be completely dynamic. The labels of those functions may disappear or be grayed out.
+The user should find a knob to switch to an edit mode.
+In this mode the web page behaves like a web editor. The user can modify those functions defined by the full announcement-list. The result is stored in a user individual config file or data base.
+For simple usage preconfigured files (skins) can be used.
+For normal mode the web-server build the page by using the config file and the announce-list.
+
+In a next step the user wil be able to modify the page by creating a personal configfile. 
+So the user can define his own colors and view of the funtions in a edit mode and use it later on.
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+
+Reference
+
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC.en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf

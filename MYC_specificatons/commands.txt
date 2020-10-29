@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V02.12.6 20200501
+Version V02.12.06 20201028
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -22,14 +22,14 @@ A complete announcement of a device consist of one line with the basic announcem
 The basic announcement contains the description of the device. For details see [5]
 The command announcements describe the commands the device will understand.
 Two of the reserved tokens are used by the CR to identify a device, also, if more than one of the same device-group (same hardware and firmware) exist. (0x00, 0xxxff)
-The rules describe the restrictive conditions, when and how  commands will not work for a device. By default any command is working at any time.
+The rules describe the restrictive conditions, when and how commands will not work for a device. By default any command is working at any time.
 The I-line is inserted by the CR to the full announce-list for each device. It shows some individual parameters of the device, so that RU and SK can identify them in all cases.
 Some operating commands may have an influence on the status of other commands. This is handled by rules as well.
 Rules lines start with "R" and are included in the full list.
 “Q” rules are sent by the RU to the command-router and are not included in the full announcement list. They are used for user management.
 “S” rules are used by devices during configuration and are not included in the full announcement list. They are used during configuration.
 
-Each command announcement line contain the unique command-number, the command-type and properties as necessary; in this sequence. A special type of properties are optional <OPTION>. Some <OPTION> will not result in transmitted data and will be at the end of a line. This will be defined with the <OPTION>. The first <des> of these properties is the uppercase name of the <OPTION>, with must be defined.
+Each command announcement line contain the unique command-number, the command-type and properties as necessary; in this sequence. A special type of properties are optional <OPTION>. Some <OPTION> will not result in transmitted data and will be at the end of a line. This will be defined with the <OPTION>. The first <des> of these properties is the uppercase name of the <OPTION>, wich must be defined.
 
 Each command belongs to a command-type. Command-types have two letters: the first denotes the operation type, the second the operating object / function
 .
@@ -37,8 +37,8 @@ Operation type
 Active operating is denoted by “o”, an answer request by “a”  as the first letter. If a function can operate and answer, the descriptions in the other announcement should be identical. For example a memory, which can be written and read, must have the same unique description, to allow other devices to identify, that it is the same memory. Alternatively the description can be "as5" eg, where 5 is the command-token of the other command (see also announcement / command optimizing below). The command type may also have the description ext5, which shows the relationship. The CR will resolve the “as” line and add a “ext” notation for the full announcelist.
 The operation type “i” denotes information only. They have no data traffic.
 The operation type “j” denotes information only. They have no data traffic. It is a operating command, which is used internally, usually by rules. An example is a reset under externally initiated conditions.
-The “r” and “s” types are identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by simple SK. The r command   denote what they can or want to send. The s command can be used by the LD to check a status at initialization. For details see [9]. These commands are not part of the full announcelist.
-The “k” and “l” types are identical to the “o” and “a” type and therefore not mentioned in the list below. The CR will not include them in the full announce-list and also ignore them. They are used during a configuration phase of a device. The device will not have rules for these commands. So special care may be necessary when using them.
+The “r” and “s” types are identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by simple devices as switches. The devices usually send commands similar to HI; the operating command means, the devices want another device to operate. The result of these commands is defined by rules. The r command denote what they can or want to send. The s command can be used by the LD to check a status. For details see [9]. These commands are not part of the full announcelist. 
+The “k” and “l” types are identical to the “o” and “a” type and therefore not mentioned in the list below. The CR will not include them in the full announce-list and also ignore them. They are used during a configuration phase of a device. The device may have rules for these commands, denoted by “S”.
 
 Operating object / function
 Each operating object denotes a general function like “s” for a switch and exactly defines the number and type of the properties. From this other devices will know the details of the devices function and the length of a properties and therefore the length of a command. The list below show the announcement templates, corresponding command, answer / info for all defined command-types.
@@ -46,7 +46,7 @@ In some cases, different  operating objects can be chosen. A frequency control w
 A rule of thumb is, that the range, p command-type will be used, if there are "many" equal distance values in a range.
 Optional properties are defined for some command-types and are optional for an announcement. If they are defined in an announcement, they must be used in a command as defined.
 
-In general a FU and simple SK is a very simple construction with limited communication bandwidth. So command communication should be simple and short, but announcements are communicated rarely or never, so they can be longer and descriptive in a readable format.
+In general a FU is a very simple construction with limited communication bandwidth. So command communication should be simple and short, but announcements are communicated rarely or never, so they can be longer and descriptive in a readable format.
 Announcements are stored in the devices, They are unique to a hardware / firmware combination and will never change. Therefore they can be stored also in a database or with the CR.
 The CR may find the details of the attached devices somewhere and probably will not ask the devices for detailed announcements.
 The CR, LD, RU should have more computer power. They should be able to build up a complete MYC System by reading the announcements without operator interaction also in a varying environment. To ensure this, the description in the announcement should be sufficient and not too short.  This is valid for SK as well. If not – as for simple SK – they will be handled in a special manner.
@@ -74,12 +74,12 @@ The command-token is unique within a device; but see command optimizations below
 The number and type of the properties of a command and answers must match the announcement. If the announcement describe a min and max property and unit, the command will obviously have one property only for the value. For details see List of Standardized Command-types below.
 
 There is no rule for FU for the numbering of the command-token, but simple sequenced numbering is recommended. The CR will put  the command-tokens of the known FU, RU and lower level CR together, so that all commands are sequenced with translated command-tokens in the same order as the original announcement lines. The translated command-tokens start with 0x01 (0x0100, 0x010000,.. (no "0" as first byte) in a simple sequence without gaps. There may be gaps in the list, if a known device disappears. The CR will include all known devices from start to avoid renumbering for higher level CRs.
-The full list will not have 0xxx240, 0xxx254 and 0xxx255 lines and some others of other devices, but the 0xxx240 command of the CR.
+The full list will not have 0xxxF0, 0xxxFE and 0xxxFF lines and some others of other devices, but the 0xxxF0 command of the CR.
 The CR will include 0x00 of other devices into the complete command-list but  answer them by itself.
 A announce-list from a lower level CR will have the own (CR)  basic announcements at the beginning and the I-announcement the end. The CR will not change the sequence, so that the hierarchical structure is visible.
-The reserved tokens of the individual devices – if forwarded - are translated by the CR as well; the own (reserved) tokens of the CR are 0xxxf0 ...
+The reserved tokens of the individual devices – if forwarded - are translated by the CR as well; the own (reserved) tokens of the CR are 0xxxF0 ...
 
-All devices except FU and simple SK must interact with the CR with translated tokens.
+All devices except FU must interact with the CR with translated tokens.
 The CR will translate the inline command-tokens of the content of commands, announcements and rules as well.
 
 There is no special “not valid” command-token. If a device must answer but have no data, it will answer with a not used command-token.
@@ -103,7 +103,7 @@ General syntax for info
 
 Data transfer type
 
-These data transfer types is specific for the existing implementation of the CR. Other CRs may work in a different way.
+These data transfer types are specific for the existing implementation of the CR. Other CRs may work in a different way.
 The CR will handle incoming data using 6 different transfer types. The differences are due to the fact, that for some commands the CR will know the length of a command immediately when the CR got the command-token.  For others the length vary and the CR must calculate the length in real time.
 For strings the CR must read the length of the string first.
 
@@ -124,7 +124,7 @@ If a announcement is too long to fit in one line more lines can be used. The com
 So
 	11;aa,Control;a,Preset;a,Motor_cw;a,Motor_ccw;
 	11;aa;a,Limit;a,Underlimit;a,Overlimit
-(the second line must immediately follow the first onne) is the same as
+(the second line must immediately follow the first one) is the same as
 	11;aa,Control;a,Preset;a,Motor_cw;a,Motor_ccw;a,Limit;a,Underlimit;a,Overlimit
 The CR simply paste the lines together omitting command-token and command-type of the second line. Take care on the “;” at the end of the first line and the sequence of the lines!
 
@@ -138,20 +138,20 @@ The “as”  line must follow the original line.
 
 Optimize command transmission 
 If a command should be very short and a parameter should be part of the command-token, the following can be used
-Instead of  a the two byte command
+Instead of a the two byte command
 	2;os;1;0,manual;1,preset
 you use 2 one byte command-token
 	2;ou;1;0,idle;1,manual
 	3;ou,ext2;1;0;idle;1,preset			ext as extend. The extend is an information for SK, that it is one switch
 
 different method
-Some functions can be accessed with different methods. A oscillator can be controlled with a value (by memory or knob) or as scan function. The “ext” (extend) description show the relationship to the other command.
+Some functions can be accessed with different methods. An oscillator can be controlled with a value (by memory or knob) or as scan function. The “ext” (extend) description show the relationship to the other command.
 2,op,VFOA;1;30000 ,{3500000 to 3800000};lin;Hz
 3,oo,ext2;1;255;25;s;50;b,up
 4,oo,ext2;1;255;1;s;0,250;b,up		fixed stepsize of 250 for scanning, stepsize will be omitted in the command 
 
 number of stacks
-If a function with the same effect appears multiple for a FU, announcements can be simplified using he stack feature. The command works on one function at a time. This may simplify the HI. If you have a lot of switches selecting 4 values eg, the HI  may provide a additional selection with the number of the  switch.
+If a function with the same effect appears multiple for a FU, announcements can be simplified using the stack feature. The command works on one function at a time. This may simplify the SK. If you have a lot of switches selecting 4 values eg, the SK may provide a additional selection with the number of the switch.
 The number_of_stack parameter is not transmitted if there is one stack only.
 The number_of_stack parameter can be uses for switches and range controlled functions and the parameter is mandatory.
 announcement example:	2;os;2;0,off;1,on
@@ -171,16 +171,17 @@ This will connect input 0 to output 1
 
 List of Standardized Command-types
 
-These command-type templates contain a description and format of  the properties, where necessary.
+These command-type templates contain a description and format of the properties, where necessary.
 
 There are <OPTION>s for all commands. These are at the end of an announcement.
 Following is defined:
 
-…;<ty>,CHAPTER,<sm>;....					<sm> is a readable string; put at the end of a announcement line.
+…;<ty>,CHAPTER,<sm>;....					<sm> is a readable string; put at the end of an announcement line.
 								Info for SK only, for sorting the commands to menus; no transmitted data.
 								Submenus are separated by a “_”. <ty> must be the stringlength (without usage)
 
-Some commands, which have the operating type “o” and “a” for the operating function, the announcement template is identical. The transmitted format of the operating command and the answer of the answer command is identical as well. In these cases the operating type is as “x” in the template, which must be replaced by “o”, “r”, “k”, ”a”, “s” or “l” as appropriate in the real announce-list.
+Some commands, which have the operating type “o” and “a” for the operating function, the announcement template is identical. The transmitted format of the operating command and the answer of the answer command is identical as well. In these cases the operating type is as “x” in the template, which must be replaced by “o”, “r”, “k” / ”a”, “s” or “l” as appropriate in the real announce-list. The format of the transmitted data for commands and answers is identical in this case.
+“y” must be replaced by “o”, “r”, “k” for operating commands; “z” by  ”a”, “s” or “l” for answer commands.
   
 Meta-commands
 Meta commands are used to control the system, they do not initiate actions.
@@ -209,12 +210,10 @@ OPTION for  all switches:
 												Number of positions must match the product of the dimensions
 												<ty> is a stringlength (not used)
 
-In this case parameter for the two switches must be given for the operating command.
-
 announce:	<c>;xr[,<des>]...[,<des>];number_of_stacks;0[,<des>]...[;n,[<des>]][;<OPTION>...]
 announce:	<c>;xr[,<des>]...[,<des>];number_of_stacks;0[,<des>]...[;n,[<des>]];pos0[,<des>]...[;posn,[<des>][;<OPTION>...]
 												reset (0) or set (1)  posm (number from 0 to n)
-												1st <des> for reset, 2nd for set, if different.
+
 Operate command or answer / info: 	<c>0|1							simple switch (pos0 in announcement only) 0 must be 													omitted and 1 stack
 					<c><n>0|1						reset or set set position <n>, 1 stack
 					<c><m><n>0|1					reset or set set position <n> of stack <m>
@@ -230,24 +229,24 @@ answer command:			<c><m><n>						with m stacks
 					<c><n><n>
 
 
-announce:	<c>;ot[,<des>]...[,<des>];number_of_stacks;[0[,<des>];...n[,<des>][;<OPTION>...]
-announce:	<c>;ot[,<des>]...[,<des>];number_of_stacks;[0[,<des>];...n[,<des>];[pos0[,<des>];...posn[,<des>][;<OPTION>...]
+announce:	<c>;yt[,<des>]...[,<des>];number_of_stacks;[0[,<des>];...n[,<des>][;<OPTION>...]
+announce:	<c>;yt[,<des>]...[,<des>];number_of_stacks;[0[,<des>];...n[,<des>];[pos0[,<des>];...posn[,<des>][;<OPTION>...]
 												set one of n positions active toggling one position to the next
 												one active at a time, can be an extension of a os command.
-												With one position: switch on – off – on ...
+												With one position: switch on – off – on …
 Operate command or answer / info:	<c>							toggling for all stacks
 					
 
-announce:	<c>;at[,<des>]...[,<des>];number_of_stacks;0[,<des>];...n[.<des>][;<OPTION>...]
-announce:	<c>;at[,<des>]...[,<des>];number_of_stacks;0[,<des>];...n[.<des>];pos0[,<des>];...posn[.<des>][;<OPTION>...]
+announce:	<c>;zt[,<des>]...[,<des>];number_of_stacks;0[,<des>];...n[.<des>][;<OPTION>...]
+announce:	<c>;zt[,<des>]...[,<des>];number_of_stacks;0[,<des>];...n[.<des>];pos0[,<des>];...posn[.<des>][;<OPTION>...]
 												read active position; one out of n 
 												works as  the “as” command. 
 												One position : read on / off
 command:	<c>
 answer / info:	<c><n>									position <n> is active
 
-announce:	<c>;ou[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>][;<OPTION>...]
-announce:	<c>;ou[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>];pos0[,<des>];...;posn[,<des>][;<OPTION>...]
+announce:	<c>;yu[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>][;<OPTION>...]
+announce:	<c>;yu[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>];pos0[,<des>];...;posn[,<des>][;<OPTION>...]
 												set one of n positions momentary active, pos0 is idle always
 												pos0 and pos1 required as minimum.
 command:	<c>										push button switch,  no parameter, if there is pos0 and pos1 
@@ -256,7 +255,7 @@ command:	<c>										push button switch,  no parameter, if there is pos0 and po
 		<c><n><n>									for multiple function
 This command may change the internal state of the device. The device must inform the SK by appropriate info about this.
 
-announce:	<c>;au[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>][;<OPTION>...]
+announce:	<c>;zu[,<des>]...[<,des>];number_of_stacks;0[,<des>];...;n[,<des>][;<OPTION>...]
 												read active position; one out of n 
 												If the internal momentary switching takes a while, the state 
 												can be checked by this command.  If finished, returns pos0.
@@ -299,7 +298,7 @@ comments: The SK calculate the real distance of one step using the <des>; {35000
 The SK decides, how accurate the display is and may do some rounding.
 If the displayed step would vary with ranges, a additional announcement with ext<c> description can be used.
 
-announce:	<c>;oo,ext<c>,[<des>]...;number_of_stacks;number_of_steps[,<des>];steptime,<des>;steptime-unit;stepsize[,<des>];<ty>,<des>...
+announce:	<c>;yo,ext<c>,[<des>]...;number_of_stacks;number_of_steps[,<des>];steptime,<des>;steptime-unit;stepsize[,<des>];<ty>,<des>...
 												move position stepwise;  works only as extension of a op
 												command
 Some explanation:
@@ -440,10 +439,11 @@ The third type of description separated by “,” can give additional information f
 Errors and Error Handling
 
 The CR is programmed to be in line with a set of specifications defined by <SPEC_VERSION> .  See [12]
-It must be downward compatible with lowerversion in the same branch. It depends on the CR, how announcements / commands of other <SPEC_VERSIONS> are handled.
+It must be downward compatible with lower version in the same branch. It depends on the CR, how announcements / commands of other <SPEC_VERSIONS> are handled.
 In general it is assumed, that the MYC protocol is used by computers only (M2M), which are correctly programmed.
 The CR will possibly not do a complete check of the announcelines but ignore then, if it detects errors.
-The CR checks all commands and parameters for validity but not for limitation given in the descriptions. It will ignore those commands and start a new command with the next byte.
+All devices checks all incoming commands and parameters for validity. They will receive all bytes as given by the announcement and by the parameters but ignore them if parameters are wrong.
+The CR will not check for limitation given in the descriptions.
 That means, that the SK must check for answers and create an error if necessary.
 It should also check the status of the devices in reasonable time intervalls.
 
@@ -463,7 +463,7 @@ The usage of this document is on own risk, there is no warranty.
 Reference
 
 [1]	https://dk1ri.de/myc/MYC.pdf  (german)
-[2]	https://dk1ri.de/myc/MYC_en.pdf
+[2]	https://dk1ri.de/myc/MYC.en.pdf
 [3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
 [4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
 [5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
@@ -474,3 +474,7 @@ Reference
 [10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
 [11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 [12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf

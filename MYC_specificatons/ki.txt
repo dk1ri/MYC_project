@@ -1,0 +1,59 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/ki.pdf
+
+MYC, Usage in a KI System
+
+Author: DK1RI
+Version V01.01.01 20201028
+This paper is published in https://github.com/dk1ri as well
+
+Introduction
+
+This paper describes the usage of the MYC protocol in a KI system
+For more details of the MYC system please check the reference.
+This paper describes some ideas only.
+
+Definitions and formats
+
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+
+Some explanation
+
+The MYC protocol is a OSI layer 6 / 7 protocol. It is a semantic protocol.
+But within this there are different levels.
+A KI (artificial intelligence) system requires a very exact definition of input / output. If a KI system should do a task, it must know, which devices it must use and which commands to operate.
+A housekeeping system must find environment sensor by itself, find the correct command to read the temperature and interpret the answer.
+So the environment sensor must deliver the necessary data by its introduction (announcement) in a general standardized way.
+The MYC protocol provide these announcements, but the labels are not standardized yet.
+A individual description is possible with the 0xxxfe /0xxxff command but this may be not sufficient. So a additional reserved command may be used   in future.  
+
+The MYC protocol do a abstraction of the real semantic of a command to simple command-types like switch, range control and memory commands. This drastically reduces the transmission bandwidth and is sufficient in a M2M (machine to machine) environment. But the details of the reality must be given by the announcements.
+
+Result
+
+It is necessary to standardize the labels in the announcement in a early stage.
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Reference
+
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC.en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf

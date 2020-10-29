@@ -2,16 +2,14 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Skins
 
-Very preliminary
-
 Author: DK1RI
-Version V01.4.1 20181022
+Version V01.05.01 20201027
 This paper is published in  https://github.com/dk1ri  as well
 
 Introduction
 
 This paper describes the principles of skins of a MYC system.
-This is a description of possible skin and their environment. Nothing is ready or programmed yet.
+This is a description of possible skins and their environment.
 For more details of the MYC system please check the reference.
 
 Definitions and formats
@@ -20,7 +18,8 @@ see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 Some explanation
 
-Skins are used to control a MYC system.
+Skins (SS / SK) 
+are used to control a MYC system.
 A skin in a MYC System may be one of the following:
 -	a simple terminal program 
 -	a simple switch
@@ -28,18 +27,19 @@ A skin in a MYC System may be one of the following:
 -	a full control program
 
 Terminal program
-A simple terminal  can be used to connect the CR. You must know the MYC syntax and find out the accepted commands. It is not comfortable but working. If there is no CR, you can use the I2C – RS232 converter to control FU with I2C interface. It is a restricted simulation of a CR. See  https://dk1ri.de/dhw/i2c_rs232_interface.txt or https://dk1ri.de/dhw/i2c_rs232_interface.pdf
+A simple terminal  can be used to connect the CR. You must know the MYC syntax and find out the accepted commands. It is not comfortable but working. If there is no CR, you can use the I2C – RS232 converter to control FU with I2C interface. It provides a restricted simulation of a CR. See  https://dk1ri.de/dhw/i2c_rs232_interface.txt or https://dk1ri.de/dhw/i2c_rs232_interface.pdf.
+You can control a FU also directly via USB, RS232, or other I2C Interfaces, depending on the interfaces of the FU.
 
-Simple switch
+Simple switch SS
 A simple simple or in general a device with a limited number of predefined functions has “r” (require to operate) and “s” (require to answer) announcements  for communication with the CR only. The real function in a system of a “r” or “s” command is defined by rules.
-The device may have other o /a commands, wich are used during configuration. The commands are not transferred to the final anoouncement list. 
+The device may have other o / a commands, which are used during configuration. The commands are not transferred to the final announcement list. 
 Additionally a simple switch has the announcement of reserved command.
 It will find out the translated token for its “r” and “s” commands and react on infos for new announce-lists. It will get a reduced list with the own announcements and the CR announcements.
-“r” and “s” announcements  are not added to the full announcement-list sent to other devices.
-The rules-device will provide the rules to translate the “r” and “s” commands to commands of FU. It may be, that not all “r” and “s” commands result in an action of a FU. 
+“r” and “s” announcements  are added to the full announcement-list, but the announcementlist sent to SS devices, do not contains the commands and has gap at these places.
+The rules-device will provide the rules to translate the “r” and “s” commands to commands of FU. It may be, that not all “r” and “s” commands result in an action of a FU. As commands of other SK these commands commands are passed to the LD and if there is no rule the LD ignores the commands.
 
 Third party control program
-A third party control program usually require a MYC interface. For this interface the same apply as for a simple switch described above.
+A third party control program usually require a MYC interface. This program may behave like a higher level MYC Ssystem, a SK or a SS.
 
 Full control program
 A full control program can use all function delivered by the system via the full announce-list.
@@ -49,8 +49,10 @@ The user should find a knob to switch to an edit mode.
 In this mode the web page behaves like a web editor. The user can modify those functions defined by the full announcement-list. The result is stored in a user individual config file or data base.
 For simple usage preconfigured files (skins) can be used.
 For normal mode the web-server build the page by using the config file and the announce-list.
-Using this method allows to control a MYC system worldwide using a browser and there is no need for any GUI programming. Simple WYSIWYG configuration is sufficient and every user will get want he want.
-As mentioned  before, this is an idea, other solutions are welcome.
+
+I started a solution using a web server
+For details and the actual status see [13].
+Other solution are possible as well.
 
 Copyright
 
@@ -64,7 +66,7 @@ The usage of this document is on own risk, there is no warranty.
 Reference
 
 [1]	https://dk1ri.de/myc/MYC.pdf  (german)
-[2]	https://dk1ri.de/myc/MYC_en.pdf
+[2]	https://dk1ri.de/myc/MYC.en.pdf
 [3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
 [4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
 [5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
@@ -75,3 +77,7 @@ Reference
 [10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
 [11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 [12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf
