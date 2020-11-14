@@ -5,7 +5,7 @@ Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Feinstaubsensor;V01.0;1;50;1;29;1-1"
+Data "0;m;DK1RI;Feinstaubsensor;V01.1;1;145;1;29;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -63,7 +63,7 @@ Data "9;an,read number concentration 10;1;w,/cbcm;770"
 '
 'Announce10:
 'Befehl &H0A
-'typische Grösse
+'typische Groese
 'typical size
 Data "10;an,typical size;1;w,um;770"
 '

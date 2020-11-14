@@ -18,7 +18,7 @@ Beschreibung und Bedienung
 Als Leiterplatte wird die für das ICOM Interface verwendet
 Die Stromversorgung ist 7- 9V, Stromaufnahme ca. 100 max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
-Es wird der gleiche Sensor wie in dem ELV Artikel verwendet: Sensirion SPS30 ab Firmware 2.1.
+Es wird der gleiche Sensor wie in dem ELV Artikel (ELV Journal 2019 Heft 6) verwendet: Sensirion SPS30 ab Firmware 2.1.
 Der Sensor ist aber anders als da nicht auf der gleichen Leiterplatte montiert, und es gibt auch kein Display.
 Details zu der Funktion des Sensors können in dem Artikel oder im Datenblatt des Sensors nachgelesen werden.
 Der Prozessor ATMEGA1284 wird verwendet, da er 2 serielle Hardware Schnittstellen hat und 16kB RAM. Dies erlaubt die Speicherung von 770 Messwerten.
@@ -31,19 +31,21 @@ Das Auslesen erfolgt in Blöcken von maximal 124 Werten, beginnend mit den neuest
 Bei einem Messintervall von einer Minute gibt der Befehl 
 &H0100FF0005 
 5 Werte der Massekonzentration von vor 255 – 259 Minuten aus.
-Entsprechend  dem MYC Protokoll muss der Startmesswert und die Zahl der Messwerte als 2 Byte Wert eingegeben werden. Die Limitierung der Länge auf 124 Byte wird durch Regeln bestimmt.
+Entsprechend  dem MYC Protokoll muss der Startmesswert und die Zahl der Messwerte als 2 Byte Wert eingegeben werden (00FF). Die Limitierung der Zahl der übertragenen Bytes ist auf 124 Byte wird durch Regeln bestimmt, die Zahl muss aber au als 2 Byte Wert eingegeben werden.
 Der Grund für die Limitierung ist der begrenzte Speicher bei der I2C Übertragung.
 Der Befehl &H14 liefert die neue Daten, wenn der letzte Abruf  länger als eine Minute zurücklag.
+Fdas Interface kann auch auch ohne PC Anschluss betrieben werden. Details dazu siehe unter Stromversorgung.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
 Folgende Befehle werden akzeptiert:
+
 Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Feinstaubsensor;V01.0;1;50;1;29;1-1"
+Data "0;m;DK1RI;Feinstaubsensor;V01.1;1;145;1;29;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -101,7 +103,7 @@ Data "9;an,read number concentration 10;1;w,/cbcm;770"
 '
 'Announce10:
 'Befehl &H0A
-'typische GrÃ¶sse
+'typische Groese
 'typical size
 Data "10;an,typical size;1;w,um;770"
 '
@@ -235,7 +237,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
 Das aktuelle Bascom Programm verwendet einen Atmega1284.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.11[6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -274,8 +276,12 @@ Stromversorgung
 Die Stromversorgung ist 7- 9V, Stromaufnahme ca. 100mA max. 
 Durch den recht hohen Strom des Sensors ist die Eingangsspannung begrenzt, um die Verlustleistung des Reglers nicht zu überschreiten.
 Alternativ erfolgt die Stromversorgung über USB.
-Wenn der Feinstaubsensor ohne PC betrieben werden soll, kann die Stromversorgung auch über USB erfolgen. Dann können die Daten aber nur über I2C abgerufen werden, da beim Abtrennen der Stromversorgung und Anschluss an den PC die Daten verloren gehen.
-Die Stromversorgung kann auch über X1 (7-9V) erfolgen und die Datenabfrage statt über RS232 über USB erfolgen. Dann muss Jumper J8 offen bleiben!
+Wenn der Feinstaubsensor auch ohne PC betrieben werden soll, gibt es folgende Möglichkeiten:
+Versorgung über USB:
+Die Abfrage der Daten ist nur über I2C möglich; J8 immer geschlossen.
+Versorgung über X1:
+Mit serieller Schnittstelle ist die Datenabfrage darüber oder über I2C möglich. J8 ist immer geschlossen.
+Mit USB Modul kann die Datenabfrage darüber oder über I2C erfolgen. Im standalone Betrieb muss J8 offen sein, Bei der Datenübertragung kann J8 nach dem Anschluss an den PC überbrückt und die Stromversorgung an X1 danach getrennt werden. Die Stromversorgung darf nicht unterbrochen werden.
  
 Bestückung der Leiterplatte 
 
@@ -286,9 +292,10 @@ Mit I2C:
 Siehe I2C oben.
 
 Mit serieller Schnittstelle:
-Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2 nicht bestückt werden! X1, D1 und C1 braucht auch nicht bestückt werden.
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden.
 
-R7 – R11, Q2, Q3, Q4 und X5 wird nicht bestückt.
+R7 – R11, Q2 -Q4 und X5 wird nicht bestückt.
+Zwischen Pin 1 und Pin3 von SL3 (Ser2) fehlt ein Pullup Widerstand (10kOhm), der an der Rückseite der Leiterplatte angelötet werden muss.
 
 Anschlüsse
 
@@ -308,7 +315,7 @@ I2C (SL1, SL2)
 
 Ser2 (Anschluss des Feinstaub Sensors)
 1	5V
-2	Seriel out
+2	Serial out
 3	Serial in
 4	-
 5	GND
@@ -322,13 +329,13 @@ JP4		SCL Überbrückung (ohne IC3)
 JP5		Reset
 JP6		ISP 
 JP7		Anschluss für USB Modul
-JP8		USB Spannung, immer geschlossen, außer bei externer Spannungsversorgung mit USB Modul.
+JP8		USB Spannung, siehe unter Stromversorgung
 
 Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion ICOM_Interface V03.2
-Bascom Version V01.0 
+Bascom Version V01.01
 
 Copyright
 
@@ -344,5 +351,5 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.10.zip
+[6]	https://dk1ri.de/dhw/common_1.11.zip
 

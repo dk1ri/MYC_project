@@ -1,16 +1,16 @@
 'name : Feinstaubsensor.bas
-'Version V01.0, 20200511
+'Version V01.1, 20201113
 'purpose : Program for Sensitron SPS30 Feinstaubsensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware ICOM_Interface_eagle Version V03.2 by DK1RI
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.10 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.11 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
+$include "common_1.11\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -33,7 +33,7 @@ $regfile = "m1284pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.10\_Processor.bas"
+$include "common_1.11\_Processor.bas"
 $Baud1 = 115200
 '
 '----------------------------------------------------
@@ -52,7 +52,7 @@ Const Rx_data_length = 100
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.11\_Constants_and_variables.bas"
 '
 DIm Sum As Word
 Dim MC10(Memory_size) As Word
@@ -84,37 +84,37 @@ Dim Cleaning_intervall As Dword
 Dim Cleaning_intervall_b(4) As Byte At Cleaning_intervall Overlay
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.11\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.11\_Config.bas"
 '
 '----------------------------------------------------
 Waitms 500
 '
 '----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.11\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.11\_Loop_start.bas"
 '
 '----------------------------------------------------
 Gosub Ananlyze_in
 '
-$include "common_1.10\_Main_end.bas"
+$include "common_1.11\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.11\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.11\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.11\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -442,9 +442,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.11\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.11\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
