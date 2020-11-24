@@ -6,14 +6,11 @@ Reset Pin_rx_enable
 UCSR1b.4 = 0
 'Switch off Com2 Rx
 Printbin #2, 254; 254; Civ_adress; 224
-Printbin 254; 254; Civ_adress; 224
 For B_temp1 = 1 To Civ_len
    B_temp2 = Temps_b(B_temp1)
    Printbin #2, B_temp2
-   Printbin B_temp2
 Next B_temp1
 Printbin #2, 253
-Printbin 253
 Set Pin_rx_enable
 Gosub Command_received
 'The programm continues immediately after initiating the transmit

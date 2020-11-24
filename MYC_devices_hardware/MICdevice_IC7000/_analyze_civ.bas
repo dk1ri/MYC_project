@@ -28,7 +28,6 @@ Else
                   For B_temp1 = 1 To 14
                      Temps_b(B_temp1 + 4)= Civ_in_b(B_temp1 + 8)
                   Next B_temp1
-                  print "test"
                   Civ_len = 18
                   Gosub Civ_print
                   Tx_write_pointer = 1

@@ -1,15 +1,15 @@
 'name : IC7000_interface_bascom.bas
-'Version V01.2, 20200314
+'Version V01.3, 20201123
 'purpose : Programm to control a ICOM IC7000 Radio
 'Can be used with hardware ICOM Interface Version V03.2 by DK1RI          >
 '
 
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.9 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.11 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.9\_Introduction_master_copyright.bas"
+$include "common_1.11\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -41,7 +41,7 @@ $regfile = "m1284pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.9\_Processor.bas"
+$include "common_1.11\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -62,7 +62,7 @@ Const Civ_data_length = 250
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.9\_Constants_and_variables.bas"
+$include "common_1.11\_Constants_and_variables.bas"
 '
 Dim Temp_dw As Dword
 Dim Temp_dw1 As Dword
@@ -105,19 +105,19 @@ Dim DTCSS As String * 3
 Dim DTCSS_b(3) As Byte At DTCSS Overlay
 '
 '----------------------------------------------------
-$include "common_1.9\_Macros.bas"
+$include "common_1.11\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Config.bas"
+$include "common_1.11\_Config.bas"
 '
 '----------------------------------------------------
 ' procedures at start
 '
 '----------------------------------------------------
-$include "common_1.9\_Main.bas"
+$include "common_1.11\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Loop_start.bas"
+$include "common_1.11\_Loop_start.bas"
 '
 '----------------------------------------------------
 '
@@ -125,7 +125,6 @@ $include "common_1.9\_Loop_start.bas"
 B_temp1 = Ischarwaiting(#2)
 If b_Temp1 = 1 Then
    b_Temp1 = Waitkey(#2)
-   print B_temp1
    If Civ_watchdog = 0 Then Civ_watchdog = 1
    'start watchdog
    If Civ_pointer < Civ_data_length Then
@@ -138,7 +137,6 @@ If b_Temp1 = 1 Then
          If Civ_pointer < 6 Then
             ' too short
             Other_civ_error
-            print "OE"
          Else
             ' change global civ address
             Civ_in_b(3) = &HE0
@@ -160,7 +158,6 @@ If b_Temp1 = 1 Then
                   ' During test phase one; delete later:
                   For b_Temp1 = 1 To Civ_pointer
                      b_Temp4 = Civ_in_b(b_Temp1)
-                    Printbin b_Temp4
                   Next b_Temp1
                  ' end test
                   Gosub Analyze_civ
@@ -180,20 +177,20 @@ End If
 '
 '----------------------------------------------------
 '
-$include "common_1.9\_Main_end.bas"
+$include "common_1.11\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.9\_Reset.bas"
+$include "common_1.11\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_init.bas"
+$include "common_1.11\_init.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Subs.bas"
+$include "common_1.11\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -207,7 +204,6 @@ No_token = 0
 Civ_cmd = 0
 Answer_pointer = 1
 Set Pin_rx_enable
-Gosub Reset_tx
 Return
 '
 $include "_tx_subs.bas"
@@ -235,36 +231,21 @@ $include _analyze_civ_s048_s071.bas
 $include _analyze_civ_s072_s095.bas
 $include _analyze_civ_s096_s119.bas
 '----------------------------------------------------
+'
+$include "common_1.11\_Commands_required.bas"
+#IF Command_is_2_byte = 0
+   $include "common_1.11\_Commandparser.bas"
+#ELSE
+$include "common_1.11\_Command0.bas"
+'
 Commandparser:
-'checks to avoid commandbuffer overflow are within commands !!
-#IF Command_is_2_byte = 1
-   $include "common_1.9\_Commandparser.bas"
+$include __select_command.bas
+Return
+'
+End
 #ENDIF
 '
 '-----------------------------------------------------
-$include "_commands.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_240.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_252.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_253.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_254.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_255.bas"
-'
-'-----------------------------------------------------
-      Case Else
-         Gosub Command_received
-   End Select
-End Select
-Return
-'
+' End
 $include "_announcements.bas"
 $include "_Tones.bas"
