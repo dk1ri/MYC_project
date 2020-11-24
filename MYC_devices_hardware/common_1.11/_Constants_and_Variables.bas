@@ -1,5 +1,5 @@
 ' Constants and variables
-' 191228
+' 20201123
 '
 Const Lf = 10
 Const Tx_length = 254
@@ -67,6 +67,7 @@ Dim Serial_in As Byte
 #Else
     Dim A_line As Word
     Dim Number_of_lines As Word
+    Dim Command_token_high As Byte
     Dim Command_token_low As Byte
 #EndIf
 ' used in command_subs: Interrupt must not change this when command sub is working:

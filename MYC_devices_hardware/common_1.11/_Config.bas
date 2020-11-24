@@ -1,5 +1,5 @@
 ' blw, Config
-' 191228
+' 20200730
 '
 Blw = peek (0)
 If Blw.WDRF = 1 Then

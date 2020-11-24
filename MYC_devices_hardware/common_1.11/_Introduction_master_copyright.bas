@@ -1,5 +1,5 @@
 ' Introduction
-' 20200726
+' 20200730
 '
 ' This programm supports the MYC protocol
 ' Slave max length of I2C and  serial input string is 253 Bytes.

@@ -1,5 +1,5 @@
 ' Loop / Main_end
-' 20200422
+' 20201123
 '
 If New_data > 0 Then
    New_data = 0
@@ -29,21 +29,22 @@ If New_data > 0 Then
       End If
 #Else
       If Command_b(1) = 0 Then
-         Gosub Commandparser
+         Gosub Command0
       Else
          If Command_pointer >= 2 Then
-            If Command_b(1) = &HFF And Command_b(2) = 254 Then
-               Commandpointer = Command_pointer
+            Commandpointer = Command_pointer
+            B_temp4 = Serial_active And Command_mode
+            If Serial_active = 1 And Command_mode = 1 Then
                Gosub Commandparser
             Else
-               If Serial_active = 1 And Command_mode = 1 Then
-                  Commandpointer = Command_pointer
+               If I2c_active = 1 And Command_mode = 2 Then
                   Gosub Commandparser
                Else
-                  If I2c_active = 1 And Command_mode = 2 Then
-                     Commandpointer = Command_pointer
+                  If Command_b(1) = &HFF And Command_b(2) = 254 Then
                      Gosub Commandparser
                   Else
+                     ' change of interfac will restart input
+                     Commandpointer = 0
                      Command_pointer = 0
                      Not_valid_at_this_time
                   End If

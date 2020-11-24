@@ -1,8 +1,8 @@
 ' Loop start
-' 191228
+' 20200730
 '
 Loop_:
-Stop Watchdog
+Start Watchdog
 'Loop must be less than 2s
 '
 ' timeout

@@ -1,8 +1,7 @@
 ' Commandparser
-' 20201123
+' 20200422
 '
-Commandparser:
-If Command_b(1) = 0 Then
+Command0:
    Tx_time = 1
    A_line = 0
    Number_of_lines = 1
@@ -10,10 +9,4 @@ If Command_b(1) = 0 Then
    Gosub Sub_restore
    If Command_mode = 1 Then Gosub Print_tx
    Gosub Command_received
-Else
-   $include "__select_command.bas"
-End If
 Return
-'
-'==================================================
-End
