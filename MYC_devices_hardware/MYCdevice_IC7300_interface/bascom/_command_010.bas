@@ -3,13 +3,14 @@
 '
 100:
    If Commandpointer >= 6 Then
-      If Command_b(3) < 2 Then
-         Temps = Chr(&H25)
          D_temp2 = 69970000
          B_temp5 = 3
-         B_temp4 = 4
+         B_temp4 = 3
          Gosub S_frequency
-         Civ_len = 6
+	If Temps <> "" Then
+         Temps_b(1) = &H25
+         Temps_b(2) = 0
+         Civ_len = 7
          Gosub Civ_print
       Else
          Parameter_error

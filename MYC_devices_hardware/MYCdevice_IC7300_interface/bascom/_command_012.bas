@@ -17,6 +17,7 @@
    Temps = Chr(&H14) + Chr(&H07)
    Civ_len = 2
    Gosub Civ_print
+Return
 '
 123:
    CiV_cmd1 = &H14
@@ -117,6 +118,7 @@
    CiV_cmd1 = &H14
    Civ_cmd2 = &H12
    Gosub Civ_print_255_4_bcd
+Return
 '
 134:
    Temps = Chr(&H14) + Chr(&H12)

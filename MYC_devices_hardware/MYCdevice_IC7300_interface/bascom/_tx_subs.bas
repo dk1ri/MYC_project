@@ -234,29 +234,24 @@ S_frequency:
    Frequenz_b(2) = Command_b(B_temp5 + 2)
    Frequenz_b(1) = Command_b(B_temp5 + 3)
    If Frequenz < D_temp2 Then
-      Temps_b(2) = Command_b(3)
       Frequenz = Frequenz + 30000
       'Frequenz to convert
       D_temp1 = Frequenz / 100000000
       B_temp1 = D_temp1
       Temps_b(B_temp4 + 4) = Makebcd(B_temp1)
-      Frequenz = Frequenz Mod 1000000000
       Frequenz = Frequenz Mod 100000000
       D_temp1 = Frequenz / 1000000
       B_temp1 = D_temp1
       Temps_b(B_temp4 + 3) = Makebcd(B_temp1)
-      Frequenz = Frequenz Mod 10000000
       Frequenz = Frequenz Mod 1000000
       D_temp1 = Frequenz / 10000
       B_temp1 = D_temp1
       Temps_b(B_temp4 + 2) = Makebcd(B_temp1)
-      Frequenz = Frequenz Mod 100000
       Frequenz = Frequenz Mod 10000
       W_temp1 = Frequenz / 100
       B_temp1 = W_temp1
       Temps_b(B_temp4 + 1) = Makebcd(B_temp1)
-      Frequenz = Frequenz Mod 1000
-      Frequenz = Frequenz Mod 10
+      Frequenz = Frequenz Mod 100
       B_temp1 = Frequenz
       Temps_b(B_temp4) = Makebcd(B_temp1)
     End If

@@ -100,8 +100,8 @@ Memory_read:
             W_temp2_l = Memorycontent_b(W_Temp1)
             W_temp1 =  &H0885%
             B_temp1= Lookdown(W_temp2, Tones, 51)
-            Tx_b(3) = B_temp1 - 2
-            Tx_write_pointer = 4
+            Tx_b(4) = B_temp1 - 2
+            Tx_write_pointer = 5
          Case 8
             ' tone frequency
             Tx_b(1) = &H03
@@ -112,8 +112,8 @@ Memory_read:
             W_temp2_l = Memorycontent_b(W_Temp1)
             W_temp1 =  &H0885%
             B_temp1= Lookdown(W_temp2, Tones, 51)
-            Tx_b(3) = B_temp1 - 2
-            Tx_write_pointer = 4
+            Tx_b(4) = B_temp1 - 2
+            Tx_write_pointer = 5
          Case 9
             ' frequency SPLIT
             Tx_b(1) = &H03

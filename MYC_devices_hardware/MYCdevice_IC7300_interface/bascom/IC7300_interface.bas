@@ -1,15 +1,15 @@
 'name : IC7300_interface_bascom.bas
-'Version V01.0, 20191212
+'Version V01.3, 20201123
 'purpose : Programm to control a ICOM IC7300 Radio
-'Can be used with hardware ICOM Interface Version V03.0 by DK1RI          >
+'Can be used with hardware ICOM Interface Version V03.2 by DK1RI          >
 '
 
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,8 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.11 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.8\_Introduction_master_copyright.bas"
+$include "common_1.11\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -36,6 +36,7 @@ $include "common_1.8\_Introduction_master_copyright.bas"
 'Commands are executed in the same loop, when a valid command is detected.
 'Other commands are ignored during that time.
 'After CiV_timeout, CiV is resetted
+
 'The CIV Interface use the second hardware UART
 '
 '----------------------------------------------------
@@ -43,20 +44,17 @@ $regfile = "m1284pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.8\_Processor.bas"
+$include "common_1.11\_Processor.bas"
 '
 '----------------------------------------------------
 '
-' 8: for 8/32pin, ATMEGA   x8; 4 for 40/44pin, ATMEGAx4 packages
-' used for reset now: different portnumber of SPI SS pin
-Const Processor = "4"
-Const Command_is_2_byte = 1
 '1...127:
-Const I2c_address = 46
+Const I2c_address = 23
 Const No_of_announcelines = 568
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
+Const S_length = 120
 '
 Const Header_ = "{254}{254}{000}{224}"
 Const Replay_header_ = "{254}{254}{224}{000}"
@@ -66,7 +64,8 @@ Const Nok_msg_ = "{254}{254}{224}{000}{250}"
 Const Civ_data_length = 250
 '
 '----------------------------------------------------
-$include "common_1.8\_Constants_and_variables.bas"
+$include "__use.bas"
+$include "common_1.11\_Constants_and_variables.bas"
 '
 Dim Temp_dw As Dword
 Dim Temp_dw1 As Dword
@@ -84,7 +83,7 @@ Dim Civ_cmd4 As Byte
 Dim Civ_len As Byte
 Dim Data_filter As Byte
 Dim Frequenz As Dword
-Dim Frequenz_b(4) As Byte At Frequenz   Overlay
+Dim Frequenz_b(4) As Byte At Frequenz Overlay
 Dim F_offset As Word
 Dim Multiplier As Dword
 Dim No_token As Byte
@@ -119,20 +118,19 @@ Dim Copy_band_stack As Byte
 Dim Operating_mode As Byte
 '
 '----------------------------------------------------
-$include "common_1.8\_Macros.bas"
+$include "common_1.11\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.8\_Config.bas"
+$include "common_1.11\_Config.bas"
 '
 '----------------------------------------------------
 ' procedures at start
 '
-wait 10
 '----------------------------------------------------
-$include "common_1.8\_Main.bas"
+$include "common_1.11\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.8\_Loop_start.bas"
+$include "common_1.11\_Loop_start.bas"
 '
 '----------------------------------------------------
 '
@@ -172,10 +170,10 @@ If b_Temp1 = 1 Then
                If b_Temp2 = 1 Then
                   'Valid header , 4 Byte
                   ' During test phase one; delete later:
-                  For b_Temp1 = 1 To Civ_pointer
-                     b_Temp4 = Civ_in_b(b_Temp1)
-                    Printbin b_Temp4
-                  Next b_Temp1
+                 ' For b_Temp1 = 1 To Civ_pointer
+               '      b_Temp4 = Civ_in_b(b_Temp1)
+              '      Printbin b_Temp4
+              '    Next b_Temp1
                  ' end test
                   Gosub Analyze_civ
                   Gosub Print_tx
@@ -225,33 +223,21 @@ If Read_memory_counter < 104 Then
 End If
 '
 '----------------------------------------------------
-$include "common_1.8\_Serial.bas"
 '
-'--------   --------------------------------------------
-'$include "common_1.8\_I2c.bas"
+$include "common_1.11\_Main_end.bas"
 '
 '----------------------------------------------------
 '
-If Commandpointer > 0 Then
-   Incr Cmd_watchdog
-   Gosub Commandparser
-End If
-'
-'Enable URXC
-'print Commandpointer
-Stop Watchdog                                               '
-Goto Loop_
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.8\_Reset.bas"
+$include "common_1.11\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.8\_init.bas"
+$include "common_1.11\_init.bas"
 '
 '----------------------------------------------------
-$include "common_1.8\_Subs.bas"
-$include "common_1.8\_Sub_reset_i2c.bas"
+$include "common_1.11\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -265,7 +251,6 @@ No_token = 0
 Civ_cmd = 0
 Answer_pointer = 1
 Set Pin_rx_enable
-Gosub Reset_tx
 Return
 '
 $include "_tx_subs.bas"
@@ -292,33 +277,31 @@ $include "_command_02C.bas"
 $include "_command_02E.bas"
 $include "_command_030.bas"
 '
+$include _analyze_civ_s000_s023.bas
+$include _analyze_civ_s024_s047.bas
+$include _analyze_civ_s048_s071.bas
+$include _analyze_civ_s072_s095.bas
+$include _analyze_civ_s096_s119.bas
+$include _analyze_civ_s120_s143.bas
+$include _analyze_civ_s144_s167.bas
+$include _analyze_civ_s168_s193.bas
 '----------------------------------------------------
-$include "common_1.8\_Commandparser.bas"
 '
-'-----------------------------------------------------
-$include "_commands.bas"
+$include "common_1.11\_Commands_required.bas"
+#IF Command_is_2_byte = 0
+   $include "common_1.11\_Commandparser.bas"
+#ELSE
+$include "common_1.11\_Command0.bas"
 '
-'-----------------------------------------------------
-$include "common_1.8\_Command_240.bas"
-'
-'-----------------------------------------------------
-$include "common_1.8\_Command_252.bas"
-'
-'-----------------------------------------------------
-$include "common_1.8\_Command_253.bas"
-'
-'-----------------------------------------------------
-$include "common_1.8\_Command_254.bas"
-'
-'-----------------------------------------------------
-$include "common_1.8\_Command_255.bas"
-'
-'-----------------------------------------------------
-      Case Else
-         Gosub Command_received
-   End Select
-End Select
+Commandparser:
+$include __select_command.bas
 Return
+'
+End
+#ENDIF
+'
+'-----------------------------------------------------
+' End
 '
 $include "_announcements.bas"
 $include "_Tones.bas"

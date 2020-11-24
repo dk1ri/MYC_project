@@ -1,5 +1,5 @@
 ' IC7300 Command 220 - 23F
-' 191129
+' 20200220
  '
 220:
    Civ_cmd4 = &H86
@@ -87,7 +87,7 @@ Return
 Return
 22F:
    If Commandpointer >= 5 Then
-      If Command_b(3) < 100 Or Command_b(4) < 12 Or Command_b(5) < 31 Then
+      If Command_b(3) < 100 And Command_b(4) < 12 And Command_b(5) < 31 Then
          Temps = Chr(&H1A) + Chr(&H05)
          Temps_b(3) = &H00
          Temps_b(4) = &H94
@@ -108,7 +108,7 @@ Return
 Return
 231:
    If Commandpointer >= 4 Then
-      If Command_b(3) < 24 Or Command_b(4) < 60 Then
+      If Command_b(3) < 24 And Command_b(4) < 60 Then
          Temps = Chr(&H1A) + Chr(&H05)
          Temps_b(3) = &H00
          Temps_b(4) =&H95
@@ -147,7 +147,7 @@ Return
          B_temp2 = W_temp2
          Temps_b(5) = Makebcd(B_temp1)
          Temps_b(6) = Makebcd(B_temp2)
-         Civ_len = 7
+         Civ_len = 6
          Gosub Civ_print
       Else
          parameter_error
