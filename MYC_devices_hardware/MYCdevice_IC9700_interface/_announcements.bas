@@ -1,11 +1,11 @@
 ' name : _announcements.bas
-' 20200310
+' 20201113
 '
 Announce:
 'Befehl &H00
 'eigenes basic 'Announcement lesen
 'basic 'Announcement is read to I2C or output
-Data "0;m;DK1RI;IC9700 Interface;V01.2;1;175;2;969;1-1"
+Data "0;m;DK1RI;IC9700 Interface;V01.3;1;175;2;969;1-1"
 '
 'Announce1:
 'Befehl 256 &H0100: --> Code 00 (05)

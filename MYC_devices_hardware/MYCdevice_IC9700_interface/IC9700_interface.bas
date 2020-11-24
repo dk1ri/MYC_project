@@ -1,15 +1,15 @@
 'name : IC9700_interface_bascom.bas
-'Version V01.2, 20200315
+'Version V01.3, 20201123
 'purpose : Programm to control a ICOM IC9700 Radio
-'Can be used with hardware ICOM Interface Version V03.0 by DK1RI          >
+'Can be used with hardware ICOM Interface Version V03.2 by DK1RI          >
 '
 
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory common_1.9 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory common_1.11 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.9\_Introduction_master_copyright.bas"
+$include "common_1.11\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -22,7 +22,7 @@ $include "common_1.9\_Introduction_master_copyright.bas"
 '
 '------------------------------------------------------
 'Missing/errors:
-' see sepatate document
+' see separate document
 '
 '------------------------------------------------------
 '
@@ -43,7 +43,7 @@ $regfile = "m1284pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.9\_Processor.bas"
+$include "common_1.11\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -64,7 +64,7 @@ Const Civ_data_length = 250
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.9\_Constants_and_variables.bas"
+$include "common_1.11\_Constants_and_variables.bas"
 '
 Dim Temp_dw As Dword
 Dim Temp_dw1 As Dword
@@ -122,21 +122,19 @@ Dim Last_command_h As Byte At Last_command + 1 Overlay
 Dim Last_command_l As Byte At Last_command Overlay
 '
 '----------------------------------------------------
-$include "common_1.9\_Macros.bas"
+$include "common_1.11\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Config.bas"
+$include "common_1.11\_Config.bas"
 '
 '----------------------------------------------------
 ' procedures at start
 '
-Wait 10
-print "start"
 '----------------------------------------------------
-$include "common_1.9\_Main.bas"
+$include "common_1.11\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Loop_start.bas"
+$include "common_1.11\_Loop_start.bas"
 '
 '----------------------------------------------------
 '
@@ -156,7 +154,6 @@ If b_Temp1 = 1 Then
          If Civ_pointer < 6 Then
             ' too short
             Other_civ_error
-            print "OE"
          Else
             ' change global civ address
             Civ_in_b(3) = &HE0
@@ -175,12 +172,6 @@ If b_Temp1 = 1 Then
                b_Temp2 = Instr (Civ_in, Replayheader)
                If b_Temp2 = 1 Then
                   'Valid header , 4 Byte
-                  ' During test phase one; delete later:
-                  For b_Temp1 = 1 To Civ_pointer
-                     b_Temp4 = Civ_in_b(b_Temp1)
-                    Printbin b_Temp4
-                  Next b_Temp1
-                 ' end test
                   Gosub Analyze_civ
                   Gosub Print_tx
                Else
@@ -196,6 +187,8 @@ If b_Temp1 = 1 Then
    End If
 End If
 '
+Read_memory_counter = 110
+'This is not working!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! :
 ' No Input at startup (reading memory)
 If Read_memory_counter < 110 Then
    Select case Read_memory_counter
@@ -230,20 +223,20 @@ End If
 '
 '----------------------------------------------------
 '
-$include "common_1.9\_Main_end.bas"
+$include "common_1.11\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.9\_Reset.bas"
+$include "common_1.11\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_init.bas"
+$include "common_1.11\_init.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Subs.bas"
+$include "common_1.11\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -257,7 +250,6 @@ No_token = 0
 Civ_cmd = 0
 Answer_pointer = 1
 Set Pin_rx_enable
-Gosub Reset_tx
 Return
 '
 $include "_tx_subs.bas"
@@ -311,36 +303,22 @@ $include _analyze_civ_s255_s290.bas
 $include _analyze_civ_s291_s339.bas
 '
 '----------------------------------------------------
+$include "common_1.11\_Commands_required.bas"
+#IF Command_is_2_byte = 0
+   $include "common_1.11\_Commandparser.bas"
+#ELSE
+$include "common_1.11\_Command0.bas"
+'
 Commandparser:
-'checks to avoid commandbuffer overflow are within commands !!
-#IF Command_is_2_byte = 1
-   $include "common_1.9\_Commandparser.bas"
+$include __select_command.bas
+Return
+'
+End
 #ENDIF
 '
 '-----------------------------------------------------
-$include "_commands.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_240.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_252.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_253.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_254.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_255.bas"
-'
-'-----------------------------------------------------
-      Case Else
-         Gosub Command_received
-   End Select
-End Select
-Return
+' End
 '
 $include "_announcements.bas"
+'
 $include "_Tones.bas"
