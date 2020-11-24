@@ -1,15 +1,15 @@
 'name : IC271_interface_bascom.bas
-'Version V01.2, 20200303
+'Version V01.3, 20201123
 'purpose : Programm to control a ICOM IC271 Radio
 'Can be used with hardware ICOM Interface Version V03.2 by DK1RI          >
 '
 
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.9 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.11 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.9\_Introduction_master_copyright.bas"
+$include "common_1.11\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -17,8 +17,7 @@ $include "common_1.9\_Introduction_master_copyright.bas"
 ' serial
 ' I2C
 '-----------------------------------------------------
-' Inputs / Outputs : see file __config
-' For announcements and rules see Data section at the end
+' Inputs / Outputs : see file __config.bas
 '
 '------------------------------------------------------
 ' Missing/errors:
@@ -40,7 +39,7 @@ $regfile = "m1284pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.9\_Processor.bas"
+$include "common_1.11\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -48,9 +47,9 @@ $include "common_1.9\_Processor.bas"
 Const I2c_address = 29
 Const No_of_announcelines = 17
 'announcements start with 0 -> minus 1
-Const Tx_factor = 10
-' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
-Const S_length = 120
+Const Tx_factor = 15
+' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
+Const S_length = 32
 '
 Const Header_ = "{254}{254}{000}{224}"
 Const Replay_header_ = "{254}{254}{224}{000}"
@@ -61,7 +60,7 @@ Const Civ_data_length = 250
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.9\_Constants_and_variables.bas"
+$include "common_1.11\_Constants_and_variables.bas"
 '
 Dim Answer_pointer As Word
 Dim Civ_watchdog As Byte
@@ -85,19 +84,19 @@ Dim Civ_pointer As Byte
 Dim Command_status As Byte
 '
 '----------------------------------------------------
-$include "common_1.9\_Macros.bas"
+$include "common_1.11\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Config.bas"
+$include "common_1.11\_Config.bas"
 '
 '----------------------------------------------------
 ' procedures at start
 '
 '----------------------------------------------------
-$include "common_1.9\_Main.bas"
+$include "common_1.11\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Loop_start.bas"
+$include "common_1.11\_Loop_start.bas"
 '
 '----------------------------------------------------
 '
@@ -159,20 +158,20 @@ End If
 '
 '----------------------------------------------------
 '
-$include "common_1.9\_Main_end.bas"
+$include "common_1.11\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.9\_Reset.bas"
+$include "common_1.11\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_init.bas"
+$include "common_1.11\_init.bas"
 '
 '----------------------------------------------------
-$include "common_1.9\_Subs.bas"
+$include "common_1.11\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -183,7 +182,6 @@ Civ_watchdog = 0
 Civ_cmd = 0
 Answer_pointer = 1
 Set Pin_rx_enable
-Gosub Reset_tx
 Return
 '
 Civ_print:
@@ -206,42 +204,22 @@ Return
 '
 $include _analyze_civ.bas
 '
-$include "_command.bas"
+$include "_Commands.bas"
+$include "common_1.11\_Commands_required.bas"
+#IF Command_is_2_byte = 0
+   $include "common_1.11\_Commandparser.bas"
+#ELSE
+$include "common_1.11\_Command0.bas"
 '
-'----------------------------------------------------
 Commandparser:
-'checks to avoid commandbuffer overflow are within commands !!
-#IF Command_is_2_byte = 1
-   $include "common_1.9\_Commandparser.bas"
-#ENDIF
-'
-   If Command_b(1) < &H0A Then
-      On Command_b(1) Gosub 00,01,02,03,04,05,06,07,08,09,0A
-   Else
-      Select Case Command_b(1)
-'-----------------------------------------------------
-
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_240.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_252.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_253.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_254.bas"
-'
-'-----------------------------------------------------
-$include "common_1.9\_Command_255.bas"
-'
-'-----------------------------------------------------
-         Case Else
-            Gosub Command_received
-      End Select
-   End If
+$include __select_command.bas
 Return
 '
+End
+#ENDIF
+'
+'-----------------------------------------------------
+' End
+'
 $include "_announcements.bas"
+'
