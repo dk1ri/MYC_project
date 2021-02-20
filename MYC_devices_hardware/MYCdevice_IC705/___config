@@ -1,0 +1,27 @@
+# sequence must not be changed !!!
+# line 0 filename for announcements
+___announcements
+# line 1: time for command timeout (seconds)
+10
+# line 2 filename for logfile
+___logfile
+# line 3: size of logfile; all lines are purged then
+100
+# line 4: testmode
+1
+# line 5: Name
+IC705
+# line 6: Number
+1
+# line 7: Terminal active
+1
+# line 8:Telnet active
+1
+# line 9: Telnet Port
+23
+# line10: Com Port number
+6
+# line 11: CIV Adress (0x94 = 148)
+164
+# line12: CIV timeout (seconds)
+1
