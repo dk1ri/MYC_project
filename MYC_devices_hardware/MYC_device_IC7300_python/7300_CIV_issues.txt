@@ -1,0 +1,56 @@
+ICOM CIV Issues for IC7300
+20210308
+Author: DK1RI
+
+Used IC7300 firmware version: 1.40
+CIV Manual Version: Juli 2020
+additions coming with firmware 1.40
+IC705 converter programm (python) version: V01.4
+
+You will find some more details in http://dk1ri.de/IC705_CIV_issues.txt
+
+missing CIV codes for:
+preset function
+for ciV command 28: clear
+recorder play / start
+
+issues by CIV code:
+00		is no send; should read: sent by radio without command if 1a05071=1
+01		is no send; should read: sent by radio without command if 1a05071=1
+07		is send only, A0 B0 in VFO mode only
+08		typing error with 0001 to 0109
+0b		in memory mode only
+0e23		civ error ?
+0eb0		memory mode only
+0exx		all are send only
+0eb1		memory mode only
+13		send only
+1406		range is 8 to f8 for read (do not match write 00/ff)
+1407 1408	range is 2 to fd for read (do not match write 00 / ff)
+1409		range is 1 to fe or read (do not match write 00 / ff)
+140e		range is 0b to f4 for read (do not match write 00 / ff)
+140f		range is 1 to fe for read (do not match write 00 / ff)
+1612		range 1 -3
+1642 1643	1642=1 set 1643=0; 1643=1 set 1642=0
+1656 		ssb and cw mode only
+17		send only
+18 		send only
+1a00		changes have effect not before this memory is calles again.
+		civ error if memory is empty
+		the black part of description is for split
+1a01		bandstack read write: frequency, mode , data, tone and tsql not frequency only (mentioned in the IC705 manual)
+1a052003 04 	up down front key customization missing on radio
+1a04		agc for mid only
+1a050112 - 150 	limitation missing: fhigh > flow + 5k
+1b00 - 03	only some frequencies as given in the manual
+2700		do not work
+2711		cannot bet set to 1 (so 2700 do not work) require 115kB , but cannot be set manually (auto and win 10 set to 115k do not work)
+2714		read: civ error. 271400 works read and write (one byte data),
+2715		read civ error. 271500 works. 1st byte of 4byte data (page27) is subcommand not data
+2716		read: civ error. 271600 works read and write (one byte data),
+2717		read: civ error. 271700 works read and write (one byte data),
+2719		read civ error. 271900 works. 1st byte of 4byte data (page27) is subcommand not data
+271a		read: civ error. 271a00 works read and write (one byte data), change the speed
+		but do not change waterfall speed menu entry.
+281e		identcal to 1a050112 – 1a050150 ?? reason?
+28		is send only , workes only if memory is not empty
