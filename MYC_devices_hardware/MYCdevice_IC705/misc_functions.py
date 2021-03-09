@@ -1,5 +1,5 @@
 """
-name : misc_functions.py
+name : misc_functions.py IC705
 last edited: 20210220
 misc functions
 """
@@ -55,24 +55,6 @@ def int_to_bytes(integ, length):
     return s2
 
 
-def int_to_ba(integ, length):
-    # convert a integer to a bytearray of of int (0-255) with a length  ( 1, 2, 4, 8 )
-    # length 0: use CR tokenlength
-    if length == 0:
-        length = 2
-    ba = bytearray([])
-    i = 0
-    while i < length:
-        ba.append(0)
-        i += 1
-    i = 0
-    while i < length:
-        ba[length - i - 1] = integ & 0xFF
-        integ >>= 8
-        i += 1
-    return ba
-
-
 def int_to_list(integ, le):
     # convert a integer to a list of of int (0-255) with a length 1 or 2
     # length 0: use CR tokenlength
@@ -122,7 +104,7 @@ def calculate_length_of_commandtoken(number):
 
 
 def write_log(line):
-    # check number of lines
+    v_icom_vars.error_cmd_no = v_icom_vars.command_no
     handle = open(v_icom_vars.log_file)
     i = 0
     log = []
@@ -139,7 +121,7 @@ def write_log(line):
             handle.write(log[pos])
             pos += 1
         handle.close()
-    temp = time.asctime(time.localtime(time.time())) + " messagenumber: " + str(v_icom_vars.error_cmd_no) + " : " + line
+    temp = time.asctime(time.localtime(time.time())) + " commandnumber: " + str(v_icom_vars.error_cmd_no) + " : " + line
     if v_icom_vars.test_mode == 1:
         print(temp)
     handle = open(v_icom_vars.log_file, "a")
@@ -341,7 +323,7 @@ def bcd_plusminus_to_int(line, start, max, bcdbytes, commandbytes, divisor):
         intvalue += max
     else:
         intvalue = max - intvalue
-    temp1 = int_to_ba(intvalue, commandbytes)
+    temp1 = intvalue.to_bytes(commandbytes, byteorder="big")
     return temp1
 
 
@@ -350,7 +332,7 @@ def check_and_convert_alphabet(a, type):
     aa = 255
     if type == 0:
         # nearly all , only check ALPHA 0
-        if 0x1f < a < 0x7f:
+        if 0x20 < a < 0x7f:
             aa = a
         else:
             aa = 255
@@ -384,6 +366,36 @@ def check_and_convert_alphabet(a, type):
         elif a == 0x20:
             aa = a
         elif a == 0x2f:
+            aa = a
+        else:
+            aa = 255
+    elif type == 5:
+        # call sign ALPHA 5 (1a02)
+        if (a > 63) and (a < 91):
+            aa = a
+        elif (a > 45) and (a < 58):
+            aa = a
+        elif a == 0x20:
+            aa = a
+        elif a == 0x2a:
+            aa = a
+        elif a == 0x2c:
+            aa = a
+        elif a == 0x5e:
+            aa = a
+        elif  a == 0x3f:
+            aa = a
+        else:
+            aa = 255
+    elif type == 6:
+        # call sign ALPHA 5 (1a02)
+        if (a > 63) and (a < 91):
+            aa = a
+        elif (a > 45) and (a < 58):
+            aa = a
+        elif a == 0x2d:
+            aa = a
+        elif a == 0x2e:
             aa = a
         else:
             aa = 255

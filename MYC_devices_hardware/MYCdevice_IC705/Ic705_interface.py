@@ -1,11 +1,12 @@
 """
 name : Ic705_interface.py
-Version 01.3, 20210220
+Version 01.4, 20210306
 Purpose : Program to control the IC-705 radio
 The program supports the MYC protocol
+Details of the MYC protocol can be found in http://dk1ri.de/myc/Description.pdf
 developed using PyCharm
-tested with win Python >= 3.6
-Should be used with raspberry Pi Hardware
+tested with win Python >= 3.6 under Win10
+Should be used with raspberry Pi Hardware (later)
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 
@@ -17,24 +18,27 @@ civ echo = 0
 transceive = 1
 Vfo: vfoa
 mode: USB
-So it is up to the SK to read the start configuration
+So it is up to the SK to read the start configuration of the radio
 The radio do not send configuration changes except mode and frequency, if it is operated manually;
 so manual modifying is not recommended during operating this program.
 
 Most commands work this way:
-command is received by SK -> send to civ buffer (overwrite), SK input deleted -> civ buffer to civ
+command is received by SK -> execute (send to civ buffer (overwrite)) ->, delete SK input deleted, lock SK input
+ -> civ buffer to civ, unlock SK input
+
 in case of answers: civ answers analyzed and sent to all (overwrite), civ data deleted
 
 Some operate commands require the actual status of this or other functions to work. see v_icom_vars.ask_content variable
 
 testmode can be set in v_icom_vars.test_mode. Should be set to 1 for manual command entry.
 
+command 271e is not used , because it is the same as 1a050188 - 0238
+
 Missing, (things to do):
 command 1044 1045 not ready
 command 1052 - 1072: additional tests required
 command 1078 - 1092 additional tests required
 command 1093: 2300: Time not decoded
-command 1132 additional tests required
 
 """
 # general
@@ -108,7 +112,7 @@ while 1:
                 write_log("com port " + v_icom_vars.comport + " not found")
                 v_icom_vars.check_usb_again = 0
             v_icom_vars.Civ_out = bytearray([])
-            # lock inpit during civ handling
+            # lock input during civ handling
             v_icom_vars.input_locked = 1
 
         # read icom port

@@ -1,6 +1,6 @@
 """"
-name: v_command_answer.py
-last edited: 20210220
+name: v_command_answer.py IC705
+last edited: 20210221
 list for command and answers
 """
 
@@ -883,7 +883,8 @@ command =  {256: command256,
             1128: u_command1,
             1129: u_command1,
             1130: u_command1,
-            1131: u_command1,
+            1131: nop,
+            1132: nop,
             1133: u_command1,
             1134: nop,
             1135: u_command1,
@@ -938,6 +939,9 @@ command =  {256: command256,
             1184: u_command1,
             1185: u_command1,
             1186: u_command1,
+            1187: command1187,
+            1188: command1188,
+            1189: command1189,
             65520: com240,
             65532: com252,
             65533: com253,
@@ -952,9 +956,10 @@ answer =   {0: answer00,
             3: answer00,
             4: answer01,
             12: answer0c,
-            15: answer0f,
-            16: answer_1_1_b,
-            17: answer17,
+            0x0f: answer0f,
+            0x10: answer_1_1_b,
+	        0x11: answer11,
+            0x17: answer17,
             }
 
 
@@ -1523,7 +1528,6 @@ answer_27 ={0x00: answe2700,
             0x1b: answer_2_1_b,
             0x1c: answer_2_1_b,
             0x1d: answer_2_2_b_0_1,
-            0x1e: answer271e,
             }
 
 

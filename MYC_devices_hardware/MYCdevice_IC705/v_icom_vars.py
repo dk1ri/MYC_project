@@ -1,6 +1,6 @@
 """
-name : v_icom_vars.py
-last edited: 20210220
+name : v_icom_vars.py IC705
+last edited: 20210305
 Specific constants and variables
 """
 # configurable variables (default)
@@ -19,7 +19,6 @@ country = 0
 config_file = "___config"
 announce_list = "___announcements"
 log_file = "___logfile"
-ff_params = "___ffparams"
 logfilesize = 100               # lines
 command_timeout = 10            # seconds waittime between keystrokes
 civ_watchdog_timeout = 1        # seconds
@@ -50,9 +49,9 @@ icom_usb = 0
 """
 ask_content used by commands which require preceding answer command (memory and copy_band_stack)
 operate command:
-0: idle, command will generate ask command and set ask_content to 1. keep sk input
+0: idle, command will generate ask command and set ask_content to 1. copy sk input to lastcommand
 1: wait until got the corresponding answer; copy data to answer_storage, set ask_content to 2
-2: command modify / use answer_storage, send command and set ask_content to 0
+2: get command from lastcommand -> modify / use answer_storage, send command and set ask_content to 0
 answer command:
 4: command will generate ask command and set ask_content to 4. do not keep sk input 
 answerfunction will send answer to SK and set ask_content set to 0
@@ -341,11 +340,12 @@ number_civcommand_chanal4 ={    1:[0x69],
 #
 # country: 0: Germany, 1: US
 # alphabet:
-# 0. no restriction
+# 0. 0x21 - 0x7e
 # 1: symbol 1st digit
-# 2: symbol 2nd digit
 # 3:CW
-# 4: calsign
+# 4: callsign
+# 5: 1a05 memory keyer
+# 6, ntp
 
 #
 # conversion; 0: binary, 1: to 1 byte BCD, 2: to 2byte BCD 3: add 255 to maxvalue
@@ -357,7 +357,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     260: bytearray([0, 2, 0, 0x02]),
                     261: bytearray([0, 2, 0, 0x07]),
                     262: bytearray([0, 3, 0, 0x07]),
-                    263: bytearray([0, 3, 1, 2, 100, 0, 0x08]),
+                    263: bytearray([0, 3, 1, 2, 100, 0, 0x08, 0xA0]),
                     264: bytearray([0, 3, 0, 0x08]),
                     265: bytearray([0, 3, 0, 0x09]),
                     266: bytearray([0, 6, 0, 0x0d]),
@@ -797,7 +797,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     700: bytearray([0, 2, 0, 0x1a, 0x05, 0x01, 0x66]),
                     701: bytearray([0, 3, 1, 0, 1, 0, 0x1a, 0x05, 0x01, 0x67]),
                     702: bytearray([0, 2, 0, 0x1a, 0x05, 0x01, 0x67]),
-                    703: bytearray([0, 64, 11, 0, 0x1a, 0x05, 0x01, 0x68]),
+                    703: bytearray([0, 64, 11, 6, 0x1a, 0x05, 0x01, 0x68]),
                     704: bytearray([0, 2, 0, 0x1a, 0x05, 0x01, 0x68]),
                     705: bytearray([0, 3, 1, 0, 1, 0, 0x1a, 0x05, 0x01, 0x69]),
                     706: bytearray([0, 2, 0, 0x1a, 0x05, 0x01, 0x69]),
@@ -1225,7 +1225,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1128: bytearray([0, 2, 0, 0x27, 0x1c]),
                     1129: bytearray([0, 3, 1, 0, 1, 0, 0x27, 0x1d, 0x00]),
                     1130: bytearray([0, 2, 0, 0x27, 0x1d, 0x00]),
-                    1131: bytearray([0, 3, 1, 0, 1, 0, 0x27, 0x1e]),
+                    1131: bytearray([0, 2, 0, 0x27, 0x1e]),
                     1132: bytearray([0, 2, 0, 0x27, 0x1e]),
                     1133: bytearray([0, 3, 1, 0, 8, 0, 0x28, 0x00]),
                     1134: bytearray([0, 2, 0, 0x28, 0x00]),
@@ -1280,6 +1280,9 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1184: bytearray([0, 2, 0, 0x16, 0x5d]),
                     1185: bytearray([0, 3, 1, 0, 31, 0, 0x1a, 0x03]),
                     1186: bytearray([0, 2, 0, 0x1a, 0x03]),
+                    1187: bytearray([0, 3, 0]),
+                    1188: bytearray([0, 2, 0]),
+                    1189: bytearray([0, 2, 0]),
                     }
 
 

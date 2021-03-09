@@ -1,5 +1,5 @@
 ICOM CIV Issues and comments for IC705
-202102018
+20210304
 Author: DK1RI
 
 Used IC705 firmware version: 1.20
@@ -62,12 +62,13 @@ most picture functions (but not all of them make sense with rmote control)
 1a04 is for agc mid only, fast and slow missing
 wlan configuration
 bluetooth configuration
+programmed scan edge
 
 
 issues by CIV code:
 00		is no send; should read: sent by radio without command if 1a05131=1
 01		is no send; should read: sent by radio without command if 1a05131=1
-07		is send only, A0 B0 in VO mode only
+07		is send only, A0 B0 in VFO mode only
 0800 - 99	something wrong with the call chanals page 3. 080100: CIV error 081000 CIV error
 08a00100	CIV error
 0b		in memory mode only
@@ -79,16 +80,17 @@ issues by CIV code:
 1409		range is 1 to fe or read (do not match write 00 / ff)
 140e		range is 0b to f4 for read (do not match write 00 / ff)
 140f		range is 1 ti fe for read (do not match write 00 / ff)
-
+1612		range 1 -3
 165b		works in all modes
 1656 		ssb and cw mode only
 1642 1643	1642=1 set 1643=0; 1643=1 set 1642=0
 17		send only
 18 		send only
 1a00		empty memory read : ff (also when read)
+the black part of description is for split
 		13: send modified data mode not valid for all modes (DV)
 		14: send modified duplex tone not valid for all modes
-		14 lower nibble: tonerequires FM; ok, but do not change
+		14 lower nibble: tone requires FM; ok, but do not change
 		15: send modified digital squelch ok, but no change (DV only)
 		16-24: repeater tone , tone sqelch, DCTS requires FM; ok but do not change
 		19-22: typing error: is tone squelch
@@ -96,7 +98,7 @@ issues by CIV code:
 		29 - 52: send modified UR R1 R2 callsign ok, but no change (DV only)
 1a04		agc for mid only
 1a050046	send / read ok, but influence to radio ?
-1a050059	USA only, not mentioned in CIV manual
+1a050049	USA only, not mentioned in CIV manual
 1a050053	typing error: english /japanese mixed up
 1a050089	work with 0 - 511 instead of 0 - 255
 1a050105 106	send valid only if log = 0 AND history = 0 (1a050103 04)

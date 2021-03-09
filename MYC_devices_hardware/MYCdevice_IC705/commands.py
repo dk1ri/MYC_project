@@ -1,6 +1,6 @@
 """
-name: commands.py
-last edited: 20210220
+name: commands.py IC705
+last edited: 20210304
 handling of sk input commands
 output to civ
 """
@@ -20,7 +20,6 @@ import serial
 
 
 def nop(line, input_device, tokennumber):
-    v_sk.len[input_device][0] = len(line)
     return 1
 
 
@@ -211,7 +210,6 @@ def u_command1(line, input_device, tokennumber):
             # add value
             v_icom_vars.Civ_out.extend(bytearray([temp[3]]))
             v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-        v_sk.len[input_device][0] = temp[1]
     else:
         # string
         if len(line) > 2:
@@ -235,7 +233,6 @@ def u_command1(line, input_device, tokennumber):
                     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
                 else:
                     v_icom_vars.Civ_out = bytearray([])
-            v_sk.len[input_device][0] = length + 3
     return 1
 
 
@@ -304,7 +301,6 @@ def u_command2(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend(int_to_bcd(parameter3, 2))
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
         v_sk.parameter = line[2]
-    v_sk.len[input_device][0] = temp[1]
     return 1
 
 
@@ -326,7 +322,6 @@ def u_command3(line, input_device, tokennumber):
     v_icom_vars.Civ_out.extend(int_to_bcd(parameter1 * 10, 3))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
     v_sk.parameter = line[2]
-    v_sk.len[input_device][0] = temp[1]
     return 1
 
 
@@ -406,12 +401,14 @@ def command_memory(line, input_device, tokennumber):
     else:
         if temp > 20007:
             return 2
-    # split the memoryadrress
+    # split the memoryadress
+    v_icom_vars.command_storage = 0
     if temp > 20003:
         # call split, 20004 - 20007
         v_icom_vars.vfo_split = 1
         group = [0x01, 0x00]
         memory = [temp - 2004]
+        v_icom_vars.command_storage = 47
     elif temp > 1003:
         # no call, 10004 - 20003
         v_icom_vars.vfo_split = 1
@@ -419,7 +416,7 @@ def command_memory(line, input_device, tokennumber):
         memory = int_to_bcd((temp - 1003) % 100, 2)
     elif temp > 1999:
         # call  no split 10000 - 10003
-        v_icom_vars.vvfo_split = 0
+        v_icom_vars.vfo_split = 0
         group = [0x01, 0x00]
         memory = [0x0, temp - 1999]
     else:
@@ -427,7 +424,6 @@ def command_memory(line, input_device, tokennumber):
         v_icom_vars.vfo_split = 0
         group = int_to_bcd(temp // 100, 2)
         memory = int_to_bcd(temp % 100, 2)
-        v_icom_vars.command_storage = vfo_split
     # start getting memorycontent
     header(tokennumber)
     v_icom_vars.Civ_out.extend(group)
@@ -435,6 +431,23 @@ def command_memory(line, input_device, tokennumber):
     v_icom_vars.Civ_out.extend([0xfd])
     v_icom_vars.ask_content = 1
     return 1
+
+
+def commandou(line, input_device, tokennumber):
+    # for simple ou (0  and 1 only) no civ parameter
+    if len(line) < 3:
+        return 0
+    temp = v_icom_vars.token_civ_code[tokennumber]
+    if temp[0] != v_icom_vars.country:
+        return 2
+    if line[2] > 1:
+        return 2
+    if line[2] == 0:
+        return 1
+    else:
+        header(tokennumber)
+        v_icom_vars.Civ_out.extend(bytearray([0xfd]))
+        return 1
 
 
 def command256(line, input_device, tokennumber):
@@ -448,12 +461,11 @@ def command256(line, input_device, tokennumber):
         header(tokennumber)
         v_icom_vars.Civ_out.extend(temp)
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-        v_sk.len[input_device][0] = len(line)
     return 1
 
 
 def command258(line, input_device, tokennumber):
-    # frequency
+    # mode
     if len(line) < 4:
         return 0
     if line[2] > 9:
@@ -466,7 +478,7 @@ def command258(line, input_device, tokennumber):
     header(tokennumber)
     v_icom_vars.Civ_out.extend(line[2:4])
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = len(line)
+    v_icom_vars.last_mode = line[2]
     return 1
 
 
@@ -484,7 +496,7 @@ def command261(line, input_device, tokennumber):
         # memory
         v_icom_vars.Civ_out[4] = 8
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 3
+    v_icom_vars.last_vfo_mem = line[2]
     return 1
 
 
@@ -502,7 +514,8 @@ def command262(line, input_device, tokennumber):
     else:
         v_icom_vars.Civ_out.extend([0xb0])
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 3
+    if line[2] == 0 or line[2] == 1:
+        v_icom_vars.last_vfo_mem = line[2]
     return 1
 
 
@@ -515,7 +528,6 @@ def command264(line, input_device, tokennumber):
     header(tokennumber)
     v_icom_vars.Civ_out.extend(int_to_bcd(line[2] + 1, 2))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -525,18 +537,18 @@ def command265(line, input_device, tokennumber):
         return 0
     if line[2] > 3:
         return 2
-    header(tokennumber)
     if line[2] == 0:
-        v_icom_vars.Civ_out = bytearray([])
-    elif line[2] == 1:
-        v_icom_vars.Civ_out[4] = 0x09
-    elif line[2] == 2:
-        v_icom_vars.Civ_out[4] = 0x0a
-    elif line[2] == 3:
-        v_icom_vars.Civ_out[4] = 0x0b
-    v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 3
-    return 1
+        return 1
+    else:
+        header(tokennumber)
+        if line[2] == 1:
+            v_icom_vars.Civ_out[4] = 0x09
+        elif line[2] == 2:
+            v_icom_vars.Civ_out[4] = 0x0a
+        elif line[2] == 3:
+            v_icom_vars.Civ_out[4] = 0x0b
+        v_icom_vars.Civ_out.extend(bytearray([0xfd]))
+        return 1
 
 
 def command266(line, input_device, tokennumber):
@@ -549,7 +561,6 @@ def command266(line, input_device, tokennumber):
     header(tokennumber)
     v_icom_vars.Civ_out.extend(temp)
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 5
     return 1
 
 
@@ -567,7 +578,6 @@ def command268(line, input_device, tokennumber):
     else:
         v_icom_vars.Civ_out.extend([line[2] + 28])
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -582,7 +592,6 @@ def command273(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend([0xd0, 0xfd])
     else:
         v_icom_vars.Civ_out.extend([0xd3, 0xfd])
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -597,7 +606,6 @@ def command274(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend([line[2], 0xfd])
     else:
         v_icom_vars.Civ_out.extend([line[2] + 14, 0xfd])
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -612,7 +620,6 @@ def command278(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend([0x00, 0xfd])
     else:
         v_icom_vars.Civ_out.extend([0x20, 0xfd])
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -632,12 +639,11 @@ def command363(line, input_device, tokennumber):
     temp1 = 0
     temp2 = 4
     while temp1 < cwlen:
-        if check_and_convert_alphabet(line[temp2], 3):
+        if check_and_convert_alphabet(line[temp2], 5):
             v_icom_vars.Civ_out.extend(bytearray([line[temp2]]))
         temp1 += 1
         temp2 += 1
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = cwlen + 4
     return 1
 
 
@@ -651,7 +657,6 @@ def command373(line, input_device, tokennumber):
     v_icom_vars.Civ_out.extend(int_to_bcd(line[2], 1))
     v_icom_vars.Civ_out.extend(int_to_bcd(line[3] + 5, 1))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -666,7 +671,6 @@ def command409(line, input_device, tokennumber):
     line[2] += line[3]
     v_icom_vars.Civ_out.extend([line[2]])
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -679,7 +683,6 @@ def command461(line, input_device, tokennumber):
     if ret == 1:
         v_icom_vars.Civ_out.extend(bcd)
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-        v_sk.len[input_device][0] = len(line)
     else:
         return ret
     return 1
@@ -696,7 +699,6 @@ def command697(line, input_device, tokennumber):
     v_icom_vars.Civ_out.extend(int_to_bcd(line[3] + 1, 1))
     v_icom_vars.Civ_out.extend(int_to_bcd(line[4] + 1, 1))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = len(line)
     return 1
 
 
@@ -709,7 +711,6 @@ def command699(line, input_device, tokennumber):
     v_icom_vars.Civ_out.extend(int_to_bcd(line[2], 1))
     v_icom_vars.Civ_out.extend(int_to_bcd(line[3], 1))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = len(line)
     return 1
 
 
@@ -734,7 +735,6 @@ def command707(line, input_device, tokennumber):
         negative = 1
     v_icom_vars.Civ_out.extend(bytearray([negative]))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = len(line)
     return 1
 
 
@@ -783,7 +783,6 @@ def command743_775(line, lf, span, tokennumber, input_device):
     v_icom_vars.Civ_out.extend(command_frequency4(lf + min))
     v_icom_vars.Civ_out.extend(command_frequency4(lf + min + span))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 7
     return 1
 
 
@@ -798,7 +797,6 @@ def command744(line, input_device, tokennumber):
     temp1 = bcd_to_int(v_icom_vars.Civ_out[7]) + line[2]
     v_icom_vars.Civ_out[7] = int_to_bcd_int(temp1)
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -817,7 +815,6 @@ def command795(line, input_device, tokennumber):
     header(tokennumber)
     v_icom_vars.Civ_out.extend(int_to_bcd(number + temp[7], 2))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -860,7 +857,6 @@ def command871(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend(bytearray([plusminus, 0xfd]))
     else:
         v_icom_vars.Civ_out.extend([0xff, 0xff, 0xff, 0xfd])
-    v_sk.len[input_device][0] = 13
     return 1
 
 
@@ -896,7 +892,6 @@ def command881(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend([line[2]])
         v_icom_vars.Civ_out.extend([line[3]])
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -912,7 +907,6 @@ def answer882(line, input_device, tokennumber):
     header(tokennumber)
     v_icom_vars.Civ_out[7] += line[2]
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -960,7 +954,6 @@ def command887(line, input_device, tokennumber):
             temp2 += 1
             temp1 += 1
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-        v_sk.len[input_device][0] = line[3] + 4
     else:
         temp2 = 3
         temp1 = 0
@@ -972,7 +965,6 @@ def command887(line, input_device, tokennumber):
                 temp1 += 1
                 temp2 += 1
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-        v_sk.len[input_device][0] = line[3] + 3
     if one_min == 0:
         v_icom_vars.Civ_out = []
         return 2
@@ -995,7 +987,6 @@ def answer888(line, input_device, tokennumber):
     v_icom_vars.Civ_out[6] = subcommand_s[0]
     v_icom_vars.Civ_out[7] = subcommand_s[1]
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -1015,7 +1006,6 @@ def command979(line, input_device, tokennumber):
     group *= 100
     v_icom_vars.Civ_out.extend(int_to_bcd(group, 3))
     v_icom_vars.Civ_out.extend([0xfd])
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -1035,7 +1025,6 @@ def comamnd1017(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend([0x01])
         v_icom_vars.Civ_out.extend([line[2]])
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -1051,7 +1040,6 @@ def command1026(line, input_device, tokennumber):
     header(tokennumber)
     v_icom_vars.Civ_out.extend(bytearray(v_icom_vars.tone_frequency[line[2]]))
     v_icom_vars.Civ_out.extend([0xfd])
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -1077,7 +1065,6 @@ def command1030(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend([0x11])
     v_icom_vars.Civ_out.extend(bytearray(v_icom_vars.dtcs_frequency[line[3]]))
     v_icom_vars.Civ_out.extend([0xfd])
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -1105,7 +1092,6 @@ def command1044(line, input_device, tokennumber):
     v_icom_vars.Civ_out.extend(int_to_3bcd((lf + min) * 10))
     v_icom_vars.Civ_out.extend(int_to_3bcd((lf + min + span) * 10))
     v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 7
     return 1
 
 
@@ -1132,7 +1118,6 @@ def command1054(line, input_device, tokennumber):
         copy_and_fill(line, 6 + len1 + len2 + len3, len4, 8, 4)
         copy_and_fill(line, 7 + len1 + len2 + len3 + len4, len5, 8, 4)
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4 + len1 + len2 + len3 + len4 + len5
     return 1
 
 
@@ -1155,7 +1140,6 @@ def command1059(line, input_device, tokennumber):
         copy_and_fill(line, 4 + len1, len2, 8, 0)
         copy_and_fill(line, 5 + len1 + len2, len3, 4, 0)
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4 + len1 + len2 + len3
     return 1
 
 
@@ -1177,7 +1161,6 @@ def command1069(line, input_device, tokennumber):
         copy_and_fill(line, 3, len1, 9, 4)
         copy_and_fill(line, 4 + len1, len2, 43, 4)
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-    v_sk.len[input_device][0] = 4 + len1 + len2 + len3 + len4 + len5
     return 1
 
 
@@ -1195,7 +1178,6 @@ def command1072(line, input_device, tokennumber):
     if ret == 1:
         v_icom_vars.Civ_out.extend(temp)
         v_icom_vars.Civ_out.extend(bytearray([0xfd]))
-        v_sk.len[input_device][0] = len(line)
     else:
         return ret
     return 1
@@ -1215,7 +1197,6 @@ def command1094(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend(bytearray([0x03, 0xfd]))
     else:
         v_icom_vars.Civ_out.extend(bytearray([line[2], 0xfd]))
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -1234,7 +1215,6 @@ def command1102(line, input_device, tokennumber):
     v_icom_vars.Civ_out.extend([line[2]])
     v_icom_vars.Civ_out.extend(freq)
     v_icom_vars.Civ_out.extend([0xfd])
-    v_sk.len[input_device][0] = 7
     return 1
 
 
@@ -1257,7 +1237,6 @@ def command1104(line, input_device, tokennumber):
         dta = 1
     v_icom_vars.Civ_out.extend(line[2:4])
     v_icom_vars.Civ_out.extend([dta, line[4] + 1, 0xfd])
-    v_sk.len[input_device][0] = 5
     return 1
 
 
@@ -1272,7 +1251,6 @@ def command1115(line, input_device, tokennumber):
         return 2
     header(tokennumber)
     v_icom_vars.Civ_out.extend(v_icom_vars.span_center_mode[line[2]])
-    v_sk.len[input_device][0] = 3
     return 1
 
 
@@ -1299,7 +1277,6 @@ def command1121(line, input_device, tokennumber):
     v_icom_vars.Civ_out.extend(int_to_bcd(line[2], 1))
     v_icom_vars.Civ_out.extend([db_05])
     v_icom_vars.Civ_out.extend(bytearray([pm, 0xfd]))
-    v_sk.len[input_device][0] = 5
     return 1
 
 
@@ -1308,7 +1285,6 @@ def answercommand_1136(line, input_device, tokennumber):
     v_icom_vars.ask_content = 0
     ret = command_memory(line, input_device, tokennumber)
     v_icom_vars.ask_content = 4
-    v_sk.len[input_device][0] = 4
     return ret
 
 
@@ -1336,7 +1312,6 @@ def command1137(line, input_device, tokennumber):
                 v_icom_vars.Civ_out[11:16] = frequ
             else:
                 v_icom_vars.Civ_out[58:63] = frequ
-            v_sk.len[input_device][0] = 8
             v_icom_vars.ask_content = 0
             return 1
         else:
@@ -1366,7 +1341,6 @@ def command1139(line, input_device, tokennumber):
             v_icom_vars.Civ_out[10] = temp
         else:
             v_icom_vars.Civ_out[57] = temp
-        v_sk.len[input_device][0] = 6
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1394,7 +1368,6 @@ def command1141(line, input_device, tokennumber):
             v_icom_vars.Civ_out[16:18] = [line[4], line[5] + 1]
         else:
             v_icom_vars.Civ_out[63:65] = [line[4], line[5] + 1]
-        v_sk.len[input_device][0] = 6
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1420,7 +1393,6 @@ def command1143(line, input_device, tokennumber):
             v_icom_vars.Civ_out[18] = line[4]
         else:
             v_icom_vars.Civ_out[65] = line[4]
-        v_sk.len[input_device][0] = 5
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1447,7 +1419,6 @@ def command1145(line, input_device, tokennumber):
             v_icom_vars.Civ_out[19] = temp
         else:
             v_icom_vars.Civ_out[66] = temp
-        v_sk.len[input_device][0] = 6
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1475,7 +1446,6 @@ def command1147(line, input_device, tokennumber):
             v_icom_vars.Civ_out[20] = line[4]
         else:
             v_icom_vars.Civ_out[67] = line[4] + 16
-        v_sk.len[input_device][0] = 5
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1503,13 +1473,12 @@ def command1149(line, input_device, tokennumber):
         else:
             v_icom_vars.Civ_out[68] = 0
             v_icom_vars.Civ_out[69:71] = v_icom_vars.tone_frequency[line[4]]
-        v_sk.len[input_device][0] = 5
         v_icom_vars.ask_content = 0
         return 1
 
 
 def command1151(line, input_device, tokennumber):
-    # memory memory repeater tone
+    # memory memory tone squelch
     if v_icom_vars.ask_content == 0:
         return command_memory(line, input_device, tokennumber)
     elif v_icom_vars.ask_content == 1:
@@ -1531,7 +1500,6 @@ def command1151(line, input_device, tokennumber):
         else:
             v_icom_vars.Civ_out[71] = 0
             v_icom_vars.Civ_out[72:74] = v_icom_vars.tone_frequency[line[4]]
-        v_sk.len[input_device][0] = 5
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1559,7 +1527,6 @@ def command1153(line, input_device, tokennumber):
         else:
             v_icom_vars.Civ_out[74] = v_icom_vars.dtcs_pol[line[4]]
             v_icom_vars.Civ_out[75:77] = v_icom_vars.dtcs_frequency[line[5]]
-        v_sk.len[input_device][0] = 6
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1585,7 +1552,6 @@ def command1155(line, input_device, tokennumber):
             v_icom_vars.Civ_out[30] = int_to_bcd_int(line[4])
         else:
             v_icom_vars.Civ_out[77] = int_to_bcd_int(line[4])
-        v_sk.len[input_device][0] = 5
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1613,7 +1579,6 @@ def command1157(line, input_device, tokennumber):
             v_icom_vars.Civ_out[31:34] = frequ
         else:
             v_icom_vars.Civ_out[78:81] = frequ
-        v_sk.len[input_device][0] = 5
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1655,7 +1620,6 @@ def command1159_65(line, input_device, tokennumber, length, alph, start, split):
                 v_icom_vars.Civ_out[start:start + length] = temp
             else:
                 v_icom_vars.Civ_out[start + 47:start + 47 + length] = temp
-        v_sk.len[input_device][0] = 5 + line[4]
         v_icom_vars.ask_content = 0
         return 1
 
@@ -1692,7 +1656,6 @@ def command1167(line, input_device, tokennumber):
     header(tokennumber)
     v_icom_vars.Civ_out.extend(int_to_bcd((line[2] % 15) + 1, 1))
     v_icom_vars.Civ_out.extend([(line[2] // 15) + 1, 0xfd])
-    v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -1722,7 +1685,6 @@ def command1168(line, input_device, tokennumber):
         v_icom_vars.Civ_out.extend([2])
         v_icom_vars.Civ_out.extend(v_icom_vars.answer_storage)
         v_icom_vars.ask_content = 0
-        v_sk.len[input_device][0] = 4
     return 1
 
 
@@ -1741,7 +1703,26 @@ def command1183(line, input_device, tokennumber):
     else:
         v_icom_vars.Civ_out.extend([line[2] + 2])
     v_icom_vars.Civ_out.extend([0xfd])
-    v_sk.len[input_device][0] = 4
+    return 1
+
+
+def command1187(line, input_device, tokennumber):
+    # send to sk directly
+    v_sk.info_to_all = bytearray([0x04, 0xa3])
+    v_sk.info_to_all.extend([v_icom_vars.last_vfo_mem])
+    return 1
+
+
+def command1188(line, input_device, tokennumber):
+    # send to sk directly
+    v_sk.info_to_all = bytearray([0x04, 0xa4])
+    v_sk.info_to_all.extend([v_icom_vars.last_mode])
+    return 1
+
+
+def command1189(line, input_device, tokennumber):
+    # send to sk directly
+    v_sk.info_to_all = bytearray([0x04, 0x05, 0x0])
     return 1
 
 
@@ -1767,7 +1748,6 @@ def com240(line, input_device, tokennumber):
             if start_line >= v_announcelist.number_of_lines:
                 start_line = 0
         v_sk.info_to_all.extend(output)
-    v_sk.len[input_device][0] = 6
     return 1
 
 
@@ -1780,13 +1760,11 @@ def com252(line, input_device, tokennumber):
         temp += " : " + v_icom_vars.last_error_msg
     v_sk.info_to_all.extend(bytearray([len(temp)]))
     v_sk.info_to_all.extend(str_to_bytearray(temp))
-    v_sk.len[input_device][0] = 2
     return 2
 
 
 def com253(line, input_device, tokennumber):
     v_sk.info_to_all = bytearray([0xff, 0xfd, 0x04])
-    v_sk.len[input_device][0] = 2
     return 1
 
 
@@ -1795,7 +1773,6 @@ def com254(line, input_device, tokennumber):
         return 0
     if line[2] > 5:
         return 2
-    v_sk.len[input_device][0] = 4
     if line[2] == 0:
         length = line[3]
         if length > 20 or length == 0:
@@ -1805,7 +1782,6 @@ def com254(line, input_device, tokennumber):
         if len(line) > length + 4:
             return 2
         v_icom_vars.device_name = ba_to_str(line[5:])
-        v_sk.len[input_device][0] = 4 + length
     if line[2] == 1:
         v_icom_vars.device_number = line[3]
     if line[2] == 2:
@@ -1861,5 +1837,4 @@ def com255(line, input_device, tokennumber):
         v_sk.info_to_all.extend(bytearray([v_icom_vars.telnet_port]))
     elif line[2] == 5:
         v_sk.info_to_all.extend(bytearray([v_icom_vars.comportnumber]))
-    v_sk.len[input_device][0] = 3
     return 1

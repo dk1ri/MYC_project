@@ -1,5 +1,5 @@
 """
-name : analyze.py
+name : analyze.py IC705
 last edited: 20210220
 command handling, subprograms for sk and civ
 """
@@ -25,6 +25,9 @@ def poll_sk_input_buffer():
     input_device = 0
     # something received from SK ... ?
     while input_device < len(v_sk.inputline):
+        if v_icom_vars.ask_content == 2:
+            # copy v_sk.last_command to input
+            v_sk.inputline[input_device] = v_sk.last_command[input_device]
         line = v_sk.inputline[input_device]
         # if input data is correct and complete appropriate action is called
         if len(line) > 0:
@@ -34,12 +37,10 @@ def poll_sk_input_buffer():
                 v_sk.info_to_all = bytearray([0x00, len(v_announcelist.full[0])])
                 v_sk.info_to_all.extend([ord(el) for el in v_announcelist.full[0][1:]])
                 # necessary to delete token:
-                v_sk.len[input_device][0] = 1
                 finish = 1
             else:
                 # commandtoken ready?
-                got_bytes = len(line)
-                if got_bytes >= 2:
+                if len(line) >= 2:
                     tokennumber = int.from_bytes(line[0:2], byteorder='big', signed=False)
                     v_sk.last_token = bytearray([line[0], line[1]])
                     try:
@@ -56,21 +57,27 @@ def poll_sk_input_buffer():
             else:
                 if finish == 2:
                     # parameter error
-                    write_log(v_error_msg.parameter_error + ba_to_str(v_sk.inputline[input_device]))
-                    v_sk.inputline[input_device] = bytearray([])
-                    v_icom_vars.error_cmd_no = v_icom_vars.command_no
-                else:
+                    temps = ""
+                    count = 0
+                    while count < len(v_sk.inputline[input_device]):
+                        temp = v_sk.inputline[input_device][count]
+                        temps += hex(temp)
+                        count += 1
+                    write_log(v_error_msg.parameter_error + temps)
+                #else:
                     # finish == 1, correct
-                    # reset some values of v_sk after command finished
-                    v_sk.inputline[input_device] = v_sk.inputline[input_device][v_sk.len[input_device][0]:]
                 # stop watchdog
                 v_icom_vars.command_time = 0
-                v_sk.len[input_device] = [0]
+                if v_icom_vars.ask_content == 1:
+                    v_sk.last_command[input_device] = v_sk.inputline[input_device]
+                v_sk.inputline[input_device] = bytearray([])
                 v_icom_vars.command_no += 1
                 v_icom_vars.command_no %= 255
                 if v_icom_vars.error_cmd_no == v_icom_vars.command_no:
                     # no error
                     v_icom_vars.error_cmd_no = 255
+                if v_icom_vars.ask_content == 2:
+                    v_icom_vars.ask_content = 0
         input_device += 1
     return
 
@@ -83,23 +90,24 @@ def poll_civ_input_buffer():
     finish = 2
     # got answer:
     v_icom_vars.civ_watchdog_time = 0
+    temp = str((v_sk.last_token[0] * 256 + v_sk.last_token[1]))
     if v_icom_vars.Civ_in[0:6] == v_icom_vars.nok_msg:
         if len(v_sk.last_token) >= 2:
-            temp = str((v_sk.last_token[0] * 256 + v_sk.last_token[1]))
             if temp == 466:
                 msg = v_error_msg.no_tuner
             elif temp == 709 or temp == 711:
                 msg = v_error_msg.no_sd
             else:
                 msg = v_error_msg.civ_wrong_parameter
-            write_log(msg + ba_to_str(v_icom_vars.Civ_in))
+            write_log(msg + temp)
+            v_sk.info_to_all = bytearray([0x03, 0x34, 0x01])
     elif v_icom_vars.Civ_in[0:6] == v_icom_vars.ok_msg:
         if v_icom_vars.test_mode == 1:
             print("CIV: ok")
         finish = 1
     elif len(v_icom_vars.Civ_in) == 6:
         # should not happen
-        write_log(v_error_msg.civ_other_error + ba_to_str(v_icom_vars.Civ_in))
+        write_log(v_error_msg.civ_other_error + " for command " + temp)
     else:
         # answer or info
         civ_command = int.from_bytes(v_icom_vars.Civ_in[4:5], byteorder='big', signed=False)
@@ -121,7 +129,7 @@ def poll_civ_input_buffer():
                 finish = v_command_answer.answer16[subcommand](v_icom_vars.Civ_in)
         elif civ_command == 25:
             if find_token(v_icom_vars.Civ_in[4:6]) == 1:
-                finish = answer_id(v_icom_vars.Civ_in)
+                finish = answer_2_1_b(v_icom_vars.Civ_in)
         elif civ_command == 0x1a:
             subcommand1 = int.from_bytes(v_icom_vars.Civ_in[5:6], byteorder='big', signed=False)
             if subcommand1 < 5:
@@ -234,7 +242,6 @@ def poll_civ_input_buffer():
         v_icom_vars.Civ_in = bytearray([])
         v_icom_vars.command_storage = []
         v_icom_vars.ask_content = 0
-        write_log(v_error_msg.civ_command_not_valid + str(v_icom_vars.Civ_in))
         v_icom_vars.input_locked = 0
     if v_icom_vars.ask_content > 0:
         v_icom_vars.ask_content = 2

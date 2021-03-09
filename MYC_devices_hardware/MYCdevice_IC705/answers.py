@@ -1,6 +1,6 @@
 """
-name: answers.py
-last edited: 20210220
+name: answers.py IC705
+last edited: 20210303
 handling of answers from the radio
 output to v_sk_info_to_all
 """
@@ -32,7 +32,7 @@ def find_token(line):
             second = 2
         if second == 0 and v_icom_vars.token_civ_code[temp] == line:
             second = 1
-    v_sk.info_to_all = int_to_ba(temp, 2)
+    v_sk.info_to_all = temp.to_bytes(2, byteorder="big")
     return
 
 
@@ -215,7 +215,7 @@ def answer02(line):
     # scope edge
     v_sk.info_to_all = bytearray([0x01, 0x4])
     v_sk.info_to_all.extend(frequency_for_answer(line[5:10], 30000, 5, 0))
-    v_sk.info_to_all.extend(frequency_for_answer(line[11:16], 30000, 5, ß))
+    v_sk.info_to_all.extend(frequency_for_answer(line[11:16], 30000, 5, 0))
     return 1
 
 
@@ -239,7 +239,7 @@ def answer0f(line):
 def answer165d(line):
     # tone squelch
     v_sk.info_to_all = v_sk.answer_token
-    if line[5] < 4:
+    if line[6] < 4:
         v_sk.info_to_all.extend([line[6]])
     else:
         v_sk.info_to_all.extend([line[6] - 2])
@@ -395,7 +395,7 @@ def answer1a02(line):
     # keyer memory
     v_sk.info_to_all = v_sk.answer_token
     # memory number:
-    v_sk.info_to_all.extend(bytearray([line[6]]))
+    v_sk.info_to_all.extend(bytearray([line[6] - 1]))
     length = len(line) - 8
     v_sk.info_to_all.extend(bytearray([length]))
     temp1 = 0
@@ -404,6 +404,16 @@ def answer1a02(line):
         v_sk.info_to_all.extend(bytearray([line[temp2]]))
         temp1 += 1
         temp2 += 1
+    return 1
+
+
+def answer11(line):
+    # attenuator
+    v_sk.info_to_all = bytearray([0x01, 0x17])
+    if line[5] == 0:
+        v_sk.info_to_all.extend([0x00])
+    else:
+        v_sk.info_to_all.extend([0x01])
     return 1
 
 
@@ -455,7 +465,7 @@ def answer1a050170(line):
     else:
         minutes = 840 - minutes
     v_sk.info_to_all = v_sk.answer_token
-    v_sk.info_to_all.extend(int_to_ba(minutes, 2))
+    v_sk.info_to_all.extend(minutes.to_bytes(2, byteorder="big"))
     return 1
 
 
@@ -476,12 +486,12 @@ def answer1a050188(line):
     flow = answer_frequency_fixed_edge(line[8:12]) - min
     if 0x35 < line[7] < 0x39:
         # 470MHz has 3 byte for flow
-        temp1 = int_to_ba(flow, 3)
+        temp1 = flow.to_bytes(3, byteorder="big")
     else:
-        temp1 = int_to_ba(flow, 2)
+        temp1 = flow.to_bytes(2, byteorder="big")
     v_sk.info_to_all.extend(temp1)
     span = answer_frequency_fixed_edge(line[12:16]) - min - flow
-    v_sk.info_to_all.extend(int_to_ba(span, 2))
+    v_sk.info_to_all.extend(span.to_bytes(2, byteorder="big"))
     return 1
 
 
@@ -521,7 +531,7 @@ def answer1b00(line):
     # tone frequncy
     v_sk.info_to_all = v_sk.answer_token
     temp = 0
-    while temp < 50 and [line[7], line[8]] != v_icom_vars.tone_frequency[temp]:
+    while temp < 51 and [line[7], line[8]] != v_icom_vars.tone_frequency[temp]:
         temp += 1
     v_sk.info_to_all.extend(bytearray([temp]))
     return 1
@@ -548,14 +558,14 @@ def answer1b02(line):
 def answer1c03(line):
     # transmit frequency
     v_sk.info_to_all = bytearray([0x04, 0x10])
-    v_sk.info_to_all.extend(frequency_for_answer(line[5:10], 30000, 5, 0))
+    v_sk.info_to_all.extend(frequency_for_answer(line[6:11], 30000, 5, 0))
     return 1
 
 
 def answer1e01(line):
     #  TX band edge frequencies
     v_sk.info_to_all = v_sk.answer_token
-    v_sk.info_to_all.extend([line[2]])
+    v_sk.info_to_all.extend([line[6]])
     if line[7] == 0xff:
         # empty
         v_sk.info_to_all.extend([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
@@ -565,7 +575,7 @@ def answer1e01(line):
         while temp2 < 5:
             v_sk.info_to_all.extend(bytearray([temp1[temp2]]))
             temp2 += 1
-        temp1 = frequency_for_answer(line[11 + 2:16 + 2], 30000, 5, 0)
+        temp1 = frequency_for_answer(line[13:18], 30000, 4, 0)
         temp2 = 0
         while temp2 < 5:
             v_sk.info_to_all.extend(bytearray([temp1[temp2]]))
@@ -704,35 +714,5 @@ def answer2719(line):
         intvalue += 40
     else:
         intvalue = 40 - intvalue
-    v_sk.info_to_all.extend(int_to_ba(intvalue, 1))
-    return 1
-
-
-def answer271e(line):
-    # scope fixed edgefrequency
-    last_token = v_sk.last_token[0] * 256 + v_sk.last_token[1]
-    adder = number_frequency_range[tokennumber_frequency_range_number[last_token]][0]
-    temp1 = 9
-    # 10Hz and 100Hz ignored,
-    multiplier = 1
-    lf = 0
-    while temp1 < 12:
-        lf += bcd_to_int(line[temp1]) * multiplier
-        multiplier *= 100
-        temp1 += 1
-    lf = (lf // 10) - adder
-    # result in kHz, offset subtracted
-    temp1 = 14
-    multiplier = 1
-    hf = 0
-    while temp1 < 17:
-        hf += bcd_to_int(line[temp1]) * multiplier
-        multiplier *= 100
-        temp1 += 1
-    hf = (hf // 10) - adder
-    v_sk.info_to_all = v_sk.answer_token
-    # edgenumber:
-    v_sk.info_to_all.extend([line[7] - 1])
-    v_sk.info_to_all.extend(int_to_ba(lf, 2))
-    v_sk.info_to_all.extend(int_to_ba(hf, 2))
+    v_sk.info_to_all.extend(intvalue.to_bytes(1, byteorder="big"))
     return 1

@@ -1,6 +1,6 @@
 """
-name : init.py
-last edited: 20210220
+name : init.py IC705
+last edited: 20210221
 """
 
 import os
@@ -129,9 +129,7 @@ def create_inputbuffer(interface_type, activ,):
 def create_sk():
     v_sk.active.append(1)
     v_sk.inputline.append([])
-    # actual_call in analyze_length for next action:
-    v_sk.len.append([0, 0, 0, 0, 0])
-    # v_sk.last_error.append("no error")
+    v_sk.last_command.append([])
     v_sk.starttime.append(0)
     return
 
@@ -177,10 +175,10 @@ def commands_at_start():
             # vfo A
             v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x07, 0x00, 0xfd])
         elif v_icom_vars.command_at_start == 5:
-            # ead frequency
+            # read frequency
             v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x03, 0xfd])
         elif v_icom_vars.command_at_start == 6:
-            # ead frequency
+            # read mode
             v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x04, 0xfd])
         v_icom_vars.command_at_start_continue = 1
     return
