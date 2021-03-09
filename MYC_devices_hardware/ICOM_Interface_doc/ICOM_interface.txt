@@ -1,8 +1,8 @@
-Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/ic7300_interface.pdf
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/ICOM_interface.pdf
 
 Icom Interfaces für das MYC Protokoll
 
-Author DK1RI, Version V03.0 20210218
+Author DK1RI, Version V03.1 20210310
 This paper is published in https://github.com/dk1ri  as well.
 
 Einleitung
@@ -27,40 +27,42 @@ Hinweise zur Bedienung
 
 Die Befehle sind meist eine direkte Übersetzung der CIV Befehle. Daraus ergeben sich Einschränkungen bei der Bedienung:
 Einige Befehle arbeiten abhängig von den aktuellen Einstellungen: Dies ist in den Regeln abgebildet, und die Befehle wirken dann auch nicht (soweit ich das erkannt habe :) ).
-Einige Befehle liefern nur eine Fehlermeldung: Dass zum Beispiel beim I705 ein Antennentuner nicht angeschlossen ist, kann nur mit einer Fehlermeldung festgestellt werden..
+Für einige Befehle sind weitere Hardware Voraussetzungen nötig, die aber nicht abgefragt werden können (SD Karte, Antennentuner). Dann wird eine Fehlermeldung als Info gesendet.
+Die Handbücher zum CIV rotokol enthalten einige Fehler und Ungenauigkeiten. Details dazu und Abweichungen dazu bei den MYC Befehlen stehen im Programm.
 
 Die Befehlseingabe erfolgt binär. Der Wertebereich der Befehlsparameter ist bei den Befehlsbeschreibungen angegeben.
 
 Softwareversion:
 Folgende Parameter müssen in der Datei ___config eingestellt werden:
 - Comport
-- Testmode: (default: 1) Testmode =0 ist für die Verwendung im MYC System vorgesehen.Es werden nur die Antworten des Transceivers im Hex Format zurückgegeben;. Testmode=1 ist für manuellen Betrieb gedacht. Es gibt einige zusätzliche Meldungen.
+- Testmode: (default: 1) Testmode =0 ist für die Verwendung im MYC System vorgesehen.Es werden nur die Antworten des Transceivers im Hex Format zurückgegeben. Testmode=1 ist für manuellen Betrieb gedacht. Es gibt einige zusätzliche Meldungen.
 - Timeout: (default: 10 (Sekunden)) Der komplette Befehl muss innerhalb dieser Zeit eingeben werden. Bei Verwendung in einem MYC System kann der Wert auf 1 geändert werden.
 Einige Werte der ___config Datei können auch mit dem Befehl 0HFFHFE geändert werden.
 Fehlt die Datei ___config, wird sie mit Defaultwerten neu angelegt.
 
 Windows10:
-Zum Betrieb unter Windows muss Python 3.6 und danach eine Erweiterunginstalliert werden.
+Zum Betrieb unter Windows muss Python 3.6 und danach eine Erweiterung installiert werden.
 Der Aufruf  erfolgt in der Powershell (Die Verzeichnisnamen müssen ggf angepasst werden):
 C:\Users\xx\AppData\Local\Programs\Python\Python36-32\Scriptspip.exe install pyserial
 Das Programm wird nach (zum Beispiel)  C:\Users\xx\Desktop\IC7300 entpackt
 
+Betrieb:
+Das Radio muss eingeschaltet und verbunden sein!
 cd C:\Users\xx\Desktop\IC7300
 C:\Users\xx\AppData\Local\Programs\Python\Python36-32\python.exe Icxxx_interface.py
-Der Transceiver startet mit VFOA und Betriebsart USB, USB; echo wird abgeschaltet und der transceive mode eingeschaltet.
+Der Transceiver startet mit VFOA und Betriebsart USB, USB; CIV echo wird abgeschaltet und der transceive mode eingeschaltet.
 Nach dem Start geht das erste eingegebene Zeichen verloren. Der Grund dafür ist unklar.
-Während des Remote Betriebs sollten keine manuellen Einstellungen am Gerät vorgenommen werden
-
+Während des Remote Betriebs sollten keine manuellen Einstellungen am Gerät vorgenommen werden.
 
 Hardwareversion:
 Beim Start des Interfaces muss das Radio an sein und mit dem Interface verbunden sein!
 Das Interface unterstützt keine Kollisionserkennung auf dem ICOM Bus. Daher darf nur 1 Radio an den CIV-Bus angeschlossen werden. Während des Remote Betriebs sollten daher auch keine manuellen Einstellungen am Gerät vorgenommen werden. Die CIV Schnittstelle verwendet 19200 Baud 8N1.
-Vor dem Verbinden des Interfaces mit dem Laptop / PC muss der Transceiver eingeschaltet und verbunden sein. Andernfalss hängt das Programm.
-Am Transceiver muessen folgende Einstellungen vorgenommen werden (sofern vorhanden)
+Vor dem Verbinden des Interfaces mit dem Laptop / PC muss der Transceiver eingeschaltet und verbunden sein. Andernfalls hängt das Programm.
+Am Transceiver müssen folgende Einstellungen vorgenommen werden (sofern vorhanden)
 CIV Output (for Ant) : off
 CIV USB Port: Link to remote
 CIVC USB Baudrate: auto
-CIV USB Echo: off+
+CIV USB Echo: off
 
 Einbindung in das MYC System
 
@@ -81,7 +83,7 @@ Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden
 Watchdog
 
 Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
-Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach circa 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
 Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFFFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
 Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
 Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein kompletter Restart. Das bedeutet, dass bei einem Kurzschluss auf der I2C Leitung das Interface nicht funktioniert!
@@ -89,9 +91,9 @@ Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein kompletter Restart. Das b
 
 Software
 
-Die Softwareversion wurde mit Pycharm 2020.3.3 entwickelt [1]
+Die Softwareversion wurde mit Pycharm 2020.3.3 entwickelt
 Bei der Hardwareversion übernimmt die Steuerung ein AVR Mikrocontroller Atmega1284
-Die Software dazu wurde in BASCOM geschrieben [8]
+Die Software dazu wurde in BASCOM geschrieben
 
 Programmierung des Prozessors (Hardwareversion)
 
@@ -174,11 +176,9 @@ Details zu den verschiedenen Transceivern
 Dieses Programm wurde ursprünglich für den IC7300 geschrieben. Die Versionen für die anderen Transceiver wurden daraus abgeleitet.
 
 IC7300 (Hardware und Softwarevariante)
-
-Das Interface verwendet die Befehle der Version des Handbuchs A7292-4EX-6a  (2018). Es gibt leichte Änderungen gegenüber älteren Versionen. Daher sollte das Radio auch die neueste Softwareversion haben.
-Das Handbuch enthält einige Fehler und Ungenauigkeiten. Details dazu und Abweichungen dazu bei den MYC Befehlen stehen in [7]
+Das Interface verwendet die Befehle der Version des Handbuchs A7292-4EX-9  (Juli 2020). und den Ergänzungen für Firmware 1.4  Es gibt leichte Änderungen gegenüber älteren Versionen. Daher sollte das Radio auch die neueste Softwareversion haben.
 Diese Version wurde getestet.
-Der Befehl 798 / Ausgabe einer Sprachdatei (IC7300) funktioniert nur, wenn eine entsprechende Karte mit Dateien vorhanden ist. Dies ist durch Regeln nicht darstellbar, gibt aber einen Fehler in der log Datei.
+Die CIV Adresse sollte auf 0x94 stehen. Bei anderer Adresse muss die Konfigurationsdatei geändert werden.
 
 Hardwarevariante:
 Diese Hardwarevariante wird nicht weiter entwickelt
@@ -191,10 +191,10 @@ Weiterhin muss Menu ? set ? Connectors ? USB Serial Function auf CI-V stehen.
 Diese Einstellung ist per remote nur lesbar.
 Als USB Baudrate muss AUTO oder 19200 oder kleiner gewählt werden. Es ist nicht geklärt, warum höhere Baudraten nicht funktionieren
 Ändert man das im Betrieb, ist die USB Schnittstelle nicht mehr verwendbar.
-Die CIV Adresse sollte auf 0x94 stehen. Bei anderer Adresse muss die Konfigurationsdatei geändert werden.
 
 IC7000 (Hardwarevariante)
-Grundlage für die Befehlsliste ist das Benutzerhandbuch A-6478H-1EX. Die Beschreibung der Datenformate einiger Befehle fehlt. Sie wurden wie bei IC7300 gelassen. Es ist teilweise nicht beschrieben, welche Befehle auch als Lesebefehle gelten. Auch hier wurde es wie beim IC7300 gelassen. Die Befehlscodes 06 bis 09 auf Seite 146 sind teilweise doppelt und wahrscheinlich falsch. Sie wurden als 1A06 .. programmiert.
+Grundlage für die Befehlsliste ist das Benutzerhandbuch A-6478H-1EX. Die Beschreibung der Datenformate einiger Befehle fehlt. Sie wurden wie bei IC7300 gelassen. Es ist teilweise nicht beschrieben, welche Befehle auch als Lesebefehle gelten.
+Die Befehlscodes 06 bis 09 auf Seite 146 sind teilweise doppelt und wahrscheinlich falsch. Sie wurden als 1A06 .. programmiert.
 Diese Version wurde nicht getestet, da die CIV Schnitttstelle meines Transceivers defekt ist.
 
 Icx71 (Hardwarevariante)
@@ -209,7 +209,6 @@ Das Programm wurde noch nicht getestet.
 
 IC705 (Softwarevatiante)
 Das Programm wurde mit der USB Schnittstelle getestet. Nach einem „Partial reset“ braucht man keine Änderungen am Transceiver vornehmen.
-Datails zu den Fehlern im CIV Manual stehen im Programm.
 Mit der Software RS-BA1 Ver2 kann der IC705 auch über WLAN gesteuert werden. Die dazu nötigen Einstellungen am Transceiver sind in dem Handbuch beschrieben. Das Programm stellt einen COM Port zur Verfügung.
 
 
@@ -218,7 +217,7 @@ Versionen
 Diese Beschreibung gilt für die
 Leiterplattenversion V03.2
 Bascom Version V01.3 für alle Transceiver
-Softwareversion (Python) V01.3 für alle Transceiver
+Softwareversion (Python) V01.4 für alle Transceiver
 
 
 Copyright
@@ -229,17 +228,16 @@ The usage of this document is on own risk, there is no warranty.
 
 Referenzen
 
-[1]	https://www.dk1ri.de/dhw/ic7300_interface_python.zip
-[2]	https://www.dk1ri.de/dhw/MYC_icom_eagle.zip
-[3]	https://www.dk1ri.de/myc/MYC.pdf 
-[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
-[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.8.zip
-[7]	https://dk1ri.de/dhw/7300_bugs.txt
-[8]	https://dk1ri.de/dhw/IC7300_interface_bascom.zip
+[1]	https://dk1ri.de/dhw/MYC_icom_eagle.zip
+[2]	https://dk1ri.de/myc/MYC.pdf 
+[3]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[4]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[5]	https://dk1ri.de/myc/common_1.11.zip
+[6]	https://dk1ri.de/dhw/ic7300_interface_python.zip
+[7]	https://dk1ri.de/dhw/IC7300_interface_bascom.zip
+[8]	https://dk1ri.de/dhw/IC705_interface_python.zip
 [9]	https://dk1ri.de/dhw/IC7000_interface_bascom.zip
 [10]	https://dk1ri.de/dhw/IC9700_interface_bascom.zip
-[11]	https://dk1ri.de/dhw/IC1271_interface_bascom.zip
+[11]	https://dk1ri.de/dhw/IC271_interface_bascom.zip
 [12]	https://dk1ri.de/dhw/IC471_interface_bascom.zip
-[13]	https://dk1ri.de/dhw/IC271_interface_bascom.zip
-[14]	https://dk1ri.de/dhw/IC705_interface_python.zip
+[13]	https://dk1ri.de/dhw/IC1271_interface_bascom.zip
