@@ -1,7 +1,8 @@
 ' additional reset
-' 20210630
+' 20210908
 '
-Correct_eeram = &H7FFFFF
+Correct_eeram = Correct_default
+Temp_measure_eeram = 250
 ' 25.0C
 Tk_eeram = Tk_default
 Sensor_eeram = 0

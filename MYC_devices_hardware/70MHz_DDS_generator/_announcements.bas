@@ -1,11 +1,11 @@
 ' annoucements
-' 20210820
+' 20210908
 '
 Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;70MHz DDS Sender;V01.0;1;180;1;24"
+Data "0;m;DK1RI;70MHz DDS Sender;V01.1;1;180;1;26"
 '
 'Announce1:
 'Befehl &H01
@@ -35,7 +35,7 @@ Data "4;as,as3"
 'Befehl &H05
 'Eichung
 'calibrate
-Data "5;op,calibrate;1;65535;lin;-"
+Data "5;op,calibrate;1;16777215;lin;-"
 '
 'Announce6:
 'Befehl &H06
@@ -71,7 +71,7 @@ Data "10;ap,temperature;1;1024,{0.0 To 102.3};lin;C"
 'Befehl &H0B
 'Abweichung durch Tempratur
 'Tc
-Data "11;op,Tc;1;65536,{-32768 To 32767};lin;/deg"
+Data "11;op,Tc;1;65536,{-32768 To 32767};lin;ppb/K"
 '
 'Announce12:
 'Befehl &H0C
@@ -110,34 +110,46 @@ Data "16,os,relais;1;0,off;1,on"
 Data "17,as,as16"
 '
 'Announce18:
+'Befehl &H12
+'Tk Messung
+'Tk measurement
+Data "18,os,Tk measurement;1;0,off;1,on"
+'
+'Announce19:
+'Befehl &H13
+'Tk Messung
+'Tk measurement
+Data "19,as,as18"
+'
+'Announce20:
 'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
 'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;100;24"
+Data "240;ln,ANNOUNCEMENTS;100;26"
 '
-'Announce19:                                                  '
+'Announce21:                                                  '
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;20,last_error"
 '
-'Announce20:                                                  '
+'Announce22:                                                  '
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-'Announce21:
+'Announce23:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,37,{0 to 127};a,RS232,1;a,USB,1"
 '
-'Announce22:
+'Announce24:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
 Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,37,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
 '
-Announce23:
-Data"R $10 $11 $12 IF $9 = 1"
+Announce25:
+Data"R $10 IF $9 = 1"

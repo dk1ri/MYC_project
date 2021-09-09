@@ -1,5 +1,5 @@
 ' Commands
-' 20210820
+' 20210908
 '
 01:
 ' frequency
@@ -66,11 +66,10 @@ Return
 05:
 ' calibrate
 If Command_pointer >= 4 Then
-   Correct = 65535 * Command_b(2)
-   W_temp1 = 255 * Command_b(3)
+   Correct = 65536 * Command_b(2)
+   W_temp1 = 256 * Command_b(3)
    Correct = Correct + W_temp1
    Correct = Correct + Command_b(4)
-   Cal = 1
    Gosub Dds_output
    Gosub Command_received
 End If
@@ -126,7 +125,7 @@ If Sensor = 1 Then:
    Tx_time = 1
    Tx_b(1) = &H0A
    Tx_b(2) = High(Temperature)
-   Tx_b(3) = low(Temperature)
+   Tx_b(3) = Low(Temperature)
    Tx_write_pointer = 4
    If Command_mode = 1 Then Gosub Print_tx
 Else
@@ -137,15 +136,10 @@ Return
 '
 11:
 ' Tk
-If Sensor = 1 Then
-   If Command_pointer >= 3 Then
-      Tk = Command_b(2) * 255
-      Tk = Tk + Command_b(3)
-      Tk_eeram = Tk
-      Gosub Command_received
-   End If
-Else
-   Command_not_found
+If Command_pointer >= 3 Then
+   Tk = Command_b(2) * 256
+   Tk = Tk + Command_b(3)
+   Tk_eeram = Tk
    Gosub Command_received
 End If
 Return
@@ -230,6 +224,31 @@ Return
 Tx_time = 1
 Tx_b(1) = &H11
 Tx_b(2) = Relais
+Tx_write_pointer = 3
+If Command_mode = 1 Then Gosub Print_tx
+Gosub Command_received
+Return
+'
+18:
+' Tk measurement
+If Command_pointer >= 2 Then
+   If Command_b(2) < 2 Then
+      If command_b(2) = 0 Then
+         Tk_measure = 0
+      Else
+         Tk_measure = 1
+      End If
+   Else
+      Parameter_error
+   End If
+   Gosub Command_received
+End If
+Return
+'
+19:
+Tx_time = 1
+Tx_b(1) = &H13
+Tx_b(2) = Tk_measure
 Tx_write_pointer = 3
 If Command_mode = 1 Then Gosub Print_tx
 Gosub Command_received

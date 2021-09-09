@@ -1,5 +1,5 @@
 'name : 70MHZ DDS Sender
-'Version V01.0, 20210824
+'Version V01.1, 20210908
 'purpose : Program for 70MHz DDS sender with AD9851
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware 70_Hz_dds_sender_eagle Version V02.1 by DK1RI
@@ -47,8 +47,8 @@ $initmicro
 '=========================================
 ' Dies Werte koenne bei Bedarf geaendert werden!!!
 ' These values must be modified on demand!!!!
-' Number of loop for temperaturmeasurement
-Const T_measure_time = 65000
+' Number of loops for temperaturmeasurement
+Const T_measure_time = 20000
 ' default RC5 adress
 Const Rc5_address_def = 0
 ' Commxx are default RC5 codes
@@ -97,11 +97,11 @@ Const F20 = 50100000
 '
 ' 1 ... 127
 Const I2c_address = 37
-Const No_of_announcelines = 23
+Const No_of_announcelines = 26
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
-Const Correct_default = &H7FF
+Const Correct_default = &H7FFFFF
 Const Clk0 = 180000000 - Correct_default
 Const F_max = 70000000
 Const DDS_command_on = &B00000001
@@ -113,25 +113,26 @@ $include "common_1.11\_Constants_and_variables.bas"
 '
 Dim S_temp1 As Single
 Dim S_temp2 As Single
+Dim S_temp3 As Single
+Dim Do_temp1 As Double
 Dim Dds_cmd As Byte
 Dim Freq_in As Single
 Dim Freq_in_old As Single
 ' serialout do not work with Double (_> Long)!!!
 Dim Freq_data As Long
-Dim Freq_accu As Single
-Dim Clk_in As Single
+Dim Freq_accu As Double
+Dim Clk_in As Double
 Dim Correct As Dword
 Dim Correct_eeram As Eram Dword
-Dim Mult As Single
 Dim Rcc As Byte
 Dim Sensor As Byte
 Dim Sensor_eeram As Eram Byte
 ' deg C
 Dim Temperature As Word
-Dim Temperature_old As Word
 Dim Temp_measure_eeram As Eram Word
 Dim Tk As Word
 Dim Tk_eeram As Eram Word
+Dim Tk_measure As Byte
 Dim T_measure As Word
 Dim Rc5_adress_soll As Byte
 Dim Rc5_adress_soll_eeram As Eram Byte
@@ -141,9 +142,8 @@ Dim Rc_address As Byte
 Dim Rc_command As Byte
 Dim Rc_command_old As Byte
 Dim IR_Myc_old As Byte
-Dim Cal As Byte
 '
-Waitms 10
+Waitms 100
 
 '----------------------------------------------------
 $include "common_1.11\_Macros.bas"
@@ -174,6 +174,7 @@ If IR_Myc_old <> B_temp1 Then
       Gosub Dds_output
    End If
 End If
+B_temp1 = IR_Myc
 If IR_Myc = 1 Then
    Stop Watchdog
    ' Infrared mode
@@ -306,25 +307,35 @@ Waitus 10
 Return
 '
 Dds_output:
-Clk_in = Clk0 + Correct
-Mult = &H100000000 / Clk_in
+Clk_in = Clk0
+Do_temp1 = Correct
+Clk_in = Clk_in + Do_temp1
 ' Tk
 S_temp1 = Freq_in
 If Sensor = 1 Then
    If Tk <> Tk_default Then
-      If Cal = 0 Then
+      If Tk_measure = 0 Then
          ' S_temp1 is + or -'
-         S_temp2 = Tk - 32767
-         W_temp1 = Temperature - Temp_measure_eeram
-         S_temp2 = S_temp2 * W_temp1
+         ' ppb / K:
+         S_temp2 = Tk - Tk_default
+         S_temp3 = Temperature
+         W_temp1 = Temp_measure_eeram
+         S_temp3 = S_temp3 - W_temp1
+         ' 1/ deg -> deg:
+         S_temp3 = S_temp3 / 10
+         ' total ppb
+         S_temp2 = S_temp2 * S_temp3
+         ' total delta f:
          S_temp1 = Freq_in * S_temp2
          S_temp1 = S_temp1 / 1000000000
+         ' new f:
          S_temp1 = Freq_in + S_temp1
       End If
    End If
 End If
-Cal = 0
-Freq_accu = S_temp1 * Mult                               'calculate
+Do_temp1 = S_temp1
+Freq_accu = Do_temp1 * &H100000000                        'calculate
+Freq_accu = Freq_accu / Clk_in
 Freq_data = Freq_accu
 Shiftout Wdat , Wclk , Freq_data , 3 , 32 , 0            'DATA,WCLK LSB first
 Shiftout Wdat , Wclk , Dds_cmd , 3 , 8 , 0               'DATA,WCLK
@@ -344,11 +355,8 @@ If Sensor = 1 Then
    S_temp1 = S_temp1 - 273.15
    ' thenth deg:
    Temperature = S_temp1 * 10
-   If Temperature <> Temperature_old Then
-      If Tk <> Tk_default Then
-         Gosub Dds_output
-      End If
-      Temperature_old = Temperature
+   If Tk <> Tk_default Then
+      Gosub Dds_output
    End If
 End If
 Return

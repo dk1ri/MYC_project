@@ -1,11 +1,15 @@
 
 ' additional init
-' 20210723
+' 20210908
 '
 Correct = Correct_eeram
 Tk = Tk_eeram
+' tk measurement / calibrarate active
+Tk_measure = 0
 Sensor = Sensor_eeram
 Temperature = 250
+' first measurement not accurate
+W_temp1 = Getadc(0)
 Gosub Calc_temperature
 Rc5_adress_soll = Rc5_adress_soll_eeram
 Rc5_code(1) = Rc5_code_eeram(1)
@@ -34,7 +38,6 @@ Dds_cmd = DDS_command_on
 Rcc = 0
 Rc_command = 0
 Rc_address = 0
-Cal = 0
 IR_Myc_old = IR_Myc
 Gosub Init_dds
 Waitms 100
