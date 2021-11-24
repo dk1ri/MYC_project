@@ -1,0 +1,7 @@
+As writen in every individual document the following is valid:
+
+Die Ideen in dieses Projects unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung aller Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+
+The ideas of this projekt can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of these documents are on own risk, there is no warranty
