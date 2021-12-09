@@ -1,0 +1,107 @@
+ICOM CIV Issues and comments for IC705
+20211207
+Author: DK1RI
+
+Used IC705 firmware version: 1.26
+CIV Manual Version: march 2021
+IC705 converter programm (python) version: V01.5
+
+My restrictions:
+I use my IC705 at the current holiday qth in EA8 only. There I have written the CIV converter program.
+I have basic DStar knowledge only. I used it a few times in DL with the IC9700.
+There is no other DStar station nearby. I have no access to the internet router to install port forwarding.
+So I did not found the reason for some of the coresponding command limitations.
+Due to local limitations here I cannot use CIV and GPS at the same time.
+
+Other general comments: see IC7300_CIV_issues.
+
+Missing CIV codes:
+I did not checked the IC705 systematically for missing CIV codes, but those I found:
+gps alarm select
+most picture functions (but not all of them make sense with remote control)
+1a04 is for agc mid only, fast and slow missing
+wlan configuration
+bluetooth configuration
+
+
+issues by CIV code:
+00		is no send; should read: sent by radio without command if 1a05131=1
+01		is no send; should read: sent by radio without command if 1a05131=1
+07		is send only, A0 B0 in VFO mode only
+0b		in memory mode only
+0exx		all are send only
+0e 01 - 024	not working always, depend on vfo - memory - selected
+13		send only
+1406		range is 8 to f8 for read (do not match write 00/ff)
+1407 1408	range is 2 to fd for read (do not match write 00 / ff)
+1409		range is 1 to fe or read (do not match write 00 / ff)
+140e		range is 0b to f4 for read (do not match write 00 / ff)
+140f		range is 1 ti fe for read (do not match write 00 / ff)
+1612		range 1 -3
+165b		works in all modes
+1656 		ssb and cw mode only
+1642 1643	1642=1 set 1643=0; 1643=1 set 1642=0
+17		send only
+18 		send only
+1a00		empty memory read : ff (also when read)
+the black part of description is for split
+		13: send modified data mode not valid for all modes (DV)
+		14: send modified duplex tone not valid for all modes
+		14 lower nibble: tone requires FM; ok, but do not change
+		15: send modified digital squelch ok, but no change (DV only)
+		16-24: repeater tone , tone sqelch, DCTS requires FM; ok but do not change
+		19-22: typing error: is tone squelch
+		25: send modified digital code ok, but no change (DV only)
+		29 - 52: send modified UR R1 R2 callsign ok, but no change (DV only)
+1a04		agc for mid only
+1a050046	send / read ok, but influence to radio ?
+1a050049	USA only, not mentioned in CIV manual
+1a050053	typing error: english /japanese mixed up
+1a050089	work with 0 - 511 instead of 0 - 255
+1a050105 106	send valid only if log = 0 AND history = 0 (1a050103 04)
+1a050163	send and read valid only if systemlanguange is japonese (1a050164) after restart?
+1a050188 - 236 	limitation missing: fhigh > flow + 5k
+1a050265	format: send only if 1a050264 = 0
+1a050289	returns a 56 char string always (filled with blanks)
+1a050291 - 294	symbol Icom radio with code "|Y" cannot be set (but read)
+1a050297 - 300	returns a 43 char string always (filled with blanks)
+1a050308	returns a 9 char string always (filled with blanks)
+1a050311	returns a 43 char string always (filled with blanks)
+1a050313	data extension must be set to a specific value for other configuratiuon to be set
+		(see advanced nanual Page 12.9)
+1a050314 - 321	see 1a0560313
+1a050327	data extension must be set to a specific value for other configuratiuon to be set
+		(see advanced nanual Page 12.9)
+1a050328 - 334	see 1a0560327
+1a050346	alarm group: 3rd byte must be "0" always, range is 8 to 5999
+1a0a		shared picture send "1" do not wot work . condition for work?
+1b00 - 03	only some frequencies as given in the advanced manual
+1b02		send do not work (in FM + DV only)
+1b07		work in other modes as well
+1c01		requires tuner ?
+1f00		callsign /note: send: 12 charcters are necessary (not filled up with spaces automatically)
+1f01		DV callsign /note: send: 24 charcters are necessary (not filled up with spaces automatically)
+200000 - 02	function not found on radio; function not understood
+		01: read and write not vali. Is it read and write (marking missing) further restrictions?
+		03 read: 0xff not documented
+200100 - 02	as 200000 - 02
+200200 - 02	as 200000 - 02; 200302 deliveres data
+2003xx		not yet implemented and tested
+200400 - 02	as 200000 - 02
+2200		write only tx text cannot be read (error)
+220101		read: 0 always (can be set to 1 with no error)
+220101		send data if 220100 = 0 only? read command not valid, output radio only, no command?
+2300		is my position data, not "postion status"
+2302		what is the differnce to 1a050286 ?
+240000 		enables 240001, description could be better, not found on the radio ?
+240001		read only, it is the transmit status!
+26		data mode only with SSB, AM, FM. WFM with GENE band only
+2714		read: civ error. 271400 works read and write (one byte data),
+2715		read civ error. 271500 works. 1st byte of 4byte data (page27) is subcommand not data
+2716		read: civ error. 271600 works read and write (one byte data),
+2717		read: civ error. 271700 works read and write (one byte data),
+2719		read civ error. 271900 works. 1st byte of 4byte data (page27) is subcommand not data
+271a		read: civ error. 271a00 works read and write (one byte data), change the speed
+		but do not change waterfall speed menu entry.
+271e		not implemented and tested
+2800		write only, civ not valid if memory is empty
