@@ -2,7 +2,6 @@
 name: error messages.py IC705
 last edited: 20210220
 """
-
 parameter_error = "Parameter error for input (hex): "
 civ_command_not_valid = "civ command not valid"
 civ_sub_not_valid = "civ sub command not valid"

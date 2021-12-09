@@ -39,7 +39,7 @@ def readconfig():
         if i == 0:
             v_icom_vars.announce_list = lines
             if not os.path.isfile(v_icom_vars.announce_list):
-                sys.exit("Missing:  " + v_configparameter.annoucments)
+                sys.exit("Missing:  " + v_icom_vars.announce_list)
         elif i == 1:
             # time in sec for command timeout
             v_icom_vars.command_timeout = int(lines)
@@ -130,6 +130,7 @@ def create_sk():
     v_sk.active.append(1)
     v_sk.inputline.append([])
     v_sk.last_command.append([])
+    # v_sk.last_error.append("no error")
     v_sk.starttime.append(0)
     return
 
@@ -157,28 +158,31 @@ def commands_at_start():
             # finished
             v_icom_vars.command_at_start += 1
             v_icom_vars.command_at_start_continue = 0
-            if v_icom_vars.command_at_start == 7:
+            if v_icom_vars.command_at_start == 8:
                 if v_icom_vars.test_mode == 1:
                     print("installation ready")
                 v_icom_vars.command_at_start = 0
     else:
         if v_icom_vars.command_at_start == 1:
             # echo off
-            v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x1a, 0x05, 0x01, 0x32, 0x00, 0xfd])
+            v_icom_vars.Civ_out = v_icom_vars.start_echo_off
         elif v_icom_vars.command_at_start == 2:
             # transceive
-            v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x1a, 0x05, 0x01, 0x31, 0x01, 0xfd])
+            v_icom_vars.Civ_out = v_icom_vars.start_transceive
         elif v_icom_vars.command_at_start == 3:
             # LSB
-            v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x06, 0x01, 0x01, 0xfd])
+            v_icom_vars.Civ_out = v_icom_vars.start_mode
         elif v_icom_vars.command_at_start == 4:
             # vfo A
-            v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x07, 0x00, 0xfd])
+            v_icom_vars.Civ_out = v_icom_vars.start_VFOA
         elif v_icom_vars.command_at_start == 5:
             # read frequency
-            v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x03, 0xfd])
+            v_icom_vars.Civ_out = v_icom_vars.start_read_f
         elif v_icom_vars.command_at_start == 6:
             # read mode
-            v_icom_vars.Civ_out = bytearray([0xfe, 0xfe, v_icom_vars.civ_address, 0xe0, 0x04, 0xfd])
+            v_icom_vars.Civ_out = v_icom_vars.start_read_mode
+        elif v_icom_vars.command_at_start == 7:
+            # read mode
+            v_icom_vars.Civ_out = v_icom_vars.start_memory_no
         v_icom_vars.command_at_start_continue = 1
     return

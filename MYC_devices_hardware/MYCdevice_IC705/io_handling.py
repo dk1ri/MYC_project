@@ -50,13 +50,13 @@ def poll_inputs():
     # input polling
     # data are send to v_sk.inputline
     input_buffer_number = 0
-    while input_buffer_number < len(v_sk_interface.interface_type):
-        if v_sk_interface.activ[input_buffer_number] == 1:
-            if v_sk_interface.interface_type[input_buffer_number] == "TERMINAL":
+    while input_buffer_number < len(v_sk.interface_type):
+        if v_sk.active[input_buffer_number] == 1:
+            if v_sk.interface_type[input_buffer_number] == "TERMINAL":
                 # input_buffer_number,device_buffer_number
                 if v_sk.active[input_buffer_number] == 1:
                     win_terminal(input_buffer_number, 0)
-            elif v_sk_interface.interface_type[input_buffer_number] == "TELNET":
+            elif v_sk.interface_type[input_buffer_number] == "TELNET":
                 # telnet is a separate thread, writing directly to inputbuffer
                 pass
         input_buffer_number += 1
@@ -190,7 +190,7 @@ class ClientThreadRead (threading.Thread):
             data_in = self.client_socket.recv(1024)
             i = 0
             while i < len(data_in):
-                v_dev.data_to_CR[self.device_buffer_number] += data_in[i]
+                v_icom_vars.data_to_CR[self.device_buffer_number] += data_in[i]
                 i += 1
 
 
@@ -203,11 +203,11 @@ class ClientThreadWrite (threading.Thread):
 
     def run(self):
         while True:
-            if len((v_dev.data_to_device[self.device_buffer_number])) > 0:
+            if len((v_icom_vars.data_to_device[self.device_buffer_number])) > 0:
                 i = 0
                 out = bytearray([])
-                while i < (v_dev.data_to_device[self.device_buffer_number]):
-                    out += v_dev.data_to_device[self.device_buffer_number][i]
+                while i < (v_icom_vars.data_to_device[self.device_buffer_number]):
+                    out += v_icom_vars.data_to_device[self.device_buffer_number][i]
                 self.client_socket.sendall(out)
 
 

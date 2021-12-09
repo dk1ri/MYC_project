@@ -5,6 +5,7 @@ misc functions
 """
 
 import time
+import sys
 import v_icom_vars
 import v_sk
 
@@ -27,6 +28,18 @@ def ba_to_str(ba):
         string += str(ba[i])
         i += 1
     return string
+
+
+def ba_to_int(ba):
+    # bytearray to int
+    num = 0
+    i = len(ba) - 1
+    mul = 1
+    while i >= 0:
+        num += ba[i] * mul
+        i -= 1
+        mul *= 256
+    return num
 
 
 def add_length_to_str(string, length):
@@ -60,15 +73,22 @@ def int_to_list(integ, le):
     # length 0: use CR tokenlength
     if le == 0:
         le = 2
-    list = []
+    list_ = []
     if le == 1:
-        list. append(integ)
+        list_.append(integ)
     elif le == 2:
         t = integ // 256
-        list.append(t)
+        list_.append(t)
         t = integ % 256
-        list.append(t)
-    return list
+        list_.append(t)
+    return list_
+
+
+def int_to_2_ele(integ):
+    # convert a integer to 2 parameter
+    t = integ // 256
+    u = integ % 256
+    return t, u
 
 
 def bytes_to_int_ba(ba):
@@ -82,28 +102,8 @@ def bytes_to_int_ba(ba):
     return temp
 
 
-def calculate_length_of_commandtoken(number):
-    # for CR only
-    # number is highest tokennumber of other devices in full CR announcelist
-    multi = 256
-    # length_of_commandtoken:
-    v_cr_params.length_commandtoken = 1
-    # avoid 0 as first byte:
-    v_cr_params.startnumber = 1
-    while number + 32 >= multi:
-        multi = multi * 256
-        v_cr_params.startnumber = v_cr_params.startnumber * 256
-        v_cr_params.length_commandtoken += 1
-    # adder for 0hxxFx commands: n + f0 = 0hxxf0
-    v_cr_params.adder = multi - 0x100
-    # reserved commandtoken last 16 reserved
-    v_cr_params.reserved_token_start = multi - 0x10
-
-    v_cr_params.startindex = v_cr_params.startnumber - 1
-    return
-
-
 def write_log(line):
+    # check number of lines
     v_icom_vars.error_cmd_no = v_icom_vars.command_no
     handle = open(v_icom_vars.log_file)
     i = 0
@@ -146,9 +146,9 @@ def bcd2_to_int(a):
 
 
 def bcdx_to_int(a, no_of_bytes):
-    # up to 3 byte ba to int
+    # up to 4 byte ba to int
     if no_of_bytes == 1:
-        return (a >> 4) * 10 + (a & 0x0F)
+        return (a[0] >> 4) * 10 + (a[0] & 0x0F)
     elif no_of_bytes == 2:
         temp1 = a[0]
         temp1 = ((temp1 >> 4) * 10 + (temp1 & 0x0F)) * 100
@@ -268,20 +268,45 @@ def int_to_3bcd(a):
     return bcd
 
 
-def int_to_bcd_plusminus(line, max, bcdbytes, multiplier):
+def int_to_4bcd_reverse(a):
+    # return ba (for 4 byte frequency)
+    instr = str(a)
+    length = len(instr)
+    temp1 = 1
+    s = ""
+    zeros = 9 - length
+    while temp1 < 9:
+        if temp1 < zeros:
+            s += "0"
+        else:
+            s += instr[temp1 - zeros]
+        temp1 += 1
+    bcd = bytearray([0x00, 0x00, 0x00, 0x00])
+    temp = int(s[6:8])
+    bcd[0] = (temp // 10 * 16) + temp % 10
+    temp = int(s[4:6])
+    bcd[1] = (temp // 10 * 16) + temp % 10
+    temp = int(s[2:4])
+    bcd[2] = (temp // 10 * 16) + temp % 10
+    temp = int(s[0:2])
+    bcd[3] = (temp // 10 * 16) + temp % 10
+    return bcd
+
+
+def int_to_bcd_plusminus(line, max_, bcdbytes, multiplier):
     # max is maximum for abs value -> max_int = 2 * max (0 base)
     # for 2 byte int values
     # for bcdbytes bcd digits, bcd reverse: low byte first
     int_value = line[2] * 256 + line[3]
-    if int_value > 2 * max:
+    if int_value > 2 * max_:
         return 2, 0
-    if int_value > max:
+    if int_value > max_:
         # positive
-        int_value -= max
+        int_value -= max_
         negative = 0
     else:
         # 0 is negative
-        int_value = max - int_value
+        int_value = max_ - int_value
         negative = 1
     int_value *= multiplier
     decimal_string = str(int_value)
@@ -307,7 +332,7 @@ def int_to_bcd_plusminus(line, max, bcdbytes, multiplier):
     return 1, temp
 
 
-def bcd_plusminus_to_int(line, start, max, bcdbytes, commandbytes, divisor):
+def bcd_plusminus_to_int(line, start, max_, bcdbytes, commandbytes, divisor):
     # bcdbytes bcd values (lsb first) + polarity
     # convert to commandbytes bytes ba
     temp1 = start
@@ -320,118 +345,72 @@ def bcd_plusminus_to_int(line, start, max, bcdbytes, commandbytes, divisor):
         temp1 += 1
     intvalue //= divisor
     if line[start + bcdbytes] == 0:
-        intvalue += max
+        intvalue += max_
     else:
-        intvalue = max - intvalue
+        intvalue = max_ - intvalue
     temp1 = intvalue.to_bytes(commandbytes, byteorder="big")
     return temp1
 
 
-def check_and_convert_alphabet(a, type):
+def check_and_convert_alphabet(a, type_):
     # used for answers, a= 255 should not happen
     aa = 255
-    if type == 0:
-        # nearly all , only check ALPHA 0
-        if 0x20 < a < 0x7f:
+    if type_ == 0:
+        if 0x20 < a < 0x7:
             aa = a
-        else:
-            aa = 255
-    elif type == 1:
-        # symbol 1st char ALPHA 1
+    elif type_ == 1:
+        # symbol 1st char
         if a == 0x2f or a == 0x5c:
             aa = a
-        elif 57 < a < 58:
+        elif 47 < a < 58:
             # numeric
             aa = a
         elif 64 < a < 91:
+            # A-Z
             aa = a
-    elif type == 3:
-        # CW check only ALPHA 3
+    elif type_ == 2:
+        # CW
+        # A-Z
         if (a > 64) and (a < 91):
-            aa = a + 32
-        elif (a > 96) and (a < 123):
-            aa = a
-        elif (a > 42) and (a < 59):
-            aa = a
-        elif a in [0x20, 0x22, 0x27, 0x28, 0x29, 0x3d, 0x3f, 0x40]:
-            aa = a
-        else:
-            aa = 255
-    elif type == 4:
-        # call sign ALPHA 4
-        if (a > 64) and (a < 91):
-            aa = a
-        elif (a > 46) and (a < 58):
-            aa = a
-        elif a == 0x20:
-            aa = a
-        elif a == 0x2f:
-            aa = a
-        else:
-            aa = 255
-    elif type == 5:
-        # call sign ALPHA 5 (1a02)
-        if (a > 63) and (a < 91):
             aa = a
         elif (a > 45) and (a < 58):
             aa = a
+        elif a in [0x2f, 0x3f, 0x2e, 0x2d, 0x2c, 0x3a, 0x27, 0x28, 0x29, 0x3d, 0x2b, 0x22, 0x40, 0x20]:
+            aa = a
+    elif type_ == 3:
+        # callsign
+        # A-Z
+        if 64 < a < 91:
+            aa = a
+        # 0 - 9
+        elif 47 < a < 58:
+            aa = a
         elif a == 0x20:
             aa = a
-        elif a == 0x2a:
+    elif type_ == 4:
+        # memory keyer 1a02
+        # A-Z
+        if 64 < a < 91:
             aa = a
-        elif a == 0x2c:
+        # 0 - 9
+        elif 47 < a < 58:
             aa = a
-        elif a == 0x5e:
+        elif a in [0x20, 0x2f, 0x3f, 0x3b, 0x2c, 0x40, 0x5e, 0x2a]:
             aa = a
-        elif  a == 0x3f:
+    elif type_ == 5:
+        # ntp server
+        # A-Z
+        if 64 < a < 91:
             aa = a
-        else:
-            aa = 255
-    elif type == 6:
-        # call sign ALPHA 5 (1a02)
-        if (a > 63) and (a < 91):
+        # a to z
+        elif 96 < a < 123:
             aa = a
-        elif (a > 45) and (a < 58):
+        # 0 to 9
+        elif 47 < a < 58:
             aa = a
-        elif a == 0x2d:
+        elif a in [0x3b, 0x2d]:
             aa = a
-        elif a == 0x2e:
-            aa = a
-        else:
-            aa = 255
     return aa
-
-
-def find_token(civ_command):
-    code = 0
-    if len(civ_command) == 1:
-        try:
-            stri = str(hex(civ_command[0]))
-            code = v_icom_vars.civ_code_to_token[stri]
-        except KeyError:
-            code = 0
-    elif len(civ_command) == 2:
-        try:
-            stri = str(hex(civ_command[0])) + str(hex(civ_command[1]))
-            code = v_icom_vars.civ_code_to_token[stri]
-        except KeyError:
-            code = 0
-    elif len(civ_command) == 3:
-        try:
-            stri = str(hex(civ_command[0])) + str(hex(civ_command[1])) + str(hex(civ_command[2]))
-            code = v_icom_vars.civ_code_to_token[stri]
-        except KeyError:
-            code = 0
-    elif len(civ_command) == 4:
-        try:
-            stri = str(hex(civ_command[0])) + str(hex(civ_command[1])) + str(hex(civ_command[2])) + str(hex(civ_command[3]))
-            code = v_icom_vars.civ_code_to_token[stri]
-        except KeyError:
-            code = 0
-    if code > 0:
-        v_sk.answer_token = int_to_list(code, 2)
-        return 1
-    return 2
 
 
 def check_length(line, no_of_strings, start, max1, max2, max3, max4, max5):
@@ -484,7 +463,7 @@ def check_length(line, no_of_strings, start, max1, max2, max3, max4, max5):
     return 1, len1, len2, len3, len4, len5
 
 
-def copy_and_fill(line, start, le, max, alpha):
+def copy_and_fill(line, start, le, max_, alpha):
     # append le le charrs from line to v_icom_vars.Civ_out anf fill with blanks up to max chars
     charcount = 0
     temp = 0
@@ -494,7 +473,7 @@ def copy_and_fill(line, start, le, max, alpha):
             charcount += 1
         start += 1
         temp += 1
-    while charcount < max:
+    while charcount < max_:
         # fill with blanks
         v_icom_vars.Civ_out.extend([0x20])
         charcount += 1

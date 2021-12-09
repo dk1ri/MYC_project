@@ -20,7 +20,7 @@ IC705
 # line 9: Telnet Port
 23
 # line10: Com Port number
-6
+5
 # line 11: CIV Adress (0x94 = 148)
 164
 # line12: CIV timeout (seconds)
