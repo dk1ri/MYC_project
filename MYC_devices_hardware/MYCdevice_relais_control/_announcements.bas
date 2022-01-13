@@ -1,5 +1,5 @@
 ' announcements
-' 20200422
+' 20220113
 '
 Announce:
 'Befehl &H00
@@ -101,7 +101,7 @@ Data "15;ap,INP4;1;1024;lin;-"
 'Befehl &H10
 'liest digital alle
 'read digital all
-Data"16;am,all;w,{0 to 4095}"
+Data"16;aa,all;w,{0 to 4095}"
 '
 'Announce17:
 'Befehl &H11
