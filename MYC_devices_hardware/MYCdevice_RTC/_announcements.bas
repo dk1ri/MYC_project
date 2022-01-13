@@ -1,5 +1,5 @@
 ' announcements
-' 20200428
+' 20220113
 '
 Announce:
 'Befehl &H00
@@ -23,7 +23,7 @@ Data "2;om,write register;b;15"
 'Befehl  &H03 <0..14>
 'liest register
 'read register
-Data "3;am,,as2"
+Data "3;am,as2"
 '
 'Announce4:
 'Befehl &HF0<n><m>
