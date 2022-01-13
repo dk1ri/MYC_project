@@ -1,6 +1,6 @@
 """
 name : io_handling.py IC705
-last edited: 20210220
+last edited: 20220109
 """
 
 import sys
@@ -74,13 +74,11 @@ class ServerThread (threading.Thread):
     def run(self):
         while 1:
             connection, addr = self.server_socket.accept()
-            write_log("connected to: " + str(addr))
+        #    write_log("connected to: " + str(addr))
             server_read = ServerThreadRead(connection, self.input_buffer_number)
+            server_write = ServerThreadWrite(connection,)
             server_read.start()
-            write_log("server read start")
-            server_write = ServerThreadWrite(connection, self.input_buffer_number)
             server_write.start()
-            write_log("server write start")
 
 
 class ServerThreadRead (threading.Thread):
@@ -98,39 +96,35 @@ class ServerThreadRead (threading.Thread):
             try:
                 data_in = self.connection.recv(1024)
                 if len(data_in) == 0:
-                    continue
-                v_sk.active[self.input_buffer_number] = 1
-                # this works with cr and cr + lf
-                if data_in[-1] == 0xa:
-                    data_in = data_in[:-1]
-                if data_in[-1] == 0x0d:
-                    data_in = data_in[:-1]
-                temp = 0
-                while temp < len(data_in):
-                    analyze_sk(chr(data_in[temp]), self.input_buffer_number)
-                    temp += 1
+                    pass
+                else:
+                    v_sk.active[self.input_buffer_number] = 1
+                    temp = 0
+                    while temp < len(data_in):
+                        analyze_sk(chr(data_in[temp]), self.input_buffer_number)
+                        temp += 1
             except (ConnectionAbortedError, OSError):
-                write_log(" input read aborted")
                 self.connection.close()
                 exit()
 
 
 class ServerThreadWrite (threading.Thread):
     # telnet server
-    def __init__(self, connection, input_buffer_number):
+    def __init__(self, connection):
         threading.Thread.__init__(self)
         self.connection = connection
-        self.input_buffer_number = input_buffer_number
 
     def run(self):
         while True:
-            if v_sk.info_to_telnet != bytearray([]):
+            if v_sk.info_to_telnet != bytearray([]) and v_sk.info_to_telnet[-1] == 10:
                 try:
+                    #self.connection.settimeout(2)
                     self.connection.sendall(v_sk.info_to_telnet)
                     v_sk.info_to_telnet = bytearray([])
-                except (ConnectionAbortedError, OSError):
-                    write_log("telnet server send aborted")
-                    self.connection.close()
+                except (ConnectionAbortedError, OSError, socket.timeout):
+                    write_log("telnet write server send aborted")
+                    v_sk.info_to_telnet = bytearray([])
+                    v_sk.info_to_all = bytearray([])
                     exit()
 
 
@@ -143,78 +137,14 @@ def start_ethernet_server(port, input_buffer_number):
     v_sk.ethernet_server_started[input_buffer_number].append(port)
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
-        server_socket.bind(("", port))
+        server_socket.bind(("127.0.0.1", port))
     except socket.error:
         # to be replaced by entry to log
         write_log("server socket failed")
-    server_socket.listen(10)
+    server_socket.listen(2)
     ethernet = ServerThread(server_socket, input_buffer_number)
     ethernet.start()
     write_log("telnet server started")
-
-
-# client:
-class ClientThread (threading.Thread):
-    # ethernet client part, connecting to devices
-    def __init__(self, client_socket, host, port, device_buffer_number):
-        threading.Thread.__init__(self)
-        self.client_socket = client_socket
-        self.host = host
-        self.port = port
-        self.device_buffer_number = device_buffer_number
-
-    def run(self):
-        try:
-            self.client_socket.connect((self.host, self.port))
-        except socket.error:
-            # to be replaced by entry to log
-            self.client_socket.close()
-            exit()
-        client_read = ClientThreadRead(self.client_socket, self.device_buffer_number)
-        client_read.start()
-        client_write = ClientThreadWrite(self.client_socket, self.device_buffer_number)
-        client_write.start()
-        while 1:
-            pass
-
-
-class ClientThreadRead (threading.Thread):
-    # ethernet client part, connecting to devices
-    def __init__(self, client_socket, device_buffer_number):
-        threading.Thread.__init__(self)
-        self.client_socket = client_socket
-        self.device_buffer_number = device_buffer_number
-
-    def run(self):
-        while 1:
-            data_in = self.client_socket.recv(1024)
-            i = 0
-            while i < len(data_in):
-                v_icom_vars.data_to_CR[self.device_buffer_number] += data_in[i]
-                i += 1
-
-
-class ClientThreadWrite (threading.Thread):
-    # ethernet client part, connecting to devices
-    def __init__(self, client_socket, device_buffer_number):
-        threading.Thread.__init__(self)
-        self.client_socket = client_socket
-        self.device_buffer_number = device_buffer_number
-
-    def run(self):
-        while True:
-            if len((v_icom_vars.data_to_device[self.device_buffer_number])) > 0:
-                i = 0
-                out = bytearray([])
-                while i < (v_icom_vars.data_to_device[self.device_buffer_number]):
-                    out += v_icom_vars.data_to_device[self.device_buffer_number][i]
-                self.client_socket.sendall(out)
-
-
-def start_ethernet_client(host, port, device_buffer_number):
-    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    client_thread = ClientThread(client_socket, host, port, device_buffer_number)
-    client_thread.start()
 
 
 # Terminal:
@@ -241,13 +171,16 @@ def send_to_all():
         temps = ""
         count = 0
         while count < len(v_sk.info_to_all):
-            temp = v_sk.info_to_all[count]
-            temps += hex(temp)
+            temp = hex(v_sk.info_to_all[count]).lstrip("0x")
+            if len(temp) == 1:
+                temp = " 0" + temp
+            temps += temp
             count += 1
+        v_sk.info_to_telnet.extend([el for el in (v_sk.info_to_all)])
+        v_sk.info_to_telnet.extend([10])
         if v_icom_vars.test_mode == 1:
             print("Hex: ", temps)
         else:
             print(temps)
-        v_sk.info_to_telnet = v_sk.info_to_all
         v_sk.info_to_all = bytearray([])
     return

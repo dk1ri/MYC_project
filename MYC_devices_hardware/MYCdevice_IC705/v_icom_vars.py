@@ -1,6 +1,6 @@
 """
 name : v_icom_vars.py IC705
-last edited: 20210305
+last edited: 20220103
 Specific constants and variables
 """
 # configurable variables (default)
@@ -36,14 +36,16 @@ last_error_msg = ""
 command_time = 0
 civ_watchdog_time = 0
 civ_command_length = 0
+# set to 1, when read is done; to 0 after successful send (SK)
 input_locked = 0
 last_frequency = 0
 last_mode = 0       # lsb as for command 258 (civ command 01)
+last_mode_filter = 0
+last_data_mode = 0
+last_data_mode_filter = 0
 last_vfo_mem = 0    # 0: VFOA, 1:VFOB, 3: memory
 vfo_split = 0
 command_at_start = 1
-command_at_start_continue = 0
-check_usb_again = 1
 icom_usb = 0
 data_to_device = bytearray([])
 data_to_CR = bytearray([])
@@ -51,7 +53,7 @@ start_echo_off = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x1a, 0x05, 0x01, 0x3
 start_transceive = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x1a, 0x05, 0x01, 0x31, 0x01, 0xfd])
 start_memory_no = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x08, 0x00, 0x00, 0xfd])
 # LSB
-start_mode = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x06, 0x01, 0x01, 0xfd])
+start_read_data_mode = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x1a, 0x06, 0xfd])
 start_VFOA = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x07, 0x00, 0xfd])
 start_read_f = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x03, 0xfd])
 start_read_mode = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x04, 0xfd])
@@ -1140,6 +1142,12 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1188: bytearray([0, 3, 1, 0, 1, 0, 0x27, 0x20]),
                     1189: bytearray([0, 2, 0, 0x27, 0x20]),
                     1190: bytearray([0, 3, 1, 0, 8, 0, 0x28, 0x10]),
+                    1191: bytearray([0, 3, 0, 0x04]),
+                    1192: bytearray([0, 2, 0, 0x04]),
+                    1194: bytearray([0, 3, 0, 0x1a, 0x00]),
+                    1195: bytearray([0, 2, 0, 0x1a, 0x00]),
+                    1196: bytearray([0, 3, 0, 0x1a, 0x06]),
+                    1197: bytearray([0, 2, 0, 0x1a, 0x06]),
                     }
 
 

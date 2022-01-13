@@ -1,6 +1,6 @@
 """
 name : init.py IC705
-last edited: 20210221
+last edited: 20220103
 """
 
 import os
@@ -21,8 +21,6 @@ def initialization():
     # read info for all devices and initialize them
     # and create announcelist
     # new_device_found = read_my_devices()
-    initialize_inputbuffer("TERMINAL")
-    initialize_inputbuffer("TELNET")
     return
 
 
@@ -151,18 +149,8 @@ def create_announce_list():
 
 
 def commands_at_start():
-    if v_icom_vars.command_at_start_continue == 1:
-
-        # wait for command to be finished
-        if v_icom_vars.input_locked == 0:
-            # finished
-            v_icom_vars.command_at_start += 1
-            v_icom_vars.command_at_start_continue = 0
-            if v_icom_vars.command_at_start == 8:
-                if v_icom_vars.test_mode == 1:
-                    print("installation ready")
-                v_icom_vars.command_at_start = 0
-    else:
+    if v_icom_vars.input_locked == 0:
+        v_icom_vars.input_locked = 1
         if v_icom_vars.command_at_start == 1:
             # echo off
             v_icom_vars.Civ_out = v_icom_vars.start_echo_off
@@ -171,7 +159,7 @@ def commands_at_start():
             v_icom_vars.Civ_out = v_icom_vars.start_transceive
         elif v_icom_vars.command_at_start == 3:
             # LSB
-            v_icom_vars.Civ_out = v_icom_vars.start_mode
+            v_icom_vars.Civ_out = v_icom_vars.start_read_data_mode
         elif v_icom_vars.command_at_start == 4:
             # vfo A
             v_icom_vars.Civ_out = v_icom_vars.start_VFOA
@@ -184,5 +172,17 @@ def commands_at_start():
         elif v_icom_vars.command_at_start == 7:
             # read mode
             v_icom_vars.Civ_out = v_icom_vars.start_memory_no
-        v_icom_vars.command_at_start_continue = 1
+        elif v_icom_vars.command_at_start == 8:
+            v_icom_vars.command_at_start = 0
+            v_sk.info_to_telnet = bytearray([])
+            v_sk.info_to_all = bytearray([])
+            # start sk not earlier
+            initialize_inputbuffer("TERMINAL")
+            initialize_inputbuffer("TELNET")
+            if v_icom_vars.test_mode == 1:
+                print("installation ready")
+        if v_icom_vars.command_at_start != 0:
+            v_icom_vars.command_at_start += 1
+        else:
+            v_icom_vars.input_locked = 0
     return

@@ -1,6 +1,6 @@
 """
 name : misc_functions.py IC705
-last edited: 20210220
+last edited: 20220103
 misc functions
 """
 
@@ -481,8 +481,8 @@ def copy_and_fill(line, start, le, max_, alpha):
 
 
 def analyze_sk(t, input_buffer_number):
-    if v_sk.hex_count == 0:
-        v_sk.data = 0
+    # if v_sk.hex_count == 0:
+    #    v_sk.data = 0
     if str.isnumeric(t) == 1:
         # 0 - 9
         if v_sk.hex_count == 0:
@@ -504,10 +504,17 @@ def analyze_sk(t, input_buffer_number):
     # ignore other characters
     if v_sk.hex_count == 2:
         # add to inputline
-        if v_sk.data < 256:
-            v_sk.inputline[input_buffer_number].extend(bytearray([v_sk.data]))
-            if v_icom_vars.test_mode == 1:
-                print("in: ", hex(v_sk.data))
+        v_sk.inputline[input_buffer_number].extend(bytearray([v_sk.data]))
+        if v_icom_vars.test_mode == 1:
+            print("in: ", hex(v_sk.data))
         v_sk.data = ""
         v_sk.hex_count = 0
     return
+
+
+def my_exte(desti, source, start, stop):
+    i = start
+    while i < stop:
+        desti.extend(source[i])
+        i += 1
+    return desti

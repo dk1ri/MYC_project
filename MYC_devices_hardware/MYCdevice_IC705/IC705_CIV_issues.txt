@@ -1,11 +1,10 @@
 ICOM CIV Issues and comments for IC705
-20210304
+20211207
 Author: DK1RI
 
-Used IC705 firmware version: 1.20
-CIV Manual Version: september 2020
-additions coming with firmware 1.20
-IC705 converter programm (python) version: V01.3
+Used IC705 firmware version: 1.26
+CIV Manual Version: march 2021
+IC705 converter programm (python) version: V01.5
 
 My restrictions:
 I use my IC705 at the current holiday qth in EA8 only. There I have written the CIV converter program.
@@ -14,63 +13,21 @@ There is no other DStar station nearby. I have no access to the internet router 
 So I did not found the reason for some of the coresponding command limitations.
 Due to local limitations here I cannot use CIV and GPS at the same time.
 
-Limitations:
-I tried to write a working CIV converter working for all CIV commands for the IC705.
-Obviously some commands are not working under all conditions. I found some restrictions, but did not systematically check
-any command under all possible conditions. So there may be other non working conditions, which I did not found. 
-I did not checked the IC705 systematically for missing CIV codes.
-
-Summary:
-CIV is a very old protocol. The first radios with this protocol - as x71 -  had - except the frequency and mode - 
-few other CIV controls only.
-Over the time the radios got more functions and ICOM tried at the beginning to have the same control codes
-for the same function for later radios.
-But this did not work anymore. The 1a05 commands usually have different codes for the same function.
-But ICOM tried to keep the sequence of the functions for different radios.
-So the code numbering system is a little bit curious and complicate the converter programming, but ok.
-
-Some inconsistencies came up over the time, comparing older and newer commands:
-- parameters are 0-based or 1-based.
-- discrete paramter values numbered from 0 to .. or as exact values (as for tone frequencies).
-- wrong command is ignored (as scan resume) or CIV error sent.
-- for some commands novalid is ff only, some commands have length as defined.
-Icom obviously used the same programming code for different radios.
-Some of the issues were found with the IC7300. I sent them to ICOM two (?) years ago.
-
-Most of the issues below are (or seem to be) not ducumemnnted missing conditions for work.
-Sometimes I found those rules in the other manuals. But I exspect everything in the CIV reference manual as well.
-So I did not checked the other manuals systematically for those issues.
-It is ok for simplification of manual handling reasons not to show all configurations (eg depending 
-on the mode). 
-Some commands cannot be used depending on other commands: format of RTTY log file should not be changed,
-when logfile is on in RTTY mode, but can be modified under all other conditions (assuming, that file is closed in non RTTY mode)
-Most limitations are similar cases: the limitation make sense under very specfic circumstances only.
-Some limitations are documentended, others (most of them) are not.
-If you want to program a knowledge based (some peoaple call it "intelligent") system, you must know all limititaions (rules).
-
-Earlier radios had obviously all function with corresponding CIV commands.
-I think, that functions like display colors are not necessary to be remotely controlled by CIV.
-But for conpleteness it is ok.
-
-The memory hold some more paramters than frequency and mode. But with CIV transceive=1 only those are sent (and not all)
-when changing the memory or vfo <-> memory.
+Other general comments: see IC7300_CIV_issues.
 
 Missing CIV codes:
 I did not checked the IC705 systematically for missing CIV codes, but those I found:
 gps alarm select
-most picture functions (but not all of them make sense with rmote control)
+most picture functions (but not all of them make sense with remote control)
 1a04 is for agc mid only, fast and slow missing
 wlan configuration
 bluetooth configuration
-programmed scan edge
 
 
 issues by CIV code:
 00		is no send; should read: sent by radio without command if 1a05131=1
 01		is no send; should read: sent by radio without command if 1a05131=1
 07		is send only, A0 B0 in VFO mode only
-0800 - 99	something wrong with the call chanals page 3. 080100: CIV error 081000 CIV error
-08a00100	CIV error
 0b		in memory mode only
 0exx		all are send only
 0e 01 - 024	not working always, depend on vfo - memory - selected

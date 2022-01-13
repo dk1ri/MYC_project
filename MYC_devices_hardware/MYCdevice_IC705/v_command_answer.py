@@ -1,6 +1,6 @@
 """"
 name: v_command_answer.py IC705
-last edited: 2021204
+last edited: 20220203
 list for command and answers
 """
 
@@ -129,7 +129,7 @@ command =  {256: command_frequency00,
             374: answercommand_memory,
             375: command_memory_split_select,
             376: answercommand_memory,
-            377: command_memory_mode_filter,
+            377: command_memory_mode,
             378: answercommand_memory,
             379: command_memory_data_mode,
             380: answercommand_memory,
@@ -817,7 +817,7 @@ command =  {256: command_frequency00,
             1064: u_command1,
             1065: u_command1,
             1066: u_command1,
-            1067: comamnd_data_mode_wth_filter,
+            1067: comamnd_data_mode,
             1068: u_command1,
             1069: u_command1,
             1070: u_command1,
@@ -941,6 +941,12 @@ command =  {256: command_frequency00,
             1188: u_command1,
             1189: u_command1,
             1190: u_command1,
+            1191: command_filter,
+            1192: u_command1,
+            1193: command_memory_mode,
+            1194: answercommand_memory,
+            1196: comamnd_data_mode_filter,
+            1197: u_command1,
             65520: com240,
             65532: com252,
             65533: com253,
@@ -1026,8 +1032,8 @@ answer16 = {2:  answer_2_1_b,
 answer1a = {0x0: answer_memory,
             0x01: answer_bandstack,
             0x02: answer_keyer_memory,
-            0x03: answer_2_1_b,
-            0x04: answer_2_1_b,
+            0x03: filter_bandwidth,
+            0x04: time_constant,
             }
 # answer civ-commands == 0x1a0500)
 answer1a0500 = {0x01: answer_hpf_lpf,
@@ -1475,19 +1481,37 @@ answer_2000 =  {0x00: answer_3_1_b,
                 0x02: answer_dv_rx_call_sign,
                 }
 
-answer_2010 =  {0x00: answer_3_1_b,
+answer_2001 =  {0x00: answer_3_1_b,
                 0x01: answer_dv_rx_message,
                 0x02: answer_dv_rx_message,
                 }
 
 
-answer_2020 =  {0x00: answer_3_1_b,
+answer_2002 =  {0x00: answer_3_1_b,
                 0x01: answer_3_1_b,
                 0x02: answer_3_1_b,
                 }
 
 
-answer_2040 =  {0x00: answer_3_1_b,
+answer_200300 =  {0x00: answer_3_1_b,
+                  }
+
+
+answer_200301 =  {0x00: dpsrs_postion,
+                  0x01: dprs_object_status,
+                  0x02: dprs_item_status,
+                  0x03: dprs_weather_status
+                  }
+
+
+answer_200302 =  {0x00: dpsrs_postion,
+                  0x01: dprs_object_status,
+                  0x02: dprs_item_status,
+                  0x03: dprs_weather_status
+                  }
+
+
+answer_2004 =  {0x00: answer_3_1_b,
                 0x01: answer_dprs_message,
                 0x02: answer_dprs_message,
                 }
