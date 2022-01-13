@@ -1,43 +1,43 @@
 ' name : __announcements IC9700
-' 20211020
+' 20220113
 '
 Announce:
 'Befehl &H00
-'eigenes basic 'Announcement lesen
-'basic 'Announcement is read to I2C or output
+'eigenes basic Announcement lesen
+'basic Announcement is read to I2C or output
 Data "0;m;DK1RI;IC9700 Interface;V01.4;1;175;2;983;1-1"
 '
-'Announce1:
+Announce1:
 'Befehl 256 &H0100 Code 05
 'Frequenz schreiben
 'write Frequency
 Data "256;op,freqency;1;72000000,{144000000 to 145999999, 430000000 to 439999999,1240000000 to 1299999999};lin;Hz"
 '
-'Announce2:
+Announce2:
 'Befehl 257 &H0101 Code 00 + 03
 'Frequenz lesen
 'read Frequency
 Data "257;ap,as256"
 '
-'Announce3:
+Announce3:
 'Befehl 258 &H0102 Code 06
 'Mode schreiben
 'write mode
 Data "258;os,mode;2;0,LSB;1,USB;1,AM;3,CW;4,RTTY;5,FM;6,CW-R;7,RTTY-R;8,DV;9,DD;0,FIL1;1,FIL2;2.FIL3"
 '
-'Announce4:
+Announce4:
 'Befehl 259 &H0103 Code 04 + 01
 'Mode lesen
 'read mode
 Data "259,as258"
 '
-'Announce5:
+Announce5:
 'Befehl 260 &H0104: Code 02
 'Bandgrenze lesen
 'read band edge
 Data "260;ap,band edge frequencies;1;112000003,{144000000 to 146000000, 430000000 to 440000000,1200000000 to 1300000000};lin;Hz;112000003,{144000000 to 146000000, 430000000 to 440000000,1200000000 to 1300000000};lin;Hz"
 '
-'Announce6:
+Announce6:
 'Befehl 261 &H0105 Code 07
 'Vfo / memory setzen
 'set Vfo / memory 
@@ -49,25 +49,25 @@ Announce7:
 'vfo mode
 Data "262;os,vfo mode;1;0,A;1,B;2,A=B;3,main<>sub"
 '
-'Announce8:
+Announce8:
 'Befehl 263 &H0107 Code 07d2
 'main / sub band selection
 'main / sub band selection
 Data "263;os,main / sub band selection ;1;0.main;1,sub"
 '
-'Announce9:
+Announce9:
 'Befehl 264 &H0108 Code 07d2
 'main / sub band selection
 'main / sub band selection
 Data "264;as,as263"
 '
-'Announce10:
+Announce10:
 'Befehl 265 &H0109 Code 08
 'set memory mode
 'set memory mode
 Data "263;ou,memory mode;1;0.idle;1,memory mode"
 '
-'Announce11:
+Announce11:
 'Befehl 266 &H010a Code 08
 'select memory
 'select memory
@@ -79,685 +79,685 @@ Announce12:
 'vfo - memory functions
 Data "267;ou,vfo - memory funtions;1;0,idle;1,copy to memory;2,copy to vfo;3,clear memory"
 '
-'Announce13:
+Announce13:
 'Befehl 268 &H010c Code 0D
 'Duplex offset
 'Duplex offset
 Data "268;op,Duplex offset;1;1000000,{0 to 999999,lin;100Hz"
 '
-'Announce14:
+Announce14:
 'Befehl 269 &H010d Code 0C
 'Duplex offset
 'Duplex offset
 Data "269;ap,as 268"
 '
-'Announce15:
+Announce15:
 'Befehl 270 &H010e Code 0E00 - 0E24
 'start scan mode
 'start scan mode
-Data "270;os,start scan mode;1;0,stop;1,prog memory;2,prog;3,delta f;4,prog fine;5,fine delta;6,memory;7,select memory;8,mode select;4,CHAPTER,scan"
+Data "270;os,start scan mode;1;0,stop;1,prog memory;2,prog;3,delta f;4,prog fine;5,fine delta;6,memory;7,select memory;8,mode select;4,CHAPTER;scan"
 '
-'Announce16:
+Announce16:
 'Befehl 271 &H010f Code 0eA1 - 0EA7
 'scan span waehlen
 'select scan span
-Data "273;os,select scan span;1;+-5kHz;1,+-10kHz;2,+-20kHz;3,+-50kHz;4,+-100kHz;5,+-500kHz;6,+-1MHz;4,CHAPTER,scan"
+Data "273;os,select scan span;1;+-5kHz;1,+-10kHz;2,+-20kHz;3,+-50kHz;4,+-100kHz;5,+-500kHz;6,+-1MHz;4,CHAPTER;scan"
 '
-'Announce17:
+Announce17:
 'Befehl 272 &H0110 Code 0eb0
 'clear select chanal
 'clear select chanal
-Data "272,ou,clear select chanal;1;0,idle;1,clear;4,CHAPTER,scan"
+Data "272,ou,clear select chanal;1;0,idle;1,clear;4,CHAPTER;scan"
 '
-'Announce18:
+Announce18:
 'Befehl 273 &H0111 Code 0eb1
 'select chanal
 'select chanal
 Data "273,os,select chanal;1;0,1;1,2;2,3"
 '
-'Announce19:
+Announce19:
 'Befehl 274 &H0112 Code 0eb2
 'Set for select memory scan
 'Set for select memory scan
-Data "274,os,Set for select memory scan;0;1,sel1;1,sel2;2,sel3;4,CHAPTER,scan"
+Data "274,os,Set for select memory scan;0;1,sel1;1,sel2;2,sel3;4,CHAPTER;scan"
 '
-'Announce20:
+Announce20:
 'Befehl 275 &H0113 Code 0ed0, 0ed3
 'scan resume
 'scan resume
-Data "275;os,scan resume;1;0,off;1,on;4,CHAPTER,scan"
+Data "275;os,scan resume;1;0,off;1,on;4,CHAPTER;scan"
 '
-'Announce21:
+Announce21:
 'Befehl 276 &H0114 Code 0f
 'split / duplex
 'split / duplex
 Data "276;os,split;1;0,split off;1,split on;2,simplex;3,dup-;4,dup+;5,RPS"
 '
-'Announce22:
+Announce22:
 'Befehl 277 &H0115 Code 0f
 'split / duplex
 'split / duplex
 Data "277;as,split / duplex;1;0,split off;1,split on;2,dup-;3,dup+;4,RPS"
 '
-'Announce23:
+Announce23:
 'Befehl 278 &H0116 Code 10
 'tuning step
 'tuning step
 Data "278;os,tuning step;1;0,off;1,100;2,500,3;1k;4,5k;5,6,10k;7,12.5k;8,20k;9,25k;10,50k;11,100k"
 '
-'Announce24:
+Announce24:
 'Befehl 279 &H0117 Code 10
 'tuning step
 'tuning step
 Data "279;as,as278"
 '
-'Announce25:
+Announce25:
 'Befehl 280 &H0118 Code 11
 'Abschwaecher
 'attenuator
 Data "280;os,attenuator;1;0,off;1,10dB"
 '
-'Announce26:
+Announce26:
 'Befehl 281 &H0119 Code 11
 'Abschwaecher
 'attenuator
 Data "281;as,as280"
 '
-'Announce27:
+Announce27:
 'Befehl 282 &H011A  Code 13
 'aktuelle Sprachausgabe
 'actual speech
 Data "282;os,speech;1;0,all;1,freq and smeter;2,mode"
 '
-'Announce28:
+Announce28:
 'Befehl 283 &H011B Code 1401
 'Lautstaerke
 'AF level
 Data "283;op,AF level;1;256;lin;%"
 '
-'Announce29:
+Announce29:
 'Befehl 284 &H011C Code 1401
 'Lautstaerke
 'AF level
 Data "284;ap,as283"
 '
-'Announce30:
+Announce30:
 'Befehl 285 &H011D Code 1402
 'Hf Pegel
 'RF level
 Data "285;op,RF level;1;256;lin;%"
 '
-'Announce31:
+Announce31:
 'Befehl 286 &H011E Code 1402
 'Hf Pegel
 'RF level
 Data "286;ap,as285"
 '
-'Announce32:
+Announce32:
 'Befehl 287 &H01F Code 1403
 'Squelch
 'Squelch
 Data "287;op,Squelch;1;256,{0 to 100};lin;%"
 '
-'Announce33:
+Announce33:
 'Befehl 288 &H0120 Code 1403
 'Squelch
 'Squelch
 Data "288;ap,as287"
 '
-'Announce34:
+Announce34:
 'Befehl 289 &H0121 Code 1406
 'Noise reduction
 'Noise reduction
 Data "289;op,Noise reduction;1;256,{0 to 100};lin;%"
 '
-'Announce35:
+Announce35:
 'Befehl 290 &H0122 Code 1406
 'Noise reduction
 'Noise reduction
 Data "290;ap,as289"
 '
-'Announce36:
+Announce36:
 'Befehl 291 &H0123 Code 1407
 'inner Twin PBT
 'inner Twin PBT
 Data "291;op, PBT1;1;256;lin;-"
 '
-'Announce37:
+Announce37:
 'Befehl 292 &H0124 Code 1407
 'inner Twin PBT
 'inner Twin PBT
 Data "292;ap,as291"
 '
-'Announce38:
+Announce38:
 'Befehl 293 &H0125 Code 1408
 'outer Twin PBT
 'outer Twin PBT
 Data "293;op,PBT2;1;256;lin;-"
 '
-'Announce39:
+Announce39:
 'Befehl 294 &H0126 Code 1408
 'outer Twin PBT
 'outer Twin PBT
 Data "294;ap,as293"
 '
-'Announce40:
+Announce40:
 'Befehl 295 &H0127 Code 1409
 'CW Pitch
 'CW Pitch
 Data "295;op,CW Pitch;1;256,{300 to 900};lin;Hz"
 '
-'Announce41:
+Announce41:
 'Befehl 296 &H0128 Code 1409
 'CW Pitch
 'CW Pitch
 Data "296;ap,as295"
 '
-'Announce42:
+Announce42:
 'Befehl 297 &H0129 Code 140A
 'Hf Leistung
 'Rf power
 Data "297;op,Rf power;1;256,{0 to 100};lin;%"
 '
-'Announce43:
+Announce43:
 'Befehl 298 &H012A Code 140A
 'Hf Leistung
 'Rf power
 Data "298;ap,as297"
 '
-'Announce44:
+Announce44:
 ''Befehl 299 &H012B Code 140B
 'Mic Pegel
 'Mic level
 Data "299;op,Mic level;1;256,{0 to 100};lin;%"
 '
-'Announce45:
+Announce45:
 'Befehl 300 &H012C Code 140B
 'Mic Pegel
 'Mic level
 Data "300;ap,as299"
 '
-'Announce46:
+Announce46:
 'Befehl 301 &H012D Code 140C
 'CW Geschwindigkeit
 'key speed
 Data "301;op,key speed;1;256,{6 to 48};lin;wpm"
 '
-'Announce47:
+Announce47:
 'Befehl 302 &H012E Code 140C
 'CW Geschwindigkeit
 'key speed
 Data "302;ap,as301"
 '
-'Announce48:
+Announce48:
 'Befehl 308 &H012F Code 140D
 'Notch
 'Notch
 Data "304;op,Notch;1;256,{0 to 100};lin;%"
 '
-'Announce49:
+Announce49:
 'Befehl 304 &H0130 Code 140D
 'Notch
 'Notch
 'Data "304;ap,as303"
 '
-'Announce50:
+Announce50:
 'Befehl 305 &H0131 Code 140E
 'Comp
 'Comp
 Data "305;op,comp;1;256,{0 to 10};lin;-"
 '
-'Announce51:
+Announce51:
 'Befehl 306 &H0132 Code 140E
 'Comp
 'Comp
 Data "306;ap,as305"
 '
-'Announce52:
+Announce52:
 'Befehl 307 &H0133 Code 140F
 'Break in delay
 'Break in delay
 Data "307;op,break in delay;1;256,{2.0 to 13.0};lin;d"
 '
-'Announce53:
+Announce53:
 'Befehl 308 &H0134 Code 140F
 'Break in delay
 'Break in delay
 Data "308;ap,as307"
 '
-'Announce54:
+Announce54:
 'Befehl 309 &H0135 Code 1412
 'NB Pegel
 'NB level
 Data "309;op,NB level;1;256,{0 to 100};lin;%"
 '
-'Announce55:
+Announce55:
 'Befehl 310 &H0136 Code 1412
 'NB Pegel
 'NB level
 Data "310;ap,as309"
 '
-'Announce56:
+Announce56:
 'Befehl 311 &H0137 Code 1415
 'Monitor Pegel
 'monitor level
 Data "311;op,monitor level;1;256,{0 to 100};lin;%"
 '
-'Announce57:
+Announce57:
 'Befehl 312 &H0138 Code 1415
 'Monitor Pegel
 'monitor level
 Data "312;ap,as311"
 '
-'Announce58:
+Announce58:
 'Befehl 313 &H0139 Code 1416
 'VOX Pegel
 'VOX level
 Data "313;op,vox level;1;256,{0 to 100};lin;%"
 '
-'Announce59:
+Announce59:
 'Befehl 314 &H013A Code 1416
 'VOX Pegel
 'VOX level
 Data "314;ap,as313"
 '
-'Announce60:
+Announce60:
 'Befehl 315 &H013B Code 1417
 'AnitVOX Pegel
 'AntiVOX level
 Data "315;op,antivox level;1;256,{0 to 100};lin;%"
 '
-'Announce61:
+Announce61:
 'Befehl 316 &H013C Code 1417
 'AnitVOX Pegel
 'AntiVOX level
 Data "316;ap,as315"
 '
-'Announce62:
+Announce62:
 'Befehl 317 &H013d Code 1419
 'Helligkeit
 'brightness
 Data "317;op,brightness;1;256,{0 to 100};lin;%"
 '
-'Announce63:
+Announce63:
 'Befehl 318 &H013e Code 1419
 'Helligkeit
 'brightness
 Data "318;ap,as317"
 '
-'Announce64:
+Announce64:
 'Befehl 319 &H013f Code 1501
 'noise or S-meter squelch status
 'noise or S-meter squelch status
 Data "319;as,noise or S-meter squelch status;1;0,off;1,on "
 '
-'Announce65:
+Announce65:
 'Befehl 320 &H0140 Code 1502
 'S meter Pegel
 's meter level
 Data "320;as,s meter level;1;256,{121{0 to 9},135{0 to 62}}"
 '
-'Announce66:
+Announce66:
 'Befehl 321 &H0141 Code 1505
 'various squelch functions status
 'various squelch functions status
 Data "321;as,various squelch functions status;1;0,off;1,on "
 '
-'Announce67:
+Announce67:
 'Befehl 322 &H0142 Code 1507
 'OFV
 'OFV
 Data "322;as,OFV;1;0,off;1,on "
 '
-'Announce68:
+Announce68:
 'Befehl 323 &H0143 Code 1511
 'Leistung
 'PO meter
 Data "323;ap,PO meter;1;256,{143,{0 TO 50},113,{51 to 150};lin;%"
 '
-'Announce69:
+Announce69:
 'Befehl 324 &H0144 Code 1512
 'SWR meter
 'SWR meter
 Data "324;ap,SWR meter;1;256,49,{1.00 to 1.50},32,{1,51 to 2.00},40,{2,01 to 3,00},135,{3,01 to 6.00};lin;-"
 '
-'Announce70:
+Announce70:
 'Befehl 325 &H0145 Code 1513
 'ALC meter
 'ALC meter
 Data "325;ap,ALC meter;1;121,{0 to 100};lin;%"
 '
-'Announce71:
+Announce71:
 'Befehl 326 &H0146 Code 1514
 'Comp meter
 'comp meter
 Data "326;ap,comp meter;1;256,130,{0 to 15.0},126,{15,1 to 25.5};lin;dB"
 '
-'Announce72:
+Announce72:
 'Befehl 327 &H0147 Code 1515
 'Vsupply meter
 'vsupply meter
 Data "327;ap,v supply;1;256,14,{0 to 10},242,{10 to 16.5};lin;V"
 '
-'Announce73:
+Announce73:
 'Befehl 328 &H0148 Code 1516
 'Isupply meter
 'isupply meter
 Data "328;ap,i supply;1;256,122,{0 to 10.0},134,{10.1 to 22};lin;A"
 '
-'Announce74:
+Announce74:
 'Befehl 329 &H0149 Code 1602
 'Preamp
 'Preamp
 Data "329;os,preamp;1;0,off;1,preamp1;2,ext;3,preamp+ext"
 '
-'Announce75:
+Announce75:
 'Befehl 330 &H014A Code 1602
 'Preamp
 'Preamp
 Data "330;as,as329"
 '
-'Announce76:
+Announce76:
 'Befehl 331 &H014B Code 1612
 'AGC
 'AGC
 Data "331;os,AGC;1;0,off;1,fast;2,med;3,slow"
 '
-'Announce77:
+Announce77:
 'Befehl 332 &H014C Code 1612
 'AGC
 'AGC
 Data "332;as,as331"
 '
-'Announce78:
+Announce78:
 'Befehl 333 &H014D Code 1622
 'Noise blanker
 'Noise blanker
 Data "333;os,Noise blanker;1;0,off;1,on"
 '
-'Announce79:
+Announce79:
 'Befehl 334 &H014E Code 1622
 'Noise blanker
 'Noise blanker
 Data "334;as,as333"
 '
-'Announce80:
+Announce80:
 'Befehl 335 &H014F: Code 1640
 'Noise reduction
 'Noise reduction
 Data "335;os,Noise reduction;1;0,off;1,on"
 '
-'Announce81:
+Announce81:
 'Befehl 336 &H0150 Code 1640
 'Noise reduction
 'Noise reduction
 Data "336;as,as335"
 '
-'Announce82:
+Announce82:
 'Befehl 337 &H0151 Code 1641
 'Auto notch
 'Auto notch
 Data "337;os,Auto notch;1;0,off;1,on"
 '
-'Announce83:
+Announce83:
 'Befehl 338 &H0152 Code 1641
 'Auto notch
 'Auto notch
 Data "338;as,as337"
 '
-'Announce84:
+Announce84:
 'Befehl 339 &H0153 Code 1642
 'Repeater tone
 'Repeater tone
 Data "339;os,Repeater tone;1;0,off;1,on"
 '
-'Announce85:
+Announce85:
 'Befehl 340 &H0154 Code 1642
 'Repeater tone
 'Repeater tone
 Data "340;as,as339"
 
-'Announce86:
+Announce86:
 'Befehl 341 &H0155 Code 1643
 'Tone squelch
 'Tone squelch
 Data "341;os,Tone squelch;1;0,off;1,on"
 '
-'Announce87:
+Announce87:
 'Befehl 342 &H0156 Code 1643
 'Tone squelch
 'Tone squelch
 'Data "342;as,as341"
 '
-'Announce88:
+Announce88:
 'Befehl 343 &H0157 Code 1644
 'Speech compressor
 'Speech compressor
 Data "343;os,speech compressor;1;0,off;1,on"
 '
-'Announce89:
+Announce89:
 'Befehl 344 &H0158 Code 1644
 'Speech compressor
 'Speech compressor
 Data "344;as,as343"
 '
-'Announce90:
+Announce90:
 'Befehl 345 &H0159 Code 1645
 'Monitor
 'Monitor
 Data "345;os,Monitor;1;0,off;1,on"
 '
-'Announce91:
+Announce91:
 'Befehl 346 &H015A Code 1645
 'Monitor
 'Monitor
 Data "346;as,as345"
 '
-'Announce92:
+Announce92:
 'Befehl 347 &H015B Code 1646
 'VOX
 'VOX
 Data "347;os,VOX;1;0,off;1,on"
 
-'Announce93:
+Announce93:
 'Befehl 348 &H015C Code 1646
 'VOX
 'VOX
 Data "348;as,as347"
 '
-'Announce94:
+Announce94:
 'Befehl 349 &H015D Code 1647
 'BK
 'BK
 Data "349;os,BK;1;0,off;1,semi;2,full"
 '
-'Announce95:
+Announce95:
 'Befehl 350 &H015E Code 1647
 'BK
 'BK
 Data "350;as,as349"
 '
-'Announce96:
+Announce96:
 'Befehl 351 &H015F Code 1648
 'Manual notch
 'Manual notch
 Data "351;os,manual notch;1;0,off;1,on"
 '
-'Announce97:
+Announce97:
 'Befehl 352 &H0160 Code 1648
 'Manual notch
 'Manual notch
 Data "352;as,as351"
 '
-'Announce98:
+Announce98:
 'Befehl 353 &H0161 Code 164A
 'AFC
 'AFC
 Data "353;os,AFC;1;0,off;1,on"
 '
-'Announce99:
+Announce99:
 'Befehl 354 &H0162 Code 164A
 'AFC
 'AFC
 Data "354;as,as353"
 '
-'Announce100:
+Announce100:
 'Befehl 355 &H0163 Code 164B
 'DTCS
 'DTCS
 Data "355;os,DTCS;1;0,off;1,on"
 '
-'Announce101:
+Announce101:
 'Befehl 356 &H0164 Code 164B
 'DTCS
 'DTCS
 Data "356;as,as355"
 '
-'Announce102:
+Announce102:
 'Befehl 357 &H0165 Code 164F
 'Twin Peak Filter
 'Twin Peak Filter
 Data "357;os,Twin Peak Filter;1;0,off;1,on"
 '
-'Announce103:
+Announce103:
 'Befehl 358 &H0166 Code 164F
 'Twin Peak Filter
 'Twin Peak Filter
 Data "358;as,as357"
 '
-'Announce104:
+Announce104:
 'Befehl 359 &H0168 Code 1650
 'Dial lock
 'Dial lock
 Data "359;os,Dial lock;1;0,off;1,on"
 '
-'Announce105:
+Announce105:
 'Befehl 360 &H0168 Code 1650
 'Dial lock
 'Dial lock
 Data "360;as,as359"
 '
-'Announce106:
+Announce106:
 'Befehl 361 &H0169 Code 1656
 'DSP filter type
 'DSP filter type
 Data "361;os,DSP filter type;1;0,sharp;1,soft"
 '
-'Announce107:
+Announce107:
 'Befehl 362 &H016A Code 1656
 'DSP filter type
 'DSP filter type
 Data "362;as,as361"
 '
-'Announce108:
+Announce108:
 'Befehl 363 &H016B Code 1657
 'Manual notch width
 'Manual notch width
 Data "363;os,Manual notch width;1;0,wide;1,mid;2,narrow"
 '
-'Announce109:
+Announce109:
 'Befehl 364 &H016C Code 1657
 'Manual notch width
 'Manual notch width
 Data "364;as,as363"
 '
-'Announce110:
+Announce110:
 'Befehl 365 &H016D Code 1658
 'SSB transmit bandwidth
 'SSB transmit bandwidth
 Data "365;os,SSB transmit bandwidth;1;0,wide;1,mid;2,narrow"
 '
-'Announce111:
+Announce111:
 'Befehl 366 &H016E Code 1658
 'SSB transmit bandwidth
 'SSB transmit bandwidth
 Data "366;as,as365"
 '
-'Announce112:
+Announce112:
 'Befehl 367 &H016F Code 1659
 'Dual watch
 'Dual watch
 Data "367;os,Dual watch;1;0,off;1,on"
 '
-'Announce113:
+Announce113:
 'Befehl 368 &H0170 Code 1659
 'Dual watch
 'Dual watch
 Data "368;as,as367"
 '
-'Announce114:
+Announce114:
 'Befehl 369 &H0171 Code 165A
 'Satellite mode
 'Satellite mode
 Data "369;os,Satellite mode;1;0,off;1,on"
 '
-'Announce115:
+Announce115:
 'Befehl 370 &H0172 Code 165A
 'Satellite mode
 'Satellite mode
 Data "370;as,as369"
 '
-'Announce116:
+Announce116:
 'Befehl 371 &H0173 Code 165B
 'DSQL/CSQL
 'DSQL/CSQL
 Data "371;os,DSQL/CSQL;1;0,off;1,DSQL;2,CSQL"
 '
-'Announce117:
+Announce117:
 'Befehl 372 &H0174 Code 165B
 'DSQL/CSQL
 'DSQL/CSQL
 Data "372;as,as371"
 '
-'Announce118:
+Announce118:
 'Befehl 373 &H0175 Code 165C
 'GPS TX mode
 'GPS TX mode
 Data "373;os,GPS TX mode;1;0,off;1,PRS;2,NMEA"
 '
-'Announce119:
+Announce119:
 'Befehl 374 &H0176 Code 165C
 'GPS TX mode
 'GPS TX mode
 Data "374;as,as373"
 '
-'Announce120:
+Announce120:
 'Befehl 375 &H0177 Code 165D
 'SQL
 'SQL
 Data "375;os,SQL;1;0,off;1,Tone;2,TSQL;3,DTCS;4,DTCS(T);5,Tone(T)-DTCS(R);6,DTCS(T)-TSQL(R);7,Tone(T)-TSQL(R)"
 '
-'Announce121:
+Announce121:
 'Befehl 376 &H0178 Code 1655D
 'SQL
 'SQL
 Data "376;as,as375"
 '
-'Announce122:
+Announce122:
 'Befehl 377 &H0179 Code 1665
 'IP+
 'IP+
 Data "377;os,IP+;1;0,off;1,on"
 '
-'Announce123:
+Announce123:
 'Befehl 378 &H017A Code 1665
 'iP+
 'IP+
 Data "378;as,as377"
 '
-'Announce124:
+Announce124:
 'Befehl 379 &H17B Code 17  3 byte + string/ -
 'Cw message
 'Cw message
 Data "379;om,Cw message;30,{DEF_ALPHA3}"
 '
-'Announce125:
+Announce125:
 'Befehl 380 &H017C Code 18 3 byte / -
 'Aus / Einschalten
 'switch off / on
 Data "380;os,main switch;1;0,off;1,on"
 '
-'Announce126:
+Announce126:
 'Befehl 381 &H017D Code 19 2 byte / -
 'ID
 'Id
@@ -775,103 +775,103 @@ Announce128:
 'memory select
 Data "383;as,as32"
 '
-'Announce129:
+Announce129:
 'Befehl 384 &H0180 Code 1A00
 '144MHz memory Frequenz schreiben
 'Write 144MHz  Memory frequency
 Data "384;op,144MHz memory frequency;214,{107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm, split}};2000000,{144000000 to 145999999};lin;Hz"
 '
-'Announce130:
+Announce130:
 'Befehl 385 &H0181 Code 1A00
 '144MHz memory Frequenz lesen
 'read 144MHz  Memory frequency
 Data "385;ap,as382"
 '
-'Announce131:
+Announce131:
 'Befehl 386 &H0182 Code 1A00
 '430MHz memory Frequenz schreiben
 'Write 430MHz  Memory frequency
 Data "386;op,430MHz memory frequency;214,{107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm, split}};10000000,{430000000 to 439999999};lin;Hz"
 '
-'Announce132:
+Announce132:
 'Befehl 387 &H0183 Code 1A00
 '430MHz memory Frequenz lesen
 'read 430MHz  Memory frequency
 Data "387;ap,as386"
 '
-'Announce133:
+Announce133:
 'Befehl 388 &H0184 Code 1A00
 '1130MHz memory Frequenz schreiben
 'Write 1230MHz  Memory frequency
 Data "388;op,1230MHz memory frequency;214,{107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm, split}};10000000,{1230000000 to 1239999999};lin;Hz"
 '
-'Announce134:
+Announce134:
 'Befehl 389 &H0185 Code 1A00
 '1230MHz memory Frequenz lesen
 'read 1230MHz  Memory frequency
 Data "389;ap,as388"
 '
-'Announce135:
+Announce135:
 'Befehl 390 &H0186 Code 1A00
 'memory mode filter
 'Memory mode filter
-Data "386;os,mode;642,3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};0,LSB;1,USB;1,AM;3,CW;4,RTTY;5,FM;6,CW-R;7,RTTY-R;8,DV;9,DD;0,Fil1,1;Fil2;2,Fil3"
+Data "390;os,mode;642,3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};0,LSB;1,USB;1,AM;3,CW;4,RTTY;5,FM;6,CW-R;7,RTTY-R;8,DV;9,DD;0,Fil1,1;Fil2;2,Fil3"
 '
-'Announce136:
+Announce136:
 'Befehl 391 &H0187 Code 1A00
 'memory mode filter
 'Memory mode filter
 Data "391;as,as390"
 '
-'Announce137:
+Announce137:
 'Befehl 392 H0188 Code 1A00
 'memory data mode schreiben
 'Write Memory data mode
 Data "392;os,memory data mode;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};0,off;1,on"
 '
-'Announce138:
+Announce138:
 'Befehl 393 &H0189 Code 1A00
 'memory data mode lesen
 'read Memory data mode
 Data "393;as,as392"
 '
-'Announce139:
+Announce139:
 'Befehl 394 &H018A Code 1A00
 'memory tone_tsql_dtcs 
 'memory tone_tsql_dtcs 
 Data "394;os,tone;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};0.off;1,tone;2,tsql;3,DTCS"
 '
-'Announce140::
+Announce140::
 'Befehl 395 &H018B Code 1A00
 'memory tone_tsql_dtcs 
 'memory tone_tsql_dtcs 
 Data "395;as,as394"
 '
-'Announce141:
+Announce141:
 'Befehl 396 &H018C Code 1A00
 'memory duplex schreiben
 'Write Memory duplex
 Data "396;os,duplex;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};0,off;1,-;2,+;3,RPS"
 '
-'Announce142::
+Announce142::
 'Befehl 397 &H018D Code 1A00
 'memory duplex lesen
 'read Memory duplex
 Data "397;as,as396"
 '
-'Announce143:
+Announce143:
 'Befehl 398 &H018E Code 1A00
 'memory DSQL/CSQL
 'Memory DSQL/CSQL
 Data "398;os,DSQL/CSQL;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};0,off;1,DSQL;2,CSQL"
 '
-'Announce144::
+Announce144::
 'Befehl 399 &H018F Code 1A00
 'memory DSQL/CSQL
 'Memory DSQL/CSQL
 Data "399;as,as398"
 '
-'Announce145:
+Announce145:
 'Befehl 400 &H0190 Code 1A00
 'memory tone frequenz schreiben
 'Write Memory tone frequency
@@ -881,13 +881,13 @@ Data "400;os,memory tone frequency;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;
 Data "400;os,memory tone frequency;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
 Data "400;os,memory tone frequency;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1"
 '
-'Announce146:
+Announce146:
 'Befehl 401 &H0191 Code 1A00
 'memory tone frequenz lesen
 'read memory tone frequency
 Data "401;as,as400"
 '
-'Announce147:
+Announce147:
 'Befehl 402 &H0192 Code 1A00
 'memory tone squelch schreiben
 'Write memory tone squelch
@@ -897,13 +897,13 @@ Data "402;os,memory tone squelch;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;26
 Data "402;os,memory tone squelch;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
 Data "402;os,memory tone squelch;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1"
 '
-'Announce148:
+Announce148:
 'Befehl 403 &H093 Code 1A00
 'memory tone squelch lesen
 'read memory tone squelch
 Data "403;as,as402"
 '
-'Announce149:
+Announce149:
 'Befehl 404 &H0194 Code 1A00
 'memory DTCS schreiben
 'Write Memory DTCS
@@ -920,95 +920,95 @@ Data "404;os;81,516;82,523;83,526;84,532;85,546;86,565;87,606;88,612;89,624;90,6
 Data "404;os;91,631;92,632;93,654;94,662;95,664;96,703;97,712;98,723;99,731;100,732;101,734;102,743;103,754"
 '
 '
-'Announce150:
+Announce150:
 'Befehl 405 &H0195 Code 1A00
 'memory DTCS lesen
 'read Memory DTCS
 Data "405;ap,as404"
 '
-'Announce151:
+Announce151:
 'Befehl 406 &H0196 Code 1A00
 'memory DTCS pol  schreiben
 'Write Memory DTCS pol
 Data "406;os,DTCS polarity;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};0,normal;1,t normal - r rev;2,t rev - r normal;3,rev"
 '
-'Announce152::
+Announce152::
 'Befehl 407 &H0197 Code 1A00
 'memory DTCS pol lesen
 'read Memory DTCS pol
 Data "407;as,as406"
 '
-'Announce153:
+Announce153:
 'Befehl 408 &H0198 Code 1A00
 'memory DV code  schreiben
 'Write Memory DV code
 Data "408;os,DV code;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};100;lin;-"
 '
-'Announce154::
+Announce154::
 'Befehl 409 &H0199 Code 1A00
 'memory DV code lesen
 'read Memory DV code
 Data "409;as,as408"
 '
-'Announce155:
+Announce155:
 'Befehl 410 &H019A Code 1A00
 'memory duplex offset frequency schreiben
 'Write Memory duplex offset
 Data "410;os,duplex offset frequency;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};1000000,{0 to 99000000;lin;Hz"
 '
-'Announce156::
+Announce156::
 'Befehl 411 &H019B Code 1a00 2 byte / 3 byte
 'memory duplex offset lesen
 'read Memory duplex offset
-Data "407;as,as406"
+Data "411;as,as410"
 '
-'Announce157:
+Announce157:
 'Befehl 412 &H019C Code 1A00
 'memory UR  schreiben
 'Write UR offset
-Data "421;om,UR;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};8"
+Data "412;om,UR;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};8"
 '
-'Announce154::
+Announce154::
 'Befehl 413 &H019D Code 1A00
 'memory UR lesen
 'read Memory UR
 Data "413;as,as412"
 '
-'Announce159:
+Announce159:
 'Befehl 414 &H019E Code 1A00
 'memory R1  schreiben
 'Write memory R1
 Data "414;om,R1;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};8"
 '
-'Announce160::
+Announce160::
 'Befehl 415 &H019F Code 1A00
 'memory R1 lesen
 'read Memory R1
 Data "415;as,as414"
 '
-'Announce161:
+Announce161:
 'Befehl 416 &H01A0 Code 1A00
 'memory R2  schreiben
 'Write memory R2
 Data "416;om,R2;642,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}X2{norm,split}};8"
 '
-'Announce162::
+Announce162::
 'Befehl 417 &H01A1 Code 1A00
 'memory R2 lesen
 'read Memory R2
 Data "417;as,as416"
 '
-'Announce163:
+Announce163:
 'Befehl 418 &H03A2 Code 1A00
 'memory name schreiben
 'Write Memory name
-Data "448;om,memory name;321,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}};10"
+Data "418;om,memory name;321,{3{144,430,1230}X107{1 to 99,1A,1B,2A,2B,3A,3B,C1,C2}};10"
 '
-'Announce164:
+Announce164:
 'Befehl 419 &H01A3 Code 1A00
 'memory name lesen
 'read memory name
-Data "419;am,as448"
+Data "419;am,as418"
 '
 Announc165:
 'Befehl 420 &H01A4 Code 1A01
@@ -1022,1693 +1022,1693 @@ Announce166:
 'copy band stack left or right to middle
 Data "421;os,copy bandstack;3,band;0,left;1,right"
 '
-'Announce167:
+Announce167:
 'Befehl 422 &H01A6 Code 1A02
 '8 Kanal memory keyer
 '8 chanal memory keyer
 Data "422;om,memory keyer;8;70,{0 to 9, A to Z, ,/,?,.,0x2c,0x5e,*,@}"
 '
-'Announce168:
+Announce168:
 'Befehl 423 &H01A7 Code 1A02
 '8 Kanal memory keyer
 '8 chanal memory keyer
 Data "423,am,as422"
 '
-'Announce169:
+Announce169:
 'Befehl 424 &H01A8 Code 1A03
 'SSB CW Filter Bandbreite
 'SSB CW filter width
 Data "424;op,CW filter width;1;41,{50 to 3600};lin;Hz"
 '
-'Announce170:
+Announce170:
 'Befehl 425 &H01A9 Code 1A03
 'SSB CW Filter Bandbreite
 'SSB CW filter width
 Data "425,ap,as424"
 '
-'Announce171:
+Announce171:
 'Befehl 426 &H01AA Code 1A03
 'RTTY Filter Bandbreite
 'RTTY filter width
 Data "426;op,RTTY filter width;1;32,{50 to 2700};lin;Hz"
 '
-'Announce172:
+Announce172:
 'Befehl 427 &H01AB Code 1A03
 'RTTY Filter Bandbreite
 'RTTY filter width
 Data "427,ap,as426"
 '
-'Announce173:
+Announce173:
 'Befehl 428 &H01AC Code 1A03
 'AM Filter Bandbreite
 'AM filter width
 Data "428;op,AM filter width;1;50,{100 to 10000};lin;Hz"
 '
-'Announce174:
+Announce174:
 'Befehl 429 &H01AD Code 1A03
 'AM Filter Bandbreite
 'AM filter width
 Data "429,ap,as428"
 
-'Announce175:
+Announce175:
 'Befehl 430 &H01AE Code 1A04
 'AM AGC Zeitkonstante
 'AM AGC time constant
 Data "430;os,AM time comstant;1;0,off,1,.3;2,.5;3,.8;4,1.2;5,1.6;6,2;7,2.5;8,3;9,4;10,5;11,6;12,7;13,8"
 '
-'Announce176:
+Announce176:
 'Befehl 431 &H01AF Code 1A04
 'AM AGC Zeitkonstante
 'AM AGC time constant
 Data "431,as,as430"
 '
-'Announce177:
+Announce177:
 'Befehl 432 &H01B0 Code 1A04
 'non AM AGC Zeitkonstante
 'non AM AGC time constant
 Data "432;os,non AM AGC time comstant;1;0,off,1,.1;2,.2;3,.3;4,.5;5,.8;6,1.2;7,1.6;8,2;9,2.5;10,3;11,4;12,5;13,6"
 '
-'Announce178
+Announce178
 'Befehl 433 &H01B1 Code 1A04
 'non AM AGC Zeitkonstante
 'non AM AGC time constant
 Data "433,as,as432"
 '
-'Announce179:
+Announce179:
 'Befehl 434 &H01B2 Code 1A050001
 'HPF / LPF SSB
 'HPF / LPF SSB
 Data "434;op,SSB HPF / LPF;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400},though;lin;Hz"
 '
-'Announce180
+Announce180
 'Befehl 435 &H01B3 Code 1A0500001
 'HPF / LPF SSB
 'HPF / LPF SSB
 Data "435;ap;as434"
 '
-'Announce181:
+Announce181:
 'Befehl 436 &H01B4 Code 1A050002
 'SSB Bass Level
 'SSB Bass Level
 Data "436;op,SSB Bass Level;1;11,{-5 to 5};lin;-"
 '
-'Announce182:
+Announce182:
 'Befehl 437 &H01B5 Code 1A050002
 'SSB Bass Level
 'SSB Bass Level
 Data "437;ap,as436"
 '
-'Announce183:
+Announce183:
 'Befehl 438 &H01B6 Code 01A05003
 'SSB Hoehen Level
 'SSB Treble Level
 Data "438;op,SSB Treble Level;1;11,{-5 to 5};lin;-"
 '
-'Announce184:
+Announce184:
 'Befehl 439 &H01B7 Code 1A050003
 'SSB Hoehen Level
 'SSB Treble Level
 Data "439;ap,as438"
 '
-'Announce186:
+Announce186:
 'Befehl 440 &H01B8 Code 01A050004
 'HPF / LPF AM
 'HPF / LPF AM
 Data "440;op,HPF / LPF AM;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400,though};lin;Hz"
 '
-'Announce186:
+Announce186:
 'Befehl 441 &H01B9 Code 1A050004
 'HPF / LPF AM
 'HPF / LPF AM
 Data "441;ap;as402"
 '
-'Announce187:
+Announce187:
 'Befehl 442 &H01BA Code 01A050005
 'AM Bass Level
 'AM Bass Level
 Data "442;op,AM Bass Level;1;10,{-5 to 5};lin;-"
 '
-'Announce188:
+Announce188:
 'Befehl 443 &H01BB Code 1A050005
 'AM Bass Level
 'AM Bass Level
 Data "444;ap,as442"
 '
-'Announce189:
+Announce189:
 'Befehl 444 &H01BC Code 1A050006
 'AM Hoehen Level
 'AM Treble Level
 Data "444;op,AM Treble Level;1;10,{-5 to 5};lin;-"
 '
-'Announce190:
+Announce190:
 'Befehl 445 &H01BD Code 1A050006
 'AM Hoehen Level
 'AM Treble Level
 Data "445;ap,as444"
 '
-'Announce191:
+Announce191:
 'Befehl 446 &H01BE Code 1A050007
 'HPF / LPF FM
 'HPF / LPF FM
 Data "446;op,HPF / LPF FM;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400,though};lin;Hz"
 '
-'Announce192:
+Announce192:
 'Befehl 447 &H01BF Code 1A050007
 'HPF / LPF FM
 'HPF / LPF FM
 Data "447;ap;as446"
 '
-'Announce193:
+Announce193:
 'Befehl 448 &H01C0 Code 1A050008
 'FM Bass Level
 'FM Bass Level
 Data "448;op,FM Bass Level;1;10,{-5 to 5};lin;-"
 '
-'Announce194:
+Announce194:
 'Befehl 449 &H01C1 Code 1A050008
 'FM Bass Level
 'FM Bass Level
 Data "449;ap,as448"
 '
-'Announce195:
+Announce195:
 'Befehl 450 &H01C2 Code 1A050009
 'FM Hoehen Level
 'FM Treble Level
 Data "450;op,FM Treble Level;1;10,{-5 to 5};lin;-"
 '
-'Announce196:
+Announce196:
 'Befehl 451 &H01C3 Code 1A050009
 'FM Hoehen Level
 'FM Treble Level
 Data "451;ap,as450"
 '
-'Announce197:
+Announce197:
 'Befehl 452 &H01C4 Code 1A050010
 'HPF / LPF DV
 'HPF / LPF DV
 Data "452;op,HPF / LPF DV;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400,though};lin; Hz"
 '
-'Announce198:
+Announce198:
 'Befehl 453 &H01C5 Code 1A050010
 'HPF / LPF DV
 'HPF / LPF DV
 Data "453;ap;as452"
 '
-'Announce199:
+Announce199:
 'Befehl 454 &H01C6 Code 1A050011
 'DV Bass Level
 'DV Bass Level
 Data "454;op,DV Bass Level;1;1;10,{-5 to 5};lin;-"
 '
-'Announce200:
+Announce200:
 'Befehl 455 &H01C7 Code 1A050011
 'DV Bass Level
 'DV Bass Level
 Data "455;ap;as454"
 '
-'Announce201:
+Announce201:
 'Befehl 456 &H01C8 Code 1A050012
 'DV Hoehen Level
 'DV treble Level
 Data "456;op,DV treble Level;1;1;10,{-5 to 5};lin;-"
 '
-'Announce202:
+Announce202:
 'Befehl 457 &H01C9: --> Code 1A050012
 'DV Hoehen Level
 'DV treble Level
 Data "457;ap;as456"
 '
-'Announce203:
+Announce203:
 'Befehl 458 &H01CA Code 1A050013
 'HPF / LPF CW
 'HPF / LPF CW
 Data "458;op,HPF / LPF CW;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400,though};lin; Hz"
 '
-'Announce204:
+Announce204:
 'Befehl 459 &H01CB Code 1A050013
 'HPF / LPF CW
 'HPF / LPF CW
 Data "459;ap;as458"
 '
-'Announce205:
+Announce205:
 'Befehl 460 &H01CC Code 1A050014
 'HPF / LPF RTTY
 'HPF / LPF RTTY
 Data "460;op,HPF / LPF RTTY;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400,though};lin; Hz"
 '
-'Announce206:
+Announce206:
 'Befehl 461 &H01CD Code 1A050014
 'HPF / LPF RTTY
 'HPF / LPF RTTY
 Data "461;ap;as460"
 '
-'Announce207:
+Announce207:
 'Befehl 462 &H01CE Code 1A050015
 'SSB TX Bass Level
 'SSB TX Bass Level
-Data "362;op,SSB Tx Bass Level;1;10,{-5 to 5};lin;-"
+Data "462;op,SSB Tx Bass Level;1;10,{-5 to 5};lin;-"
 '
-'Announce208:
+Announce208:
 'Befehl 463 &H01CF Code 1A050015
 'SSB Tx Bass Level
 'SSB Tx Bass Level
 Data "463;ap,as462"
 '
-'Announce209:
+Announce209:
 'Befehl 464 &H01D0 Code 1A050016
 'SSB Tx Hoehen Level
 'SSB Tx Treble Level
 Data "464;op,SSB Tx Treble Level;1;10,{-5 to 5};lin;-"
 '
-'Announce210:
+Announce210:
 'Befehl 465 &H01D1 Code 1A050016
 'SSB Tx Hoehen Level
 'SSB Tx Treble Level
 Data "465;ap,as464"
 '
-'Announce211:
+Announce211:
 'Befehl 466 &H01D2 Code 1A050017
 'SSB Tx wide  Bandbreite
 'SSB Tx wide bandwidth
 Data "466;os,SSB Tx wide bandwidth;2;0,0k1;1,0k2;2,0k3;3,0k5;0,2k5;1,2k7;2,2k8;3,2k9"
 '
-'Announce212:
+Announce212:
 'Befehl 467 &H01D3 Code 1A050017
 'SSB Tx wide  Bandbreite
 'SSB Tx wide bandwidth
 Data "467;as,as366"
 '
-'Announce213:
+Announce213:
 'Befehl 468 &H01D4 Code 1A050018
 'SSB Tx mid  Bandbreite
 'SSB Tx mid bandwidth
 Data "468;os,SSB Tx mid bandwidth;2;0,0k1;1,0k2;2,0k3;3,0k5;0,2k5;1,2k7;2,2k8;3,2k9"
 '
-'Announce214:
+Announce214:
 'Befehl 469 &H01D5 Code 1A050018
 'SSB Tx mid  Bandbreite
 'SSB Tx wide bandwidth
 Data "469;as,as468"
 '
-'Announce215:
+Announce215:
 'Befehl 470 &H01D6 Code 1A050019
 'SSB Tx narrow  Bandbreite
 'SSB Tx narrow bandwidth
 Data "470;os,SSB Tx narrow bandwidth;2;0,0k1;1,0k2;2,0k3;3,0k5;0,2k5;1,2k7;2,2k8;3,2k9"
 '
-'Announce216:
+Announce216:
 'Befehl 471 &H01D7 Code 1A050019
 'SSB Tx narrow  Bandbreite
 'SSB Tx narrow bandwidth
 Data "471;as,as470"
 '
-'Announce217:
+Announce217:
 'Befehl 472 &H01D8 Code 1A050020
 'SSB TX D  Bandbreite
 'SSB TX D bandwidth
 Data "472;os,SSB D bandwidth;2;0,0k1;1,0k2;2,0k3;3,0k5;0,2k5;1,2k7;2,2k8;3,2k9"
 '
-'Announce218:
+Announce218:
 'Befehl 473 &H01D9 Code 1A050020
 'SSB TX D  Bandbreite
 'SSB TX D bandwidth
 Data "473;as,as472"
 '
-'Announce219:
+Announce219:
 'Befehl 474 &H01DA Code 1A050021
 'AM TX Bass Level
 'AM TX Bass Level
 Data "474;op,AM TX Bass Level;1;10,{-5 to 5};lin;-"
 '
-'Announce220:
+Announce220:
 'Befehl 475 &H01DB Code 1A050021
 'AM TX Bass Level
 'AM TX Bass Level
 Data "475;ap,as474"
 '
-'Announce221:
+Announce221:
 'Befehl 476 &H01DC Code 1A050022
 'AM Tx Hoehen Level
 'AM Tx Treble Level
 Data "476;op,AM TX Treble Level;1;10,{-5 to 5};lin;-"
 '
-'Announce222:
+Announce222:
 'Befehl 477 &H01DD Code 1A050022
 'AM Tx Hoehen Level
 'AM Tx Treble Level
 Data "477;ap,as476"
 '
-'Announce223:
+Announce223:
 'Befehl 478 &H01DE Code 1A050023
 'FM Tx Bass Level
 'FM Tx Bass Level
 Data "478;op,FM Tx Bass Level;1;10,{-5 to 5};lin;-"
 '
-'Announce224:
+Announce224:
 'Befehl 479 &H01DF Code 1A050023
 'FM Tx Bass Level
 'FM Tx Bass Level
 Data "479;ap,as478"
 '
-'Announce225:
+Announce225:
 'Befehl 480 &H01E0 Code 1A050024
 'FM Tx Hoehen Level
 'FM Tx Treble Level
 Data "480;op,FM Tx Treble Level;1;10,{-5 to 5};lin;-"
 '
-'Announce226:
+Announce226:
 'Befehl 481 &H01E1 Code 1A050024
 'FM Tx Hoehen Level
 'FM Tx Treble Level
 Data "481;ap,as480"
 
-'Announce227:
+Announce227:
 'Befehl 482 &H01E2 Code 1A050025
 'DV Bass Level
 'DV Bass Level
 Data "482;op,DV Bass Level;1;10,{-5 to 5};lin;-"
 '
-'Announce228:
+Announce228:
 'Befehl 483 &H01E3 Code 1A050025
 'DV Bass Level
 'DV Bass Level01
 Data "483;ap,as482"
 '
-'Announce229:
+Announce229:
 'Befehl 484 &H01E4 Code 1A050026
 'DV Hoehen Level
 'DV Treble Level
 Data "484;op,DV Treble Level;1;10,{-5 to 5};lin;-"
 '
-'Announce230:
+Announce230:
 'Befehl 485 &H01E5 Code 1A050026
 'DV Hoehen Level
 'DV Treble Level
 Data "485;ap,as484"
 
-'Announce231:
+Announce231:
 'Befehl 486 &H01E6 Code 1A050027
 'Beep Pegel
 'Beep gain
 Data "486;op,beep gain;1;255;lin;-"
 '
-'Announce232:
+Announce232:
 'Befehl 487 &H01E7 Code 1A050027
 'Beep Pegel
 'Beep gain
 Data "487;ap,as486"
 '
-'Announce233:
+Announce233:
 'Befehl 488 &H01E8 Code 1A050028
 'Beep Pegel Grenze
 'Beep gain limit
 Data "488;os,beep gain limit;1;0,off;1;,on"
 '
-'Announce234:
+Announce234:
 'Befehl 489 &H01E9 Code 1A050028
 'Beep Pegel Grenze
 'Beep gain limit
 Data "489;as,as488"
 '
-'Announce235:
+Announce235:
 'Befehl 490 &H01EA Code 1A050029
 'Bestaetigungston
 'confirmation beep
 Data "490;os,confirmation beep;1;0,off;1,on"
 '
-'Announce236:
+Announce236:
 'Befehl 491 &H01EB Code 1A050029
 'Bestaetigungston
 'confirmation beep
 Data "491;as,as490"
 '
-'Announce237:
+Announce237:
 'Befehl 492 &H01EC Code 1A050030
 'Bandgrenze: Beep mode
 'bandedge beep mode
 Data "492;os,bandedge beep mode;1;0,off;1,amateur bands;2,user defined;3,user Tx defined"
 '
-'Announce238:
+Announce238:
 'Befehl 493 &H01ED Code 1A050030
 'Bandgrenze: Beep mode
 'bandedge beep mode
 Data "493;as,as492"
 '
-'Announce239:
+Announce239:
 'Befehl 494 &H01EE Code 1A050031
 'Beep Sound (MAIN)
 'Beep Sound (MAIN)
 Data "494;op,Beep Sound (MAIN);1;151,{500 to 2000};Hz"
 '
-'Announce240:
+Announce240:
 'Befehl 495 &H01EF Code 1A050031
 'Beep Sound (MAIN)
 'Beep Sound (MAIN)
 Data "495;as,as494"
 '
-'Announce241:
+Announce241:
 'Befehl 496 &H01F0 Code 1A050032
 'Beep Sound (SUB)
 'Beep Sound (SUB)
 Data "496;op,Beep Sound (SUB);1;151,{500 to 2000};Hz"
 '
-'Announce242:
+Announce242:
 'Befehl 497 &H01F1 Code 1A050032
 'Beep Sound (SUB)
 'Beep Sound (SUB)
 Data "497;as,as496"
 '
-'Announce243:
+Announce243:
 'Befehl 498 &H01F2 Code 1A050033
 'Sub Band Mute (TX) Speaker/Phones
 'Sub Band Mute (TX) Speaker/Phones
 Data "498;os,Sub Band Mute (TX) Speaker/Phones;1;0,off;1,on"
 '
-'Announce244:
+Announce244:
 'Befehl 499 &H01F3 Code 1A050033
 'Sub Band Mute (TX) Speaker/Phones
 'Sub Band Mute (TX) Speaker/Phones
 Data "499;as,as498"
 '
-'Announce245:
+Announce245:
 'Befehl 500 &H01F4 Code 1A050034
 'Sub Band Mute (TX) USB
 'Sub Band Mute (TX) USB
 Data "500;os,Sub Band Mute (TX) USB;1;0,off;1,on"
 '
-'Announce246:
+Announce246:
 'Befehl 501 &H01F5 Code 1A050034
 'Sub Band Mute (TX) USB
 'Sub Band Mute (TX) USB
 Data "501;as,as500"
 '
-'Announce247:
+Announce247:
 'Befehl 024 &H01F6 Code 1A050035
 'Sub Band Mute (TX) LAN
 'Sub Band Mute (TX) LAN
 Data "502;os,Sub Band Mute (TX) LAN;1;0,off;1,on"
 '
-'Announce248:
+Announce248:
 'Befehl 503 &H01F7 Code 1A050035
 'Sub Band Mute (TX) LAN
 'Sub Band Mute (TX) LAN
 Data "503;as,as502"
 '
-'Announce249:
+Announce249:
 'Befehl 204 &H0aF8 Code 1A050036
 'Rf / SQL
 'RF / SQL
 Data "504;os,RF/SQL;1;0,auto;1,SQL;2,SQL+RF"
 '
-'Announce250:
+Announce250:
 'Befehl 505 &H01F9 Code 1A050036
 'Rf / SQL
 'RF / SQL
 Data "505;as,as504"
 '
-'Announce251:
+Announce251:
 'Befehl 506 &H01FA Code 1A050037
 'FM/DV Center Error function
 'FM/DV Center Error function
 Data "506;os,FM/DV Center Error function;1;0,auto;1,SQL;2,SQL+RF"
 '
-'Announce252:
+Announce252:
 'Befehl 507 &H01FB Code 1A050037
 'FM/DV Center Error function
 'FM/DV Center Error function
 Data "507;as,as506"
 '
-'Announce253:
+Announce253:
 'Befehl 508 &H01FC Code 1A050038
 '144MHz Tx Verzoegerung
 '144MHz Tx delay
 Data "508;os,144MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms"
 '
-'Announce254:
+Announce254:
 'Befehl 509 &H01FD Code 1A050038
 '144MHz Tx Verzoegerung
 '144MHz Tx delay
 Data "509;as,as508"
 '
-'Announce255:
+Announce255:
 'Befehl 510 &H01FE: --> Code 1A050039
 '430MHz Tx Verzoegerung
 '430MHz Tx delay
 Data "510;os,430MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms"
 '
-'Announce256:
+Announce256:
 'Befehl 511 &H01FF Code 1A050039
 '430MHz Tx Verzoegerung
 '430MHz Tx delay
 Data "511;as,as510"
 '
-'Announce257:
+Announce257:
 'Befehl 512 &H0200 Code 1A050040
 '1200MHz Tx Verzoegerung
 '1200MHz Tx delay
 Data "512;os,1200MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms"
 '
-'Announce258:
+Announce258:
 'Befehl 513 &H0201 Code 1A050040
 '1200MHz Tx Verzoegerung
 '1200MHz Tx delay
 Data "513;as,as512"
 '
-'Announce259:
+Announce259:
 'Befehl 514 &H0202 Code 1A050041
 'Timeout
 'Timeout
 Data "514;os,Timeout;1;0,off;1,3min;2,5min;3,10mi;4,20min;5,30min"
 '
-'Announce260:
+Announce260:
 'Befehl 515 &H0203 Code 1A050041
 'Timeout
 'Timeout
 Data "515;as,as514"
 '
-'Announce261:
+Announce261:
 'Befehl 516 &H0204 Code 1A050042
 'PTT Lock
 'PTT Lock
 Data "516;os,PTT Lock;1;0,off;1,on"
 '
-'Announce262:
+Announce262:
 'Befehl 517 &H0205 Code 1A050042
 'PTT Lock     :
 'PTT Lock
 Data "517;as,as516"
 '
-'Announce263:
+Announce263:
 'Befehl 518 &H0206 Code 1A050043
 'Quick split
 'Quick split
 Data "518;os,Quick split;1;0,off;1,on"
 '
-'Announce264:
+Announce264:
 'Befehl 519 &H0207: --> Code 1A050043
 'Quick split     :
 'Quick split
 Data "519;as,as518"
 '
-'Announce265:
+Announce265:
 'Befehl 520 &H0208 Code 1A050044
 'FM split offset
 'FM split offset
 Data "520;op,FM split offset;1;19999,{-9.999 to 9.999};lin;MHz"
 '
-'Announce266:
+Announce266:
 'Befehl 521 &H0209 Code 1A050044
 'FM split offset
 'FM split offset
 Data "521;ap,as520"
 '
-'Announce267:
+Announce267:
 'Befehl 522 &H020A Code 1A050045
 'split lock
 'split lock
-Data "521;os,split lock;1;0,off;1,on"
+Data "522;os,split lock;1;0,off;1,on"
 '
-'Announce268:
+Announce268:
 'Befehl 523 &H020B Code 1A050045
 'split lock
 'split lock
 Data "523;as,as522"
 '
-'Announce269:
+Announce269:
 'Befehl 524 &H020C Code 1A050046
 'Auto Repeater
 'Auto Repeater
 Data "524;os,Auto Repeater;1;0,off;1,on"
 '
-'Announce270:
+Announce270:
 'Befehl 525 &H020D Code 1A050046
 'Auto Repeater
 'Auto Repeater
 Data "525;as,as524"
 '
-'Announce271:
+Announce271:
 'Befehl 526 &H020E Code 1A050047
 'RTTY mark freqency
 'RTTY mark freqency
 Data "526;os,RTTY mark freqency;1;0,1275Hz;1,1615Hz;2,2125Hz"
 '
-'Announce272:
+Announce272:
 'Befehl 527 &H020F Code 1A050047
 'RTTY mark freqency
 'RTTY mark freqency
 Data "527;as,as526"
 '
-'Announce273:
+Announce273:
 'Befehl 528 &H0210 Code 1A050048
 'RTTY shift width
 'RTTY shift width
 Data "528;os,RTTY shift width;1;0,170Hz;1,200Hz;2,425Hz"
 '
-'Announce274:
+Announce274:
 'Befehl 529 &H011 Code 1A050048
 'RTTY shift width
 'RTTY shift width
 Data "529;as,as528"
 '
-'Announce275:
+Announce275:
 'Befehl 530 &H0212 Code 1A050049
 'RTTY polaritaet
 'RTTY polarity
-Data "562;os,RTTY polarity;1;0,normal;1,reverse"
+Data "530;os,RTTY polarity;1;0,normal;1,reverse"
 '
-'Announce276:
+Announce276:
 'Befehl 531 &H0213 Code 1A050049
 'RTTY polaritaet
 'RTTY polarity
 Data "531;as,as530"
 '
-'Announce277:
+Announce277:
 'Befehl 532 &H0214 Code 1A050050
 'Sprache
 'language
 Data "532;os,language;1;0,english;1,japanese"
 '
-'Announce278:
+Announce278:
 'Befehl 533 &H0215 Code 1A050050
 'Sprache
 'language
 Data "533;as,as532"
 '
-'Announce279:
+Announce279:
 'Befehl 534 &H0216 Code 1A050051
 'Sprach alphabet
 'language alphabet
 Data "534;os,language alphabet;1;0,normal;1,phonetic"
 '
-'Announce280:
+Announce280:
 'Befehl 535 &H0217 Code 1A050051
 'Sprache alphabet
 'language alphabet
 Data "535;as,as534"
 '
-'Announce281:
+Announce281:
 'Befehl 536 &H0218 Code 1A050052
 'Sprachgeschwindigkeit
 'language speed
 Data "536;os,language speed;1;0,low;1,high"
 '
-'Announce282:
+Announce282:
 'Befehl 537 &H0219 Code 1A050052
 'Sprachgeschwindigkeit
 'language speed
 Data "537;as,as536"
 '
-'Announce283:
+Announce283:
 'Befehl 538 &H021A Code 1A050053
 'RX Call Sign SPEECH
 'RX Call Sign SPEECH
 Data "538;os,RX Call Sign SPEECH;1;0,off;1,on kerchunk;2,all"
 '
-'Announce284:
+Announce284:
 'Befehl 539 &H021B Code 1A050053
 'RX Call Sign SPEECH
 'RX Call Sign SPEECH
 Data "539;as,as538"
 '
-'Announce285:
+Announce285:
 'Befehl 540 &H021C Code 1A050054
 'RX>CS SPEECH
 'RX>CS SPEECH
 Data "540;os,RX>CS SPEECH;1;0,off;1,on"
 '
-'Announce286:
+Announce286:
 'Befehl 541 &H021D Code 1A050054
 'RX>CS SPEECH
 'RX>CS SPEECH
 Data "541;as,as540"
 '
-'Announce287:
+Announce287:
 'Befehl 542 &H021E Code 1A050055
 'S meter Sprachausgabe
 'S meter speech
 Data "542;os,s meter speech;1;0,off;1,on"
 '
-'Announce288:
+Announce288:
 'Befehl 543 &H021F Code 1A050055
 'S meter Sprachausgabe
 'S meter speech
 Data "543;as,as542"
 '
-'Announce289:
+Announce289:
 'Befehl 544 &H0220 Code 1A050056
 'mode Sprachausgabe
 'mode speech
 Data "544;os,mode speech;1;0,off;1,on"
 '
-'Announce290:
+Announce290:
 'Befehl 545 &H0221 Code 1A050056
 'mode Sprachausgabe
 'mode speech
 Data "545;as,as544"
 '
-'Announce291:
+Announce291:
 'Befehl 546 &H0222 Code 1A050057
 'Sprach Pegel
 'speech level
 Data "546;op,speech level;1;256;lin;-"
 '
-'Announce292:
+Announce292:
 'Befehl 547 &H0223 Code 1A050057
 'Sprach Pegel
 'speech level
 Data "547;ap,as546"
 '
-'Announce293:
+Announce293:
 'Befehl 548 &H0224 Code 1A050058
 'Speech / lock Taste
 'speech / lock key
 Data "548;os,speech / lock key;1;0,push:speech lock;1,lock speech"
 '
-'Announce294:
+Announce294:
 'Befehl 549 &H0225 Code 1A050058
 'Speech / lock Taste
 'speech / lock key
 Data "549;as,as548"
 '
-'Announce295:
+Announce295:
 'Befehl 550 &H0226 Code 1A050059
 'lock Funktion
 'lock function
 Data "550;os,lock function;1;0,main dial;1,panel"
 '
-'Announce296:
+Announce296:
 'Befehl 551 &H0227 Code 1A050059
 'lock Funktion
 'lock function
 Data "551;as,as550"
 '
-'Announce297:
+Announce297:
 'Befehl 552 &H0228 Code 1A050060
 'Zahl der memory pads
 'number of memory pads
 Data "552;os,number of memory pads;1;0,5ch;1,10ch"
 '
-'Announce298:
+Announce298:
 'Befehl 553 &H0229 Code 1A050060
 'Zahl der memory pads
 'number of memory pads
 Data "553;as,as552"
 '
-'Announce299:
+Announce299:
 'Befehl 554 &H022A Code 1A050061
 'Main Dial auto TS
 'Main Dial auto TS
 Data "554;os,Main Dial auto TS;1;0,off;1,low;2,high"
 '
-'Announce300:
+Announce300:
 'Befehl 555 &H022B Code 1A050061
 'Main Dial auto TS
 'Main Dial auto TS
 Data "555;as,as554"
 '
-'Announce301:
+Announce301:
 'Befehl 556 &H022C Code 1A050062
 'mic up/down Geschwindigkeit
 'mic up/down speed
 Data "556;os,mic up/down speed;1;0,slow;1,fast"
 '
-'Announce302:
+Announce302:
 'Befehl 557 &H022D Code 1A050062
 'mic up/down Geschwindigkeit
 'mic up/down speed
 Data "557;as,as556"
 '
-'Announce303:
+Announce303:
 'Befehl 558 &H022E Code 1A050063
 'AFC Limit
 'AFC Limit
 Data "558;os,AFC Limit;1;0,low;1,high"
 '
-'Announce304:
+Announce304:
 'Befehl 559 &H022F Code 1A050063
 'AFC Limit
 'AFC Limit
 Data "559;as,as558"
 '
-'Announce305:
+Announce305:
 'Befehl 560 &H0230 Code 1A050064
 'SSB notch
 'SSB notch
 Data "560;os,SSB notch;1;0,auto;1,manual;2,auto/manual"
 '
-'Announce306:
+Announce306:
 'Befehl 561 &H0231 Code 1A050064
 'SSB notch
 'SSB notch
 Data "561;as,as560"
 '
-'Announce307:
+Announce307:
 'Befehl 562 &H0232 Code 1A050065
 'AM notch
 'AM notch
 Data "562;os,AM notch;1;0,auto;1,manual;2,auto/manual"
 '
-'Announce308:
+Announce308:
 'Befehl 563 &H0233 Code 1A050065
 'AM notch
 'AM notch
 Data "563;as,as562"
 '
-'Announce309:
+Announce309:
 'Befehl 564 &H0234 Code 1A050066
 'SSB/CW synchronous tuning
 'SSB/CW synchronous tuning
 Data "564;os,SSB/CW synchronous tuning;1;0,off;1,on"
 '
-'Announce310:
+Announce310:
 'Befehl 565 &H0235 Code 1A050066
 'SSB/CW synchronous tuning
 'SSB/CW synchronous tuning
 Data "565;as,as564"
 '
-'Announce311:
+Announce311:
 'Befehl 566 &H0236 Code 1A050067
 'CW normal side
 'CW normal side
 Data "566;os,CW normal side;1;0,LSB;1,USB"
 '
-'Announce312:
+Announce312:
 'Befehl 567 &H0237 Code 1A050067
 'CW normal side
 'CW normal side
 Data "567;as,as566"
 '
-'Announce313:
+Announce313:
 'Befehl 568 &H0238 Code 1A050068
 'Screen Keyboard Type
 'Screen Keyboard Type
 Data "568;os,Screen Keyboard Type ;1;0,10key;1,full"
 '
-'Announce314:
+Announce314:
 'Befehl 569 &H0239 Code 1A050068
 'Screen Keyboard Type
 'CW normal side    Screen Keyboard Type
 Data "569;as,as568"
 '
-'Announce315:
+Announce315:
 'Befehl 570 &H023A Code 1A050069
 'Screen Full Keyboard Layout
 'Screen Full Keyboard Layout
 Data "570;os,Screen Full Keyboard Layout ;1;0,English;1,german;2,french"
 '
-'Announce316:
+Announce316:
 'Befehl 571 &H023B Code 1A050069
 'Screen Full Keyboard Layout
 'Screen Full Keyboard Layout
 Data "571;as,as570"
 '
-'Announce317:
+Announce317:
 'Befehl 572 &H023C Code 1A050070
 'power Schalter Schnappschuss
 'screen capture by the POWER switch
 Data "572;os,screen capture by the POWER switch;1;0,0ff;1,on"
 '
-'Announce318:
+Announce318:
 'Befehl 573 &H023D Code 1A050070
 'power Schalter Schnappschuss
 'screen capture by the POWER switch
 Data "573;as,as572"
 '
-'Announce319:
+Announce319:
 'Befehl 574 &H023E Code 1A050071
 'Screen Capture File Type
 'Screen Capture File Type
 Data "574;os,calibration marker;1;0,PNG;1,BMP"
 '
-'Announce320:
+Announce320:
 'Befehl 575 &H023F Code 1A050071
 'Screen Capture File Type
 'Screen Capture File Type
 Data "575;as,as574"
 '
-'Announce321:
+Announce321:
 'Befehl 576 &H0240 Code 1A050072
 'Referenz Frequenz
 'reference frequency
 Data "576;op,reference frequency;1;256;lin;-"
 '
-'Announce322:
+Announce322:
 'Befehl 577 &H0241 Code 1A050072:
 'Referenz Frequenz
 'reference frequency
 Data "577;ap,as576"
 '
-'Announce323:
+Announce323:
 'Befehl 578 &H0242 Code 1A050073
 'Referenz Frequenz fein
 'reference frequency fine
 Data "578;op,reference frequency fine;1;256;lin;-"
 '
-'Announce324:
+Announce324:
 'Befehl 579 &H0243 Code 1A050073:
 'Referenz Frequenz fein
 'reference frequency fine
 Data "579;ap,as578"
 '
-'Announce325:
+Announce325:
 'Befehl 580 &H0244 Code 1A050074
 'Standby Beep
 'Standby Beep
 Data "580;os,Standby Beep ;1;0,off;1,on;2,on high tone;3;3,alarm high tone"
 '
-'Announce326:
+Announce326:
 'Befehl 581 &H0245 Code 1A050074
 'Standby Beep
 'Standby Beep
 Data "581;as,as580"
 '
-'Announce327:
+Announce327:
 'Befehl 582 &H0246 Code 1A050075
 'Auto Reply
 'Auto Reply
 Data "582;os,Auto Reply;1;0,off;1,on;2.voice"
 '
-'Announce328:
+Announce328:
 'Befehl 583 &H0247 Code 1A050075
 'Auto Reply
 'Auto Reply
 Data "583;as,as582"
 '
-'Announce329:
+Announce329:
 'Befehl 584 &H0248 Code 1A050076
 'DV Data TX
 'DV Data TX
 Data "584;os,DV Data TX;1;0,PTT;1.auto"
 '
-'Announce330:
+Announce330:
 'Befehl 585 &H0249 Code 1A050076
 'DV Data TX
 'DV Data TX
 Data "585;as,as584"
 '
-'Announce331:
+Announce331:
 'Befehl 586 &H024A Code 1A050077
 'DV Fast Data
 'DV Fast Data
 Data "586;os,DV Fast Data;1;0,off;1,on"
 '
-'Announce332:
+Announce332:
 'Befehl 587 &H024B Code 1A050077
 'DV Fast Data
 'DV Fast Data
 Data "587;as,as586"
 '
-'Announce333:
+Announce333:
 'Befehl 588 &H024C Code 1A050078
 'GPS Data Speed
 'GPS Data Speed
 Data "588;os,GPS Data Speed ;1;0,slow;1,fast"
 '
-'Announce334:
+Announce334:
 'Befehl 589 &H024D Code 1A050078
 'GPS Data Speed
 'GPS Data Speed
 Data "589;as,as588"
 '
-'Announce335:
+Announce335:
 'Befehl 590 &H024E Code 1A050079
 'DV Fast Data >  TX Delay (PTT)
 'DV Fast Data >  TX Delay (PTT)
 Data "590;op,DV Fast Data TX Delay PTT;1;11,{off,1 to 10};lin;sec"
 '
-'Announce336:
+Announce336:
 'Befehl 591 &H024F Code 1A050079
 'DV Fast Data >  TX Delay (PTT)
 'DV Fast Data >  TX Delay (PTT)
 Data "591;ap,as590"
 '
-'Announce337:
+Announce337:
 'Befehl 592 &H0250 Code 1A050080
 'Digital Monitor
 'Digital Monitor
 Data "592;os,Digital Monitor ;1;0,auto;1,digital;2,analog"
 '
-'Announce338:
+Announce338:
 'Befehl 593 &H0251 Code 1A050080
 'Digital Monitor
 'Digital Monitor
 Data "593;as,as592"
 '
-'Announce339:
+Announce339:
 'Befehl 594 &H0252 Code 1A050081
 'Digital Monitor
 'Digital Monitor
 Data "594;os,Digital Monitor;1;0,off;1,on"
 '
-'Announce340:
+Announce340:
 'Befehl 595 &H0253 Code 1A050081
 'Digital Monitor
 'Digital Monitor
 Data "595;as,as594"
 '
-'Announce341:
+Announce341:
 'Befehl 596 &H0254 Code 1A050082
 'DV Auto Detect
 'DV Auto Detect
 Data "596;os,DV Auto Detect;1;0,off;1,on"
 '
-'Announce342:
+Announce342:
 'Befehl 597 &H0255 Code 1A050082
 'DV Auto Detect
 'DV Auto Detect
 Data "597;as,as596"
 '
-'Announce343:
+Announce343:
 'Befehl 598 &H0256 Code 1A050083
 'RX Record (RPT)
 'RX Record (RPT)
 Data "598;os,RX Record (RPT);1;0,all;1,latest only"
 '
-'Announce344:
+Announce344:
 'Befehl 599 &H0257 Code 1A050083
 'RX Record (RPT)
 'RX Record (RPT)
 Data "599;as,as598"
 '
-'Announce345:
+Announce345:
 'Befehl 600 &H0258 Code 1A050084
 'DV/DD Set BK
 'DV/DD Set BK
 Data "600;os,DV-DD BK;1;0,all;1,off on"
 '
-'Announce346:
+Announce346:
 'Befehl 601 &H0259 Code 1A050084
 'DV/DD Set BK
 'DV/DD Set BK
 Data "601;as,as600"
 '
-'Announce347:
+Announce347:
 'Befehl 602 &H025A Code 1A050085
 'DV/DD Set EMR
 'DV/DD Set EMR
 Data "602;os,DV-DD EMR;1;0,all;1,off on"
 '
-'Announce348:
+Announce348:
 'Befehl 603 &H025B Code 1A050085
 'DV/DD Set EMR
 'DV/DD Set EMR
 Data "603;as,as602"
 '
-'Announce349:
+Announce349:
 'Befehl 604 &H025C Code 1A050086
 'DV/DD EMR Pegel
 'DV/DD EMR level
-05Data "66;os,DV/DD EMR level;1;255{0 to 100};lin;%"
+Data "604;os,DV/DD EMR level;1;255{0 to 100};lin;%"
 '
-'Announce350:
+Announce350:
 'Befehl 605 &H025D Code 1A050086
 'DV/DD EMR Pegel
 'DV/DD EMR level DV/DD EMR level
 Data "605;as,as604"
 '
-'Announce351:
+Announce351:
 'Befehl 606 &H025E Code 1A050087
 'DD TX Inhibit (Power ON)
 'DD TX Inhibit (Power ON)
 Data "606;os,DD TX Inhibit (Power ON);1;0,off;1,on"
 '
-'Announce352:
+Announce352:
 'Befehl 607 &H025F Code 1A050087
 'DD TX Inhibit (Power ON)
 'DD TX Inhibit (Power ON)
 Data "607;as,as606"
 '
-'Announce353:
+Announce353:
 'Befehl 608 &H0260 Code 1A050088
 'DD Packet Output
 'DD Packet Output
 Data "608;os,DD Packet Output;1;0,normal;1,all"
 '
-'Announce354:
+Announce354:
 'Befehl 609 &H0261 Code 1A050088
 'DD Packet Output
 'DD Packet Output
 Data "609;as,as608"
 '
-'Announce355:
+Announce355:
 'Befehl 610 &H0262 Code 1A050089
 'QSO Log
 'QSO Log
 Data "610;os,QSO Log;1;0,off;1,on"
 '
-'Announce356:
+Announce356:
 'Befehl 611 &H0263 Code 1A050089
 'QSO Log
 'QSO Log
 Data "611;as,as610"
 '
-'Announce357:
+Announce357:
 'Befehl 612 &H0264 Code 1A050090
 'Rx history Log
 'Rx history Log
 Data "612;os,Rx history Log;1;0,off;1,on"
 '
-'Announce358:
+Announce358:
 'Befehl 613 &H0265 Code 1A050090
 'Rx history Log
 'Rx history Log
 Data "613;as,as612"
 '
-'Announce359:
+Announce359:
 'Befehl 614 &H0266 Code 1A050091
 'CSV Format >  Separator/Decimal
 'CSV Format >  Separator/Decimal
 Data "614;os,CSV Format Separator-Decimal;1;0,{comma-dot};1,{semicolon-dot};2,{semicolon-comma}"
 '
-'Announce360:
+Announce360:
 'Befehl 615 &H0267 Code 1A050091
 'CSV Format >  Separator/Decimal
 'CSV Format >  Separator/Decimal
 Data "615;as,as614"
 '
-'Announce361:
+Announce361:
 'Befehl 616 &H0268 Code 1A050092
 'CSV Datum Format >  Separator/Decimal
 'CSV date format
 Data "616;os,CSV date formatl;1;0,yyyymmdd;1,mmddyyyy;2,ddmmyyyy"
 '
-'Announce362:
+Announce362:
 'Befehl 617 &H0269 Code 1A050092
 'CSV Datum Format
 'CSV date format
 Data "617;as,as616"
 '
-'Announce363:
+Announce363:
 'Befehl 618 &H026A Code 1A050093
 'External P.AMP 144MHz
 'External P.AMP 144MHz
 Data "618;os,External P.AMP 144MHz;1;0,off;1,on"
 '
-'Announce364:
+Announce364:
 'Befehl 619 &H026B Code 1A050093
 'External P.AMP 144MHz
 'External P.AMP 144MHz
 Data "619;as,as618"
 '
-'Announce365:
+Announce365:
 'Befehl 620 &H026C Code 1A050094
 'External P.AMP 430MHz
 'External P.AMP 430MHz
 Data "620;os,External P.AMP 430MHz;1;0,off;1,on"
 '
-'Announce366:
+Announce366:
 'Befehl 621 &H026D Code 1A050094
 'External P.AMP 430MHz
 'External P.AMP 430MHz
 Data "621;as,as620"
 '
-'Announce367:
+Announce367:
 'Befehl 622 &H026E Code 1A050095
 'External P.AMP 1230MHz
 'External P.AMP 1230MHz
 Data "622;os,External P.AMP 1230MHz;1;0,off;1,on"
 '
-'Announce368:
+Announce368:
 'Befehl 623 &H026F Code 1A050095
 'External P.AMP 1230MHz
 'External P.AMP 1230MHz
 Data "623;as,as622"
 '
-'Announce369:
+Announce369:
 'Befehl 624 &H0270 Code 1A050096
 'External Speaker
 'External Speaker
 Data "624;os,External Speaker;1;0,separate;1,mix"
 '
-'Announce370:
+Announce370:
 'Befehl 625 &H0271 Code 1A050096
 'External Speaker
 'External Speaker
 Data "625;as,as624"
 '
-'Announce371:
+Announce371:
 'Befehl 626 &H0272 Code 1A050097
 'Phones Level
 'Phones Level
 Data "627;op,Phones Level;1;31,{-15 to +15};lin;dB"
 '
-'Announce372:
+Announce372:
 'Befehl 627 &H0273 Code 1A050097
 'Phones Level
 'Phones Level
 Data "627;ap,as626"
 '
-'Announce373:
+Announce373:
 'Befehl 628 &H0274 Code 1A050098
 'Phones > L/R Mix
 'Phones > L/R Mix
 Data "628;os,Phones L/R Mix ;1;0,separate;1,mix;2,auto"
 '
-'Announce374:
+Announce374:
 'Befehl 629 &H0275 Code 1A050098
 'Phones > L/R Mix
 'Phones > L/R Mix
 28Data "629;as,as628"
 '
-'Announce375:
+Announce375:
 'Befehl 630 &H0276 Code 1A050099
 'ACC AF/IF Output AF/SQL Output Select
 'ACC AF/IF Output AF/SQL Output Select
 Data "630;os,ACC AF/IF Output AF/SQL Output Select;1;0,main;1,sub"
 '
-'Announce376:
+Announce376:
 'Befehl 631 &H0277 Code 1A050099
 'ACC AF/IF Output AF/SQL Output Select
 'ACC AF/IF Output AF/SQL Output Select
 Data "631;as,as630"
 '
-'Announce377:
+Announce377:
 'Befehl 632 &H0278 Code 1A050100
 'ACC AF/IF Output
 'ACC AF/IF Output
 Data "632;os,ACC AF/IF Output;1;0,AF;1,IF"
 '
-'Announce378:
+Announce378:
 'Befehl 633 &H0279 Code 1A050100
 'ACC AF/IF Output
 'ACC AF/IF Output
 Data "633;as,as632"
 '
-'Announce379:
+Announce379:
 'Befehl 634 &H027A Code 1A050101
 'ACC AF/IF Output Pegel
 'ACC AF/IF Output level
 Data "634;op,ACC AF/IF Output level;1;255,{0 to 100};lin;%"
 '
-'Announce380:
+Announce380:
 'Befehl 635 &H027B Code 1A050101
 'ACC AF/IF Output Pegel
 'ACC AF/IF Output level
 Data "635;ap,as634"
 '
-'Announce381:
+Announce381:
 'Befehl 636 &H027C Code 1A050102
 'AF SQL
 'AF SQL
 Data "636;os,AF SQL;1;0,off;1,on"
 '
-'Announce382:
+Announce382:
 'Befehl 637 &H027D Code 1A050102
 'AF SQL
 'AF SQL
 Data "637;as,as636"
 '
-'Announce383:
+Announce383:
 'Befehl 638 &H027E Code 1A050103
 'AF Beep/Speech... Output
 'AF Beep/Speech... Output
 Data "638;os,AF Beep/Speech... Output;1;0,off;1,on"
 '
-'Announce384:
+Announce384:
 'Befehl 639 &H027F Code 1A050103
 'AF Beep/Speech... Output
 'AF Beep/Speech... Output
 Data "639;as,as638"
 '
-'Announce385:
+Announce385:
 'Befehl 640 &H0280 Code 1A050104
 'ACC IF Output Level
 'ACC IF Output Level
 Data "640;os,ACC IF Output Level;1;255,{0 to 100};lin;%"
 '
-'Announce386:
+Announce386:
 'Befehl 341 &H0281 1A050104
 'ACC IF Output Level
 'ACC IF Output Level
 Data "641;as,as640"
 '
-'Announce387:
+Announce387:
 'Befehl 642 &H0282 Code 1A050105
 'USB AF/IF Output
 'USB AF/IF Output
 Data "642;os,USB AF/IF Output;1;0,AF;1,IF"
 '
-'Announce388:
+Announce388:
 'Befehl 643 &H0283 Code 1A050105
 'USB AF/IF Output
 'USB AF/IF Output
 Data "643;as,as642"
 '
-'Announce389:
+Announce389:
 'Befehl 644 &H0284 Code 1A050106
 'USB AF Output Level
 'USB AF Output Level
 Data "644;os,USB AF Output Level;1;255,{0 to 100};lin;%"
 '
-'Announce390:
+Announce390:
 'Befehl 645 &H0285 Code 1A050106
 'USB AF Output Level
 'USB AF Output Level
 Data "645;as,as644"
 '
-'Announce391:
+Announce391:
 'Befehl 646 &H028A Code 1A050107
 'USB AF SQL
 'USB AF SQL
 Data "646;os,USB AF SQL;1;0,off;1,on"
 '
-'Announce392:
+Announce392:
 'Befehl 647 &H0287 Code 1A050107
 'USB AF SQL
 'USB AF SQL
 Data "647;as,as646"
 '
-'Announce393:
+Announce393:
 'Befehl 648 &H0288 Code 1A050108
 'USB AF Beep/Speech... Output
 'USB AF Beep/Speech... Output
 Data "648;os,USB AF Beep/Speech... Output;1;0,off;1,on"
 '
-'Announce394:
+Announce394:
 'Befehl 649 &H0289 Code 1A050108
 'USB AF Beep/Speech... Output
 'USB AF Beep/Speech... Output
 Data "649;as,as648"
 '
-'Announce395:
+Announce395:
 'Befehl 650 &H028A Code 1A050109
 'USB IF Output Level
 'USB IF Output Level
 Data "650;os,USB IF Output Level;1;255,{0 to 100};lin;%"
 '
-'Announce396:
+Announce396:
 'Befehl 651 &H028B Code 1A050109
 'USB IF Output Level
 'USB IF Output Level
 Data "651;as,as650"
 '
-'Announce397:
+Announce397:
 'Befehl 652 &H028C Code 1A050110
 'LAN
 'LAN
 Data "652;os,LAN;1;0,AF;1,IF"
 '
-'Announce398:
+Announce398:
 'Befehl 653 &H028D Code 1A050110
 'LAN
 'LAN
 Data "653;as,as654"
 '
-'Announce399:
+Announce399:
 'Befehl 654 &H028E Code 1A050111
 'LAN AF SQL
 'LAN AF SQL
 Data "654;os,LAN AF SQL;1;0,off;1,on"
 '
-'Announce400:
+Announce400:
 'Befehl 655 &H028F Code 1A050111
 'LAN AF SQL
 'LAN AF SQL
 Data "655;as,as654"
 '
-'Announce401:
+Announce401:
 'Befehl 656 &H0290 Code 1A050112
 'MOD ACC Input Level
 'MOD ACC Input Level
 Data "656;os,MOD ACC Input Level;1;255,{0 to 100};lin;%"
 '
-'Announce402:
+Announce402:
 'Befehl 657 &H0291 Code 1A050112
 'MOD ACC Input Level
 'MOD ACC Input Level
 Data "657;as,as656"
 '
-'Announce403:
+Announce403:
 'Befehl 658 &H0292 Code 1A050113
 'MOD USB Input Level
 'MOD USB Input Level
 Data "658;os,MOD USB InputLevel;1;255,{0 to 100};lin;%"
 '
-'Announce404:
+Announce404:
 'Befehl 659 &H0293 Code 1A050113
 'MOD USB Input Level
 'MOD USB Input Level
 Data "658;as,as659"
 '
-'Announce405:
+Announce405:
 'Befehl 660 &H0294 Code 1A050114
 'MOD USB Input Level
 'MOD USB Inpu tLevel
 Data "660;os,MOD USB InputLevel;1;255,{0 to 100};lin;%"
 '
-'Announce406:
+Announce406:
 'Befehl 661 &H0295 Code 1A050114
 'MOD USB Input Level
 'MOD USB Input Level
 Data "661;as,as661"
 '
-'Announce407:
+Announce407:
 'Befehl 662 &H0296 Code 1A050115
 'MOD Input DATA OFF
 'MOD Input DATA OFF
 Data "662;os,MOD Input DATA OFF;1;0,MIC;1,ACC;2,ACC+MIC;3,USB;4,MIC+USB;5,LAN"
 '
-'Announce408:
+Announce408:
 'Befehl 663 &H0297 Code 1A050115
 'MOD Input DATA OFF
 'MOD Input DATA OFF
 Data "664;as,as662"
 '
-'Announce409:
+Announce409:
 'Befehl 664 &H0298 Code 1A050116
 'MOD Input DATA MOD
 'MOD Input DATA MOD
 Data "664;os,MOD Input DATA MOD;1;0,MIC;1,ACC;2,ACC+MIC;3,USB;4,MIC+USB;5,LAN"
 '
-'Announce410:
+Announce410:
 'Befehl 665 &H0299: --> Code 1A050116
 'MOD Input DATA MOD
 'MOD Input DATA MOD
 Data "665;as,as664"
 '
-'Announce411:
+Announce411:
 'Befehl 666 &H029A Code 1A050117
 'ACC SEND Output 144M
 'ACC SEND Output 144M
 Data "666;os,ACC SEND Output 144M;1;0,off;1,on"
 '
-'Announce412:
+Announce412:
 'Befehl 667 &H029B Code 1A050117
 'ACC SEND Output 144M
 'ACC SEND Output 144M
 Data "667;as,as666"
 '
-'Announce413:
+Announce413:
 'Befehl 668 &H029C Code 1A050118
 'ACC SEND Output 430M
 'ACC SEND Output 430M
 Data "668;os,ACC SEND Output 430M;1;0,off;1,on"
 '
-'Announce414:
+Announce414:
 'Befehl 669 &H029D Code 1A050118
 'ACC SEND Output 430M
 'ACC SEND Output 430M
 Data "669;as,as668"
 '
-'Announce415:
+Announce415:
 'Befehl 670 &H029E Code 1A050119
 'ACC SEND Output 1230M
 'ACC SEND Output 1230M
 Data "670;os,ACC SEND Output 1230M;1;0,off;1,on"
 '
-'Announce416:
+Announce416:
 'Befehl 671 &H029F Code 1A0501219
 'ACC SEND Output 1230M
 'ACC SEND Output 1230M
 Data "671;as,as670"
 '
-'Announce417:
+Announce417:
 'Befehl 672 &H02A0 Code 1A050120
 'USB SEND/Keying
 'USB SEND/Keying
 Data "672;os,USB SEND/Keying;1;0,off;1,USBa-DTR;2,USBA-RTS;3,USBB-DTR;4,USBB-RTS"
 '
-'Announce418:
+Announce418:
 'Befehl 673 &H02A1 Code 1A050120
 'USB SEND/Keying
 'USB SEND/Keying
 Data "673;as,as672"
 '
-'Announce419:
+Announce419:
 'Befehl 674 &H02A2 Code 1A050121
 'USB CW/Keying
 'USB CW/Keying
 Data "673;os,USB CW/Keying;1;0,off;1,USBa-DTR;2,USBA-RTS;3,USBB-DTR;4,USBB-RTS"
 '
-'Announce420:
+Announce420:
 'Befehl 675 &H02A3 Code 1A050121
 'USB CW/Keying
 'USB CW/Keying
 Data "674;as,as673"
 '
-'Announce421:
+Announce421:
 'Befehl 676 &H02A4 Code 1A050122
 'USB RTTY/Keying
 'USB RTTY/Keying
-Data "675;os,USB RTTY/Keying;1;0,off;1,USBa-DTR;2,USBA-RTS;3,USBB-DTR;4,USBB-RTS"
+Data "676;os,USB RTTY/Keying;1;0,off;1,USBa-DTR;2,USBA-RTS;3,USBB-DTR;4,USBB-RTS"
 '
-'Announce422:
+Announce422:
 'Befehl 677 &H02A5 Code 1A050122
 'USB RTTY/Keying
 'USB RTTY/Keying
 Data "677;as,as676"
 '
-'Announce423:
+Announce423:
 'Befehl 678 &H02A6 Code 1A050123
 'Inhibit Timer at USB connection
 'Inhibit Timer at USB connection
 Data "678;os,Inhibit Timer at USB connection;1;0,off;1,on"
 '
-'Announce424:
+Announce424:
 'Befehl 679 &H02A7 Code 1A050123
 'Inhibit Timer at USB connection
 'Inhibit Timer at USB connection
 Data "679;as,as678"
 '
-'Announce425:
+Announce425:
 'Befehl 680 &H02A8 Code 1A050124
 'External Keypad >  VOICE
 'External Keypad >  VOICE
 Data "680;os,External Keypad VOICE;1;0,off;1,on"
 '
-'Announce426:
+Announce426:
 'Befehl 681 &H02A9 Code 1A050124
 'External Keypad >  VOICE
 'External Keypad >  VOICE
 Data "681;as,as680"
 '
-'Announce427:
+Announce427:
 'Befehl 682 &H02AA Code 1A050125
 'External Keypad >  Keyer
 'External Keypad >  Keyer
 Data "682;os,External Keypad Keyer;1;0,off;1,on"
 '
-'Announce428:
+Announce428:
 'Befehl 683 &H02AB Code 1A050125
 'External Keypad >  Keyer
 'External Keypad >  Keyer
 Data "683;as,as682"
 '
-'Announce429:
+Announce429:
 'Befehl 684 &H02AC Code 1A050126
 'External Keypad >  RTTY
 'External Keypad >  RTTY
 Data "684;os,External Keypad RTTY;1;0,off;1,on"
 '
-'Announce430:
+Announce430:
 'Befehl 685 &H02AD Code 1A050126
 'External Keypad >  RTTY
 'External Keypad >  RTTY
 Data "685;as,as684"
 '
-'Announce431:
+Announce431:
 'Befehl 686 &H02AE Code 1A050127
 'CI-V Transceive
 'CI-V Transceive
 Data "686;os,CI-V Transceive;1;0,off;1,on"
 '
-'Announce432:
+Announce432:
 'Befehl 687 &H02AF Code 1A050127
 'CI-V Transceive
 'CI-V Transceive
 Data "687;as,as686"
 '
-'Announce433:
+Announce433:
 'Befehl 688 &H02B0 Code 1A050128
 'Transceive adress
 'Transceive adress
 Data "688;os,Transceive adress;1;224;lin;-"
 '
-'Announce434:
+Announce434:
 'Befehl 689 &H02B1 Code 1A050128
 'Transceive adress
 'Transceive adress
 Data "689;as,as688"
 '
-'Announce435:
+Announce435:
 'Befehl 890 &H02B2 Code 1A050129
 'CI-V USB Port
 'CI-V USB Port
 Data "690;iz"
 '
-'Announce436:
+Announce436:
 'Befehl 891 &H02B3 Code 1A050129
 'CI-V USB Port
 'CI-V USB Port
 Data "691;as,CI-V USB Port;1;0,link to remote;1,unlink to remote"
 '
-'Announce437:
+Announce437:
 'Befehl 692 &H02B4 Code 1A050130
 'CI-V USB Echo Back
 'CI-V USB Echo Back
 Data "692;os,CI-V USB Echo Back;1;0,off;1,on"
 '
-'Announce438:
+Announce438:
 'Befehl 693 &H02B5 Code 1A050130
 'CI-V USB Echo Back
 'CI-V USB Echo Back
 Data "693;as,as692"
 '
-'Announce439:
+Announce439:
 'Befehl 694 &H02B6 Code 1A050131
 'CI-V DATA Echo Back
 'CI-V DATA Echo Back
 Data "694;os,CI-V DATA Echo Back;1;0,off;1,on"
 '
-'Announce440:
+Announce440:
 'Befehl 695 &H02B7 Code 1A050131
 'CI-V DATA Echo Back
 'CI-V DATA Echo Back
 Data "695;as,as694"
 '
-'Announce441:
+Announce441:
 'Befehl 696 &H02B8 Code 1A050132
 'USB (B)
 'USB (B)
 Data "696;os,USB (B);1;0,off;1,RTTY decode;2,DV DATA"
 '
-'Announce442:
+Announce442:
 'Befehl 697 &H02B9 Code 1A050132
 'USB (B)
 'USB (B)
 Data "697;as,as696"
 '
-'Announce443:
+Announce443:
 'Befehl 698 &H02BA Code 1A050133
 'USB (B) DATA
 'USB (B) DATA
 Data "698;os,USB (B) DATA;1;0,off;1,RTTY decode;2,DV DATA;3,GPS,Weather;4,CIV"
 '
-'Announce444:
+Announce444:
 'Befehl 699 &H02BB Code 1A050133
 'USB (B) DATA
 'USB (B) DATA
 Data "699;as,as698"
 '
-'Announce445:
+Announce445:
 'Befehl 700 &H02BC Code 1A050134
 'USB (B)/DATA GPS Out
 'USB (B)/DATA GPS Out
 Data "700;os,USB (B)/DATA GPS Out;1;0,off;1,on"
 '
-'Announce446
+Announce446
 'Befehl 701 &H02BD Code 1A050134
 'USB (B)/DATA GPS Out
 'USB (B)/DATA GPS Out
 Data "701;as,as700"
 '
-'Announce447:
+Announce447:
 'Befehl 702 &H02BE Code 1A050135
 'DV Data/GPS Out Baud Rate
 'DV Data/GPS Out Baud Rate
 Data "702;os,DV Data/GPS Out Baud Rate;1;4800,off;1,9600"
 '
-'Announce448:
+Announce448:
 'Befehl 703 &H02BF Code 1A050135
 'DV Data/GPS Out Baud Rate
 'DV Data/GPS Out Baud Rate
@@ -2720,829 +2720,829 @@ Announce449:
 'RTTY Decode Baud Rate
 Data "704;os,RTTY Decode Baud Rate;1;0,4800;1,9600;2,19200;3,38400"
 '
-'Announce450:
+Announce450:
 'Befehl 705 &H02C1 Code 1A050136
 'RTTY Decode Baud Rate
 'RTTY Decode Baud Rate
 Data "705;as,as704"
 '
-'Announce451:
+Announce451:
 'Befehl 706 &H02C2 Code 1A050137
 'DHCP
 'DHCP
 Data "706;os,DHCP Valid;1;0,off;1,on"
 '
-'Announce452:
+Announce452:
 'Befehl 707 &H02C3 Code 1A050137
 'DHCP
 'DHCP
 Data "707;as,as706"
 '
-'Announce453:
+Announce453:
 'Befehl 708 &H02C4 Code 1A050138
 'IP Address
 'IP Address
 Data "708;op,IP Address;1;256;lin,-;256;lin;-;256;lin;-;255,{1 to 255};lin;-"
 '
-'Announce454:
+Announce454:
 'Befehl 709 &H02C5 Code 1A050138
 'IP Address
 'IP Address
 Data "709;ap,as708"
 '
-'Announce455:
+Announce455:
 'Befehl 710 &H02C6 Code 1A050139
 'DHCP Address
 'DHCP Address
 Data "710;ap,DHCP Address;1;256;lin,-;256;lin;-;256;lin;-;255,{1 to 255};lin;-"
 '
-'Announce456:
+Announce456:
 'Befehl 711 &H02C7 Code 1A050140
 'Subnet Mask
 'Subnet Mask
 Data "711;op,Subnet Mask;1;256;lin,-;256;lin;-;256;lin;-;255,{1 to 255};lin;-"
 '
-'Announce457:
+Announce457:
 'Befehl 712 &H02B8 Code 1A050140
 'Subnet Mask
 'Subnet Mask
 Data "712;ap,as711"
 '
-'Announce458:
+Announce458:
 'Befehl 713 &H02C9 Code 1A050141
 'Default Gateway
 'Default Gateway
 Data "713;op,Default Gateway;1;256;lin,-;256;lin;-;256;lin;-;255;lin;-"
 '
-'Announce459:
+Announce459:
 'Befehl 714 &H02CA Code 1A050141
 'Default Gateway
 'Default Gateway
 Data "714;ap,as713"
 '
-'Announce460:
+Announce460:
 'Befehl 715 &H02CB Code 1A050142
 'Primary DNS Server
 'Primary DNS Server
 Data "715;op,Primary DNS Server;1;256;lin,-;256;lin;-;256;lin;-;255;lin;-"
 '
-'Announce461:
+Announce461:
 'Befehl 716 &H02CC Code 1A050142
 'Primary DNS Server
 'Primary DNS Server
 Data "716;ap,as715"
 '
-'Announce462:
+Announce462:
 'Befehl 717 &H02CD: --> Code 1A050143
 'sec DNS Server
 'sec DNS Server
 Data "717;op,sec DNS Server;1;256;lin,-;256;lin;-;256;lin;-;255;lin;-"
 '
-'Announce463:
+Announce463:
 'Befehl 718 &H02CE Code 1A050143
 'sec DNS Server
 'sec DNS Server
 Data "718;ap,as717"
 '
-'Announce464:
+Announce464:
 'Befehl 719 &H02CF Code 1A050144
 'Network Name
 'Network Name
 Data "719;oa,Network Name;1;15,{DEF_ALPHA5}"
 '
-'Announce465:
+Announce465:
 'Befehl 720 &H02D0 Code 1A050144
 'Network Name
 'Network Name
 Data "720;aa,as719"
 '
-'Announce466:
+Announce466:
 'Befehl 721 &H02D1 Code 1A050145
 'Network Control
 'Network Control
 Data "721;os,Network Control;1;0,off;1,on"
 '
-'Announce467:
+Announce467:
 'Befehl 722 &H02D2 Code 1A050145
 'Network Control
 'Network Control
 Data "722;as,as721"
 '
-'Announce468:
+Announce468:
 'Befehl 723 &H02D3 Code 1A050146
 'Power OFF
 'Power OFF
 Data "723;os,Power OFF;1;0,shutdown only;1,standby-shutdown"
 '
-'Announce469:
+Announce469:
 'Befehl 724 &H02D4 Code 1A050146
 'Power OFF
 'Power OFF
 Data "724;as,as723"
 '
-'Announce470:
+Announce470:
 'Befehl 725 &H02D5 Code 1A050147
 'Control Port (UDP)
 'Control Port (UDP)
 Data "725;op,Control Port UDP;1;65534,{1 to 65535};lin;-"
 '
-'Announce471:
+Announce471:
 'Befehl 726 &H02D6 Code 1A050147
 'Control Port (UDP)
 'Control Port (UDP)
 Data "726;ap,as725"
 '
-'Announce472:
+Announce472:
 'Befehl 727 &H02D7 Code 1A050148
 'Serial Port (UDP)
 'Serial Port (UDP)
 Data "727;op,Serial Port UDP;1;65534,{1 to 65535};lin;-"
 '
-'Announce473:
+Announce473:
 'Befehl 728 &H02D8 Code 1A050148
 'Serial Port (UDP)
 'Serial Port (UDP)
 Data "728;ap,as727"
 '
-'Announce474:
+Announce474:
 'Befehl 729 &H02D9 Code 1A050149
 'Audio Port (UDP)
 'Audio Port (UDP)
 Data "729;op,Audio Port UDP;1;65534,{1 to 65535};lin;-"
 '
-'Announce475:
+Announce475:
 'Befehl 730 &H02DA Code 1A050149
 'Audio Port (UDP)
 'Audio Port (UDP)
 Data "730;ap,as729"
 '
-'Announce476:
+Announce476:
 'Befehl 731 &H02DB Code 1A050150
 'Internet Access Line
 'Internet Access Line
 Data "731;os,Internet Access Line;1;0,FTTH;1,ADSL-CATV"
 '
-'Announce477:
+Announce477:
 'Befehl 732 &H02DC Code 1A050150
 'Internet Access Line
 'Internet Access Line
 Data "732;as,as731"
 '
-'Announce478:
+Announce478:
 'Befehl 733 &H02DD Code 1A050151
 'Network Radio Name
 'Network Radio Name
 Data "733;oa,Network Radio Name;1;16,{DEF_ALPHA0}"
 '
-'Announce479
+Announce479
 'Befehl 734 &H02DE Code 1A050151
 'Network Radio Name
 'Network Radio Name
 Data "734;aa,as733"
 '
-'Announce480:
+Announce480:
 'Befehl 735 &H02DF Code 1A050152
 'LCD Backlight
 'LCD Backlight
 Data "735;op,ALCD Backlight;1;255{0 to 100};lin;%"
 '
-'Announce481:
+Announce481:
 'Befehl 736 &H02E0 Code 1A050152
 'LCD Backlight
 'LCD Backlight
 Data "736;ap,as735"
 '
-'Announce482:
+Announce482:
 'Befehl 737 &H02E1 Code 1A050153
 'Display Type
 'Display Type
 Data "737;os,Display Type;1;0,A;1,B"
 '
-'Announce483:
+Announce483:
 'Befehl 738 &H02E2 Code 1A050153
 'Display Type
 'Display Type
 Data "738;as,as737"
 '
-'Announce484:
+Announce484:
 'Befehl 739 &H02E3 Code 1A050154
 'Display Font
 'Display Font
 Data "739;os,Display Font;1;0,basic;1,round"
 '
-'Announce485:
+Announce485:
 'Befehl 740 &H02E4 Code 1A050154
 'Display Font
 'Display Font
 Data "740;as,as739"
 '
-'Announce486:
+Announce486:
 'Befehl 741 &H02E5 Code 1A050155
 'Meter Peak Hold (Bar)
 'Meter Peak Hold (Bar)
 Data "741;os,Meter Peak Hold Bar;1;0,off;1,on"
 '
-'Announce487:
+Announce487:
 'Befehl 742 &H02E6 Code 1A050155
 'Meter Peak Hold (Bar)
 'Meter Peak Hold (Bar)
 Data "742;as,as741"
 '
-'Announce488:
+Announce488:
 'Befehl 743 &H02e7 Code 1A050156
 'Display > Memory Name
 'Display > Memory Name
 Data "743;os,Display Memory Name;1;0,off;1,on"
 '
-'Announce489:
+Announce489:
 'Befehl 744 &H02E8 Code 1A050156
 'Display > Memory Name
 'Display > Memory Name
 Data "744;as,as743"
 '
-'Announce490:
+Announce490:
 'Befehl 745 &H02E9 Code 1A050157
 'MN-Q Popup
 'MN-Q Popup
 Data "745;os,MN-Q Popup;1;0,on;1,off"
 '
-'Announce491:
+Announce491:
 'Befehl 746 &H02EA Code 1A050157
 'MN-Q Popup
 'MN-Q Popup
 Data "746;as,as745"
 '
-'Announce492:
+Announce492:
 'Befehl 747 &H02EB Code 1A050158
 'Display BW Popup PBT
 'Display BW Popup PBT
 Data "747;os,Display BW Popup PBT;1;0off;1,on"
 '
-'Announce493:
+Announce493:
 'Befehl 748 &H02EC Code 1A050158
 'Display BW Popup PBT
 'Display BW Popup PBT
 Data "748;as,as747"
 '
-'Announce494:
+Announce494:
 'Befehl 749 &H02ED Code 1A050159
 'Display BW Popup Fil
 'Display BW Popup Fil
 Data "749;os,Display BW Popup Fil;1;0,off;1,on"
 '
-'Announce495:
+Announce495:
 'Befehl 750 &H02EE Code 1A050159
 'Display BW Popup Fil
 'Display BW Popup Fil
 Data "750;as,as749"
 '
-'Announce496:
+Announce496:
 'Befehl 751 &H02EF Code 1A050160
 'RX Call Sign Display
 'RX Call Sign Display
 Data "751;os,RX Call Sign Display;1;0,off;1,normal;2,RXhold;3,hold"
 '
-'Announce497:
+Announce497:
 'Befehl 752 &H02F0 Code 1A050160
 'RX Call Sign Display
 'RX Call Sign Display
 Data "752;as,as751"
 '
-'Announce498:
+Announce498:
 'Befehl 753 &H02F1 Code 1A050161
 'RX Position Indicator
 'RX Position Indicator
 Data "753;os,RX Position Indicator;1;0,off;1,on"
 '
-'Announce499:
+Announce499:
 'Befehl 754 &H02F2 Code 1A050161
 'RX Position Indicator
 'RX Position Indicator
 Data "754;as,as753"
 '
-'Announce500:
+Announce500:
 'Befehl 755 &H02F3 Code 1A050162
 'RX Position Display
 'RX Position Display
 Data "755;os,RX Position Display;1;0,off;1,main-sub;2,main only"
 '
-'Announce501:
+Announce501:
 'Befehl 756 &H02F4 Code 1A050162
 'RX Position Display
 'RX Position Display
 Data "756;as,as75"
 '
-'Announce502:
+Announce502:
 'Befehl 757 &H02F5 Code 1A050163
 'RX Position Display Timer
 'RX Position Display Timer
 Data "757;os,RX Position Display Timer;1;0,5s;1,10s;2,15s;3,30s;4,hold"
 '
-'Announce503:
+Announce503:
 'Befehl 758 &H02F6 Code 1A050163
 'RX Position Display  Timer
 'RX Position Display  Timer
 Data "758;as,as757"
 '
-'Announce504:
+Announce504:
 'Befehl 759 &H02F7 Code 1A050164
 'Reply Position Display
 'Reply Position Display
 Data "759;os,Reply Position Display;1;0,off;1,on"
 '
-'Announce505:
+Announce505:
 'Befehl 760 &H02F8 Code 1A050164
 'Reply Position Display
 'Reply Position Display
 Data "760;as,as759"
 '
-'Announce506:
+Announce506:
 'Befehl 761 &H02F9 Code 1A050165
 'TX Call Sign Display
 'TX Call Sign Display
 Data "761;os,TX Call Sign Display;1;0,off;1,your;2,my"
 '
-'Announce507:
+Announce507:
 'Befehl 762 &H02FA Code 1A050165
 'TX Call Sign Display
 'TX Call Sign Display
 Data "762;as,as761"
 '
-'Announce508:
+Announce508:
 'Befehl 763 &H02FB Code 1A050166
 'Scroll Speed
 'Scroll Speed
 Data "763;os,Scroll Speed;1;0,slow;1,fast"
 '
-'Announce509:
+Announce509:
 'Befehl 764 &H02FC Code 1A050166
 'Scroll Speed
 'Scroll Speed
 Data "764;as,as763"
 '
-'Announce510:
+Announce510:
 'Befehl 765 &H02FD Code 1A050167
 'Screen Saver
 'Screen Saver
 Data "765;os,Screen Saver;1;0,off;1,15m;2.30m;3,60m"
 '
-'Announce511:
+Announce511:
 'Befehl 766 &H02FE Code 1A050167
 'Screen Saver
 'Screen Saver
 Data "766;as,as765"
 '
-'Announce512:
+Announce512:
 'Befehl 767 &H02FF Code 1A050168
 'Opening Message
 'Opening Message
 Data "767;os,Opening Message;1;0,off;1,on"
 '
-'Announce513:
+Announce513:
 'Befehl 768 &H0300 Code 1A050168
 'Opening Message
 'Opening Message
 Data "768;as,as767"
 '
-'Announce514:
+Announce514:
 'Befehl 769 &H0301 Code 1A050169
 'Power ON Check
 'Power ON Check
 Data "769;os,Power ON Check;1;0,off;1,on"
 '
-'Announce515:
+Announce515:
 'Befehl 770 &H0302 Code 1A050169
 'Power ON Check
 'Power ON Check
 Data "770;as,as769"
 '
-'Announce516:
+Announce516:
 'Befehl 771 &H0303 Code 1A050170
 'Display Unit Latitude/Longitude
 'Display Unit > Latitude/Longitude
 Data "771;os,Display Unit Latitude/Longitude;1;0,dddmmmm;1,dddmmss;2,ddd dddd"
 '
-'Announce517:
+Announce517:
 'Befehl 772 &H0304 Code 1A050170
 'Display Unit > Latitude/Longitude
 'Display Unit > Latitude/Longitude
 Data "772;as,as771"
 '
-'Announce518:
+Announce518:
 'Befehl 773 &H0305 Code 1A050171
 'Display Unit Altitude/Distance
 'Display Unit Altitude/Distance
 Data "773;os,Display Unit Altitude/Distance;1;0,m;1,ft-mi"
 '
-'Announce519:
+Announce519:
 'Befehl 774 &H0306 Code 1A050171
 'Display Unit Altitude/Distance
 'Display Unit Altitude/Distance
 Data "774;as,as773"
 '
-'Announce520:
+Announce520:
 'Befehl 775 &H0307 Code 1A050172
 'Display Unit Speed
 'Display Unit Speed
 Data "775;os,Display Unit Speed;1;0,kmh;1,mph;2,knots"
 '
-'Announce521:
+Announce521:
 'Befehl 776 &H0308 Code 1A050172
 'Display Unit Speed
 'Display Unit Speed
 Data "776;as,as775"
 '
-'Announce522:
+Announce522:
 'Befehl 777 &H0309 Code 1A050173
 'Display Unit Temperature
 'Display Unit Temperature
 Data "777;os,Display Unit Temperature;1;0,C;1,F"
 '
-'Announce523:
+Announce523:
 'Befehl 778 &H030A Code 1A050173
 'Display Unit Temperature
 'Display Unit Temperature
 Data "778;as,as777"
 '
-'Announce524:
+Announce524:
 'Befehl 779 &H030B Code 1A050174
 'Display Unit Barometric
 'Display Unit Barometric
 Data "779;os,Display Unit Barometric;1;0,hPa;1,mb;2,mmHg;3,inHg"
 '
-'Announce525:
+Announce525:
 'Befehl 780 &H030C Code 1A050174
 'Display Unit Barometric
 'Display Unit Barometric
 Data "780;as,as779"
 '
-'Announce526:
+Announce526:
 'Befehl 781 &H030D Code 1A050175
 'Display Unit Rainfall
 'Display Unit Rainfall
 Data "781;os,Display Unit Rainfall;1;0,mm;1,in"
 '
-'Announce527:
+Announce527:
 'Befehl 782 &H030E Code 1A050175
 'Display Unit Rainfall
 'Display Unit Rainfall
 Data "782;as,as781"
 '
-'Announce528:
+Announce528:
 'Befehl 783 &H030F Code 1A050176
 'Display Unit Wind Speed
 'Display Unit Wind Speed
 Data "783;os,Display Unit Wind;1;0,m/s;1,km/h;2mph;3,knots"
 '
-'Announce529:
+Announce529:
 'Befehl 784 &H0310 Code 1A050176
 'Display Unit Wind Speed
 'Display Unit Wind Speed
 Data "784;as,as783"
 '
-'Announce530:
+Announce530:
 'Befehl 785 &H0311 Code 1A050177
 'Display Language
 'Display Language
 Data "785;os,Display Language;1;0,english;1,japanese"
 '
-'Announce531:
+Announce531:
 'Befehl 786 &H0312 Code 1A050177
 'Display Language
 'Display Language1
 Data "786;as,as785"
 '
-'Announce532:
+Announce532:
 'Befehl 787 &H0313 Code 1A050178
 'System  Language
 'System  Language
 Data "787;os,System  Language;1;0,english;1,japanese"
 '
-'Announce533:
+Announce533:
 'Befehl 788 &H0314 Code 1A050178
 'System  Language
 'System  Language
 Data "788;as,as787"
 '
-'Announce534:
+Announce534:
 'Befehl 789 &H0315 Code 1A050179
 'Datum
 'date
 Data "789;op,date;1;80,{2020 to 2099};lin;year;12,{1 to 12};lin;month;31,{1 to 31};lin;day"
 
-'Announce535:
+Announce535:
 'Befehl 790 &H0316 Code 1A050179
 'Datum
 'date
-Data "890;ap,as789"
+Data "790;ap,as789"
 '
-'Announce536:
+Announce536:
 'Befehl 791 &H0317 Code 1A050180
 'Zeit
 'time
 Data "791;op,time;1;24,{0 to 23};lin;hour;60,{0 to 59};lin;min"
 '
-'Announce537:
+Announce537:
 'Befehl 792 &H0318 Code 1A050180
 'Zeit
 'time
 Data "792;ap,as791"
 '
-'Announce538:
+Announce538:
 'Befehl 793 &H0319 Code 1A050181
 'NTP
 'NTP
 Data "793;os,NTP;1;0,off;1,on"
 '
-'Announce539:
+Announce539:
 'Befehl 794 &H031A Code 1A050181
 'NTP
 'NTP
 Data "794;as,as793"
 '
-'Announce540:
+Announce540:
 'Befehl 795 &H031B Code 1A050182
 'NTP Serveradress
 'NTP Serveradress
 Data "795;ap,NTP Serveradress;1;20,{DEF_ALPHA7}"
 '
-'Announce541:
+Announce541:
 'Befehl 796 &H031C Code 1A050182
 'NTP Serveradress
 'NTP Serveradress
 Data "796;as,as795"
 '
-'Announce542:
+Announce542:
 'Befehl 797 &H031D Code 1A050183
 'GPS Time Correct
 'GPS Time Correct
 Data "797;os,GPS Time Correct;1;0,off;1,auto"
 '
-'Announce543:
+Announce543:
 'Befehl 798 &H031E Code 1A050183
 'GPS Time Correct
 'GPS Time Correct
 Data "798;as,as797"
 '
-'Announce544:
+Announce544:
 'Befehl 799 &H031F Code 1A050184
 'UTC Offset
 'UTC Offset
-Data "799;op,UTC offset;1:1679,{-14:00 to +14:00};lin,h"
+Data "799;op,UTC offset;1;1679,{-14:00 to +14:00};lin,h"
 '
-'Announce545:
+Announce545:
 'Befehl 800 &H0320 Code 1A050184
 'UTC Offset
 'UTC Offset
 Data "800;ap,as799"
 '
-'Announce546:
+Announce546:
 'Befehl 801 &H0321 Code 1A050185
 'SD Card > Import/Export >  CSV Format > Separator/Decimal
 'SD Card > Import/Export >  CSV Format > Separator/Decimal
 Data "801;os,SD Card CSV Separator-Decimal;1;0,comman-dot;1,semicolon-dot;2,simicolon-comma"
 '
-'Announce47:
+Announce47:
 'Befehl 802 &H0322 Code 1A050185
 'SD Card > Import/Export >  CSV Format > Separator/Decimal
 'SD Card > Import/Export >  CSV Format > Separator/Decimal
 Data "802;as,as801"
 '
-'Announce548:
+Announce548:
 'Befehl 803 &H0333 Code 1A050186
 'SD Card > Import/Export >  CSV Format > Date
 'SD Card > Import/Export >  CSV Format > Date
 Data "803;os,SD Card CSV Date;1;0,yyyymmdd;1,mmddyyyy;2,ddmmyyyy"
 '
-'Announce549:
+Announce549:
 'Befehl 804 &H0344 Code 1A050186
 'SD Card > Import/Export >  CSV Format > Date
 'SD Card > Import/Export >  CSV Format > Date
 Data "804;as,as803"
 '
-'Announce550:
+Announce550:
 'Befehl 805 &H0325 Code 1A050187
 'Scope during Tx (CENTER TYPE)
 'Scope during Tx (CENTER TYPE)
 Data "805;os,Scope during Tx CENTER TYPE;1;0,off;1,on"
 '
-'Announce551:
+Announce551:
 'Befehl 806 &H0326 Code 1A050187
 'Scope during Tx (CENTER TYPE)
 'Scope during Tx (CENTER TYPE)
 Data "806;as,as805"
 '
-'Announce552:
+Announce552:
 'Befehl 807 &H0327 Code 1A050188
 'Max Hold
 'Max Hold
 Data "807;os,Max Hold;1;0,off;1,10s:2,on"
 '
-'Announce553:
+Announce553:
 'Befehl 808 &H0328 Code 1A050188
 'Max Hold
 'Max Hold
 Data "808;as,as807"
 '
-'Announce554:
+Announce554:
 'Befehl 809 &H0329 Code 1A050189
 'CENTER Type Display
 'CENTER Type Display
 Data "809;os,CENTER Type Display;1;0,filter;1,carrier:2,carrier-abs"
 '
-'Announce555:
+Announce555:
 'Befehl 810 &H032A Code 1A050189
 'CENTER Type Display
 'CENTER Type Display
 Data "810;as,as809"
 '
-'Announce556:
+Announce556:
 'Befehl 811 &H032B Code 1A050190
 'Marker Position (Fix Type)
 'Marker Position (Fix Type)
 Data "811;os,Marker Position fix type;1;0,filter;1,1,carrier"
 '
-'Announce557:
+Announce557:
 'Befehl 812 &H032C Code 1A050190
 'Marker Position (Fix Type)
 'Marker Position (Fix Type)
 Data "812;as,as811"
 '
-'Announce558:
+Announce558:
 'Befehl 813 &H032D Code 1A050191
 'VBW
 'VBW
 Data "813;os,VBW;1;0,narrow;1,wide"
 '
-'Announce559:
+Announce559:
 'Befehl 814 &H032E Code 1A050191
 'VBW
 'VBW
 Data "814;as,as813"
 '
-'Announce560:
+Announce560:
 'Befehl 815 &H032F Code 1A050192
 'Averaging
 'Averaging
 Data "815;os,Averaging;1;0,off;1,1,2;2,3;3,4"
 '
-'Announce561:
+Announce561:
 'Befehl 816 &H0330 Code 1A050192
 'Averaging
 'Averaging
 Data "816;as,as815"
 '
-'Announce562:
+Announce562:
 'Befehl 817 &H0331 Code 1A050193
 'Waveform Type
 'Waveform Type
 Data "817;os,Waveform Type;1;0,fill;1,fill+line"
 '
-'Announce563:
+Announce563:
 'Befehl 818 &H0332 Code 1A050193
 'Waveform Type
 'Waveform Type
 Data "818;as,as817"
 '
-'Announce564:
+Announce564:
 Befehl 819 &H0333 Code 1A050194
 'Waveform Color current
 'Waveform Color current
 Data "819;op,spectrum Color current;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-"
 '
-'Announce565:
+Announce565:
 'Befehl 820 &H0334 Code 1A050194
 'Waveform Color current
 'Waveform Color current
 Data "820;ap,as819"
 '
-'Announce566:
+Announce566:
 'Befehl 821 &H0335 Code 1A050195
 'Waveform Color line
 'Waveform Color line
 Data "821;op,spectrum Color line;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-"
 '
-'Announce567:
+Announce567:
 'Befehl 822 &H0336 Code 1A050195
 'Waveform Color line
 'Waveform Color line
 Data "822;ap,as821"
 '
-'Announce568:
+Announce568:
 'Befehl 823 &H0337 Code 1A050196
 'Waveform Color max hold
 'Waveform Color max hold
 Data "823;op,spectrum Color max hold;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-"
 '
-'Announce569:
+Announce569:
 'Befehl 824 &H0338 Code 1A050196
 'Waveform Color max hold
 'Waveform Color max hold
 Data "824ap,as823"
 '
-'Announce570:
+Announce570:
 'Befehl 825 &H0339 Code 1A050197
 'Waterfall Display
 'Waterfall Display
 Data "825;os,Waterfall Display;1;0,off;1,on"
 '
-'Announce571:
+Announce571:
 'Befehl 826 &H033A Code 1A050197
 'Waterfall Display
 'Waterfall Display
 Data "826;as,as825"
 '
-'Announce572:
+Announce572:
 'Befehl 827 &H033B Code 1A050198
 'Waterfall Speed
 'Waterfall Speed
 Data "827;os,Waterfall Speed;1;0,slow;1,mid;2,fast"
 '
-'Announce573:
+Announce573:
 'Befehl 828 &H033C Code 1A050198
 'Waterfall Speed
 'Waterfall Speed
 Data "828;as,as827"
 '
-'Announce574:
+Announce574:
 'Befehl 829 &H033D Code 1A050199
 'Waterfall Size
 'Waterfall Size
 Data "829;os,Waterfall Size;1;0,small;1,mid;2,large"
 '
-'Announce575:
+Announce575:
 'Befehl 830 &H033E Code 1A050199
 'Waterfall Size
 'Waterfall Size
 Data "830;as,as829"
 '
-'Announce576:
+Announce576:
 'Befehl 831 &H033F Code 1A050200
 'Waterfall Peak Color Level
 'Waterfall Peak Color Level
 Data "831;op,Waterfall Peak Color Level;1;7;lin;-"
 '
-'Announce577:
+Announce577:
 'Befehl 832 &H0340 Code 1A050200
 'Waterfall Peak Color Level
 'Waterfall Peak Color Level
 Data "832;ap,as831"
 '
-'Announce578:
+Announce578:
 'Befehl 833 &H0341 Code 1A050201
 'Waterfall Size
 'Waterfall Size
 Data "833;os,Waterfall Size;1;0,off;1,on"
 '
-'Announce579:
+Announce579:
 'Befehl 834 &H0342 Code 1A050201
 'Waterfall Size
 'Waterfall Size
 Data "834;as,as833"
 '
-'Announce580:
+Announce580:
 'Befehl 835 &H0343 Code 1A050202 - 4
 'Scope fixed edge 144M
 'Scope fixed edge 144M
 Data "835;os,Scope fixed edge 144M;1;2000,low f,{144.000 to 145.995};995,span,{5 to 1000}"
 '
-'Announce581:
+Announce581:
 'Befehl 836 &H0344 Code 1A050202 - 4
 'Scope fixed edge 144M
 'Scope fixed edge 144M
 Data "836;as,as835"
 '
-'Announce582:
+Announce582:
 'Befehl 837 &H0345 Code 1A050205 - 7
 'Scope fixed edge 430M
 'Scope fixed edge 430M
 Data "837;os,Scope fixed edge 430M;1;10000,low f,{430.000 to 439.995};995,span,{5 to 1000}"
 '
-'Announce583:
+Announce583:
 'Befehl 838 &H0346 Code 1A050205 -7
 'Scope fixed edge 430M
 'Scope fixed edge 430M
 Data "838;as,as839"
 '
-'Announce584:
+Announce584:
 'Befehl 839 &H0347> Code 1A050208 - 10
 'Scope fixed edge 1240M
 'Scope fixed edge 1240M
 Data "839;os,Scope fixed edge 1240M;1;60000,low f,{1240.000 to 1299.995};995,span,{5 to 1000}"
 '
-'Announce585:
+Announce585:
 'Befehl 840 &H0348 Code 1A050208 - 10
 'Scope fixed edge 1230M
 'Scope fixed edge 1230M
 Data "840;as,as39"
 '
-'Announce586:
+Announce586:
 'Befehl 841 &H0349 Code 1A050211
 'FFT Scope Waveform Type
 'FFT Scope Waveform Type
 Data "841;os,FFT Scope Waveform Type;1;0,line;1,fill"
 '
-'Announce587:
+Announce587:
 'Befehl 842 &H034A Code 1A050211
 'FFT Scope Waveform Type
 'FFT Scope Waveform Type
@@ -3554,855 +3554,855 @@ Data "842;as,as841"
 'FFT Scope Waveform Color
 Data "843;op,FFT Scope Waveform Color;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-"
 '
-'Announce589:
+Announce589:
 'Befehl 844 &H034C Code 1A050212
 'FFT Scope Waveform Color
 'FFT Scope Waveform Color
 Data "844;ap,as843"
 '
-'Announce590:
+Announce590:
 'Befehl 845 &H034D Code 1A050213
 'FFT Scope Waveform Display
 'FFT Scope Waveform Display
 Data "845;os,FFT Scope Waveform Display;1;0,off;1,on"
 '
-'Announce591:
+Announce591:
 'Befehl 846 &H034E Code 1A050213
 'FFT Scope Waveform Display
 'FFT Scope Waveform Display
 Data "846;as,as845"
 '
-'Announce592:
+Announce592:
 'Befehl 847 &H034F Code 1A050214
 'Oscilloscope Waveform  Waveform Color
 'Oscilloscope Waveform  Waveform Color
 Data "847;op,Oscilloscope Waveform Waveform Color;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-"
 '
-'Announce593:
+Announce593:
 'Befehl 848 &H0350 Code 1A050214
 'Oscilloscope Waveform Waveform Color
 'Oscilloscope Waveform Waveform Color
 Data "848;ap,as847"
 '
-'Announce594:
+Announce594:
 'Befehl 849 &H0351 Code 1A050215
 'VOICE TX LEVEL
 'VOICE TX LEVEL
 Data "849;op,VOICE TX LEVEL;1;256;lin;-;"
 '
-'Announce595:
+Announce595:
 'Befehl 850 &H0352 Code 1A050215
 'VOICE TX LEVEL
 'VOICE TX LEVEL
 Data "850;ap,as849"
 '
-'Announce596:
+Announce596:
 'Befehl 851 &H0353 Code 1A050216
 'VOICE TX Auto Monitor
 'VOICE TX Auto Monitor
 Data "851;os,VOICE TX Auto Monitor;1;0,off;1,on"
 '
-'Announce597:
+Announce597:
 'Befehl 852 &H0354 Code 1A050216
 'VOICE TX Auto Monitor
 'VOICE TX Auto Monitor
 Data "852;as,as851"
 '
-'Announce598:
+Announce598:
 'Befehl 853 &H0335 Code 1A050217
 'VOICE TX Repeat Time
 'VOICE TX Repeat Time
 Data "853;op,VOICE TX Repeat Time;1;15,{1 to 15};lin;s"
 '
-'Announce599:
+Announce599:
 'Befehl 854 &H03 56 Code 1A050217
 'VOICE TX Repeat Time
 'VOICE TX Repeat Time
 Data "854;ap,as853"
 '
-'Announce600:
+Announce600:
 'Befehl 855 &H0357 Code 1A050218
 'KEYER Number Style
 'KEYER Number Style
 Data "855;os,KEYER Number Style;1;0.normal;1,190-ANO;2,190-AANT;3,90-NO;4,90-NT"
 '
-'Announce601:
+Announce601:
 'Befehl 856 &H0358 Code 1A050218
 'KEYER Number Style
 'KEYER Number Style
 Data "856;as,as855"
 '
-'Announce602:
+Announce602:
 'Befehl 857 &H0359 Code 1A050219
 'KEYER Count Up Trigger
 'KEYER Count Up Trigger
 Data "857;op,KEYER Count Up Trigger;1;8,{M1 to M8};lin;-"
 '
-'Announce603:
+Announce603:
 'Befehl 858 &H035A Code 1A050219
 'KEYER Count Up Trigger
 'KEYER Count Up Trigger
 Data "858;ap,as857"
 '
-'Announce604:
+Announce604:
 'Befehl 859 &H035B Code 1A050220
 'KEYER Present Number
 'KEYER Present Number
 Data "859;op,KEYER Present Number;1;9999,{1 to 9999};lin;-"
 '
-'Announce605:
+Announce605:
 'Befehl 860 &H035C Code 1A050220
 'KEYER Present Number
 'KEYER Present Number
 Data "860;ap,as859"
 '
-'Announce606:
+Announce606:
 'Befehl 861 &H035D Code 1A050221
 'CW-KEY SET Tone Level
 'CW-KEY SET Tone Level
 Data "861;op,CW-KEY Tone Level;1;255,{0 to 100};lin;%"
 '
-'Announce607:
+Announce607:
 'Befehl 862 &H035E Code 1A050221
 'CW-KEY SET Tone Level
 'CW-KEY SET Tone Leve
 'Data "862;ap,as893"
 '
-'Announce608:
+Announce608:
 'Befehl 863 &H035F Code 1A050222
 'CW-KEY Side Tone Level Limit
 'CW-KEY Side Tone Level Limit
 Data "864;os,CW-KEY Side Tone Level Limit;1;0.off;1,on"
 '
-'Announce609:
+Announce609:
 'Befehl 864 &H0360 Code 1A050222
 'CW-KEY Side Tone Level Limit
 'CW-KEY Side Tone Level Limit
 Data "864;as,as863"
 '
-'Announce610:
+Announce610:
 'Befehl 865 &H0361 Code 1A050223
 'CW-KEY Keyer Repeat time
 'CW-KEY Keyer Repeat time
 Data "865;op,CW-KEY Keyer Repeat time;1;60,{1 To 6};lin;s"
 '
-'Announce611:
+Announce611:
 'Befehl 866 &H0362 Code 1A050223
 'CW-KEY Keyer Repeat time
 'CW-KEY Keyer Repeat time
 Data "866;ap,as865"
 '
-'Announce612:
+Announce612:
 'Befehl 867 &H0363 Code 1A050224
 'CW-KEY Dot/Dash Ratio
 'CW-KEY Dot/Dash Ratio
 Data "867;op,CW-KEY Dot/Dash Ratio;1;18,{28 to 45};lin;-"
 '
-'Announce613:
+Announce613:
 'Befehl 868 &H0364 Code 1A050224
 'CW-KEY Dot/Dash Ratio
 'CW-KEY Dot/Dash Ratio
 Data "868;ap,as867"
 '
-'Announce614:
+Announce614:
 'Befehl 869 &H0365 Code 1A050225
 'CW-KEY Rise Time
 'CW-KEY Rise Time
 Data "869;os,CW-KEY Rise Time;1;0,2ms;1,4ms;3,6ms;4,8ms-"
 '
-'Announce615:
+Announce615:
 'Befehl 870 &H0366 Code 1A050225
 'CW-KEY Rise Time
 'CW-KEY Rise Time
 Data "870;as,as869"
 '
-'Announce616:
+Announce616:
 'Befehl 871 &H0367 Code 1A050226
 'CW-KEY Paddle Polarity
 'CW-KEY Paddle Polarity
 Data "871;os,CW-KEY Paddle Polarity;1;normal;1,reverse"
 '
-'Announce617:
+Announce617:
 efehl 872 &H0368 Code 1A050226
 'CW-KEY Paddle Polarity
 'CW-KEY Paddle Polarity
 Data "872;as,as871"
 '
-'Announce618:
+Announce618:
 'Befehl 873 &H0369 Code 1A050227
 'CW-KEY Key Type
 'CW-KEY Key Type
 Data "873;os,CW-KEY Key Type ;1;0,straight1.bug;2,paddle"
 '
-'Announce619:
+Announce619:
 'Befehl 874 &H036A Code 1A050227
 'Key Type
 'Key Type
 Data "874;as,as873"
 '
-'Announce620
+Announce620
 'Befehl 875 &H036B Code 1A050228
 'CW-KEY MIC Up/Down Keyer
 'CW-KEY MIC Up/Down Keyer
 Data "875;os,CW-KEY MIC Up/Down Keyer;1;0,off;1,on"
 '
-'Announce621:
+Announce621:
 'Befehl 876 &H036C Code 1A050228
 'MIC Up/Down Keyer
 'MIC Up/Down Keyer
-Data "976;as,as875"
+Data "876;as,as875"
 '
-'Announce622
+Announce622
 'Befehl 877 &H036D Code 1A050229
 'FFT Scope Averaging
 'FFT Scope Averaging
 Data "877;os,FFT Scope Averaging ;1;0,off;1,2;2,3;3,4"
 '
-'Announce623:
+Announce623:
 'Befehl 878 &H036E Code 1A050229
 'FFT Scope Averaging
 'FFT Scope Averaging
 Data "878;as,as877"
 '
-'Announce624:
+Announce624:
 'Befehl 879 &H036F Code 1A050230
 'FFT Scope Waveform Color
 'FFT Scope Waveform Color
 Data "879;op,FFT Scope Waveform Color ;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-"
 '
-'Announce625:
+Announce625:
 'Befehl 880 &H0370 Code 1A050230
 'FFT Scope Waveform Color
 'FFT Scope Waveform Color
 Data "879;ap,as878"
 '
-'Announce626
+Announce626
 'Befehl 881 &H0371 Code 1A050231
 'RTTY Decode USOS
 'RTTY Decode USOS
 Data "881;os,RTTY Decode USOS;1;0,off;1,on"
 '
-'Announce627:
+Announce627:
 'Befehl 882 &H0372 Code 1A050231
 'RTTY Decode USOS
 'RTTY Decode USOS
 Data "882;as,as881"
 '
-'Announce628
+Announce628
 'Befehl 883 &H0373 Code 1A050232
 'RTTY Decode New Line Code
 'RTTY Decode New Line Code
 Data "883;os,RTTY Decode New Line Code;1;0,CR LF CRLF;1,CRLF"
 '
-'Announce629:
+Announce629:
 'Befehl 884 &H0374 Code 1A050232
 'RTTY Decode New Line Code
 'RTTY Decode New Line Code
 Data "884;as,as883"
 '
-'Announce630
+Announce630
 'Befehl 885 &H0375 Code 1A050233
 'RTTY TxUOS
 'RTTY TxUOS
 Data "885;os,RTTY TxUOS;1;0,off;1,on"
 '
-'Announce631:
+Announce631:
 'Befehl 886 &H0376 Code 1A050233
 'RTTY TxUOS
 'RTTY TxUOS
 Data "886;as,as885"
 '
-'Announce632
+Announce632
 'Befehl 887 &H0377 Code 1A050234
 'Displayed Characters during Tx (Satellite)
 'Displayed Characters during Tx (Satellite)
 Data "887;os,Displayed Characters during Tx Satellite;1;0,during rx;1,during tx"
 '
-'Announce633:
+Announce633:
 'Befehl 888 &H0378 Code 1A050234
 'Displayed Characters during Tx (Satellite)
 'Displayed Characters during Tx (Satellite)
 Data "888;as,as897"
 '
-'Announce634:
+Announce634:
 'Befehl 889 &H0379 Code 1A050235
 'RTTY DECODE SET > Font Color (Receive)
 'RTTY DECODE SET > Font Color (Receive)
 Data "889;op,RTTY Font Color Receive;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-"
 '
-'Announce635:
+Announce635:
 'Befehl 890 &H037A Code 1A050235
 'RTTY DECODE SET > Font Color (Receive)
 'RTTY DECODE SET > Font Color (Receive)
 Data "890;ap,as889"
 '
-'Announce636:
+Announce636:
 'Befehl 891 &H037B Code 1A050236
 'RTTY DECODE SET > Font Color (transmit)
 'RTTY DECODE SET > Font Color (transmit)
 Data "892;op,RTTY Font Color transmit;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-"
 '
-'Announce637:
+Announce637:
 'Befehl 892 &H037C Code 1A050236
 'RTTY DECODE SET > Font Color (transmit)
 'RTTY DECODE SET > Font Color (transmit)
 Data "892;ap,as891"
 '
-'Announce638
+Announce638
 'Befehl 893 &H037D Code 1A050237
 'RTTY DECODE LOG
 'RTTY DECODE LOG
 Data "893;os,RTTY DECODE LOG;1;0,off;1,on"
 '
-'Announce639
+Announce639
 'Befehl 894 &H037E Code 1A050237
 'RTTY DECODE LOG
 'RTTY DECODE LOG
 Data "894;as,as894"
 '
-'Announce640
+Announce640
 'Befehl 895 &H037F Code 1A050238
 'RTTY DECODE LOG File Type
 'RTTY DECODE LOG File Type
 Data "895;os,RTTY DECODE LOG File Type;1;0,text;1,HTML"
 '
-'Announce641:
+Announce641:
 'Befehl 896 &H0380 Code 1A050238
 'RTTY DECODE LOG File Type
 'RTTY DECODE LOG File Type
-Data "896;as,a895"
+Data "896;as,as895"
 '
-'Announce642
+Announce642
 'Befehl 897 &H0381 Code 1A050239
 'RTTY DECODE LOG Time Stamp
 'RTTY DECODE LOG Time Stamp
 Data "897;os,RTTY DECODE LOG Time Stamp;1;0,off;1,on"
 '
-'Announce643:
+Announce643:
 'Befehl 898 &H0382 Code 1A050239
 'RTTY DECODE LOG Time Stamp
 'RTTY DECODE LOG Time Stamp
 Data "898;as,as897"
 '
-'Announce644
+Announce644
 'Befehl 899 &H0383 Code 1A050240
 'RTTY DECODE LOG Time
 'RTTY DECODE LOG Time
 Data "899;os,RTTY DECODE LOG Time;1;0,local;1,UTC"
 '
-'Announce645:
+Announce645:
 'Befehl 900 &H0384 Code 1A050240
 'RTTY DECODE LOG Time
 'RTTY DECODE LOG Time
 Data "900;as,as899"
 '
-'Announce646
+Announce646
 'Befehl 901 &H0385 Code 1A050241
 'RTTY DECODE LOG Frequency
 'RTTY DECODE LOG Frequency
 Data "901;os,RTTY DECODE LOG Frequency;1;0,off;1,on"
 '
-'Announce647:
+Announce647:
 'Befehl 902 &H0386 Code 1A050241
 'RTTY DECODE LOG Frequency
 'RTTY DECODE LOG Frequency
 Data "902;as,as901"
 '
-'Announce648
+Announce648
 'Befehl 903 &H0387 Code 1A050242
 'QSO RECORDER TX REC Audio
 'QSO RECORDER TX REC Audio
 Data "903;os,QSO RECORDER TX REC Audio;1;0,direct;1,monitor"
 '
-'Announce649:
+Announce649:
 'Befehl 904 &H0388 Code 1A050242
 'QSO RECORDER TX REC Audio
 'QSO RECORDER TX REC Audio
 Data "904;as,as903"
 '
-'Announce650
+Announce650
 'Befehl 905 &H0389 Code 1A050243
 'QSO RECORDER RX REC Condition
 'QSO RECORDER RX REC Condition
 Data "905;os,QSO RECORDER RX REC Condition;1;0,always;1,sqelch auto"
 '
-'Announce651:
+Announce651:
 'Befehl 906 &H038A Code 1A050243
 'QSO RECORDER RX REC Condition
 'QSO RECORDER RX REC Condition
 Data "906;as,as905"
 '
-'Announce652
+Announce652
 'Befehl 907 &H038B Code 1A050244
 'QSO RECORDER File Split
 'QSO RECORDER File Split
 Data "907;os,QSO RECORDER File Split;1;0,off;1,on"
 '
-'Announce653:
+Announce653:
 'Befehl 908 &H038C Code 1A050244
 'QSO RECORDER File Split
 'QSO RECORDER File Split
 Data "908;as,as907"
 '
-'Announce654
+Announce654
 'Befehl 909 &H038D Code 1A050245
 'QSO RECORDER REC Operation
 'QSO RECORDER REC Operation
 Data "909;os,QSO RECORDER REC Operation main/sub;1;0,separate;1,link"
 '
-'Announce655:
+Announce655:
 'Befehl 910 &H038E Code 1A050245
 'QSO RECORDER REC Operation
 'QSO RECORDER REC Operation
 Data "910;as,as909"
 '
-'Announce656
+Announce656
 'Befehl 911 &H038F Code 1A050246
 'QSO RECORDER PTT Auto REC
 'QSO RECORDER PTT Auto REC
 Data "911;os,QSO RECORDER PTT Auto REC;1;0,off;1,on"
 '
-'Announce657:
+Announce657:
 'Befehl 912 &H0390 Code 1A050246
 'QSO RECORDER PTT Auto REC
 'QSO RECORDER PTT Auto REC
 Data "912;as,as911"
 '
-'Announce658
+Announce658
 'Befehl 913 &H0391 Code 1A050247
 'QSO RECORDER PRE-REC for PTT Auto REC
 'QSO RECORDER PRE-REC for PTT Auto REC
 Data "913;os,QSO RECORDE RPRE-REC for PTT Auto REC;1;0,off;1,5s;2,10s;3,15s"
 '
-'Announce659:
+Announce659:
 'Befehl 914 &H0392 Code 1A050247
 'QSO RECORDER PRE-REC for PTT Auto REC
 'QSO RECORDER PRE-REC for PTT Auto REC
 Data "914;as,as913"
 '
-'Announce660
+Announce660
 'Befehl 915 &H0393 Code 1A050248
 'QSO RECORDER Player Skip Time
 'QSO RECORDER Player Skip Time
 Data "915;os,QSO RECORDER Player Skip Time;1;0,off;1,5s;2,10s;3,30s"
 '
-'Announce661:
+Announce661:
 'Befehl 916 &H0394 Code 1A050248
 'QSO RECORDER Player Skip Time
 'QSO RECORDER Player Skip Time
 Data "916;as,as915"
 '
-'Announce662
+Announce662
 'Befehl 917 &H0395 Code 1A050249
 'SCAN Speed
 'SCAN Speed
 Data "917;os,SCAN Speed;1;0,slow;1,fast"
 '
-'Announce663:
+Announce663:
 'Befehl 918 &H0396 Code 1A050249
 'SCAN Speed
 'SCAN Speed
 Data "918;as,as917"
 '
-'Announce664
+Announce664
 'Befehl 919 &H0397 Code 1A050250
 'SCAN Resume
 'SCAN Resume
 Data "919;os,SCAN Resume;1;0,off;1,on"
 '
-'Announce665:
+Announce665:
 'Befehl 920 &H0398 Code 1A050250
 'SCAN Resume
 'SCAN Resume
 Data "920;as,as919"
 '
-'Announce666
+Announce666
 'Befehl 921 &H0399 Code 1A050251
 'SCAN Pause Timer
 'SCAN Pause Timer
 Data "921;op,SCAN Pause Timer;1;11,{2 to 20,hold};lin,sec"
 '
-'Announce667:
+Announce667:
 'Befehl 922 &H039A Code 1A050251
 'SCAN Pause Timer
 'SCAN Pause Timer
 Data "922;ap,as921"
 '
-'Announce668
+Announce668
 'Befehl 923 &H039B Code 1A050252
 'SCAN Resume  Timer
 'SCAN Resume  Timer
 Data "923;op,SCAN Resume Timer;1;7,{0 to 5,hold};lin;sec"
 '
-'Announce669:
+Announce669:
 'Befehl 924 &H039C Code 1A050252
 'SCAN Resume  Timer
 'SCAN Resume  Timer
 Data "924;ap,as923"
 '
-'Announce670
+Announce670
 'Befehl 925 &H039D Code 1A050253
 'SCAN Skip   Timer
 'SCAN Skip   Timer
 Data "925;os,SCAN Skip Timer;1;0,5min;1,10min;2,15min;3,while scanning;4,while powered on"
 '
-'Announce671:
+Announce671:
 'Befehl 926 &H039E Code 1A050253
 'SCAN Skip Timer
 'SCAN Skip Timer
 Data "926;as,as925"
 '
-'Announce672
+Announce672
 'Befehl 927 &H039F Code 1A050254
 'SCAN MAIN DIAL Operation
 'SCAN MAIN DIAL Operation
 Data "927;os,SCAN MAIN DIAL Operation;1;0,off;1,up-down"
 '
-'Announce673:
+Announce673:
 'Befehl 928 &H03A0 Code 1A050254
 'SCAN MAIN DIAL Operation
 'SCAN MAIN DIAL Operation
 Data "928;as,as927"
 '
-'Announce674
+Announce674
 'Befehl 929 &H03A1 Code 1A050255
 'GPS Select
 'GPS Select
 Data "929;os,GPS Select;1;0,off;1,external;2,manual"
 '
-'Announce675:
+Announce675:
 'Befehl 930 &H03A2 Code 1A050255
 'GPS Select
 'GPS Select
 Data "930;as,as929"
 '
-'Announce676
+Announce676
 'Befehl 931 &H03A3 Code 1A050256
 'GPS Receiver Baud Rate
 'GPS Receiver Baud Rate
 Data "931;os,GPS Receiver Baud Rate;1;0,4800;1,9600"
 '
-'Announce677:
+Announce677:
 'Befehl 932 &H03A4 Code 1A050256
 'GPS Receiver Baud Rate
 'GPS Receiver Baud Rate
 Data "932;as,as931"
 '
-'Announce678
+Announce678
 'Befehl 933 &H03A5 Code 1A050257
 'GPS Manual Position
 'GPS Manual Position
 Data "933;op,GGPS Manual Position;1;90,lat;lin;deg;60000,{0 to 59.999},lat;lin;min;2,{S,N};lin;-"
-Data "933;op;1;180,long;lin;degree;60000,{0 to 59.999},long;lin;min;2,{W,W};lin;-"
+Data "933;op;1;180,long;lin;degree;60000,{0 to 59.999},long;lin;min;2,{W,E};lin;-"
 Data "933;op;1;199999,{0 to 19999,9,alt;lin;m;2,{+,-},alt;lin;-"
 ''
-'Announce679:
+Announce679:
 'Befehl 934 &H03A6 Code 1A050257
 'GPS Manual Position
 'GPS Manual Position
 Data "934;ap,as933"
 '
-'Announce680
+Announce680
 'Befehl 935 &H03A7 Code 1A050258
 'GPS TX Mode
 'GPS TX Mode
 Data "935;os,GPS TX Mode;1;0,off;1,PRS;2,NMEA"
 '
-'Announce681:
+Announce681:
 'Befehl 936 &H03A8 Code 1A050258
 'GPS TX Mode
 'GPS TX Mode
 Data "936;as,as935"
 '
-'Announce682
+Announce682
 'Befehl 937 &H03A9 Code 1A050259
 'GPS D-PRS Unproto Address
 'GPS D-PRS Unproto Address
 Data "937;oa,GPS D-PRS Unproto Address;1;56,{DEF_ALPHA0}"
 '
-'Announce683:
+Announce683:
 'Befehl 938 &H03AA Code 1A050259
 'D-PRS Unproto Address
 'D-PRS Unproto Address
 Data "938;aa,as937"
 '
-'Announce684
+Announce684
 'Befehl 939 &H03AB Code 1A050260
 'GPS D-PRS  TX Format
 'GPS D-PRS  TX Format
 Data "939;os,GPS D-PRS TX Format;1;0,position;1,item;2,object;3,weather"
 '
-'Announce685:
+Announce685:
 'Befehl 940 &H03AC Code 1A050260
 'D-PRS  TX Format
 'D-PRS  TX Format
 Data "940;as,as939"
 '
-'Announce686
+Announce686
 'Befehl 941 &H03AD Code 1A050261
 'GPS D-PRS  TX Format Symbol
 'GPS D-PRS  TX Format Symbol
 Data "941;os,GPS D-PRS TX Format Symbol;1;0,No1;1,No2;2,No3;3,No4"
 '
-'Announce687:
+Announce687:
 'Befehl 942 &H03AE Code 1A050261
 'D-PRS  TX Format Symbol
 'D-PRS  TX Format Symbol
 Data "942;as,as941"
 '
-'Announce688
+Announce688
 'Befehl 943 &H03AF Code 1A050262
 'GPS D-PRS  TX Format Position
 'GPS D-PRS  TX Format Position
 Data "943;oa,GPS D-PRS TX Position Symbol No.1;1;1,{/,\,0 to 9, A to Z};1,{}"
 '
-'Announce689:
+Announce689:
 'Befehl 944 &H03B0 Code 1A050262
 'D-PRS  TX Format Position
 'D-PRS  TX Format Position
 Data "9944;aa,as943"
 '
-'Announce690
+Announce690
 'Befehl 945 &H03B1 Code 1A050263
 'GPS D-PRS  TX Format Position
 'GPS D-PRS  TX Format Position
 Data "945;oa,GPS D-PRS TX Position Symbol No.2;1;1,{/,\,0 to 9, A to Z};1,{}"
 '
-'Announce691:
+Announce691:
 'Befehl 946 &H03B2 Code 1A050263
 'D-PRS  TX Format Position
 'D-PRS  TX Format Position
 Data "946;aa,as945"
 '
-'Announce692
+Announce692
 'Befehl 947 &H03B3 Code 1A050264
 'GPS D-PRS  TX Format Position
 'GPS D-PRS  TX Format Position
 Data "947;oa,GPS D-PRS TX Position Symbol No.3;1;1,{/,\,0 to 9, A to Z};1,{}"
 '
-'Announce693:
+Announce693:
 'Befehl 948 &H03B4 Code 1A050264
 'D-PRS  TX Format Position
 'D-PRS  TX Format Position
 Data "948;aa,as947"
 '
-'Announce694
+Announce694
 'Befehl 949 &H03B5 Code 1A050265
 'GPS D-PRS  TX Format Position
 'GPS D-PRS  TX Format Position
 Data "949;oa,GPS D-PRS TX Position Symbol No.4;1;1,{/,\,0 to 9, A to Z};1,{}"
 '
-'Announce695:
+Announce695:
 'Befehl 950 &H03B6 Code 1A050265
 'D-PRS  TX Format Position
 'D-PRS  TX Format Position
 Data "950;aa,as949"
 '
-'Announce696
+Announce696
 'Befehl 951 &H03B7 Code 1A050266
 'GPS D-PRS  TX SSID
 'GPS D-PRS  TX SSID
 Data "951;op,GPS D-PRS Position SSID;1;43,{,,-0 to -15,A to Z},lin;-"
 '
-'Announce697:
+Announce697:
 'Befehl 952 &H03B8 Code 1A050266
 'D-PRS  TX SSID
 'D-PRS  TX SSID
 Data "952;ap,as951"
 '
-'Announce698
+Announce698
 'Befehl 953 &H03B9 Code 1A050267
 'GPS D-PRS Comment
 'GPS D-PRS Comment
 Data "953;os,GPS D-PRS Position Comment;1;0,1;1,2;2,3;3,4"
 '
-'Announce699:
+Announce699:
 'Befehl 954 &H03BA Code 1A050267
 'D-PRS Comment
 'D-PRS Comment
 Data "954;as,as953"
 '
-'Announce700
+Announce700
 'Befehl 955 &H03BB Code 1A050268
 'GPS D-PRS Comment
 'GPS D-PRS Comment
 Data "955;oa,GPS D-PRS Position Comment1;43,{DEF_ALPHA0}"
 '
-'Announce701:
+Announce701:
 'Befehl 956 &H03BC Code 1A050268
 'D-PRS Comment
 'D-PRS Comment
 Data "956;aa,as955"
 '
-'Announce702
+Announce702
 'Befehl 957 &H03BD Code 1A050269
 'GPS D-PRS Comment
 'GPS D-PRS Comment
 Data "957;oa,GPS D-PRS Position Comment2;1;43,{DEF_ALPHA0}"
 '
-'Announce703:
+Announce703:
 'Befehl 958 &H03BE Code 1A050269
 'D-PRS Comment
 'D-PRS Comment
 Data "958;aa,as957"
 '
-'Announce704
+Announce704
 'Befehl 959 &H03BF Code 1A050270
 'GPS D-PRS Comment
 'GPS D-PRS Comment
 Data "959;oa,GPS D-PRS Position Comment3;1;43;{DEF_ALPHA0}"
 '
-'Announce705:
+Announce705:
 'Befehl 960 &H03C0 Code 1A050270
 'D-PRS Comment
 'D-PRS Comment
 Data "960;aa,as959"
 '
-'Announce706
+Announce706
 'Befehl 961 &H03C1 Code 1A050271
 'GPS D-PRS Comment
 'GPS D-PRS Comment
 Data "961;oa,GPS D-PRS Comment4;1;43,{DEF_ALPHA0}"
 '
-'Announce707:
+Announce707:
 'Befehl 962 &H03C2 Code 1A050271
 'D-PRS Comment
 'D-PRS Comment
 Data "962;aa,as961"
 '
-'Announce708
+Announce708
 'Befehl 963 &H03C3 Code 1A050272
 'GPS D-PRS Position Time Stamp
 'GPS D-PRS Position Time Stamp
 Data "963;os,GPS D-PRS Position Time Stamp1;1;0,off;1,DHM;2,HMS"
 '
-'Announce709:
+Announce709:
 'Befehl 964 &H03C4 Code 1A050272
 'D-PRS Position Time Stamp
 'D-PRS Position Time Stamp
 Data "964;as,as963"
 '
-'Announce710
+Announce710
 'Befehl 965 &H03C5 Code 1A050273
 'GPS D-PRS Position Altitude
 'GPS D-PRS Position Altitude
 Data "965;os,GPS D-PRS Position Altitude;1;0,off;1,on"
 '
-'Announce711:
+Announce711:
 'Befehl 966 &H03C6 Code 1A050273
 'D-PRS Position Altitude
 'D-PRS Position Altitude
-Data "955;as,as965"
+Data "965;as,as965"
 '
-'Announce712:
+Announce712:
 'Befehl 967 &H03C7 Code 1A050274
 'GPS D-PRS Position Data Extension
 'GPS D-PRS Position Data Extension
 Data "967;os,GPS D-PRS Position Data Extension;1;0,off;1,coursed-speed2;2,power-hight-gain-directivity"
 '
-'Announce713:
+Announce713:
 'Befehl 968 &H03C8 Code 1A050274
 'D-PRS Position Data Extension
 'D-PRS Position Data Extension
 Data "968;as,as967"
 '
-'Announce714:
+Announce714:
 'Befehl 969 &H03C9 Code 1A050275
 'GPS D-PRS Position Power
 'GPS D-PRS Position Power
 Data "969;os,GPS D-PRS Position Power W;1;0,0;1,1;2,4;3,9;4,16;5,25;6,36;7,49;8,64;9,81"
 '
-'Announce715:
+Announce715:
 'Befehl 970 &H03CA Code 1A050275
 'D-PRS Power
 'D-PRS Power
 Data "970;as,as969"
 '
-'Announce716:
+Announce716:
 'Befehl 971 &H03CB Code 1A050276
 'GPS D-PRS Height
 'GPS D-PRS Height
 Data "971;os,GPS D-PRS Position Height m;1;0,3;1,6;2,12;3,24;4,49;5,98;6,195;7,390;8,780;9,1561"
 '
-'Announce717:
+Announce717:
 'Befehl 972 &H03CC Code 1A050276
 'D-PRS Height
 'D-PRS Height
 Data "972;as,as971"
 '
-'Announce718:
+Announce718:
 'Befehl 973 &H03CD Code 1A050277
 'GPS D-PRS Gain
 'GPS D-PRS Gain
-Data "973;op,GPS D-PRS Position Gain;1:10,{0 to 9};lin;dB"
+Data "973;op,GPS D-PRS Position Gain;1;10,{0 to 9};lin;dB"
 '
-'Announce719:
+Announce719:
 'Befehl 974 &H03CE Code 1A050277
 'D-PRS Gain
 'D-PRS Gain
 Data "974;ap,as973"
 '
-'Announce720:
+Announce720:
 'Befehl 975 &H03CF Code 1A050278
 'GPS D-PRS Directivity
 'GPS D-PRS Directivity
-Data "975;os,GPS D-PRS Position Directivity;1:0,Omni;1,NE;2,E;3,SE;4,S;5,SW;6,W;7;NW;8;N"
+Data "975;os,GPS D-PRS Position Directivity;1;0,Omni;1,NE;2,E;3,SE;4,S;5,SW;6,W;7;NW;8;N"
 '
-'Announce721:
+Announce721:
 'Befehl 976 &H03D0 Code 1A050278
 'D-PRS Directivity
 'D-PRS Directivity
 Data "976;as,as975"
 '
-'Announce722:
+Announce722:
 'Befehl 977 &H03D1 Code 1A050279
 'GPS D-PRS Object Name
 'GPS D-PRS Object Name
-Data "977;oa,GPS D-PRS Object Name ;1:9,{DEF_ALPHA0}"
+Data "977;oa,GPS D-PRS Object Name;1;9,{DEF_ALPHA0}"
 '
-'Announce723:
+Announce723:
 'Befehl 978 &H03D2 Code 1A050279
 'D-PRS Object Name
 'D-PRS Object Name
 Data "978;aa,as977"
 '
-'Announce724:
+Announce724:
 'Befehl 979 &H03C3 Code 1A050280
 'GPS D-PRS Object Data Type
 'GPS D-PRS Object Data Type
-Data "979;os,GPS D-PRS Object Data Type;1:0,live;1,kill"
+Data "979;os,GPS D-PRS Object Data Type;1;0,live;1,kill"
 '
-'Announce725:
+Announce725:
 'Befehl 980 &H03D4 Code 1A050280
 'D-PRS Object Data Type
 'D-PRS Object Data Type
 Data "980;as,as979"
 '
-'Announce726:
+Announce726:
 'Befehl 981 &H03D5 Code 1A050281
 'GPS D-PRS Object Symbol
 'GPS D-PRS Object Symbol
 Data "981;oa,GPS D-PRS Object Symbol;1;1,{/,\,0 to 9, A to Z};1,{DEF_ALPHA0}}"
 '
-'Announce727:
+Announce727:
 'Befehl 982 &H03D6 Code 1A050281
 'D-PRS Object Symbol
 'D-PRS Object Symbol
 Data "982;aa,as981"
 '
-'Announce728:
+Announce728:
 'Befehl 983 &H03D7 Code 1A050282
 'GPS D-PRS Object Comment
 'GPS D-PRSObject  Comment
-Data "983;oa,GPS D-PRS Object Comment;1:43;{DEF_ALPHA0}"
+Data "983;oa,GPS D-PRS Object Comment;1;43;{DEF_ALPHA0}"
 '
-'Announce729:
+Announce729:
 'Befehl 984 &H03D8 Code 1A050282
 'D-PRS Object Comment
 'D-PRS Object Comment
 Data "984;aa,as983"
 '
-'Announce730:
+Announce730:
 'Befehl 985 &H03D9 Code 1A050283
 'GPS D-PRS Object Position
 'GPS D-PRS Object Position
@@ -4410,169 +4410,169 @@ Data "985;op,GGPS MObject Position;1;90,lat;lin;deg;60000,{0 to 59.999},lat;lin;
 Data "985;op;1;180,long;lin;degree;60000,{0 to 59.999},long;lin;min;2,{W,W};lin;-"
 Data "985;op;1;199999,{0 to 19999,9,alt;lin;m;2,{+,-},alt;lin;-"
 '
-'Announce731:
+Announce731:
 'Befehl 986 &H03DA Code 1A050283
 'D-PRS Object Position
 'D-PRS Object Position
 Data "986;ap,as985"
 '
-'Announce732:
+Announce732:
 'Befehl 987 &H03DB Code 1A050284
 'GPS D-PRS Object Data Extension
 'GPS D-PRS Object Data Extension
 Data "987;os,GGPS Object Data Extension;1;0,off;1,course-speed;2,Power-hight-Gain-Directivity"
 '
-'Announce733:
+Announce733:
 'Befehl 988 &H03DC Code 1A050284
 'D-PRS Object Data Extension
 'D-PRS Object Data Extension
 Data "988;as,as987"
 '
-'Announce734:
+Announce734:
 'Befehl 989 &H03DD Code 1A050285
 'GPS D-PRS Object Course
 'GPS D-PRS Object Course
 Data "989;os,GGPS Object Course;1;361;lin;deg"
 '
-'Announce735:
+Announce735:
 'Befehl 990 &H03DE Code 1A050285
 'D-PRS Object Course
 'D-PRS Object Course
 Data "990;as,as989"
 '
-'Announce736:
+Announce736:
 'Befehl 991 &H03DF Code 1A050286
 'GPS D-PRS Object speed
 'GPS D-PRS Object speed
 Data "991;op,GGPS Object speed;1;1851;lin;kmh"
 '
-'Announce737:
+Announce737:
 'Befehl 992 &H03E0 Code 1A050286
 'D-PRS Object speed
 'D-PRS Object speed
 Data "992;ap,as991"
 '
-'Announce738:
+Announce738:
 'Befehl 993 &H03E1 Code 1A050287
 'GPS D-PRS Object power
 'GPS D-PRS Object power
 Data "993;os,GPS D-PRS Object Power W;1;0,0;1,1;2,4;3,9;4,16;5,25;6,36;7,49;8,64;9,81"
 '
-'Announce739:
+Announce739:
 'Befehl 994 &H03E2 Code 1A050287
 'D-PRS Object power
 'D-PRS Object power
 Data "994;as,as993"
 '
-'Announce740:
+Announce740:
 'Befehl 995 &H03E3 Code 1A050288
 'GPS D-PRS Object Height
 'GPS D-PRS Object Height
 Data "995;os,GPS D-PRS Object Height;1;0,3;1,6;2,12;3,24;4,49;5,98;6,195;7,390;8,780;9,1561"
 '
-'Announce741:
+Announce741:
 'Befehl 996 &H03E4 Code 1A050288
 'D-PRS Object Height
 'D-PRS Object Height
 Data "996;as,as995"
 '
-'Announce742:
+Announce742:
 'Befehl 997 &H03E5 Code 1A050289
 'GPS D-PRS Object Gain
 'GPS D-PRS Object Gain
-Data "997;op,GPS D-PRS Object Gain;1:10;lin;dB"
+Data "997;op,GPS D-PRS Object Gain;1;10;lin;dB"
 '
-'Announce743
+Announce743
 'Befehl 998 &H03E6 Code 1A050289
 'D-PRS Object Gain
 'D-PRS Object Gain
 Data "998;ap,as997"
 '
-'Announce744:
+Announce744:
 'Befehl 999 &H03E7 Code 1A050290
 'GPS D-PRS Object Directivity
 'GPS D-PRS Object Directivity
-Data "999;os,GPS D-PRS Object Directivity;1:0,Omni;1,NE;2,E;3,SE;4,S;5,SW;6,W;7;NW;8;N"
+Data "999;os,GPS D-PRS Object Directivity;1;0,Omni;1,NE;2,E;3,SE;4,S;5,SW;6,W;7;NW;8;N"
 '
-'Announce745:
+Announce745:
 'Befehl 1000 &H03E8 Code 1A050290
 'D-PRS Object Directivity
 'D-PRS Object Directivity
 Data "1000;as,as999"
 '
-'Announce746:
+Announce746:
 'Befehl 1001 &H03E9 Code 1A050291
 'GPS D-PRS Object SSID
 'GPS D-PRS Object SSID
-Data "1001;op,GPS D-PRS Object Tx SSID;1:42,{-,{0 to 15,A to Z};lin;-"
+Data "1001;op,GPS D-PRS Object Tx SSID;1;42,{-,{0 to 15,A to Z};lin;-"
 '
-'Announce747:
+Announce747:
 'Befehl 1002 &H03EA Code 1A050291
 'D-PRS Object SSID
 'D-PRS Object SSID
 Data "1002;ap,as1001"
 '
-'Announce748:
+Announce748:
 'Befehl 1003 &H03EB Code 1A050292
 'GPS D-PRS Object Time Stamp
 'GPS D-PRS Object Time Stamp
-Data "1003;os,GPS D-PRS Object Tx Time Stamp;1:0,dhm;1,hms"
+Data "1003;os,GPS D-PRS Object Tx Time Stamp;1;0,dhm;1,hms"
 '
-'Announce749:
+Announce749:
 'Befehl 1004 &H03EC Code 1A050292
 'D-PRS Object Time Stamp
 'D-PRS Object Time Stamp
 Data "1004;as,as1003"
 '
-'Announce750:
+Announce750:
 'Befehl 1005 &H03ED Code 1A050293
 'GPS D-PRS TX Item Name
 'GPS D-PRS TX Item Name
-Data "1005;oa,GPS D-PRS TX Item Name;1:9,{DEF_ALPHA0}"
+Data "1005;oa,GPS D-PRS TX Item Name;1;9,{DEF_ALPHA0}"
 '
-'Announce751:
+Announce751:
 'Befehl 1006 &H03EE Code 1A050293
 'D-PRS TX Item Name
 'D-PRS TX Item Name
 Data "1006;aa,as1005"
 '
-'Announce752:
+Announce752:
 'Befehl 1007 &H03EF Code 1A050294
 'GPS D-PRS TX Data Type Item
 'GPS D-PRS TX Data Type Item
-Data "1007;os,GPS D-PRS TX Data Type Item;1:0,live;1,killed"
+Data "1007;os,GPS D-PRS TX Data Type Item;1;0,live;1,killed"
 '
-'Announce753:
+Announce753:
 'Befehl 1008 &H03F0 Code 1A050294
 'D-PRS TX Data Type Item
 'D-PRS TX Data Type Item
 Data "1008;as,as1007"
 '
-'Announce754:
+Announce754:
 'Befehl 1009 &H03F1 Code 1A050295
 'GPS D-PRS Tx Item Symbol
 'GPS D-PRS TX Item Symbol
 Data "1009;oa,GPS D-PRS TX Item Symbol;1;1,{/,\,0 to 9, A to Z};1,{}"
 '
-'Announce755:
+Announce755:
 'Befehl 1010 &H03F2 Code 1A050295
 'D-PRS TX Data Item Symbol
 'D-PRS TX Data Item Symbol
 Data "1010;aa,as1009"
 '
-'Announce756:
+Announce756:
 'Befehl 1011 &H03F3 Code 1A050296
 'GPS D-PRS Tx Item Comment
 'GPS D-PRS TX Item Comment
-Data "1011;oa,GPS D-PRS TX Item Comment;1:43,{DEF_ALPHA0}"
+Data "1011;oa,GPS D-PRS TX Item Comment;1;43,{DEF_ALPHA0}"
 '
-'Announce757:
+Announce757:
 'Befehl 1012 &H03F4 Code 1A050296
 'D-PRS TX Data Item Comment
 'D-PRS TX Data Item Comment
 Data "1012;aa,as1011"
 '
-'Announce758:
+Announce758:
 'Befehl 1013 &H03F5 Code 1A050297
 'GPS D-PRS Tx Item Position
 'GPS D-PRS TX Item Position
@@ -4580,566 +4580,566 @@ Data "1013;op,GGPS Item Position;1;1;90,lat;lin;deg;60000,{0 to 59.999},lat;lin;
 Data "1013;op;1;180,long;lin;degree;60000,{0 to 59.999},long;lin;min;2,{W,W};lin;-"
 Data "1013;op;1;199999,{0 to 19999,9,alt;lin;m;2,{+,-},alt;lin;-"
 '
-'Announce759:
+Announce759:
 'Befehl 1014 &H03F6 Code 1A050297
 'D-PRS TX Data Item Position
 'D-PRS TX Data Item Position
 Data "1014;ap,as1013"
 '
-'Announce760:
+Announce760:
 'Befehl 1015 &H03F7 Code 1A050298
 'GPS D-PRS Tx Item Data Extension
 'GPS D-PRS TX Item Data Extension
 Data "1015;os,GGPS Item Data Extension;1;0,off;1,course-speed;2,power-hight-gain-directivity"
 '
-'Announce761:
+Announce761:
 'Befehl 1016 &H03F8 Code 1A050298
 'D-PRS TX Data Item Data Extension
 'D-PRS TX Data Item Data Extension
 Data "1016;as,as1015"
 '
-'Announce762:
+Announce762:
 'Befehl 1017 &H03F9 Code 1A050299
 'GPS D-PRS Tx Item Course
 'GPS D-PRS TX Item Course
 Data "1017;op,GGPS Item Course;1;361;lin;deg"
 '
-'Announce763:
+Announce763:
 'Befehl 1018 &H03FA Code 1A050299
 'D-PRS TX Data Item Course
 'D-PRS TX Data Item Course
 Data "1018;ap,as1017"
 '
-'Announce764:
+Announce764:
 'Befehl 1019 &H03FB Code 1A050300
 'GPS D-PRS Tx Item Speed
 'GPS D-PRS TX Item Speed
 Data "1019;op,GGPS Item Speed;1;1851;lin;deg"
 '
-'Announce765:
+Announce765:
 'Befehl 1020 &H03FC Code 1A050300
 'D-PRS TX Data Item Speed
 'D-PRS TX Data Item Speed
 Data "1020;ap,as1019"
 '
-'Announce766:
+Announce766:
 'Befehl 1021 &H03DD Code 1A050301
 'GPS D-PRS Tx Item Power
 'GPS D-PRS TX Item Power
 Data "1021;os,GPS D-PRS Item Power W;1;0,0;1,1;2,4;3,9;4,16;5,25;6,36;7,49;8,64;9,81"
 '
-'Announce767:
+Announce767:
 'Befehl 1022 &H03FE Code 1A050301
 'D-PRS TX Data Item Power
 'D-PRS TX Data Item Power
 Data "1022;as,as1021"
 '
-'Announce768:
+Announce768:
 'Befehl 1023 &H03FF Code 1A050302
 'GPS D-PRS Tx Item Height
 'GPS D-PRS TX Item Height
 Data "1023;os,GPS D-PRS Item Height;1;0,3;1,6;2,12;3,24;4,49;5,98;6,195;7,390;8,780;9,1561"
 '
-'Announce769:
+Announce769:
 'Befehl 1024 &H03400 Code 1A050302
 'D-PRS TX Data Item Height
 'D-PRS TX Data Item Height
 Data "1024;as,as1023"
 '
-'Announce770:
+Announce770:
 'Befehl 1025 &H0401 Code 1A050303
 'GPS D-PRS Tx Item Gain
 'GPS D-PRS TX Item Gain
 Data "1025;os,GPS D-PRS Item Gain;1;10;lin;dB"
 '
-'Announce771:
+Announce771:
 'Befehl 1026 &H0402 Code 1A050303
 'D-PRS TX Data Item Gain
 'D-PRS TX Data Item Gain
 Data "1026;as,as1025"
 '
-'Announce772:
+Announce772:
 'Befehl 1027 &H0403 Code 1A050304
 'GPS D-PRS Tx Item Directivity
 'GPS D-PRS TX Item Directivity
-Data "1027;os,GPS D-PRS Item Directivity;1:0,Omni;1,NE;2,E;3,SE;4,S;5,SW;6,W;7;NW;8;N"
+Data "1027;os,GPS D-PRS Item Directivity;1;0,Omni;1,NE;2,E;3,SE;4,S;5,SW;6,W;7;NW;8;N"
 '
-'Announce773:
+Announce773:
 'Befehl 1028 &H0404 Code 1A050304
 'D-PRS TX Data Item Directivity
 'D-PRS TX Data Item Directivity
 Data "1028;as,as1027"
 '
-'Announce774:
+Announce774:
 'Befehl 1029 &H0405 Code 1A050305
 'GPS D-PRS Tx Item SSID
 'GPS D-PRS TX Item SSID
-Data "1029;op,GPS D-PRS Item SSID;1:43,{-,0 to 15,A to Z};lin,-"
+Data "1029;op,GPS D-PRS Item SSID;1;43,{-,0 to 15,A to Z};lin,-"
 '
-'Announce775:
+Announce775:
 'Befehl 1030 &H0406 Code 1A050305
 'D-PRS TX Data Item SSID
 'D-PRS TX Data Item SSID
 Data "1030;ap,as1029"
 '
-'Announce776:
+Announce776:
 'Befehl 1031 &H0407 Code 1A050306
 'GPS D-PRS Tx Weather Symbol
 'GPS D-PRS TX Weather Symbol
 Data "1031;oa,GPS D-PRS Weather Symbol;1;1,{/,\,0 to 9, A to Z};1,{}"
 '
-'Announce777:
+Announce777:
 'Befehl 1032 &H0408 Code 1A050306
 'D-PRS TX Data Weather Symbol
 'D-PRS TX Data Weather Symbol
 Data "1032;aa,as1031"
 '
-'Announce778:
+Announce778:
 'Befehl 1033 &H0409 Code 1A050307
 'GPS D-PRS Tx Weather SSID
 'GPS D-PRS TX Weather SSID
-Data "1033;op,GPS D-PRS Weather SSID;1:43,{.,0 to 15,A to Z};lin,-"
+Data "1033;op,GPS D-PRS Weather SSID;1;43,{.,0 to 15,A to Z};lin,-"
 '
-'Announce779:
+Announce779:
 'Befehl 1034 &H040A Code 1A050307
 'D-PRS TX Data Weather SSID
 'D-PRS TX Data Weather SSID
 Data "1034;ap,as1033"
 '
-'Announce780:
+Announce780:
 'Befehl 1035 &H040B Code 1A050308
 'GPS D-PRS Tx Weather Comment
 'GPS D-PRS TX Weather Comment
-Data "1035;oa,GPS D-PRS Weather Comment;1:43,{DEF_ALPHA0}"
+Data "1035;oa,GPS D-PRS Weather Comment;1;43,{DEF_ALPHA0}"
 '
-'Announce781:
+Announce781:
 'Befehl 1036 &H040C Code 1A050308
 'D-PRS TX Data Weather Comment
 'D-PRS TX Data Weather Comment
 Data "1036;aa,as1035"
 '
-'Announce782:
+Announce782:
 'Befehl 1037 &H00D Code 1A050309
 'GPS D-PRS Tx Weather Time Stamp
 'GPS D-PRS TX Weather Time Stamp
 Data "1037;os,GPS D-PRS Weather Time Stamp;1;0,off;1,dhm;2,hms"
 '
-'Announce783:
+Announce783:
 'Befehl 1038 &H040E Code 1A050309
 'D-PRS TX Data Weather Time Stamp
 'D-PRS TX Data Weather Time Stamp
 Data "1038;as,as1037"
 '
-'Announce784:
+Announce784:
 'Befehl 1039 &H040F Code 1A050310
 'GPS D-PRS Tx NMEA Sentence RMC
 'GPS D-PRS TX NMEA Sentence RMC
 Data "1039;os,GPS D-PRS NMEA Sentence RMC;1;0,off;1,on"
 '
-'Announce785:
+Announce785:
 'Befehl 1040 &H0410 Code 1A050310
 'D-PRS TX Data Weather NMEA Sentence RMC
 'D-PRS TX Data Weather NMEA Sentence RMC
 Data "1040;as,as1039"
 '
-'Announce786:
+Announce786:
 'Befehl 1041 &H0411 Code 1A050311
 'GPS D-PRS Tx NMEA Sentence CGA
 'GPS D-PRS TX NMEA Sentence CGA
 Data "1041;os,GPS D-PRS NMEA Sentence CGA;1;0,off;1,on"
 '
-'Announce787:
+Announce787:
 'Befehl 1042 &H0412 Code 1A050311
 'D-PRS TX Data Weather NMEA Sentence CGA
 'D-PRS TX Data Weather NMEA Sentence CGA
 Data "1042;as,as1041"
 '
-'Announce788:
+Announce788:
 'Befehl 1043 &H0413 Code 1A050312
 'GPS D-PRS Tx NMEA Sentence GLL
 'GPS D-PRS TX NMEA Sentence GLL
 Data "1043;os,GPS D-PRS NMEA Sentence GLL;1;0,off;1,on"
 '
-'Announce789:
+Announce789:
 'Befehl 1044 &H0414 Code 1A050312
 'D-PRS TX Data Weather NMEA Sentence GLL
 'D-PRS TX Data Weather NMEA Sentence GLL
-Data "10744;as,as1043"
+Data "1044;as,as1043"
 '
-'Announce790:
+Announce790:
 'Befehl 1045 &H0415 Code 1A050313
 'GPS D-PRS Tx NMEA Sentence GSA
 'GPS D-PRS TX NMEA Sentence GSA
 Data "1045;os,GPS D-PRS NMEA Sentence GSA;1;0,off;1,on"
 '
-'Announce791:
+Announce791:
 'Befehl 1046 &H0416 Code 1A050313
 'D-PRS TX Data Weather NMEA Sentence GSA
 'D-PRS TX Data Weather NMEA Sentence GSA
 Data "1046;as,as1045"
 '
-'Announce792:
+Announce792:
 'Befehl 1047 &H0417 Code 1A050314
 'GPS D-PRS Tx NMEA Sentence VTG
 'GPS D-PRS TX NMEA Sentence VTG
 Data "1047;os,GPS D-PRS NMEA Sentence VTG;1;0,off;1,on"
 '
-'Announce793:
+Announce793:
 'Befehl 1048 &H0418 Code 1A050314
 'D-PRS TX Data Weather NMEA Sentence VTG
 'D-PRS TX Data Weather NMEA Sentence VTG
 Data "1048;as,as1047"
 '
-'Announce794:
+Announce794:
 'Befehl 1049 &H0419 Code 1A050315
 'GPS D-PRS Tx NMEA Sentence GSV
 'GPS D-PRS TX NMEA Sentence GSV
 Data "1049;os,GPS D-PRS NMEA Sentence GSV;1;0,off;1,on"
 '
-'Announce795:
+Announce795:
 'Befehl 1050 &H041A Code 1A050315
 'D-PRS TX Data Weather NMEA Sentence GSV
 'D-PRS TX Data Weather NMEA Sentence GSV
 Data "1050;as,as1049"
 '
-'Announce796:
+Announce796:
 'Befehl 1051 &H041B Code 1A050316
 'GPS D-PRS Tx NMEA Message
 'GPS D-PRS TX NMEA Message
 Data "1051;oa,GPS D-PRS NMEA Message;1;20,{DEF_ALPHA0}"
 '
-'Announce797:
+Announce797:
 'Befehl 1052 &H041C Code 1A050316
 'D-PRS TX Data Weather NMEA Message
 'D-PRS TX Data Weather NMEA Message
 Data "1052;aa,as1041"
 '
-'Announce798:
+Announce798:
 'Befehl 1053 &H041D Code 1A050317
 'GPS Alarm Area
 'GPS Alarm Area
-Data "1054;op,GPS Alarm Area;1:5992,{0.08 to 59.99};lin;-"
+Data "1054;op,GPS Alarm Area;1;5992,{0.08 to 59.99};lin;-"
 '
-'Announce799:
+Announce799:
 'Befehl 1054 &H041E Code 1A050317
 'GPS Alarm Area
 'GPS Alarm Area
 Data "1054;ap,as1053"
 '
-'Announce800:
+Announce800:
 'Befehl 1055 &H041F Code 1A050318
 'GPS Alarm Area RX/Memory
 'GPS Alarm Area RX/Memory
 Data "1055;os,GPS Alarm Area RX/Memory;1;0,limited;1,extended;2,both"
 '
-'Announce801:
+Announce801:
 'Befehl 1056 &H0420 Code 1A050318
 'GPS Alarm Area RX/Memory
 'GPS Alarm Area RX/Memory
 Data "1056;as,as1055"
 '
-'Announce802:
+Announce802:
 'Befehl 1057 &H0421 Code 1A050319
 'GPS Alarm Auto Tx
 'GPS Alarm Auto Tx
 Data "1057;os,GPS Auto Tx;1;0,off;1,5s;2,10s;3,30s;4,1m;5,3m;6,5m;7,10m;8,30m"
 '
-'Announce803:
+Announce803:
 'Befehl 1058 &H0422 Code 1A050319
 'GPS Auto Tx
 'GPS Auto Tx
 Data "1058;as,as1057"
 '
-'Announce804:
+Announce804:
 'Befehl 1059 &H0423 Code 1A050320
 'DTMF Speed
 'DTMF Speed
 Data "1059;os,DTMF Speed;1;0,100ms;1,200ms;2,300ms;3,500ms"
 '
-'Announce805:
+Announce805:
 'Befehl 1060 &H0424 Code 1A050320
 'DTMF Speed
 'DTMF Speed
 Data "1060;as,as1059"
 '
-'Announce806:
+Announce806:
 'Befehl 1061 &H0425 Code 1A050321
 'NB LEVEL (144 MHz)
 'NB LEVEL (144 MHz)
 Data "1061;op,NB LEVEL 144MHz;1;255,{0 to 100};lin;%"
 '
-'Announce807:
+Announce807:
 'Befehl 1062 &H0426 Code 1A050321
 'NB LEVEL (144 MHz)
 'NB LEVEL (144 MHz)
 Data "1062;ap,as1061"
 '
-'Announce808:
+Announce808:
 'Befehl 1063 &H0427 Code 1A050322
 'NB Depth (144 MHz)
 'NB Depth (144 MHz)
 Data "1063;op,NB Depth 144MHz;1;10,{1 to 10};lin;-"
 '
-'Announce809:
+Announce809:
 'Befehl 1064 &H0428 Code 1A050322
 'NB Depth (144 MHz)
 'NB Depth (144 MHz)
 Data "1064;ap,as1063"
 '
-'Announce810:
+Announce810:
 'Befehl 1065 &H0429 Code 1A050323
 'NB Width (144 MHz)
 'NB Width (144 MHz)
 Data "1065;op,NB Width 144MHz;1;255,{0 to 100};lin;%"
 '
-'Announce811:
+Announce811:
 'Befehl 1066 &H042A Code 1A050323
 'NB Width (144 MHz)
 'NB Width (144 MHz)
 Data "1066;ap,as1065"
 '
-'Announce812:
+Announce812:
 'Befehl 1067 &H042B Code 1A050324
 'NB LEVEL (430 MHz)
 'NB LEVEL (430 MHz)
 Data "1067;op,NB LEVEL 430MHz;1;255,{0 to 100};lin;%"
 '
-'Announce813:
+Announce813:
 'Befehl 1068 &H042C Code 1A050324
 'NB LEVEL (430 MHz)
 'NB LEVEL (430 MHz)
 Data "1068;ap,as1067"
 '
-'Announce814:
+Announce814:
 'Befehl 1069 &H042D Code 1A050325
 'NB DEPTH  (430 MHz)
 'NB DEPTH  (430 MHz)
 Data "1069;op,NB DEPTH 430MHz;1;10,{1 to 10};lin;-"
 '
-'Announce815:
+Announce815:
 'Befehl 1070 &H042E Code 1A050325
 'NB DEPTH  (430 MHz)
 'NB DEPTH  (430 MHz)
 Data "1070;ap,as169"
 '
-'Announce816:
+Announce816:
 'Befehl 1071 &H042F Code 1A050326
 'NB WIDTH   (430 MHz)
 'NB WIDTH   (430 MHz)
 Data "1071;op,NB WIDTH 430MHz;1;255,{0 to 100};lin;%"
 '
-'Announce817:
+Announce817:
 'Befehl 1072 &H0430 Code 1A050326
 'NB WIDTH   (430 MHz)
 'NB WIDTH   (430 MHz)
 Data "1072;ap,as1071"
 '
-'Announce818:
+Announce818:
 'Befehl 1073 &H0421 Code 1A050327
 'NB LEVEL   (1230 MHz)
 'NB LEVEL   (1230 MHz)
 Data "1073;op,NB LEVEL 1230MHz;1;255,{0 to 100};lin;%"
 '
-'Announce819:
+Announce819:
 'Befehl 1074 &H0432 Code 1A050327
 'NB LEVEL   (1230 MHz)
 'NB LEVEL   (1230 MHz)
 Data "1074;ap,as1073"
 '
-'Announce820:
+Announce820:
 'Befehl 1075 &H0433 Code 1A050328
 'NB DEPTH    (1230 MHz)
 'NB DEPTH    (1230 MHz)
 Data "1075;op,NB DEPTH  1230MHz;1;10,{1 to 10};lin;-"
 '
-'Announce821:
+Announce821:
 'Befehl 1076 &H0434 Code 1A050328
 'NB DEPTH    (1230 MHz)
 'NB DEPTH    (1230 MHz)
 Data "1076;ap,as1075"
 '
-'Announce822:
+Announce822:
 'Befehl 1077 &H0435 Code 1A050329
 'NB WIDTH     (1230 MHz)
 'NB WIDTH     (1230 MHz)
 Data "1077;op,NB WIDTH  1230MHz;1;255,{0 to 100};lin;%"
 '
-'Announce823:
+Announce823:
 'Befehl 1078 &H0436 Code 1A050329
 'NB WIDTH     (1230 MHz)
 'NB WIDTH    (1230 MHz)
 Data "1078;ap,as1077"
 '
-'Announce824:
+Announce824:
 'Befehl 1079 &H0437 Code 1A050330
 'VOX DELAY
 'VOX DELAY  (1230 MHz)3
 Data "1079;op,VOX DELAY;1;21,{0 to 2.0};lin;sec"
 '
-'Announce825:
+Announce825:
 'Befehl 1080 &H0438 Code 1A050330
 'VOX DELAY
 'VOX DELAY
 Data "1080;ap,as1079"
 '
-'Announce826:
+Announce826:
 'Befehl 1081 &H0439 Code 1A050331
 'VOX voice  DELAY
 'VOX voice  DELAY
 Data "1081;os,VOX voice DELAY;1;0,off;1,short;2,mid;3,long"
 '
-'Announce827:
+Announce827:
 'Befehl 1082 &H043A Code 1A050331
 'VOX voice  DELAY
 'VOX voice  DELAY
 Data "1082;as,as1081"
 '
-'Announce828:
+Announce828:
 'Befehl 1083 &H043B Code 1A050332
 'PWR LIMIT (144M)
 'PWR LIMIT (144M)
 Data "1083;os,PWR LIMIT 144MHz;1;0,off;1,on"
 '
-'Announce829:
+Announce829:
 'Befehl 1084 &H043C Code 1A050332
 'PWR LIMIT (144M)
 'PWR LIMIT (144M)
 Data "1084;as,as1083"
 '
-'Announce830:
+Announce830:
 'Befehl 1085 &H043D Code 1A050333
 'PWR LIMIT (144M)
 'PWR LIMIT (144M)
 Data "1085;op,PWR LIMIT 144MHz;1;255,{0 to 100};lin;%"
 '
-'Announce831:
+Announce831:
 'Befehl 1086 &H043E Code 1A050333
 'PWR LIMIT (144M)
 'PWR LIMIT (144M)
-Data "11086;ap,as1085"
+Data "1086;ap,as1085"
 '
-'Announce832:
+Announce832:
 'Befehl 1087 &H043F Code 1A050334
 'PWR LIMIT (430M)
 'PWR LIMIT (430M)
 Data "1087;os,PWR LIMIT 430MHz;1;0,off;1,on"
 '
-'Announce833:
+Announce833:
 'Befehl 1088 &H0440 Code 1A050334
 'PWR LIMIT (430M)
 'PWR LIMIT (430M)
 Data "1088;as,as1187
 '
-'Announce834:
+Announce834:
 'Befehl 1089 &H0441 Code 1A050335
 'PWR LIMIT (430M)
 'PWR LIMIT (430M)
 Data "1089;op,PWR LIMIT 430MHz;1;255,{0 to 100};lin;%"
 '
-'Announce835:
+Announce835:
 'Befehl 1090 &H0442 Code 1A050335
 'PWR LIMIT (430M)
 'PWR LIMIT (430M)
 Data "1090;ap,as1089"
 '
-'Announce836:
+Announce836:
 'Befehl 1091 &H0443 Code 1A050336
 'PWR LIMIT (1230M)
 'PWR LIMIT (1230M)
 Data "1091;os,PWR LIMIT 1230MHz;1;0,off;1,on"
 '
-'Announce837:
+Announce837:
 'Befehl 1092 &H0444 Code 1A050336
 'PWR LIMIT (1230M)
 'PWR LIMIT (1230M)
 Data "1092;as,as1091"
 '
-'Announce838:
+Announce838:
 'Befehl 1093 &H0445 Code 1A050337
 'PWR LIMIT (1230M)
 'PWR LIMIT (1230M)
 Data "1093;op,PWR LIMIT 1230MHz;1;255,{0 to 100};lin;%"
 '
-'Announce839:
+Announce839:
 'Befehl 1094 &H0446 Code 1A050337
 'PWR LIMIT (1230M)
 'PWR LIMIT (1230M)
 Data "1094;ap,as1093"
 '
-'Announce840:
+Announce840:
 'Befehl 1095 &H0447 Code 1A050338
 'Received Call sign Display
 'Received Call sign Display
 Data "1095;os,Received Call sign Display;1;0,call;1,name"
 '
-'Announce841:
+Announce841:
 'Befehl 1096 &H0448 Code 1A050338
 'Received Call sign Display
 'Received Call sign Display
 Data "1096;as,as1095"
 '
-'Announce842:
+Announce842:
 'Befehl 1097 &H0449 Code 1A050339
 'Compass Direction
 'Compass Direction
 Data "1097;os,Compass Direction;1;0,heading up;1,noth up;2,south up"
 '
-'Announce843:
+Announce843:
 'Befehl 1098 &H044A Code 1A050339
 'Compass Direction
 'Compass Direction
 Data "1098;as,as1097"
 '
-'Announce844:
+Announce844:
 'Befehl 1099 &H044B Code 1A050340
 'Home CH Beep
 'Home CH Beep
 Data "1099;os,Home CH Beep;1;0,off;1,on"
 '
-'Announce845:
+Announce845:
 'Befehl 1100 &H044C Code 1A050340
 'Home CH Beep
 'Home CH Beep
 Data "1100;as,as1099"
 '
-'Announce846:
+Announce846:
 'Befehl 1101 &H044D Code 1A050341
 'PTT Port Function
 'PTT Port Function
 Data "1101;os,PTT Port Function;1;0,PII input;1,PTT input + Send Output"
 '
-'Announce847:
+Announce847:
 'Befehl 1102 &H044E Code 1A050341
 'PTT Port Function
 'PTT Port Function
 Data "1102;as,as1101"
 '
-'Announce848:
+Announce848:
 'Befehl 1103 &H044F Code 1A050342
 'RX Picture Indicator
 'RX Picture Indicator
 Data "1103;os,RX Picture Indicator;1;0,off;1,on"
 '
-'Announce849:
+Announce849:
 'Befehl 1104 &H0450 Code 1A050342
 'RX Picture Indicator
 'RX Picture Indicator
 Data "1104;as,as1103"
 '
-'Announce850:
+Announce850:
 'Befehl 1105 &H0451 Code 1A050343
 'Front Key Customize > [VOX/BK-IN]
 'Front Key Customize > [VOX/BK-IN]
 Data "1105;os,Front Key Customize VOX/BK-IN;1;0,VOX/BK-IN;1,CD;2PRESET;3,Home CH;4,Temporary Skip;"
 Data "1105;os;5,Voice/Keyer/RTTY Memory 1;6,Voice/Keyer/RTTY Memory 2;7,Voice/Keyer/RTTY Memory 3;08,Voice/Keyer/RTTY Memory 4"
 '
-'Announce851:
+Announce851:
 'Befehl 1106 &H0452 Code 1A050343
 'Front Key Customize > [VOX/BK-IN]
 'Front Key Customize > [VOX/BK-IN]
 Data "1106;as,as1105"
 '
-'Announce852:
+Announce852:
 'Befehl 1107 &H0453 Code 1A050344
 'Front Key Customize > [AUTOTUNE/AFC]
 'Front Key Customize > [AUTOTUNE/AFC]
@@ -5147,67 +5147,67 @@ Data "1107;os,Front Key Customize AUTOTUNE/AFC;1;0,AUTOTUNE/AFC;1,AUTOTUNE/AFC/R
 Data "1107;os;5,PRESET;6,PRESET/RX>CS;7,Home CH;8,home CH/RX>CS;9,Temporary Skip;10 Temporary Skip/RX>CS;"
 Data "1107;os;11,Voice/Keyer/RTTY Memory 1;12,Voice/Keyer/RTTY Memory 2;13,Voice/Keyer/RTTY Memory 3;14,Voice/Keyer/RTTY Memory 4"
 '
-'Announce853:
+Announce853:
 'Befehl 1108 &H0454 Code 1A050344
 'Front Key Customize > [AUTOTUNE/AFC]
 'Front Key Customize > [AUTOTUNE/AFC]
 Data "1108;as,as1107"
 '
-'Announce854:
+Announce854:
 'Befehl 1109 &H0455 Code 1A050345
 'Front Key Customize > [TONE/RX>CS]
 'Front Key Customize > [TONE/RX>CS]
-"Data "1109;os,Front Key Customize TONE/RX>CS;1;0,AUTOTUNE/AFC;1,TONE/RX>CS;2,CD/RX>CS;3,PRESET/RX>CS;4,Home CH/RX>CS;5,Temporary Skip/RX>CS"
+Data "1109;os,Front Key Customize TONE/RX>CS;1;0,AUTOTUNE/AFC;1,TONE/RX>CS;2,CD/RX>CS;3,PRESET/RX>CS;4,Home CH/RX>CS;5,Temporary Skip/RX>CS"
 ''
-'Announce855:
+Announce855:
 'Befehl 1110 &H0456 Code 1A050345
 'Front Key Customize > [TONE/RX>CS]
 'Front Key Customize > [TONE/RX>CS]
 Data "1110;as,as1109"
 '
-'Announce856:
+Announce856:
 'Befehl 1111 &H0457 Code 1A050346
 'Mic Key Up Customize
 'Mic Key Up Customize
-"Data "1111;os,'Mic Key Up Customize;1;0,No function;1,UP;2,DOWN;3,UP (VFO: kHz);4,DOWN (VFO: kHz);5,XFC;6,CALL;"
-"Data "1111;os;7,VFO/MEMO;8,DR;9,FROM/TO (DR);10,Home CH;11,BAND UP;12,BAND DOWN;13,SCAN;14.Temporary Skip;15,SPEECH;"
-"Data "1111;os;16 MAIN/DUAL;17.MODE;18,Voice/Keyer/RTTY Memory 1;19,Voice/Keyer/RTTY Memory 2;20,Voice/Keyer/RTTY Memory 3;"
-"Data "1111;os;21,Voice/Keyer/RTTY Memory 4;22,T-CALL;23,RX>CS;24,TS;25,MPAD;26,SPLIT;27 A/B"
+Data "1111;os,'Mic Key Up Customize;1;0,No function;1,UP;2,DOWN;3,UP (VFO: kHz);4,DOWN (VFO: kHz);5,XFC;6,CALL;"
+Data "1111;os;7,VFO/MEMO;8,DR;9,FROM/TO (DR);10,Home CH;11,BAND UP;12,BAND DOWN;13,SCAN;14.Temporary Skip;15,SPEECH;"
+Data "1111;os;16 MAIN/DUAL;17.MODE;18,Voice/Keyer/RTTY Memory 1;19,Voice/Keyer/RTTY Memory 2;20,Voice/Keyer/RTTY Memory 3;"
+Data "1111;os;21,Voice/Keyer/RTTY Memory 4;22,T-CALL;23,RX>CS;24,TS;25,MPAD;26,SPLIT;27 A/B"
 '
-'Announce857:
+Announce857:
 'Befehl 1112 &H0458 Code 1A050346
 'Mic Key Up Customize
 'Mic Key Up Customize
 Data "1112;as,as1111"
 '
-'Announce858:
+Announce858:
 'Befehl 1113 &H0459 Code 1A050347
 'Mic Key Down Customize
 'Mic Key Down Customize
-"Data "1113;os,'Mic Key Down Customize;1;0,No function;1,UP;2,DOWN;3,UP (VFO: kHz);4,DOWN (VFO: kHz);5,XFC;6,CALL;"
-"Data "1113;os;7,VFO/MEMO;8,DR;9,FROM/TO (DR);10,Home CH;11,BAND UP;12,BAND DOWN;13,SCAN;14.Temporary Skip;15,SPEECH;"
-"Data "1113;os;16 MAIN/DUAL;17.MODE;18,Voice/Keyer/RTTY Memory 1;19,Voice/Keyer/RTTY Memory 2;20,Voice/Keyer/RTTY Memory 3;"
-"Data "1113;os;21,Voice/Keyer/RTTY Memory 4;22,T-CALL;23,RX>CS;24,TS;25,MPAD;26,SPLIT;27 A/B"
+Data "1113;os,'Mic Key Down Customize;1;0,No function;1,UP;2,DOWN;3,UP (VFO: kHz);4,DOWN (VFO: kHz);5,XFC;6,CALL;"
+Data "1113;os;7,VFO/MEMO;8,DR;9,FROM/TO (DR);10,Home CH;11,BAND UP;12,BAND DOWN;13,SCAN;14.Temporary Skip;15,SPEECH;"
+Data "1113;os;16 MAIN/DUAL;17.MODE;18,Voice/Keyer/RTTY Memory 1;19,Voice/Keyer/RTTY Memory 2;20,Voice/Keyer/RTTY Memory 3;"
+Data "1113;os;21,Voice/Keyer/RTTY Memory 4;22,T-CALL;23,RX>CS;24,TS;25,MPAD;26,SPLIT;27 A/B"
 '
-'Announce859:
+Announce859:
 'Befehl 1114 &H045A Code 1A050347
 'Mic Key Down Customize
 'Mic Key Down Customize
 Data "1114;as,as1113"
 '
-'Announce860:
+Announce860:
 'Befehl 1115 &H045B Code 1A06
 'DATA mode
 'DATA mode
-'Data "1115;os,DATA mode - Filter;1;0,off;1,Fil1;2,Fil2;3,Fil3"
+Data "1115;os,DATA mode - Filter;1;0,off;1,Fil1;2,Fil2;3,Fil3"
 '
-'Announce861:
+Announce861:
 'Befehl 1116 &H045C Code 1A06
 'DATA mode
 'DATA mode
 Data "1116;as,as1115"
 '
-'Announce862:
+Announce862:
 'Befehl 1117 &H045D Code 1A07
 'Satellite memory
 'Satellite memory
@@ -5216,39 +5216,39 @@ Data "1116;as,as1115"
 'Befehl 1118 &H045E Code 1A08
 'NTP server access
 'NTP server access
-'Data "1118;os,NTP server access;1;0,terminate;1,initiate"
+Data "1118;os,NTP server access;1;0,terminate;1,initiate"
 '
-'Announce864:
+Announce864:
 'Befehl 1119 &H045F Code 1A08
 'NTP server access
 'NTP server access
-Data "11019;as,as1118"
+Data "1119;as,as1118"
 '
-'Announce865:
+Announce865:
 'Befehl 1120 &H0460 Code 1A09
 'NTP server access result
 'NTP server access result
 Data "1120;as,NTP server access result;1;0,Accessing, or have not accessed after Power ON;1,Succeeded;2,failed"
 '
-'Announce866:
+Announce866:
 'Befehl 1121 &H0461 Code 1A0A
 'OVF indicator status
 'OVF indicator status
 Data "1121;as,OVF indicator status;1;0,off;1,on"
 '
-'Announce876:
+Announce876:
 'Befehl 1122 &H0462 Code 1A0B
 'Bild Tx
 'Picture TX
-'Data "1122;os,Picture TX;1;0,terminate;1,initiate"
+Data "1122;os,Picture TX;1;0,terminate;1,initiate"
 '
-'Announce868:
+Announce868:
 'Befehl 1123 &H0463 Code 1A0B
 'Bild Tx
 'Picture TX
 Data "1123;as,as1122"
 
-'Announce869:
+Announce869:
 'Befehl 1124 &H0464 Code 1B00
 'repeater tone frequency
 'repeater tone frequency
@@ -5258,13 +5258,13 @@ Data "1124;os,repeater tone frequency;21,136.5;22,141.3;23,146.2;24,151.4;25,156
 Data "1124;os,repeater tone frequency;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
 Data "1124;os,repeater tone frequency;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1"
 '
-'Announce870:
+Announce870:
 'Befehl 1125 &H0465 Code 1B00
 'repeater tone frequency
 'repeater tone frequency
 Data "1125;as,as1124"
 '
-'Announce871:
+Announce871:
 'Befehl 1126 &H0466 Code 1B01
 'TSQL tone frequency
 'TSQL tone frequency
@@ -5274,13 +5274,13 @@ Data "1126;os,TSQL tone frequency;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;2
 Data "1126;os,TSQL tone frequency;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
 Data "1126;os,TSQL tone frequency;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1"
 '
-'Announce872:
+Announce872:
 'Befehl 1127 &H0467 Code 1B01
 'TSQL tone frequency
 'TSQL tone frequency
 Data "1127;ap,as1126"
 '
-'Announce873:
+Announce873:
 'Befehl 1128 &H0468 Code 1B02
 'DTCS code and polarity
 'DTCS code and polarity
@@ -5291,374 +5291,374 @@ Data "1129;op;306,311,315,325,331,332,343,346,351,356,364,365,371,411,412,413,42
 Data "1129;op;446,452,454,455,462,464,465,466,503,506,516,523,526,532,546,565,606,612,624,627,"
 Data "1129;op;631,632,654,662,664,703,712,723,731,732,734,743,754};lin;-"
 '
-'Announce874:
+Announce874:
 'Befehl 1129 &H0469 Code 1B02
 'DTCS code and polarity
 'DTCS code and polarity
 Data "1129;as,as1128"
 '
-'Announce875:
+Announce875:
 'Befehl 1130 &H046A Code 1B07
 'CSQL code (DV mode)
 'CSQL code (DV mode)
 Data "1130;ap,CSQL code DV mode;1;100;lin;-"
 '
-'Announce876:
+Announce876:
 'Befehl 1131 &H046B Code 1B07
 'CSQL code (DV mode)
 'CSQL code (DV mode)
 Data "1131;as,as1130"
 '
-'Announce877":
+Announce877":
 'Befehl 1132 &H046C Code 1C00
 'RX/TX
 'RX/TX
 Data "1132;os,PTT1;1;0:RX;1,TX"
 '
-'Announce878:
+Announce878:
 'Befehl 1133 &H046D Code 1C00
 'RX/TX
 'RX/TX
 Data "1133;as,as1132"
 '
-'Announce879:
+Announce879:
 'Befehl 1134 &H046E Code 1C02
 'transmit frequency monitor setting
 'transmit frequency monitor setting
 Data "1135;os,transmit frequency monitor;1;0:off;1,on;"
 '
-'Announce880:
+Announce880:
 'Befehl 1135 &H046F Code 1C02
 'transmit frequency monitor setting
 'transmit frequency monitor setting
 Data "1135;as,as71134"
 '
-'Announce881:
+Announce881:
 'Befehl 1136 &H0470 Code 1C03
 'transmit frequency
 'transmit frequency
 Data "1136;ap,transmit frequency;1;72000000,{144000000 to 145999999, 430000000 to 439999999,1240000000 to 1299999999};lin;Hz"
 '
-'Announce882:
+Announce882:
 'Befehl 1137 &H0471 Code 1E00
 'number of available TX frequency band
 'number of available TX frequency band
 Data "1137;ap,number of available TX frequency band;1;255;lin"
 '
-'Announce883:
+Announce883:
 'Befehl 1138 &H0472 Code 1E01
 'Band edge
 'Band edge
 Data "1138;ap,band edge frequencies;3;112000003,{144000000 to 146000000, 430000000 to 440000000,1200000000 to 1300000000};lin;Hz;112000003,{144000000 to 146000000, 430000000 to 440000000,1200000000 to 1300000000};lin;Hz"
 '
 '
-'Announce884:
+Announce884:
 'Befehl 1139 &H0473 Code 1E02
 'number of available use set TX frequency band
 'number of available user set TX frequency band
 Data "1139;ap,number of available user set TX frequency band;1;30;lin;-"
 '
-'Announce885:
+Announce885:
 'Befehl 1140 &H0474 Code 1E03
 'user-set TX band edge frequencies
 'user-set TX band edge frequencies
 Data "1140;op,user-set TX band edge frequencies;3;112000003,{144000000 to 146000000, 430000000 to 440000000,1200000000 to 1300000000};lin;Hz;112000003,{144000000 to 146000000, 430000000 to 440000000,1200000000 to 1300000000};lin;Hz"
 '
-'Announce886:
+Announce886:
 'Befehl 1141 &H0475 Code 1E03
 'user set band edge
 'user set band edge
 Data "1141;ap,as1140"
 '
-'Announce887:
+Announce887:
 'Befehl 1142 &H0476 Code 1F00
 'My Call Sign (DV)
 'My Call Sign (DV)
 Data "1142;oa,My Call Sign (DV);1;12.{DEF_ALPHA4}"
 '
-'Announce888:
+Announce888:
 'Befehl 1143 &H0477: --> Code 1F00
 'My Call Sign (DV)
 'My Call Sign (DV)
 Data "1143;aa,as1142"
 '
-'Announce889:
+Announce889:
 'Befehl 1144 &H0478 Code 1F01
 'DV TX call signs setting
 'DV TX call signs setting
 Data "1144;oa,DV TX call signs setting;1;24,{DEF_ALPHA4}"
 '
-'Announce890:
+Announce890:
 'Befehl 1145 &H0579 Code 1F01
 'DV TX call signs setting
 'DV TX call signs setting
 Data "1145;aa,as1144"
 '
-'Announce891:
+Announce891:
 'Befehl 1146 &H047A Code 1F02
 'Message (DV)
 'Message (DV)
 Data "1146;oa,Message DV;1;20,{DEF_ALPHA0"
 '
-'Announce892:
+Announce892:
 'Befehl 1147 &H047B Code 1F02
 'Message (DV)
 'Message (DV)
 Data "1147;aa,as1146"
 '
-'Announce893:
+Announce893:
 'Befehl 1148 &H047C Code 200000
 'Auto DV RX Call signs output
 'Auto DV RX Call signs output
 Data "1148;os,Auto DV RX Call signs output;1;0,off;1,on"
 '
-'Announce894:
+Announce894:
 'Befehl 1149 &H047D Code 200000
 'Auto DV RX Call signs output
 'Auto DV RX Call signs output
 Data "1149;as,as1148"
 '
-'Announce895:
+Announce895:
 'Befehl 1150 &H047E Code 200001
 'Output DV RX Call signs for transceive
 'Output DV RX Call signs for transceive
 Data "1150;aa,Output DV RX Call signs for transceive;1;38,{DEF_ALPHA11}"
 '
-'Announce896:
+Announce896:
 'Befehl 1151 &H047F Code 200002
 'DV RX call sign data
 'DV RX call sign data
 Data "1151;aa,DV RX call sign data;1;38"
 '
-'Announce897:
+Announce897:
 'Befehl 1152 &H0480 Code 200100
 'Auto DV RX message output
 'Auto DV RX message output
 Data "1152;os,Auto DV RX message output;1;0,off;1,on"
 '
-'Announce898:
+Announce898:
 'Befehl 1153 &H0481 Code 200100
 'Auto DV RX message output
 'Auto DV RX message output
 Data "1153;as,as1153"
 '
-'Announce899:
+Announce899:
 'Befehl 1154 &H0482 Code 200101
 'Output DV RX message for transceive
 'Output DV RX message for transceive
 Data "1154;aa,Output DV RX message for transceive;1;38,{DEF_ALPHA11}"
 '
-'Announce900:
+Announce900:
 'Befehl 1155 &H0483 Code 200102
 'DV RX message data
 'DV RX message data
 Data "1155;aa,DV RX call sign data;1;38"
 '
-'Announce901:
+Announce901:
 'Befehl 1156 &H0484 Code 200200
 'Auto DV RX status output
 'Auto DV RX status output
 Data "1156;os,Auto DV RX status output;1;0,off;1,on"
 '
-'Announce902:
+Announce902:
 'Befehl 1157 &H0485 Code 200200
 'Auto DV RX status output
 'Auto DV RX status output
 Data "1157;as,as1156"
 '
-'Announce903:
+Announce903:
 'Befehl 1158 &H0486 Code 200201
 'Output DV RX status for transceive
 'Output DV RX status for transceive
 Data "1158;aa,Output DV RX status for transceive;1;1"
 '
-'Announce904:
+Announce904:
 'Befehl 1159 &H0487 Code 200202
 'DV RX status data
 'DV RX status data
 Data "1159;aa,DV RX status;1;1"
 '
-'Announce905:
+Announce905:
 'Befehl 1160 &H0488 Code 200300
 'Auto DV RX GPS/D-PRS data output
 'Auto DV RX GPS/D-PRS data output
-Data "11060;os,Auto DV RX GPS/D-PRS data output;1;0,off;1,on"
+Data "1160;os,Auto DV RX GPS/D-PRS data output;1;0,off;1,on"
 
-'Announce906:
+Announce906:
 'Befehl 1161 &H0489 Code 200300
 'Auto DV RX GPS/D-PRS data output
 'Auto DV RX GPS/D-PRS data output
 Data "1161;as,as1160"
 '
-'Announce907:
+Announce907:
 'Befehl 1162 &H048A Code 20030100
 'Output GPS/D-PRS Position for transceive
 'Output GPS/D-PRS Position for transceive
 Data "1162;aa,Output GPS/D-PRS Position for transceive;1;38"
 '
-'Announce908:
+Announce908:
 'Befehl 1163 &H048B Code 20030101
 'Output DV RX  D-PRS Object status for transceive
 'Output DV RX  D-PRS Object status for transceive
 Data "1163;aa,Output DV RX  D-PRS Object status for transceive;1;38"
 '
-'Announce909:
+Announce909:
 'Befehl 1164 &H048C Code 20030102
 'Output DV RX D-PRS Item status  for transceive
 'Output DV RX D-PRS Item status  for transceive
 Data "1164;aa,Output DV RX D-PRS Item status  for transceive;1;38"
 '
-'Announce910:
+Announce910:
 'Befehl 1165 &H048D Code 20030103
 'Output DV RX D-PRS Weather status for transceive
 'Output DV RX D-PRS Weather status for transceive
 Data "1165;aa,Output DV RX D-PRS Weather status for transceive;1;38"
 '
-'Announce911:
+Announce911:
 'Befehl 1166 &H048E Code 20030200
 'Output GPS/D-PRS Position for transceive
 'Output GPS/D-PRS Position for transceive
 Data "1166;aa,Output GPS/D-PRS Position for transceive;1;38"
 '
-'Announce912:
+Announce912:
 'Befehl 1167 &H048F Code 20030201
 'Output DV RX  D-PRS Object status for transceive
 'Output DV RX  D-PRS Object status for transceive
 Data "1167;aa,Output DV RX  D-PRS Object status for transceive;1;38"
 '
-'Announce913:
+Announce913:
 'Befehl 1168 &H0490 Code 20030202
 'Output DV RX D-PRS Item status  for transceive
 'Output DV RX D-PRS Item status  for transceive
 Data "1168;aa,Output DV RX D-PRS Item status  for transceive;1;38"
 '
-'Announce914:
+Announce914:
 'Befehl 1169 &H0491 Code 20030203
 'Output DV RX D-PRS Weather status for transceive
 'Output DV RX D-PRS Weather status for transceive
 Data "1169;aa,Output DV RX D-PRS Weather status for transceive;1;38"
 '
-'Announce915:
+Announce915:
 'Befehl 1170 &H0492 Code 200400
 'Auto DV RX GPS/D-PRS message output
 'Auto DV RX GPS/D-PRS message output
 Data "1170;os,Auto DV RX GPS/D-PRS message output;1;0,off;1,on"
 '
-'Announce916:
+Announce916:
 'Befehl 1171 &H0493 Code 200400
 'Auto DV RX GPS/D-PRS message output
 'Auto DV RX GPS/D-PRS message output
 Data "1171;os,as1170"
 '
-'Announce917:
+Announce917:
 'Befehl 1172 &H0494 Code 200401
 'Output DV RX D-PRS message for transceive
 'Output DV RX D-PRS message for transceive
 Data "1174;aa,Output DV RX D-PRS message for transceive;1;52"
 '
-'Announce918:
+Announce918:
 'Befehl 1173 &H0495 Code 200402
 'Auto DV RX D-PRS message status
 'Auto DV RX D-PRS message status
 Data "1173;aa,Auto DV RX D-PRS message status;1;1"
 '
-'Announce919:
+Announce919:
 'Befehl 1174 &H0496 Code 2100
 'RIT frequency
 'RIT frequency
 Data "1174;op,RIT frequency;1;19999,{-9999 to 9999};lin;Hz"
 '
-'Announce920:
+Announce920:
 'Befehl 1175 &H0497 Code 2100
 'RIT frequency
 'RIT frequency
 Data "1175;ap,as1174"
 '
-'Announce921:
+Announce921:
 'Befehl 1176 &H0498 Code 2101
 'RIT
 'RIT
 Data "1176;os,RIT;1;0:off;1,on"
 '
-'Announce922:
+Announce922:
 'Befehl 1177 &H0499 Code 2101
 'RIT
 'RIT
 Data "1177;as,as1176"
 '
-'Announce923:
+Announce923:
 'Befehl 1178 &H049A Code 2200
 'DV TX data
 'DV TX data
 Data "1178;oa,DV TX data;1;30,[DEF_ALPHA11}"
 '
-'Announce924:
+Announce924:
 'Befehl 1179 &H049B Code 220100
 'Auto DV RX data output
 'Auto DV RX data output
 Data "1179;os,Auto DV RX data output;1;0:off;1,on"
 '
-'Announce925:
+Announce925:
 'Befehl 1180 &H049C Code 220100
 'Auto DV RX data output
 'Auto DV RX data output
 Data "1180;as,as1179"
 '
-'Announce926:
+Announce926:
 'Befehl 1181 &H049D Code 220101
 'DV RX data for transceive
 'DV RX data for transceive
 Data "1181;os,DV RX data for transceive;1;30"
 '
-'Announce927:
+Announce927:
 'Befehl 1182 &H049E Code 2202
 'DV/DD Set > DV Data TX
 'DV/DD Set > DV Data TX
 Data "1182;os,DV/DD Set > DV Data TX;1;0:PTT;1,auto"
 '
-'Announce928:
+Announce928:
 'Befehl 1183 &H049F Code 2202
 'DV/DD Set > DV Data TX
 'DV/DD Set > DV Data TX
 Data "1183;as,as1182"
 '
-'Announce929:
+Announce929:
 'Befehl 1184 &H04A0 Code 2203
 'DV/DD Set > DV Fast Data > Fast Data
 'DV/DD Set > DV Fast Data > Fast Data
 Data "1184;os,DV/DD Set > DV Fast Data > Fast Data;1;0:off;1,on"
 '
-'Announce930:
+Announce930:
 'Befehl 1185 &H04A1 Code 2203
 'DV/DD Set > DV Fast Data > Fast Data
 'DV/DD Set > DV Fast Data > Fast Data
 Data "1185;as,as184"
 '
-'Announce931:
+Announce931:
 'Befehl 1186 &H04A2 Code 2204
 'DV/DD Set > DV Fast Data > GPS Data Speed
 'DV/DD Set > DV Fast Data > GPS Data Speed
 Data "1186;os,DV/DD Set > DV Fast Data > GPS Data Speed;1;0:slow;1,fast"
 '
-'Announce932:
+Announce932:
 'Befehl 1187 &H04A3 Code 2204
 'DV/DD Set > DV Fast Data > GPS Data Speed
 'DV/DD Set > DV Fast Data > GPS Data Speed
 Data "1187;as,as186"
 '
-'Announce933:
+Announce933:
 'Befehl 1188 &H04A4 Code 2205
 'DV/DD Set > DV Fast Data > TX Delay (PTT)
 'DV/DD Set > DV Fast Data > TX Delay (PTT)
 Data "1188;op,DV/DD Set > DV Fast Data > TX Delay (PTT);1;11"
 '
-'Announce934:
+Announce934:
 'Befehl 1189 &H04A5 Code 2205
 'DV/DD Set > DV Fast Data > TX Delay (PTT)
 'DV/DD Set > DV Fast Data > TX Delay (PTT)
 Data "1189;as,as188"
 '
-'Announce935:
+Announce935:
 'Befehl 1190 &H04A6 Code 2300
 'position status
 'position status
@@ -5666,19 +5666,19 @@ Data "1190;ap,position status;1;90,lat;lin;deg;60000,{0 to 59,999},lat;lin;min;2
 Data "1190;ap;60000,{0 to 59.999},long;lin;min;2,long,{W,E};lin;-;-;1000,alt;lin;m;360,course;lin;deg;1000,speed;lin;km/h;"
 Data "1190;ap;3000;lin:year;12;lin,{1 to 12};month;31;lin,{1 to 31};day;24;lin;h;60;lin;min;60;lin;sec"
 '
-'Announce936:
+Announce936:
 'Befehl 1191 &H04A7 Code 2301
 'GPS Select
 'GPS Select
 Data "1191;os,GPS Select;1;off;1,external;2,manual"
 '
-'Announce937:
+Announce937:
 'Befehl 1192 &H04A8 Code 2301
 'GPS Select
 'GPS Select
 Data "1192;as,as1191"
 '
-'Announce938:
+Announce938:
 'Befehl 1193 &H04A9 Code 2302
 'GPS Manual Position
 'GPS Manual Position
@@ -5686,259 +5686,223 @@ Data "1183;op,GPS Manual Position;1;90,lat;lin;deg;60000,{0 to 59.999},lat;lin;m
 Data "1183;op;1;180,long;lin;degree;60000,{0 to 59.999},long;lin;min;2,{W,W};lin;-"
 Data "1193;op;1;199999,{0 to 19999,9,alt;lin;m;2,{+,-},alt;lin;-"
 '
-'Announce939:
+Announce939:
 'Befehl 1194 &H04AA Code 2302
 'GPS Manual Position
 'GPS Manual Position
 Data "1194;as,as1193"
 '
-'Announce940:
+Announce940:
 'Befehl 1195 &H04AB Code 240000
 'TX output power setting
 'TX output power setting
 Data "1195;op,TX output power setting;1;0,off;1,on"
 '
-'Announce941:
+Announce941:
 'Befehl 1196 &H04AC Code 240000
 'TX output power setting
 'TX output power setting
 Data "1196;as,as1195"
 '
-'Announce942:
+Announce942:
 'Befehl 1197 &H04AD Code 240001
 'TX output power setting for transceive
 'TX output power setting for transceive
 Data "1197;op,TX output power setting for transceive ;1;0,off;1,on"
 '
-'Announce943:
+Announce943:
 'Befehl 1198 &H04AE Code 240001
 'TX output power setting for transceive
 'TX output power setting for transceive
 Data "1198;as,as1197"
 '
-'Announce944:
+Announce944:
 'Befehl 1199 &H04AF Code 25
 'Main frequency
 'Main frequency
 Data "1199;op,Main frequency;2;72000000,{144000000 to 145999999, 430000000 to 439999999,1240000000 to 1299999999};lin;Hz"
 '
-'Announce945:
+Announce945:
 'Befehl 1200 &H04B0 Code 25
 'Main frequncy
 'Main frequency
 Data "1200;ap,as1199"
 '
-'Announce946:
+Announce946:
 'Befehl 1201 &H04B1 Code 26
 'Main operating mode
 'Main operating mode
 Data "1201;os,Main mode filter;2;0:sel;1,unsel;0,LSB;1,USB;1,AM;3,CW;4,RTTY;5,FM;6,CW-R;7,RTTY-R;8,DV;9,DD;0,DATA on;1,Data on;0,Fil1;1,Fil2;2,Fil3"
 '
-'Announce947:
+Announce947:
 'Befehl 1202 &H04B2 Code 26
 'Main operating mode
 'Main operating mode
 Data "1202;ap,as1201"
 '
-'Announce948:
+Announce948:
 'Befehl 1203 &H04AB3 ode 2700
 'scope data
 'scope data
 Data "1203;aa,scope data;1;475"
 '
-'Announce949:
+Announce949:
 'Befehl 1204 &H04B4 Code 2710
 'scope
 'scope
-Data "1204;os,scope;1;0 off;1 on;5,CHAPTER,scope"
+Data "1204;os,scope;1;0 off;1 on;5,CHAPTER;scope"
 '
-'Announce950:
+Announce950:
 'Befehl 1205 &H04B5 Code 2710
 'scope
 'scope
 Data "1205;as,as1204"
 '
-'Announce951:
+Announce951:
 'Befehl 1206 &H04B6 Code 2711
 'Scope wave data output
 'Scope wave data output
-Data "1206;os,Scope wave data output;1;0 off;1 on;5,CHAPTER,scope"
+Data "1206;os,Scope wave data output;1;0 off;1 on;5,CHAPTER;scope"
 '
-'Announce952:
+Announce952:
 'Befehl 1207 &H04B7 Code 2711
 'Scope wave data output
 'Scope wave data output
 Data "1207;as,as1206"
 '
-'Announce953:
+Announce953:
 'Befehl 1208 &H04B8 Code 2712
 'Main or Sub scope setting
 'Main or Sub scope setting
-Data "1208;as,Main or Sub scope setting;1;0 main;1,sub;5,CHAPTER,scope"
+Data "1208;as,Main or Sub scope setting;1;0 main;1,sub;5,CHAPTER;scope"
 '
-'Announce954:
+Announce954:
 'Befehl 1209 &H04B9 Code 2712
 'Main or Sub scope setting
 'Main or Sub scope setting
 Data "1209;as,as1209"
 '
-'Announce955:
+Announce955:
 'Befehl 1210 &H04BA Code 2714
 'Scope Center mode or Fixed mode
 'Scope Center mode or Fixed mode
-Data "1210;os,Scope Center mode or Fixed mode;2;0,main;1,sub;0 center;1,fixed;2,scroll C mode;3,scroll F mode;5,CHAPTER,scope"
+Data "1210;os,Scope Center mode or Fixed mode;2;0,main;1,sub;0 center;1,fixed;2,scroll C mode;3,scroll F mode;5,CHAPTER;scope"
 '
-'Announce956:
+Announce956:
 'Befehl 1211 &H04BB Code 2714
 'Scope Center mode or Fixed mode
 'Scope Center mode or Fixed mode
 Data "1211;as,as1210"
 '
-'Announce957:
+Announce957:
 'Befehl 1212 &H04BC Code 2715
 'span setting in the Center mode
 'span setting in the Center mode
-Data "1212;os,span setting in the Center mode;2;0,main;1,sub;0 2k5;1,5k;2,10k;3,25k;4,50k;5,100k;6,250k;7,500k;5,CHAPTER,scope"
+Data "1212;os,span setting in the Center mode;2;0,main;1,sub;0 2k5;1,5k;2,10k;3,25k;4,50k;5,100k;6,250k;7,500k;5,CHAPTER;scope"
 '
-'Announce958:
+Announce958:
 'Befehl 1213 &H04BD Code 2715
 'span setting in the Center mode
 'span setting in the Center mode
 Data "1213;as,as1212"
 '
-'Announce959:
+Announce959:
 'Befehl 1214 &H04BE Code 2716
 'Edge number setting in the Fixed mode
 'Edge number setting in the Fixed mode
-Data "1214;os,Edge number setting in the Fixed mode;2;0,main;1,sub;0 Edge1;1,Edge2;2,Edge3;5,CHAPTER,scope"
+Data "1214;os,Edge number setting in the Fixed mode;2;0,main;1,sub;0 Edge1;1,Edge2;2,Edge3;5,CHAPTER;scope"
 '
-'Announce960:
+Announce960:
 'Befehl 1215 &H04BF Code 2716
 'Edge number setting in the Fixed mode
 'Edge number setting in the Fixed mode
 Data "1215;as,as1214"
 '
-'Announce961:
+Announce961:
 'Befehl 1216 &H04C0 Code 2717
 'Scope hold
 'Scope hold
-Data "1216;os,Scope hold;2;0,main;1,sub;0,off;1,on;5,CHAPTER,scope"
+Data "1216;os,Scope hold;2;0,main;1,sub;0,off;1,on;5,CHAPTER;scope"
 '
-'Announce962:
+Announce962:
 'Befehl 1217 &H04C1 Code 2717
 'Scope hold
 'Scope hold
 Data "1217;as,as1216"
 '
-'Announce963:
+Announce963:
 'Befehl 1218 &H04C2 Code 2719
 'Scope Reference level
 'Scope Reference level
-Data "1218;op,Scope Reference level;2;2,{main,sub};81,{-20.0 to 20.0};lin;db;5,CHAPTER,scope"
+Data "1218;op,Scope Reference level;2;2,{main,sub};81,{-20.0 to 20.0};lin;db;5,CHAPTER;scope"
 '
-'Announce964:
+Announce964:
 'Befehl 1219 &H04C3 Code 2719
 'Scope Reference level
 'Scope Reference level
 Data "1219;ap,as1218"
 '
-'Announce965:
+Announce965:
 'Befehl 1220 &H04C4 Code 271A
 'Sweep speed
 'Sweep speed
 Data "1220;os,Sweep speed;1;2;0,main;1,sub;0,fast;1,mid;2,slow"
 '
-'Announce966:
+Announce966:
 'Befehl 1221 &H04C5 Code 271A
 'Sweep speed
 'Sweep speed
 Data "1221;as,as1220"
 '
-'Announce967:
+Announce967:
 'Befehl 1222 &H04C6 Code 271B
 'Scope indication during TX in the Center mode
 'Scope indication during TX in the Center mode
-Data "1222;os,Scope indication during TX in the Center mode;1;0,off;1,on;5,CHAPTER,scope"
+Data "1222;os,Scope indication during TX in the Center mode;1;0,off;1,on;5,CHAPTER;scope"
 '
-'Announce968:
+Announce968:
 'Befehl 1223 &H04C7 Code 271B
 'Scope indication during TX in the Center mode
 'Scope indication during TX in the Center mode
 Data "1223;as,as1222"
 '
-'Announce969:
+Announce969:
 'Befehl 1224 &H04C8 Code 271C
 'center frequency setting in the Center mode
 'center frequency setting in the Center mode
-Data "1224;os,center frequency in the Center mode;1;0,Filter center;1,carrier center;2,carrier center(absolute);5,CHAPTER,scope"
+Data "1224;os,center frequency in the Center mode;1;0,Filter center;1,carrier center;2,carrier center(absolute);5,CHAPTER;scope"
 '
-'Announce970:
+Announce970:
 'Befehl 1225 &H04C9 Code 271C
 'center frequency setting in the Center mode
 'center frequency setting in the Center mode
 Data "1225;as,as1224"
 '
-'Announce971:
+Announce971:
 'Befehl 1226 &H02CA Code 271D
 'VBW
 'VBW
 Data "1226;os,VBW;2;0,main;1,sub;0,narrow;1,wide"
 '
-'Announce972:
+Announce972:
 'Befehl 1227 &H04CB Code 271D
 'VBW
 'VBW
 Data "1227;as,as1226"
 '
-'Announce973:
-'Befehl 1228 &H02CC Code 271E
-'Scope Fixed edge frequencies 144MHz
-'Scope Fixed edge frequencies 144MHz
-Data "1228;os,Scope Fixed edge frequencies;1;4;lin;-;1995,{144.000 to 145,995};lin;MHz;995,{5 to 1000},span;lin;kHz"
-'
-'Announce974:
-'Befehl 1229 &H04CD Code 271E
-'Scope Fixed edge frequencies 144MHz
-'Scope Fixed edge frequencies 144MHz
-Data "1229;as,as1228"
-'
-'Announce975:
-'Befehl 1230 &H02CE Code 271E
-'Scope Fixed edge frequencies 430MHz
-'Scope Fixed edge frequencies 430MHz
-Data "1230;os,Scope Fixed edge frequencies;1;4;lin;-;9995,{430.000 to 439,995;lin;MHz;995,{5 to 1000},span;lin;kHz"
-'
-'Announce976:
-'Befehl 1231 &H04CF Code 271E
-'Scope Fixed edge frequencies 430MHz
-'Scope Fixed edge frequencies 430MHz
-Data "1231;as,as1230"
-'
-'Announce977:
-'Befehl 1232 &H02D0 Code 271E
-'Scope Fixed edge frequencies 1240MHz
-'Scope Fixed edge frequencies 1240MHz
-Data "1232;os,Scope Fixed edge frequencies;1;4;lin;-;59995,{1240.000 to 1299,995;lin;MHz;995,{5 to 1000},span;lin;kHz"
-'
-'Announce978:
-'Befehl 1233 &H04D1 Code 271E
-'Scope Fixed edge frequencies 1240MHz
-'Scope Fixed edge frequencies 1240MHz
-Data "1233;as,as1232"
-'
-'Announce979:
+Announce979:
 'Befehl 1234 &H04D2 Code 2720
 'Marker Position FIX Type/SCROLL Type
 'Marker Position FIX Type/SCROLL Type
-Data "1234;os,Marker Position (FIX Type/SCROLL Type;1;0,filter center;1,carrier center"
+Data "1234;os,Marker Position (FIX Type/SCROLL Type);1;0,filter center;1,carrier center"
 '
-'Announce980:
+Announce980:
 'Befehl 1235 &H04D3 Code 2720
 'Marker Position FIX Type/SCROLL Type
 'Marker Position FIX Type/SCROLL Type
 Data "1235;as,as1234"
 '
-'Announce981:
+Announce981:
 'Befehl 1232 &H02D4 Code 2800
 'Voice TX Memory
 'Voice TX Memory
@@ -5980,62 +5944,62 @@ Announce987:
 'Network Name
 Data "1242;id;DEF_ALPHA5,AA,aa,11,0x21-0x26,(,),+,-,.,0x3b,=,@,[,],^,_,`,{,},~"
 '
-'Announce988:
+Announce988:
 ' Befehl -
 'Network User ,Password
 'Network User, Password
 Data "1243;id;DEF_ALPHA6,0x21-0x7e"
 '
-'Announce989:
+Announce989:
 ' Befehl -
 'NTP Server Address
 'NTP Server Address
 Data "1243;id;DEF_ALPHA7,AA,aa,11,-,."
 '
-'Announce990:
+Announce990:
 ' Befehl -
 'SD card
 'SD card
 Data "1245;id;DEF_ALPHA8,AA,aa,11,0x20-0x2e,<,=,>,?,@,[,],^,_,`,{,},~"
 '
-'Announce991:
+Announce991:
 ' Befehl -
 'RTTY Memory
 'RTTY Memory
 Data "1246;id;DEF_ALPHA9,AA,11, ,!,$,&,?,",',-,/,.,0x2c,:,;,(,)"
 '
-'Announce992:
+Announce992:
 ' Befehl -
 'DTMF
 'DTMF
 Data "1247;id;DEF_ALPHA10,11,A,B,C,D,*,#"
 '
 
-'Announce993
+Announce993
 'Befehl  65520 &HFFF0
 'liest announcements
 'read n announcement lines
 Data "65520;ln,ANNOUNCEMENTS;175;983"
 '
-'Announce994:                                                  '
+Announce994:                                                  '
 'Befehl 65532 &HFFFC
 'Liest letzten Fehler
 'read last error
 Data "65532;aa,LAST ERROR;20,last_error"
 '
-'Announce995:                                                  '
+Announce995:                                                  '
 'Befehl 65533 &HFFFD
 'Geraet aktiv Antwort
 'Life signal
 Data "65533;aa,MYC INFO;b,ACTIVE"
 '
-'Announce996:
+Announce996:
 'Befehl 65534 &HFFFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
 Data "65534;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,33,{0 to 127};a,SERIAL,1"
 '
-'Announce997:
+Announce997:
 'Befehl 65535  &FFHFF <n>
 'eigene Individualisierung lesen
 'read individualization
