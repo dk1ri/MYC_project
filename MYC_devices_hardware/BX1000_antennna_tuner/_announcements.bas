@@ -1,5 +1,5 @@
 ' annoucements
-' 20200728
+' 20220113
 '
 Announce:
 'Befehl &H00
@@ -17,7 +17,7 @@ Data "1;or,single Inductance;1;0,40n;1,80n;2,150n;3,300n;4,580n;5,1.12u;6,2.2u;7
 'Befehl &H02
 'liest Induktivitaetseinstellung
 'read control value inductance
-Data "2;am,L position value;1;w,{0 To 2047}"
+Data "2;as,L position value;1;w,{0 To 2047}"
 '
 'Announce3:
 'Befehl &H03
@@ -29,7 +29,7 @@ Data "3;or,single capacitance;1;0,2p4;1,4p8;2,10p;3,20p;4,;5,40p;6,78p;7,150p;8,
 'Befehl &H04
 'liest Kapazitaetseinstellung
 'read control value of capacitance
-Data "4;am,C position value;1;w,{0 To 4095}"
+Data "4;as,C position value;1;w,{0 To 4095}"
 '
 'Announce5:
 'Befehl &H05
@@ -82,7 +82,7 @@ Data "12,ot,C downwards;1;0,idle;1,start / stop every;2,start / stop every secon
 'Befehl &H0D
 'liest up_down status
 'read up_down status
-Data "13,am,up_down status;1;b,{0 to 4}"
+Data "13,am,up_down status;b,{0 to 4}"
 '
 'Announce14:
 'Befehl &H0E
@@ -106,7 +106,7 @@ Data "16;ap,SWR;1;51{0.0 to 25.0};lin;-"
 ' Befehl &H11
 ' setzt Frequenz
 ' Set frequency
-Data "17;op;set frequency;1;29701;lin;kHz"
+Data "17;op,set frequency;1;29701;lin;kHz"
 '
 ' Announce18:
 ' Befehl &H12
@@ -118,7 +118,7 @@ Data "18;ap,as17"
 'Befehl &H13
 'liest aktuellen Kanal
 'read actual chanal
-Data "19;am,read actual chanal;1;w,{1 to 679}"
+Data "19;as,read actual chanal;1;w,{1 to 679}"
 '
 'Announce20:
 'Befehl &H14
