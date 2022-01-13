@@ -5,12 +5,13 @@ MYC - Communication
 Preliminary Version
 
 Author: DK1RI
-Version V01.02.01 20201028
+Version V01.02.02 20220113
 This paper is published in  https://github.com/dk1ri  as well
 
 Introduction
 
-There are some issues and rules, which should be observed for the different protocols.  
+The MYC protocol is a semantic protocol withot header and end. For transmission of data some additional data are necessary,
+There are some rules, which should be observed for the different protocols.  
 
 Definitions and formats
 
@@ -18,15 +19,19 @@ see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 I2C
 
+The MYC data can be directly transmitted over I2C. Error correction, handshake, encryption usually is not necessary.
 A transmission should not exceed 254 Byte. The Rxbuffer cannot hold more bytes. If necessary, use multiline. The commandrouter, Logicdevice and human Interface must support this.
 
 Because the slave needs time for commandhandling, the master must be able to wait. Either the master send the read request not directly after a write or it waits during the read process. Slave is isolated from the bus at that time.
 
-RS232
-
-
+RS232 / USB
+As I2C the MYC data can be directly transmitted over I2C. Error correction, handshake, encryption usually is not necessary.
 
 Ethernet
+Up to now telnet is used only, which may have a security problem, when sent via internet.
+Telnet requires a defined packet length. The devices can calculate this, so pure MYC data could be sent to the devices. The device will send answers as hex numbers (2 byte per byte) an end the transmission with chr(10). So the telnet client find the end of a transmission.
+For consistency the devices input will accept hex data as well. A chr(10) can be sent but is ignored as all other characters.
+This is used for the communication betwen CR and SK and the communication between devices and CR.
 
 Copyright
 
@@ -53,3 +58,5 @@ Reference
 [12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
 [13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
 [14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf
