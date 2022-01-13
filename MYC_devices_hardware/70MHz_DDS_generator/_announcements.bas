@@ -83,7 +83,7 @@ Data "12;ap,as11"
 'Befehl &H0D
 'RC5 Codes
 'RC5 Codes
-Data "13,om,RC5 Codes;1;0,20,{adress;1 to 19};b,{0 to 127}"
+Data "13;om,RC5 Codes;1;0,20,{adress;1 to 19};b,{0 to 127}"
 '
 'Announce14:
 'Befehl &H0E
