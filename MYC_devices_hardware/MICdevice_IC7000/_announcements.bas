@@ -1,5 +1,5 @@
 ' _announcements.bas
-' 20200213
+' 20220113
 '
 Announce:
 'Befehl &H00
@@ -89,7 +89,7 @@ Data "268;ou,clear memory;1;0,idle;1,clear memory"
 'Befehl 269 &H010D: --> Code 0D
 'Offset schreiben
 'write offset
-Data "268;op,write offset;1;1000000{0 To 99999,9;lin;kHz"
+Data "269;op,write offset;1;1000000{0 To 99999,9;lin;kHz"
 '
 'Announce15:
 'Befehl 270 &H010E: --> Code 0C
@@ -178,7 +178,7 @@ Data "283;ap,as282"
 'Befehl 284 &H011C: --> code 1403
 'Squelch
 'Squelch
-Data "2845;op,Squelch;256[0 to 100};lin;%"
+Data "284;op,Squelch;256,{0 to 100};lin;%"
 '
 'Announce30:
 'Befehl 285 &H011D: --> Code 1403
@@ -202,7 +202,7 @@ Data "287;ap,as287"
 'Befehl 288 &H0120: --> code 1407
 'inner Twin PBT
 'inner Twin PBT
-Data "2288;op,inner Twin PBT;256;lin;-"
+Data "288;op,inner Twin PBT;256;lin;-"
 '
 'Announce34:
 'Befehl 289 &H0121: --> Code 1408
@@ -465,7 +465,7 @@ Data "331;as,as330"
 'Befehl 332 &H014C: -->  Code 1640
 'Noise reduction
 'Noise reduction
-'Data "332;os,Noise reduction;1;0,off;1,on"
+Data "332;os,Noise reduction;1;0,off;1,on"
 '
 'Announce78:
 'Befehl 333 &H014D: -->  Code 1640
@@ -477,7 +477,7 @@ Data "333;as,as332"
 'Befehl 334 &H014E:  -->  Code 1641
 'Auto notch
 'Auto notch
-'Data "334;os,Auto notch;1;0,off;1,on"
+Data "334;os,Auto notch;1;0,off;1,on"
 '
 'Announce80:
 'Befehl 335 &H014F:  -->  Code 1641
@@ -651,13 +651,13 @@ Data "362;am,as361"
 'Befehl 363 &H016B: --> Code 1A01
 'band stack
 'band stack
-Data "363;om,band stack;s"
+Data "363;op,band stack;39,{3,{1,2,3}MUL13,band};269070000,{30000 to 199999999,400000000 to 469999999};lin;Hz""
 '
 'Announce109:
 'Befehl 364 &H016C: --> Code 1A01
 'band stack
 'band stack
-Data "364;am,as363"
+Data "364;ap,as363"
 '
 'Announce110:
 'Befehl 365 &H016D: --> (1502) used: Code 1A050002
@@ -765,7 +765,7 @@ Data "381;os,SSB TX bandwidth (high edge) for middle;1;0,2700;1,2800;2,2900"
 'Befehl 382 &H017E: --> Code 01a050006
 'SSB TX bandwidth (high edge) for middle
 'SSB TX bandwidth (high edge) for middle
-Data "381;as,as380"
+Data "382;as,as381"
 '
 'Announce128:
 'Befehl 383 &H017F: --> Code 1A050007
@@ -777,13 +777,13 @@ Data "383;osSSB TX bandwidth (lower edge) for norrow;1;0,100;1,200;2,300;3,500"
 'Befehl 384 &H0180: --> Code 01a050007
 'SSB TX bandwidth (lower edge) for norrow
 'SSB TX bandwidth (lower edge) for norrow
-Data "383;as,as382"
+Data "384;as,as383"
 '
 'Announce130:
 'Befehl 385 &H0181: --> Code 1A050008
 'SSB TX bandwidth high edge) for norrow
 'SSB TX bandwidth high edge) for norrow
-Data "384;os,SSB TX bandwidth (high edge) for norrow;1;0,2700;1,2800;2,2900;3,500"
+Data "385;os,SSB TX bandwidth (high edge) for norrow;1;0,2700;1,2800;2,2900;3,500"
 '
 'Announce131:
 'Befehl 386 &H0182: --> Code 01a050008
@@ -867,7 +867,7 @@ Data "398;ap,as397"
 'Befehl 399 &H018F: --> Code 1A050015
 'CW side tone level
 'CW side tone level
-Data "39;op,CW side tone level;1;256;lin;-"
+Data "399;op,CW side tone level;1;256;lin;-"
 '
 'Announce145:
 'Befehl 400 &H0190: --> Code 01a050015
@@ -1011,7 +1011,7 @@ Data "422;as,as421"
 'Befehl 423 &H01A7: --> Code 1A050027
 'pop up indication for IF filter setting
 'pop up indication for IF filter setting
-Data "418;os,pop up indication for IF filter setting;1;0,off;1,on"
+Data "423;os,pop up indication for IF filter setting;1;0,off;1,on"
 '
 'Announce169:
 'Befehl 424 &H01A8: --> Code 1A050027
@@ -1130,7 +1130,7 @@ Data "442;as,as441"
 'Befehl 443 &H01BB: --> Code 1A050037
 'call sign
 'call sign
-Data "443;om,call sign;1;10,{A to Z, 1 to 9,-,/,.,@, "
+Data "443;om,call sign;10,{A to Z, 1 to 9,-,/,.,@, "
 '
 'Announce189:
 'Befehl 444 &H01BC: --> Code 1A050037
@@ -1250,7 +1250,7 @@ Data "462;ap,as4616"
 'Befehl 463 &H01CF: --> Code 1A050047
 'confirmation beep
 'confirmation beep
-Data "462;os,confirmation beep;1;0,off;1,on"
+Data "463;os,confirmation beep;1;0,off;1,on"
 '
 'Announce209:
 'Befehl 464 &H01D0: --> Code 1A050047
@@ -1406,7 +1406,7 @@ Data "488;as,as487"
 'Befehl 489 &H01E9: --> Code 1A050060
 'auto repeater
 'auto repeater
-Data "484;os,auto repeater;1;0,off;1,on;2,on-2"
+Data "489;os,auto repeater;1;0,off;1,on;2,on-2"
 '
 'Announce235:
 'Befehl 490 &H01EA: --> Code 1A050060
@@ -1774,7 +1774,7 @@ Data "549;os,external keypad for keyer memory;1;0,off;1,on"
 'Befehl 550 &H0226: --> Code 1A00090
 'external keypad for keyer memory
 'external keypad for keyer memory
-Data "50;as,as549"
+Data "550;as,as549"
 '
 'Announce296:
 'Befehl 551 &H0227: --> Code 1A050091
@@ -2236,7 +2236,7 @@ Data "626;as,as625"
 'Befehl 627 &H0273: --> Code 1A1C00
 'transceiver’s condition
 'transceiver’s condition
-Data "627;os,transceiver’s condition;1};0,RX;1,TX"
+Data "627;os,transceivers condition;1;0,RX;1,TX"
 '
 'Announce373:
 'Befehl 628 &H0274: --> Code 1A1C00
@@ -2248,14 +2248,14 @@ Data "628;as,as621"
 'Befehl 629 &H0275: --> Code 1A050151
 'antenna tuner condition
 'antenna tuner condition
-Data "629;os,antenna tuner condition;1};0,off;1,on;2,start tuning"
+Data "629;os,antenna tuner condition;1;0,off;1,on;2,start tuning"
 '
 '
 'Announce375:
 'Befehl 630 &H0276: --> Code 1A050152
 'antenna tuner condition
 'antenna tuner condition
-Data "670;as,as629"
+Data "630;as,as629"
 '
 'Announce376:
 'Befehl  65520 &Hfff0
@@ -2286,4 +2286,3 @@ Data "65534;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,32
 'eigene Individualisierung lesen
 'read individualization
 Data "65535;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,32,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
-'
