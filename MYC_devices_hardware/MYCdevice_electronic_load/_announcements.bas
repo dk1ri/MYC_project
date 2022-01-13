@@ -1,5 +1,5 @@
 ' announcements
-' 20200520
+' 20220113
 '
 Announce:
 'Befehl &H00; 1 byte / 1 byte + string
@@ -53,7 +53,7 @@ Data "7;op,reqired voltage;1;89601,{0.400 to 90.000};lin;V"
 'Befehl &H08 (resolution 1mV);  1 byte / 4 byte
 'gewuenschte Spannung lesen
 'read required voltage
-Data "1;ap,as7"
+Data "8;ap,as7"
 '
 'Announce9:
 'Befehl &H09 0 - 21000 (1mA resolution); 4 byte / -
@@ -131,7 +131,7 @@ Data "20;ou,switch off;1;0,idle;1,off"
 'Befehl &H15; 2 byte / -
 'Hysterese an schreiben
 'write hysteresys on
-Data "21;or;hysteresys;1;0,off;1,on"
+Data "21;or,hysteresys;1;0,off;1,on"
 '
 'Announce22:
 'Befehl &H16; 1 byte / 2 byte
@@ -143,7 +143,7 @@ Data "22;ar,as21"
 'Befehl &H17; 2 byte / -
 'Hysterese schreiben
 'write hysteresys
-Data "23;op;hysteresys;1;100,{0,1 To 10};lin;%"
+Data "23;op,hysteresys;1;100,{0,1 To 10};lin;%"
 '
 'Announce24:
 'Befehl &H18; 1 byte / 2 byte
