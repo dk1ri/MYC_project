@@ -1,5 +1,5 @@
 ' annoucements
-' 20200825
+' 20220113
 '
 Announce:
 'Befehl &H00
@@ -17,7 +17,7 @@ Data "1;os,8x8;2,out,in;2;0,GND;1;2;3;4;5;6;7;8"
 'Befehl  &H02
 'schaltet alle Ausgänge 8x8
 'switch all outputs 8x8
-Data "2;om,8x8;1;b,{GND,1 To 8};9"
+Data "2;om,8x8;b,{GND,1 To 8};9"
 '
 'Announce3:
 'Befehl &H03
@@ -29,7 +29,7 @@ Data "3;os,8x4;2,out,in;2;0,GND;1;2;3;4;5;6;7;8"
 'Befehl  &H04
 'schaltet alle Ausgänge 8x4
 'switch all outputs 8x4
-Data "4;om,8x4;1;b,{GND,1 To 8};4"
+Data "4;om,8x4;b,{GND,1 To 8};4"
 '
 'Announce5:
 'Befehl  &H05
@@ -41,13 +41,13 @@ Data "5;os,4x4;2,out,in;2;0,GND;1;2;3;4"
 'Befehl  &H06
 'schaltet alle Ausgänge 4x4
 'switch all outputs 4x4
-Data "6;om,4x4;1;b,{GND,1 To 4};04"
+Data "6;om,4x4;b,{GND,1 To 4};04"
 '
 'Announce7:
 'Befehl  &H07
 'liest status für alle Ausgänge
 'read status for all outputs
-Data "7;am,as2"
+Data "7;am;b,{GND,1 To 8};9"
 '
 'Announce8:
 'Befehl  &H08
@@ -65,7 +65,7 @@ Data "9;ls,as8"
 'Befehl  &H0A
 'schreibt Startbedingung 8x8
 'write startcondition 8x8
-Data "10;om,startcondition;1:b,{GND,1 To 8};8"
+Data "10;om,startcondition;b,{GND,1 To 8};8"
 '
 'Announce11:
 'Befehl  &H0B
