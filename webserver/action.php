@@ -1,13 +1,19 @@
 <?php
+# action.php
+# DK1RI 20221110
 function dec_hex($key, $len){
-            $val = dechex($key);
-            while (strlen($val) < $len){
-                $val= "0".$val;
-            }
-            return $val;
-        }
+    $val = dechex($key);
+    $i = strlen($val);
+    if ($i < $len){
+        $val = "0".$val;
+        $i += 1;
+    }
+    return $val;
+}
+
 
 function calculate_len($number){
+    # length of binary number
     $len = 2;
     if ($number > 16777215){
         $len = 8;
@@ -19,34 +25,28 @@ function calculate_len($number){
     return $len;
 }
 
-function basic_tok($o_tok, $needle){
-    $tok = $o_tok;
-    if (array_key_exists($o_tok, $_SESSION["all_announce"][$_SESSION["device"]])) {
-        if (strstr($o_tok, $needle) != false) {
-            $tok = explode($needle, $o_tok)[0];
-        }
-    }
-    return $tok;
-}
-
-function basic_tok_all($o_tok){
-    $tok = $o_tok;
-    if (array_key_exists($o_tok, $_SESSION["all_announce"][$_SESSION["device"]])) {
-        if (strstr($o_tok, "_") != false) {
-            $tok = explode("_", $o_tok)[0];
-        }
-        if (strstr($o_tok, "a") != false) {
-            $tok = explode("a", $o_tok)[0];
-        }
-        if (strstr($o_tok, "p") != false) {
-            $tok = explode("p", $o_tok)[0];
-        }
+function basic_tok($o_tok){
+    # return basic_token for _, a, p and o token
+    if (strstr($o_tok, "_")) {
+        $tok = explode("_", $o_tok)[0];
+    } elseif (strstr($o_tok, "a")) {
+        $tok = explode("a", $o_tok)[0];
+    } elseif (strstr($o_tok, "p")) {
+        $tok = explode("p", $o_tok)[0];
+    } elseif (strstr($o_tok, "o")) {
+        $tok = explode("o", $o_tok)[0];
+    }  elseif (strstr($o_tok, "u")) {
+        $tok = explode("u", $o_tok)[0];
+    } else {
+        $tok = $o_tok;
     }
     return $tok;
 }
 
 function expand_comma($num){
+    # eliminate comma (one position after comma ?
     $conti = 1;
+    $i = 0;
     while ($conti != 1){
         $num_f = floor($num);
         if ($num == $num_f) {
@@ -57,6 +57,35 @@ function expand_comma($num){
         $i += 1;
     }
     return $num;
+}
+
+function create_session_data_file_val($device, $name, $data){
+    $file = fopen("./".$device."/session_".$name, "w");
+        fwrite( $file,$data."\n");
+    fclose($file);
+}
+
+function create_session_data_file($device, $name, $data){
+    # print($name);
+    $file = fopen("./".$device."/session_".$name, "w");
+    foreach ($data as $key=> $value){
+        fwrite( $file,$key." ".$value."\n");
+    }
+    fclose($file);
+}
+
+function create_session_data_file_array($device, $name, $data){
+    # print($name);
+    $file = fopen("./".$device."/session_".$name, "w");
+    foreach ($data as $key=> $value){
+        $line = $key;
+    #    var_dump($value);
+        foreach ($value as $key_ => $val){
+            $line = $line." ".$key_.":".$val;
+        }
+        fwrite( $file,$line."\n");
+    }
+    fclose($file);
 }
 ?>
 
@@ -70,11 +99,11 @@ function expand_comma($num){
             .flex-container {
                 display: flex;
                 flex-wrap: wrap;
-                background-color: DodgerBlue;
+                background-color: #6c9ccb;
             }
 
             .flex-container > div {
-                background-color: #e1f1f1;
+                background-color: #d1f1f1;
                 margin: 5px;
                 padding: 10px;
                 font-size: 15px;
@@ -84,57 +113,54 @@ function expand_comma($num){
     <body>
         <?php
         session_start();
-        (array_key_exists("name", $_POST)) ? $name = htmlspecialchars($_POST['name']) : $name = "?";
-        (array_key_exists("interface", $_POST)) ? $interface = htmlspecialchars($_POST['interface']) : $interface = "?";
-        $_SESSION["interface"] = $interface;
         if (array_key_exists("devices", $_POST)) {
+            # other device?
             $device = htmlspecialchars($_POST['devices']);
             $_SESSION["device"] = $device;
         }else{
             $device = $_SESSION["device"];
         }
-        # create / read new device / chapter for $_SESSION, if not existing
+        # create / read new device for $_SESSION, if not existing
         # not actually used devices are not deleted
-        include "analyze_trx_data.php";
-        if (array_key_exists($device, $_SESSION["announce_lines"]) == false) {
+        include  "translate.php";
+        if (!array_key_exists($device, $_SESSION["all_announce"])) {
             include "read_new_device.php";
            read_new_device($device);
         }
-        if (array_key_exists("chapter", $_POST) == true){
-            $actual_chapter = $_POST['chapter'];
-            $_SESSION["chapter"] = $actual_chapter;
-        }else{
-            $actual_chapter = $_SESSION["chapter"];
-        }
         include "correct_POST.php";
         correct_POST($device);
-        include "send_data.php";
-        send_data();
-        include "upddate_session_with_post.php";
-        upddate_session_with_post();
+        if (gettype( $_SESSION["corrected_POST"]) == "string") {
+            create_session_data_file($device, "temp_corrected_POST", $_SESSION["corrected_POST"]);
+        }
+        else{
+            create_session_data_file_array($device, "temp_corrected_POST", $_SESSION["corrected_POST"]);
+        }
+        include "send_and_update.php";
+        send_and_update();
+        $actual_chapter = $_SESSION["chapter"];
         if ($_SESSION["read_data"] == 1){
-            include "read_device_data.php";
-            read_device_data();
+            # not used now
             $_SESSION["read_data"] = 0;
         }
         # $_SESSION ready, create new page
-        include "parse_commands.php";
+        include "display_commands.php";
+        include "create_commands.php";
         include "select_any.php";
         ?>
         <div class = "flex-container"><div>
         <form action="action.php" method="post">
         <input type="submit" />
         </div><div>
-        Ihr Name: <input type="text" name='name' size = 14 value = <?php echo $name?>>
+        Ihr Name: <input type="text" name='name' size = 14 value = <?php echo $_SESSION["name"]?>>
         </div><div>
-        Interface: <input type="text" name = "interface" size = 14 name='name' value = <?php echo $name?>>
+        Interface: <input type="text" name = "interface" size = 14 name='name' value = <?php echo $_SESSION["interface"] ?>>
         </div><div>
         <?php
         select_any( $_SESSION["device_list"], $_SESSION["device"], "devices");
         echo ("</div><div>");
         select_any($_SESSION["chapter_names"][$device], $actual_chapter, "chapter");
         echo "</div><div>";
-        parse_commands($_SESSION["device"], $actual_chapter);
+        display_commands($_SESSION["device"], $actual_chapter);
         echo("</div>");
         echo "</form>";
         ?>

@@ -2,7 +2,7 @@
 /*
  * is called once at start only, convert initial data (or after update of device data ???)
 $_SESSION[device_data][$Device][$chapter] has token => data in hex  or blank
-converts to $_SESSION[real_data][$Device][$chapter]: content depent on commandtype
+converts to $_SESSION[real_data][$Device][$chapter]: content depend on commandtype
 -> token + realdata (for SK)
 the real daata depend on the format, defined by the announcements
 */

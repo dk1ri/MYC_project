@@ -2,7 +2,7 @@
 # es fehlt
 -->
 <?php
-function create_os($token, $field, $real_data) {
+function create_os($token, $field, $real) {
     explode(",", $field[0]) > 1 ? $labe = explode(",", $field[0])[1] : $labe = "?";
     $i = 2;
     echo "<div><label for=",$token,">",$labe,"</label>&nbsp <select name=",$token," id=",$token,">";
@@ -14,7 +14,7 @@ function create_os($token, $field, $real_data) {
             $val = $selector_name[1];
         }
         echo "<option value=".$selector_name[0];
-        if ($selector_name[0]== $real_data) {
+        if ($selector_name[0]== $real) {
             echo " selected ";
         }
         echo ">$val", "</option>";
@@ -23,41 +23,39 @@ function create_os($token, $field, $real_data) {
     echo "</select></div>";
 }
 
-function create_as($token, $field, $real) {
+function create_as($token, $field, $actual) {
     $name = (explode(',', $field[0])[1]);
-    echo $name.": ".explode(",",$field[$real + 2])[1];
+    echo $name.": ".$actual[0];
     echo "<div> new data:";
     echo "<input type='checkbox' id=".$token." name=".$token.">";
     echo "</div>";
 }
 
-function create_or($token, $field, $real) {
+function create_or($token, $line_array, $real) {
     $labe = "?";
-    if (count(explode(',', ($field[0]))) > 1) {
-        $labe = explode(',', $field[0])[1];
+    if (count(explode(',', ($line_array[0]))) > 1) {
+        $labe = explode(',', $line_array[0])[1];
         }
-    if (count($field) == 3){
-        $name = (explode(',', $field[0])[1]);
-        var_dump($real);
-        if ($real == 0){
-            $t = "off";
-        } else {
-            $t ="on";
-        }
-        echo "<div>".$name.": ". $t." change:";
+    if (count($line_array) == 3){
+        # simple switch
+        $name = (explode(',', $line_array[0])[1]);
+        echo "<div>".$name.": ". $real." change:";
         echo "<input type='checkbox' id=".$token." name=".$token." value=0>";
         echo "</div>";
     } else {
+
         echo "<div><label for=", $token, ">", $labe, "</label>&nbsp; <select name=" . $token, "[] id=", $token, " multiple='multiple'>";
         $i = 2;
-        while ($i < count($field)) {
-            $f = explode(",", $field[$i]);
+        var_dump($real);
+        while ($i < count($line_array)) {
+            $f = explode(",", $line_array[$i]);
             $val = "x";
             if (count($f) > 1) {
                 $val = $f[1];
             }
             echo "<option value=", $f[0];
-            if ($real[$i - 2] == 1) {
+            # if ($real[$i - 2] == 1) { original ???
+            if ($real == 1) {
                 echo(" selected='selected'>");
             } else {
                 echo ">";
@@ -70,17 +68,15 @@ function create_or($token, $field, $real) {
     }
 }
 
-function create_ar($token, $field, $real) {
-    $name = (explode(',', $field[0])[1]);
-    $i=0;
+function create_ar($token, $line_array, $actual) {
+    $name = (explode(',', $line_array[0])[1]);
+    # $actual has one value only
+    print ($token);
     $t = "";
-    while ($i < count($real)){
-        if ( $real[$i] == 1){
-            $t .= "x";
-        } else {
-            $t .= "o";
-        }
-        $i+=1;
+    if ($actual[0] == 1){
+        $t .= "x";
+    } else {
+        $t .= "o";
     }
     echo $name.": ". $t;
     echo "<div>new data";

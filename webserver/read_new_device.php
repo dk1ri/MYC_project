@@ -1,40 +1,61 @@
 <?php
+# read_new_device.php
+# DK1RI 20221108
 function read_new_device($device){
     #create additional device (old ones not deleted)
+    read_device($device);
+    create_session_data_file_array($device, "all_announce", $_SESSION["all_announce"][$device]);
+    # all announcelines are now in $_SESSION["all_announce"][$device]
     read_chapter_names($device);
+    create_session_data_file($device, "chapter_names", $_SESSION["chapter_names"][$device]);
+    foreach ($_SESSION["chapter_names"][$device] as $key => $ch) {
+        create_session_data_file($device, "chapter_token ".$ch, $_SESSION["chapter_token"][$device][$ch]);
+    }
     $chapter = $_SESSION["chapter_names"][$device][0];
     $_SESSION["chapter"] = $chapter;
-    $_SESSION["announce_lines"][$device][$chapter] = [];
-    foreach ($_SESSION["chapter_names"][$device] as $chapt) {
-        readchapter($device, $chapt);
-    }
     find_all_token($device);
+    create_session_data_file($device, "all_token", $_SESSION["all_token"][$device]);
+    # all token now in $_SESSION["all_token"][$device][]
     find_selector_tokens($device);
-    or_ar_tokens($device);
+    create_session_data_file_array($device, "sele_toks", $_SESSION["sele_toks"][$device]);
+    create_session_data_file_array($device, "number_of_selects", $_SESSION["number_of_selects"][$device]);
+    # now have the selector token and the number of selects in
+    # $_SESSION["sele_toks"][$device] and $_SESSION["number_of_selects"][$device]
+    corresponding_token($device);
+    # create_session_data_file_array($device, "corresponding_tokens", $_SESSION["corresponding_tokens"][$device]);
+    # now have a list of corresponding tokens with more then one selector: $_SESSION["corresponding_tokens"][$device]
     calculate_tok_len($device);
+    create_session_data_file_val($device, "tok_len", $_SESSION["tok_len"][$device]);
+    # now the length of the (binary token) in $_SESSION["tok_len"][$device]
     calculate_sel_len($device);
+    create_session_data_file($device, "sel_len", $_SESSION["sel_len"][$device]);
+    calculate_stack_len($device);
+    create_session_data_file($device, "stack_len", $_SESSION["stack_len"][$device]);
+    # ???
     calculate_p_len($device);
+    create_session_data_file($device, "p_len", $_SESSION["p_len"][$device]);
+    # now value for range commands (one dimension) in $_SESSION["p_len"][$device] ??
     calculate_p_token($device);
+    create_session_data_file($device, "p_token", $_SESSION["p_token"][$device]);
+    # now ???
     calculate_tok_hex($device);
+    create_session_data_file($device, "tok_hex", $_SESSION["tok_hex"][$device]);
+    # now absic token for all announcelines in $_SESSION["tok_hex"][$device]
     calculate_max_mul($device);
+    create_session_data_file($device, "maxsel", $_SESSION["maxsel"][$device]);
+    # now for selectors with ADD in $_SESSION["maxsel"][$device]
     prepare_des($device);
-    read_data($device);
+    create_session_data_file($device, "des", $_SESSION["des"][$device]);
+    # now descriptions in $_SESSION["des"]
+    init_data($device);
+    create_session_data_file_array($device, "actual_data", $_SESSION["actual_data"][$device]);
+    # now actual data for all commands in $_SESSION["actual_data"]
 }
 
-function read_chapter_names($device){
-    $_SESSION["chapter_names"][$device] = array();
-    $handle = opendir($device);
-    while ($d_name = readdir($handle)){
-        if (strstr($d_name, "announce_lines_")){
-            $_SESSION["chapter_names"][$device][] = explode("announce_lines_", $d_name)[1];
-        }
-    }
-}
-
-function readchapter($device, $chapter){
+function read_device($device){
     $_SESSION["all_announce"][$device] = [];
-    if (file_exists($device."/announce_lines_".$chapter) == true) {
-        $file = fopen($device."/announce_lines_". $chapter, "r");
+    if (file_exists($device."/announce_lines")) {
+        $file = fopen($device."/announce_lines", "r");
         while (!(feof($file))) {
             $pure = fgets($file);
             $pure = str_replace("\n", '', $pure);
@@ -42,10 +63,55 @@ function readchapter($device, $chapter){
             $field = explode(";", $pure);
             $key = $field[0];
             $value = array_slice($field,1);
-            $_SESSION["announce_lines"][$device][$chapter][$key] = $value;
             $_SESSION["all_announce"][$device][$key] = $value;
         }
         fclose($file);
+    }
+}
+
+function read_chapter_names($device){
+    # result is never empty
+    # crate list of capternames and lost of token per chapter
+    # $_SESSION["all_announce"][$device] start with basic_token, _, a_ p_.. lines follow
+    $_SESSION["chapter_names"][$device] = [];
+    $_SESSION["chapter_names"][$device][] = "all";
+    $_SESSION["chapter_token"][$device] = [];
+    $_SESSION["chapter_token"][$device]["all"] = [];
+    $last_chapter = "all";
+    $last_basic_token = 0;
+    foreach ($_SESSION["all_announce"][$device] as $token => $lin){
+        $_SESSION["chapter_token"][$device]["all"][] = $token;
+        $basic_token = basic_tok($token);
+        $line = implode(";", $lin);
+        $pos = strpos($line, "CHAPTER");
+        if (!$pos and $basic_token == $last_basic_token) {
+            # _,a, p ... lines have no CHAPTER
+            $_SESSION["chapter_token"][$last_chapter][] = $token;
+        }
+        else{
+            $ar = explode("CHAPTER", "$line");
+            if (count($ar) == 1){
+                $chap = "all";
+            }
+            else {
+                $chap = explode(";", $ar[1])[1];
+            }
+            if (!in_array($chap, $_SESSION["chapter_names"][$device])) {
+                $_SESSION["chapter_names"][$device][] = $chap;
+            }
+            $_SESSION["chapter_token"][$device][$chap][]= $token;
+            $_SESSION["chapter_token"][$device]["all"][]= $token;
+            # delete the complete CHAPTER entry
+            $mod_line = [];
+            foreach ($lin as $field){
+                $pos1 = strpos($field, "CHAPTER");
+                if (!$pos1){
+                    $mod_line[] = $field;
+                }
+            $_SESSION["all_announce"][$device][$token] = $mod_line;
+            }
+        }
+        $last_basic_token = $basic_token;
     }
 }
 
@@ -55,17 +121,17 @@ function find_all_token($device){
     }
 }
 
-# to speed up operation
-# token "_"token ... "a"token
-# sequence in announcefile is: "_"token..."a"token token
-# not splitted by chapter
+
 function find_selector_tokens($device){
+    # to speed up operation
+    # token "_"token ... "a"token
+    # sequence in announcefile is: "_"token..."a"token token
+    # not splited by chapter
     $_SESSION["sele_toks"][$device] = [];
     $_SESSION["number_of_selects"][$device] = [];
     foreach ($_SESSION["all_announce"][$device] as $token => $line_as_array){
-        $tok = basic_tok($token, "_");
-        $tok = basic_tok($tok, "a");
-        if ((strstr($token, "_") != false) or (strstr($token, "a") != false)){
+        $tok = basic_tok($token);
+        if ((strstr($token, "_")) or (strstr($token, "a"))){
             if (!array_key_exists($tok, $_SESSION["sele_toks"][$device])) {
                 $_SESSION["sele_toks"][$device][$tok] = [];
                 $_SESSION["number_of_selects"][$device][$tok] = [];
@@ -78,55 +144,46 @@ function find_selector_tokens($device){
     }
 }
 
-function read_data($device){
-    # read data form device: hex, as send by device
-    # create all_real_data for all token (including selectors, op dimension etc)
-    $orgdata = [];
-    if (file_exists($device . "/_all_answer_data")) {
-        $file = fopen($device . "/_all_answer_data", "r");
-        while (!(feof($file))) {
-            $pure = fgets($file);
-            $pure = str_replace("\n", '', $pure);
-            $pure = str_replace("\r", '', $pure);
-            # must have 2 elements:
-            $key_val = explode(" ", $pure);
-            $orgdata[$key_val[0]] = $key_val[1];
-        }
-        fclose($file);
-        foreach ($_SESSION["all_announce"][$device] as $key => $value) {
-            $tok = basic_tok_all($key);
-            if (array_key_exists($tok, $orgdata)) {
-                $dat = $orgdata[$tok];
-            } else {
-                $dat = "";
-            }
-            $r_data = analyze_trx_data($key, $value, $device, $dat);
-            translate_data($r_data, $device, $key, $value);
-        }
-    } else {
-        foreach ($_SESSION["all_announce"][$device] as $key => $value) {
-            $r_data[$key] = 0;
-        }
-        translate_data($r_data, $device, $key, $value);
-    }
-}
-
-function or_ar_tokens($device){
-    # $POST do not deliver data if form select multiple has nothing selected, but otherwise  alway.
-    # all_real_data must be set to 0 for all position in this case.
+function corresponding_token($device){
+    # created list of _, a_p_ ... token with basictoken as key (no empty key!)
+    $_SESSION["corresponding_tokens"][] = $device;
+    $_SESSION["corresponding_tokens"][$device] =[];
+    $last_basic_token = 0;
+    $cor_tokens = [];
+    $start = 1;
     foreach ($_SESSION["all_announce"][$_SESSION["device"]] as $token => $line_as_array) {
-        $_SESSION["or_ar_tokens"][$device] = [];
-        $ct = explode(",", $line_as_array[0])[0];
-        if ($ct == "or" or $ct == "ar") {
-            # only, if selectors > 1
-            if (count($_SESSION["all_announce"][$_SESSION["device"]][$token]) > 2){
-                $_SESSION["or_ar_tokens"][$device][] = $token;
-            }
+        if ($start){
+            # skip first entry
+            $start = 0;
+            $last_basic_token = basic_tok($token);
         }
+        else {
+            $basic_token = basic_tok($token);
+            if ($basic_token != $last_basic_token) {
+                #finish last_basic_tok
+                if ($cor_tokens != []) {
+                #    print($last_basic_token);
+                 #   print(" fff ");
+                    $_SESSION["corresponding_tokens"][$device][] = $last_basic_token;
+                    $_SESSION["corresponding_tokens"][$device][$last_basic_token] = $cor_tokens;
+                }
+                # else: no entry
+                $cor_tokens = [];
+            } else {
+                $cor_tokens[] = $token;
+            }
+            $last_basic_token = $basic_token;
+        }
+    }
+    if ($cor_tokens != []){
+        # last element, if available
+        $_SESSION["corresponding_tokens"][$device][] = $last_basic_token;
+        $_SESSION["corresponding_tokens"][$device][$last_basic_token] = $cor_tokens;
     }
 }
 
 function calculate_tok_len($device){
+    # too complicate :(
     $_SESSION["tok_len"][$device] = [];
     foreach ($_SESSION["all_announce"][$device] as $key => $value){
         $_SESSION["tok_len"][$device] = calculate_len($key);
@@ -135,7 +192,7 @@ function calculate_tok_len($device){
 }
 
 function calculate_sel_len($device){
-    # selecttoken with value, other tokeen =
+    # selecttoken with value, other token = 0
     $_SESSION["sel_len"][$device] = [];
     $sel_old = 0;
     foreach ($_SESSION["all_announce"][$device] as $key => $value) {
@@ -154,7 +211,7 @@ function calculate_sel_len($device){
             } else{
                 $_SESSION["sel_len"][$device][$key] = $sel_old;
                 if (!strstr($key,"p")){
-                    # keep sel_old for px commands reset for otherd
+                    # keep sel_old for px commands reset for others
                     $sel_old = 0;
                 }
              }
@@ -164,8 +221,36 @@ function calculate_sel_len($device){
         }
     }
 }
+
+function calculate_stack_len($device)
+{
+    # basic_token with number of bytes for hex data
+    $_SESSION["stack_len"][$device] = [];
+    foreach ($_SESSION["all_announce"][$device] as $token => $value) {
+        # basic_token only
+        if (!strstr($token, "_") and !strstr($token, "a") and !strstr($token, "p")){
+            $ct = explode(",", $value[0])[0][1];
+            # switches and range only
+            if (!($ct == "m" or $ct == "n" or $ct == "a" or $ct == "b" or $ct == "f")) {
+                $stac = explode(",", $value[1])[0];
+                $stack = (int) $stac;
+                if ( $stack < 256) {
+                    $_SESSION["stack_len"][$device][$token] = 2;
+                }
+                elseif ( $stack < 65536) {
+                    $_SESSION["stack_len"][$device][$token] = 4;
+                }
+                else{
+                    $_SESSION["stack_len"][$device][$token] = 4;
+                }
+            }
+        }
+    }
+}
+
 function calculate_p_len($device){
-    # op ap token (one dimension) with value, others 0
+    # op ap token (one dimension) with value, others  0
+    # ap ap token splitted by dimensions before??
     $_SESSION["p_len"][$device] = [];
     foreach ($_SESSION["all_announce"][$device] as $key => $value) {
         $ct = explode(",",$value[0])[0];
@@ -178,7 +263,8 @@ function calculate_p_len($device){
 }
 
 function calculate_p_token($device){
-  #  $_SESSION["p_token"][$device] = [];
+    # ??
+    $_SESSION["p_token"][$device] = [];
     foreach ($_SESSION["all_announce"][$device] as $key => $value) {
         $ct = explode(",",$value[0])[0];
         if ($ct == "op" or $ct == "ap") {
@@ -195,8 +281,7 @@ function calculate_tok_hex($device){
     # return basic tok also for selector toks
     $_SESSION["tok_hex"][$device] = [];
     foreach ($_SESSION["all_announce"][$device] as $key => $value) {
-        $tok = basic_tok($key,"_");
-        $tok = basic_tok($tok,"a");
+        $tok = basic_tok($key);
         $_SESSION["tok_hex"][$device][$key] = dec_hex($tok, $_SESSION["tok_len"][$device]);
     }
 }
@@ -205,8 +290,8 @@ function calculate_max_mul($device){
     $_SESSION["maxsel"][$device] = [];
     # for selectors with "ADD" calculate the maximum value of MUL
     foreach ($_SESSION["all_announce"][$device] as $key => $field) {
-        if( strstr($key,"_") == false and strstr($key,"a") == false){
-            if (strstr( $field[1], "ADD") != false){
+        if( !strstr($key,"_") and !strstr($key,"a")){
+            if (strstr( $field[1], "ADD")){
                 # selectorline with ADD
                 $add = explode("ADD", $field[1]);
                 # the ADD selectornames are in{}
@@ -224,6 +309,7 @@ function prepare_des($device){
     # create $SESSION["des"] for op ap oo commands:
     # name spacing from to <spacing ....
     # commands <token>px have one dimension each only!!
+    $_SESSION["des"][$device] = [];
     foreach ($_SESSION["all_announce"][$device] as $key => $field) {
         $cta = explode(",",$field[0]);
         if ($cta[0] == "op" or $cta[0] == "ap"){
@@ -320,12 +406,10 @@ function prepare_des($device){
             }
         }
     }
-    var_dump($_SESSION["des"][$device]);
-    print ("<br>");
 }
 
 function des_name($des, $cta){
-    if (strstr($des[0], "{") == false) {
+    if (!strstr($des[0], "{")) {
         # must be name
         if (count($cta) > 1) {
             return [array_splice($des, 1), $des[0]];
@@ -349,10 +433,9 @@ function one_des($des, $device, $key, $tr_range, $factor){
     if ($factor == 0) {
         $fabs = intdiv($num1 - $num0 ,$tr_range) + 1;
         $_SESSION["des"][$device][$key][] = $fabs;
-    } else{
+    } else {
         $_SESSION["des"][$device][$key][] = $factor;
     }
-    return;
 }
 
 function find_bracket($string, $left, $right){
@@ -375,9 +458,9 @@ function find_bracket($string, $left, $right){
 }
 
 function hex_to_type($type, $data){
-    /* $data contains one or more 2 byte hex values
-    $type is a MYC datatype
-    */
+    # $data contains one or more 2 byte hex values
+    # $type is a MYC datatype
+    # ???
     $temp =[];
     switch ($type) {
         case "a":
@@ -474,6 +557,63 @@ function hex_to_type($type, $data){
             #date missing
             return("");
     }
+    return;
 }
 
+function init_data($device){
+    # set data  for all token to "0" (or corresponding real data by translate)
+    # create $_SESSION[actual_data]
+    $_SESSION["actual_data"][$device] = [];
+    foreach ($_SESSION["all_announce"][$device] as $key => $value) {
+        $data = [];
+        $tok = basic_tok($key);
+        if ($tok == $key) {
+            # data
+            $ct = explode(",", $value[0])[0];
+            if ($ct == "ar") {
+                $ct = "or";
+            }
+            if ($ct == "ap") {
+                $ct = "op";
+            }
+            switch ($ct) {
+                case "or":
+                    # result is array with one element per position
+                    $i = 3;
+                    while ($i < count($value)) {
+                        $data[] = "0";
+                        $i += 1;
+                    }
+                    break;
+                case "op":
+                    # result is array with one element per dimension
+                    $i = 3;
+                    while ($i < count($value)) {
+                        $data[] = "0";
+                        $i += 3;
+                    }
+                    break;
+                case "oo":
+                    # result is array with four elements for count, time, size and add  per dimension
+                    $i = 3;
+                    while ($i < count($value)) {
+                        $data[] = "0";
+                        $i += 3;
+                    }
+                    break;
+                default:
+                    # os/as : one element array!!
+                    $data[] = "0";
+                    break;
+            }
+            $_SESSION["actual_data"][$device][$key] = translate_data($data, $device, $key, $value);
+        }
+        else {
+            # stacks etc: one element array !
+            $data[] = "0";
+            $_SESSION["actual_data"][$device][$key] = $data;
+        }
+    }
+
+}
 ?>

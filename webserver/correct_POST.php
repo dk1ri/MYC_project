@@ -1,33 +1,32 @@
 <?php
 function correct_POST($device){
-    # now data beoynd the limits can be inputted for some commands
-    # before using for send and real_data, they will be corrected to nearest valid data
+    # make mods on op ap oo commands only
+    # now data beyond the limits can be inputted for some commands
+    # before using for send and actualdata, they will be corrected to nearest valid data
     # real values are used in case of corrections
-    if (!array_key_exists($device, $_SESSION["corrected_POST"])) {
-        $_SESSION["corrected_POST"][$device] = [];
-    }
+    $_SESSION["corrected_POST"] = [];
     foreach ($_POST as $token => $value) {
         # basic_token may have something added:
         $basic_token = basic_tok($token, "p");
-        $basic_token = basic_tok($token, "o");
+        $basic_token = basic_tok($basic_token, "o");
         if (array_key_exists($token, $_SESSION["all_announce"][$device])) {
             $ct = explode(",", $_SESSION["all_announce"][$device][$basic_token][0])[0];
+            if ($ct == "ap" or $ct == "oo") {
+                $ct = "op";
+            }
+         #   Fpvar_dump($_SESSION["all_announce"][$device][$basic_token]);
             switch ($ct) {
                 case "op":
                     correct($device, $token, $basic_token, $value);
                     break;
-                case "ap";
-                    correct($device, $token, $basic_token, $value);
-                    break;
-                case "oo":
-                    correct($device, $token, $basic_token, $value);
-                    break;
                 default:
-                    $_SESSION["corrected_POST"][$device][$token] = $value;
+                    $_SESSION["corrected_POST"][$token] = $value;
             }
         }
+        else {
+            $_SESSION["corrected_POST"][$token] = $value;
+        }
     }
-    var_dump($_SESSION["corrected_POST"][$device]);
     return;
 }
 
@@ -66,9 +65,9 @@ function correct($device,  $token, $basic_token, $value){
             $i += 4;
         }
         if ($valok == 0) {
-            $_SESSION["corrected_POST"][$device][$token] = $best_val;
+            $_SESSION["corrected_POST"][$token] = $best_val;
         } else {
-            $_SESSION["corrected_POST"][$device][$token] = $value;
+            $_SESSION["corrected_POST"][$token] = $value;
         }
     }
     return;

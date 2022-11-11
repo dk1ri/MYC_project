@@ -1,7 +1,7 @@
 <?php
 function analyze_trx_data($token, $field, $device,$orgdata){
     # orgdata is hexstring by device without (original) token
-    $tok = basic_tok_all($token);
+    $tok = basic_tok($token);
     $sel_length = $_SESSION["sel_len"][$device][$token];
     $ct = explode(",", $field[0])[0];
     if ($ct == "ar") {
@@ -32,7 +32,7 @@ function analyze_trx_data($token, $field, $device,$orgdata){
             # position for actual dimension in orgdata must be found
             $i = 0;
             foreach ($_SESSION["p_token"][$device] as $key => $value){
-                if (basic_tok_all($value) == $tok) {
+                if (basic_tok($value) == $tok) {
                     $ctok = $tok."p".$i;
                     if (strval($token) == strval($ctok)){
                         break;
