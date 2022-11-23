@@ -1,11 +1,8 @@
 <?php
 # read_new_device.php
-# DK1RI 20221108
+# DK1RI 20221123
 function read_new_device($device){
     #create additional device (old ones not deleted)
-    read_device($device);
-    create_session_data_file_array($device, "all_announce", $_SESSION["all_announce"][$device]);
-    # all announcelines are now in $_SESSION["all_announce"][$device]
     read_chapter_names($device);
     create_session_data_file($device, "chapter_names", $_SESSION["chapter_names"][$device]);
     foreach ($_SESSION["chapter_names"][$device] as $key => $ch) {
@@ -13,6 +10,9 @@ function read_new_device($device){
     }
     $chapter = $_SESSION["chapter_names"][$device][0];
     $_SESSION["chapter"] = $chapter;
+    read_device($device);
+    create_session_data_file_array($device, "all_announce", $_SESSION["all_announce"][$device]);
+    # all announcelines are now in $_SESSION["all_announce"][$device]
     find_all_token($device);
     create_session_data_file($device, "all_token", $_SESSION["all_token"][$device]);
     # all token now in $_SESSION["all_token"][$device][]
@@ -22,8 +22,8 @@ function read_new_device($device){
     # now have the selector token and the number of selects in
     # $_SESSION["sele_toks"][$device] and $_SESSION["number_of_selects"][$device]
     corresponding_token($device);
-    # create_session_data_file_array($device, "corresponding_tokens", $_SESSION["corresponding_tokens"][$device]);
-    # now have a list of corresponding tokens with more then one selector: $_SESSION["corresponding_tokens"][$device]
+     create_session_data_file_array($device, "corresponding_tokens", $_SESSION["corresponding_tokens"][$device]);
+    # now have a list of corresponding tokens with more than one selector: $_SESSION["corresponding_tokens"][$device]
     calculate_tok_len($device);
     create_session_data_file_val($device, "tok_len", $_SESSION["tok_len"][$device]);
     # now the length of the (binary token) in $_SESSION["tok_len"][$device]
@@ -36,7 +36,7 @@ function read_new_device($device){
     create_session_data_file($device, "p_len", $_SESSION["p_len"][$device]);
     # now value for range commands (one dimension) in $_SESSION["p_len"][$device] ??
     calculate_p_token($device);
-    create_session_data_file($device, "p_token", $_SESSION["p_token"][$device]);
+    create_session_data_file_array($device, "p_token", $_SESSION["p_token"][$device]);
     # now ???
     calculate_tok_hex($device);
     create_session_data_file($device, "tok_hex", $_SESSION["tok_hex"][$device]);
@@ -45,28 +45,12 @@ function read_new_device($device){
     create_session_data_file($device, "maxsel", $_SESSION["maxsel"][$device]);
     # now for selectors with ADD in $_SESSION["maxsel"][$device]
     prepare_des($device);
-    create_session_data_file($device, "des", $_SESSION["des"][$device]);
+    create_session_data_file_array($device, "des_name", $_SESSION["des_name"][$device]);
+    create_session_data_file_array_array($device, "des_range", $_SESSION["des_range"][$device]);
     # now descriptions in $_SESSION["des"]
     init_data($device);
     create_session_data_file_array($device, "actual_data", $_SESSION["actual_data"][$device]);
     # now actual data for all commands in $_SESSION["actual_data"]
-}
-
-function read_device($device){
-    $_SESSION["all_announce"][$device] = [];
-    if (file_exists($device."/announce_lines")) {
-        $file = fopen($device."/announce_lines", "r");
-        while (!(feof($file))) {
-            $pure = fgets($file);
-            $pure = str_replace("\n", '', $pure);
-            $pure = str_replace("\r", '', $pure);
-            $field = explode(";", $pure);
-            $key = $field[0];
-            $value = array_slice($field,1);
-            $_SESSION["all_announce"][$device][$key] = $value;
-        }
-        fclose($file);
-    }
 }
 
 function read_chapter_names($device){
@@ -79,39 +63,77 @@ function read_chapter_names($device){
     $_SESSION["chapter_token"][$device]["all"] = [];
     $last_chapter = "all";
     $last_basic_token = 0;
-    foreach ($_SESSION["all_announce"][$device] as $token => $lin){
-        $_SESSION["chapter_token"][$device]["all"][] = $token;
-        $basic_token = basic_tok($token);
-        $line = implode(";", $lin);
-        $pos = strpos($line, "CHAPTER");
-        if (!$pos and $basic_token == $last_basic_token) {
-            # _,a, p ... lines have no CHAPTER
-            $_SESSION["chapter_token"][$last_chapter][] = $token;
+    if (file_exists($device."/announce_lines")) {
+        $file = fopen($device."/announce_lines", "r");
+        while (!(feof($file))) {
+            $pure = fgets($file);
+            $pure = str_replace("\n", '', $pure);
+            $pure = str_replace("\r", '', $pure);
+            $field = explode(";", $pure);
+            $token = $field[0];
+            $lin = array_slice($field, 1);
+            $_SESSION["chapter_token"][$device]["all"][] = $token;
+            $basic_token = basic_tok($token);
+            $line = implode(";", $lin);
+            $pos = strpos($line, "CHAPTER");
+            if (!$pos and $basic_token == $last_basic_token) {
+                # _,a, p ... lines have no CHAPTER and will get last CHAPTER
+                $_SESSION["chapter_token"][$last_chapter][] = $token;
+            } else {
+                $ar = explode("CHAPTER", "$line");
+                if (count($ar) == 1) {
+                    $chap = "all";
+                } else {
+                    $chap = explode(";", $ar[1])[1];
+                }
+                if (!in_array($chap, $_SESSION["chapter_names"][$device])) {
+                    $_SESSION["chapter_names"][$device][] = $chap;
+                }
+                $_SESSION["chapter_token"][$device][$chap][] = $token;
+                $_SESSION["chapter_token"][$device]["all"][] = $token;
+            }
+            $last_basic_token = $basic_token;
         }
-        else{
-            $ar = explode("CHAPTER", "$line");
-            if (count($ar) == 1){
-                $chap = "all";
+        fclose($file);
+    }
+}
+
+function read_device($device){
+    $_SESSION["all_announce"][$device] = [];
+    if (file_exists($device."/announce_lines")) {
+        $file = fopen($device."/announce_lines", "r");
+        while (!(feof($file))) {
+            $pure = fgets($file);
+            $pure = str_replace("\n", '', $pure);
+            $pure = str_replace("\r", '', $pure);
+            $field = explode(";", $pure);
+            $token = $field[0];
+            $lin = array_slice($field,1);
+            $basic_token = basic_tok($token);
+            $stored = 0;
+            if ($token != $basic_token) {
+                # _,a, p ... lines have no CHAPTER and will get last CHAPTER
+                $_SESSION["all_announce"][$device][$token] = $lin;
             }
             else {
-                $chap = explode(";", $ar[1])[1];
-            }
-            if (!in_array($chap, $_SESSION["chapter_names"][$device])) {
-                $_SESSION["chapter_names"][$device][] = $chap;
-            }
-            $_SESSION["chapter_token"][$device][$chap][]= $token;
-            $_SESSION["chapter_token"][$device]["all"][]= $token;
-            # delete the complete CHAPTER entry
-            $mod_line = [];
-            foreach ($lin as $field){
-                $pos1 = strpos($field, "CHAPTER");
-                if (!$pos1){
-                    $mod_line[] = $field;
+                # delete the complete CHAPTER entry
+                $mod_line = [];
+                foreach ($lin as $field) {
+                    $pos1 = strpos($field, "CHAPTER");
+                    if (!$pos1) {
+                        $mod_line[] = $field;
+                    } else {
+                        # store and ignore the rest
+                        $_SESSION["all_announce"][$device][$token] = $mod_line;
+                        $stored = 1;
+                    }
+                    if(!$stored){
+                        $_SESSION["all_announce"][$device][$token] = $mod_line;
+                    }
                 }
-            $_SESSION["all_announce"][$device][$token] = $mod_line;
             }
         }
-        $last_basic_token = $basic_token;
+        fclose($file);
     }
 }
 
@@ -152,28 +174,21 @@ function corresponding_token($device){
     $cor_tokens = [];
     $start = 1;
     foreach ($_SESSION["all_announce"][$_SESSION["device"]] as $token => $line_as_array) {
+        $basic_token = basic_tok($token);
         if ($start){
             # skip first entry
             $start = 0;
-            $last_basic_token = basic_tok($token);
         }
         else {
-            $basic_token = basic_tok($token);
             if ($basic_token != $last_basic_token) {
                 #finish last_basic_tok
-                if ($cor_tokens != []) {
-                #    print($last_basic_token);
-                 #   print(" fff ");
-                    $_SESSION["corresponding_tokens"][$device][] = $last_basic_token;
-                    $_SESSION["corresponding_tokens"][$device][$last_basic_token] = $cor_tokens;
-                }
-                # else: no entry
+                $_SESSION["corresponding_tokens"][$device][$last_basic_token] = $cor_tokens;
                 $cor_tokens = [];
             } else {
                 $cor_tokens[] = $token;
             }
-            $last_basic_token = $basic_token;
         }
+        $last_basic_token = $basic_token;
     }
     if ($cor_tokens != []){
         # last element, if available
@@ -249,12 +264,12 @@ function calculate_stack_len($device)
 }
 
 function calculate_p_len($device){
-    # op ap token (one dimension) with value, others  0
-    # ap ap token splitted by dimensions before??
+    # op ap token (one dimension) with length of value, others  0
     $_SESSION["p_len"][$device] = [];
     foreach ($_SESSION["all_announce"][$device] as $key => $value) {
+        $basic_tok = basic_tok($key);
         $ct = explode(",",$value[0])[0];
-        if ($ct == "op" or $ct == "ap") {
+        if (($ct == "op" or $ct == "ap") and $basic_tok == $key) {
             $_SESSION["p_len"][$device][$key] = calculate_len(explode(",",$value[2])[0]);
         } else {
             $_SESSION["p_len"][$device][$key] = 0;
@@ -263,15 +278,18 @@ function calculate_p_len($device){
 }
 
 function calculate_p_token($device){
-    # ??
+    # token of p command with corresping selector ond oo command for all dimensions
     $_SESSION["p_token"][$device] = [];
+    $old_basic_tok = 0;
     foreach ($_SESSION["all_announce"][$device] as $key => $value) {
         $ct = explode(",",$value[0])[0];
-        if ($ct == "op" or $ct == "ap") {
-            $i = 3;
-            while ($i < count($value)){
-                $_SESSION["p_token"][$device][] = $key;
-                $i += 3;
+        if ($ct == "op" or $ct == "ap" or $ct == "oo") {
+            $basic_tok = basic_tok($key);
+            if ($basic_tok != $key) {
+                $_SESSION["p_token"][$device][$old_basic_tok][] = $key;
+            }
+            else {
+                $old_basic_tok = $basic_tok;
             }
         }
     }
@@ -306,155 +324,115 @@ function calculate_max_mul($device){
 }
 
 function prepare_des($device){
-    # create $SESSION["des"] for op ap oo commands:
+    # announcements have one dimension each only!!
+    # create description of name and range for op ap and oo commands:
+    # create $SESSION["des_name"][$device][$token][] (for labeling):
+    # for p: one element name + ranges (or empty)
+    # for o:  3 elements:name (+ ranges for steptime) (or empty)
     # name spacing from to <spacing ....
-    # commands <token>px have one dimension each only!!
+    # create $SESSION["des_range"][$device][$token][] (for translate):
     $_SESSION["des"][$device] = [];
-    foreach ($_SESSION["all_announce"][$device] as $key => $field) {
-        $cta = explode(",",$field[0]);
+    foreach ($_SESSION["all_announce"][$device] as $key => $announce) {
+        $_SESSION["des_name"][$device][$key]= [];
+        $_SESSION["des_range"][$device][$key]= [];
+        $cta = explode(",",$announce[0]);
         if ($cta[0] == "op" or $cta[0] == "ap"){
-            # op ap only
-            $l_name = "range";
-            $u_field = $field[2];
-            $_SESSION["des"][$device][$key]= [];
-            $desc = explode(",", $u_field);
-            # skip transmit-range:
+            $max_of_range = (int)explode(",",$announce[2])[0];
+            # op, ap only
+            $desc = explode(",", $announce[2]);
+            # <des> only:
             $desc = array_splice($desc, 1);
-            if (count($desc) > 0){
-                list($desc, $name) = des_name($desc, $cta);
-                $_SESSION["des"][$device][$key][] = $name;
-                if (count($desc) > 0) {
-                    # range(s) available {...}
-                    # there is one { and one } only
-                    $desc = implode(",", $desc);
-                    $desc = str_replace("{", "", $desc);
-                    $desc = str_replace("}", "", $desc);
-                    $desc = explode(",", $desc);
-                    $k = 0;
-                    while ($k < count($desc)) {
-                        $_SESSION["des"][$device][$key][] = $desc[$k];
-                        $num = explode("to", $desc[$k + 1]);
-                        $_SESSION["des"][$device][$key][] =  expand_comma($num[0]);
-                        $_SESSION["des"][$device][$key][] =  expand_comma($num[1]);
-                        $k += 2;
-                    }
-                } else {
-                    # name only
-                    $_SESSION["des"][$device][$key][] = 1;
-                    $_SESSION["des"][$device][$key][] = 0;
-                    $_SESSION["des"][$device][$key][] = explode(",",$field[2])[0];
-                }
-            } else {
-                # no des at all
-                $_SESSION["des"][$device][$key][] = $l_name;
-                $_SESSION["des"][$device][$key][] = 1;
-                $_SESSION["des"][$device][$key][] = 0;
-                $_SESSION["des"][$device][$key][] = $field[2];
-            }
+            # <<name><{range,<range>..>:
+            list($des_name, $des_range) = des_name_range($desc, "range", $max_of_range, "p");
+            $_SESSION["des_name"][$device][$key][] = $des_name;
+            $_SESSION["des_range"][$device][$key][][] = $des_range;
         }
         elseif ($cta[0] == "oo") {
-            # oo only
-            # name number_of_steps, stepsize real_steptime_min max ... real_steptime_min max
-            $_SESSION["des"][$device][$key]= [];
-            $l_name = "step";
-            $f = explode(",",$field[0]);
-            # name
-            if (count($f) > 1) {
-                $_SESSION["des"][$device][$key][] = $f[1];
-            }
-            else {
-                $_SESSION["des"][$device][$key][] = $l_name;
-            }
-            # number_of_steps
-            $_SESSION["des"][$device][$key][] = $field[2];
-            $_SESSION["des"][$device][$key][] = $field[4];
-            # step_time
-            $u_field = $field[3];
-            $desc = explode(",", $u_field);
-            # skip step_time:
-            $desc = array_splice($desc, 1);
-            if (count($desc) > 0){
-                list($desc, $name) = des_name($desc, $cta);
-                $_SESSION["des"][$device][$key][] = $name;
-                if (count($desc) > 0) {
-                    # range(s) available {...}
-                    # there is one { and one } only
-                    $desc = implode(",", $desc);
-                    $desc = str_replace("{", "", $desc);
-                    $desc = str_replace("}", "", $desc);
-                    $desc = explode(",", $desc);
-                    $k = 0;
-                    while ($k < count($desc)) {
-                        $_SESSION["des"][$device][$key][] = $desc[$k];
-                        $num = explode("to", $desc[$k + 1]);
-                        $_SESSION["des"][$device][$key][] =  expand_comma($num[0]);
-                        $_SESSION["des"][$device][$key][] =  expand_comma($num[1]);
-                        $k += 2;
-                    }
-                } else {
-                    # name only
-                    $_SESSION["des"][$device][$key][] = 1;
-                    $_SESSION["des"][$device][$key][] = 0;
-                    $_SESSION["des"][$device][$key][] = explode(",",$field[2])[0];
+            # oo only 6 - 8 array elements
+            # oo stacks steps<,name>>  steptime<,name><,<range<,range>..> steptimeunit stepsize<,name>
+            $k = 2;
+            while ($k < 6){
+                $max_of_range = (int)explode(",",$announce[$k])[0];
+                $desc = explode(",", $announce[$k]);
+                # <des> only:
+                $desc = array_splice($desc, 1);
+                # <name><{xxx}>
+                switch ($k) {
+                    case 2:
+                        $des_subject = "steps";
+                        break;
+                    case 3:
+                        $des_subject = "steptime";
+                        break;
+                    case 4:
+                        $des_subject = "steptimeunit";
+                        break;
+                    case 5:
+                        $des_subject = "stepssize";
+                        break;
                 }
-            } else {
-                # no des at all
-                $_SESSION["des"][$device][$key][] = $l_name;
-                $_SESSION["des"][$device][$key][] = 1;
-                $_SESSION["des"][$device][$key][] = 0;
-                $_SESSION["des"][$device][$key][] = $field[2];
+                list($des_name, $des_range) = des_name_range($desc, $des_subject,  $max_of_range, "o");
+                $_SESSION["des_name"][$device][$key][$k - 2] = $des_name;
+                $_SESSION["des_range"][$device][$key][$k - 2][] = $des_range;
+                $k += 1;
             }
         }
     }
 }
 
-function des_name($des, $cta){
-    if (!strstr($des[0], "{")) {
-        # must be name
-        if (count($cta) > 1) {
-            return [array_splice($des, 1), $des[0]];
-        } else {
-            return [array_splice($des, 1), "range"];
-        }
-    } else {
-        return [$des, "range"];
+function des_name_range($des, $des_subject, $max_of_range, $c_type){
+    $name = "";
+    $des_range = [];
+    $des_len = count($des);
+    $des_pointer = 0;
+    if (!$des_len){
+        # no des -> set default for ranges
+        $name = $des_subject;
+        $des_range[0][] = 1;
+        $des_range[0][] = 0;
+        $des_range[0][] = $max_of_range - 1;
     }
-
-}
-function one_des($des, $device, $key, $tr_range, $factor){
-    # ..to..
-    $num = explode("to", $des);
-    # num[0] and num[1] must "match" ; same number of pos after "," eg
-    $num0 = expand_comma($num[0]);
-    $num1 = expand_comma($num[1]);
-    $_SESSION["des"][$device][$key][] = $tr_range;
-    $_SESSION["des"][$device][$key][] = $num0;
-    $_SESSION["des"][$device][$key][] = $num1;
-    if ($factor == 0) {
-        $fabs = intdiv($num1 - $num0 ,$tr_range) + 1;
-        $_SESSION["des"][$device][$key][] = $fabs;
-    } else {
-        $_SESSION["des"][$device][$key][] = $factor;
+    else {
+        if (!strstr($des[0], "{")) {
+            # must be name
+            $name = $des[0];
+            $des_pointer += 1;
+        }
+        else {
+            # default
+            $name = $des_subject;
+        }
+        # no other data:
+        if ($des_len == $des_pointer){
+            # no other des -> set default for ranges
+            $des_range[0][] = 1;
+            $des_range[0][] = 0;
+            $des_range[0][] = $max_of_range - 1;
+        }
+        else {
+            # now the range follow: {xxx yyy ...
+            $j = 0;
+            # first spacing:
+            $des_range[$j][] = (int)substr($des[$des_pointer],1);
+            $des_pointer += 1;
+            $start = 1;
+            while ($des_pointer < $des_len) {
+                if ($start) {
+                    $start = 0;
+                }
+                else {
+                    $des_range[$j][] = (int)$des[$des_pointer - 1];
+                }
+                $de = str_replace("}", "", $des[$des_pointer]);
+                $to_split = explode("to", $de);
+                $des_range[$j][] = (int)$to_split[0];
+                $des_range[$j][] = (int)$to_split[1];
+                $des_pointer += 2;
+                $j+= 1;
+            }
+        }
     }
-}
-
-function find_bracket($string, $left, $right){
-    #  for stacked bracketing: find closing bracket. string without opening bracket
-    $j = 0;
-    $no_of_brackets = 1;
-    while ($j < strlen($string)){
-        if ($string[$j] == $left){
-            $no_of_brackets += 1;
-        }
-        if ($string[$j] == $right){
-            $no_of_brackets -= 1;
-        }
-        if ( $no_of_brackets == 0){
-            break;
-        }
-        $j += 1;
-    }
-    return substr($string, 0, $j);
+    return [$name, $des_range];
 }
 
 function hex_to_type($type, $data){
@@ -557,7 +535,7 @@ function hex_to_type($type, $data){
             #date missing
             return("");
     }
-    return;
+    return($data);
 }
 
 function init_data($device){
@@ -570,6 +548,7 @@ function init_data($device){
         if ($tok == $key) {
             # data
             $ct = explode(",", $value[0])[0];
+            $stacks = explode(",", $value[1])[0];
             if ($ct == "ar") {
                 $ct = "or";
             }
@@ -579,34 +558,38 @@ function init_data($device){
             switch ($ct) {
                 case "or":
                     # result is array with one element per position
-                    $i = 3;
-                    while ($i < count($value)) {
-                        $data[] = "0";
-                        $i += 1;
+                    if (count($value) == 3){
+                        $data[] = "off";
+                    }
+                    else {
+                        $i = 2;
+                        # +1: due to all off
+                        while ($i < count($value) + 1) {
+                            $data[] = "0";
+                            $i += 1;
+                        }
                     }
                     break;
                 case "op":
-                    # result is array with one element per dimension
-                    $i = 3;
-                    while ($i < count($value)) {
+                    # always one dimension
+                    $data[] = "0";
+                    if ($stacks > 1){
                         $data[] = "0";
-                        $i += 3;
                     }
                     break;
                 case "oo":
-                    # result is array with four elements for count, time, size and add  per dimension
-                    $i = 3;
-                    while ($i < count($value)) {
+                    if ($stacks > 1){
                         $data[] = "0";
-                        $i += 3;
                     }
-                    break;
+                    $data[] = "0";
+                    $data[] = "0";
+                    $data[] = "0";
                 default:
                     # os/as : one element array!!
                     $data[] = "0";
                     break;
             }
-            $_SESSION["actual_data"][$device][$key] = translate_data($data, $device, $key, $value);
+            $_SESSION["actual_data"][$device][$key] = translate_hex_to_actual( $device, $key, $data);
         }
         else {
             # stacks etc: one element array !

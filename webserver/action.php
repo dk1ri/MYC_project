@@ -1,6 +1,6 @@
 <?php
 # action.php
-# DK1RI 20221110
+# DK1RI 20221118
 function dec_hex($key, $len){
     $val = dechex($key);
     $i = strlen($val);
@@ -33,8 +33,8 @@ function basic_tok($o_tok){
         $tok = explode("a", $o_tok)[0];
     } elseif (strstr($o_tok, "p")) {
         $tok = explode("p", $o_tok)[0];
-    } elseif (strstr($o_tok, "o")) {
-        $tok = explode("o", $o_tok)[0];
+    } elseif (strstr($o_tok, "q")) {
+        $tok = explode("q", $o_tok)[0];
     }  elseif (strstr($o_tok, "u")) {
         $tok = explode("u", $o_tok)[0];
     } else {
@@ -66,7 +66,6 @@ function create_session_data_file_val($device, $name, $data){
 }
 
 function create_session_data_file($device, $name, $data){
-    # print($name);
     $file = fopen("./".$device."/session_".$name, "w");
     foreach ($data as $key=> $value){
         fwrite( $file,$key." ".$value."\n");
@@ -79,9 +78,29 @@ function create_session_data_file_array($device, $name, $data){
     $file = fopen("./".$device."/session_".$name, "w");
     foreach ($data as $key=> $value){
         $line = $key;
-    #    var_dump($value);
         foreach ($value as $key_ => $val){
-            $line = $line." ".$key_.":".$val;
+            $line = $line." ".$key_.": ".$val;
+        }
+        fwrite( $file,$line."\n");
+    }
+    fclose($file);
+}
+function create_session_data_file_array_array($device, $name, $data){
+    # print($name);
+    $file = fopen("./".$device."/session_".$name, "w");
+    foreach ($data as $key=> $value){
+        $line = $key."::subject: ";
+        foreach ($value as $key_ => $valu){
+            $line .= $key_."::element: ";
+            foreach ($valu as $key__ => $val){
+                $line .= $key__ . ":subelement: ";
+                foreach ($val as $key___ => $va) {
+                    $line .= $key___ . ":data ";
+                    foreach ($va as $key____ => $d) {
+                        $line .= $key____ . ": " . $d . " ";
+                    }
+                }
+            }
         }
         fwrite( $file,$line."\n");
     }
@@ -127,14 +146,7 @@ function create_session_data_file_array($device, $name, $data){
             include "read_new_device.php";
            read_new_device($device);
         }
-        include "correct_POST.php";
         correct_POST($device);
-        if (gettype( $_SESSION["corrected_POST"]) == "string") {
-            create_session_data_file($device, "temp_corrected_POST", $_SESSION["corrected_POST"]);
-        }
-        else{
-            create_session_data_file_array($device, "temp_corrected_POST", $_SESSION["corrected_POST"]);
-        }
         include "send_and_update.php";
         send_and_update();
         $actual_chapter = $_SESSION["chapter"];
@@ -159,10 +171,10 @@ function create_session_data_file_array($device, $name, $data){
         select_any( $_SESSION["device_list"], $_SESSION["device"], "devices");
         echo ("</div><div>");
         select_any($_SESSION["chapter_names"][$device], $actual_chapter, "chapter");
-        echo "</div><div>";
+        echo "</div>";
         display_commands($_SESSION["device"], $actual_chapter);
-        echo("</div>");
         echo "</form>";
+        echo"</div>";
         ?>
     </body>
 </html>

@@ -1,7 +1,7 @@
 """
 name : helper_2022.py
 Author: DK1RI
-Version 01.0, 20221103
+Version 01.0, 20221116
 call with: helper_2022.py <device> <token_length>
 Purpose :
 make some modifications on announcement file
@@ -193,7 +193,7 @@ def replace_cr():
     while i < len(ann):
         # a and o only
         ot = ann[i].split(";")[1].split(",")[0][0]
-        if (ot != "o" and ot != "a"):
+        if ot != "o" and ot != "a":
             continue
         # delete METER
         field = ann[i].split(";")
@@ -234,20 +234,31 @@ def replace_cr():
 
 def add_selectors(an):
     # an contains o and independent a commands only
-    # for stacks > 1 and memories additional lines are added as a selector (os type):
+    # for stacks > 1  additional lines are added as a selector (os type):
     # selector_token;os;1;0,0;....."
     # all token to be used by the website
     global announcelines
     announcelines = []
-    done = 0
     for line in an:
-        announcelines.append(line)
         line = line.rstrip("\n")
         field = line.split(";")
+        # first dimension only
+        if len(field) > 8 and field[1][1] == "p":
+            # CHAPTER existing?
+            ch_pos = (len(field) - 3) % 3
+            ch = field[-1]
+            field = field[0:5]
+            if ch_pos != 0:
+                field.append("5,CHAPTER")
+                field.append(ch)
+        if field[1][1] == "o":
+            field[0] += "q0"
+            if len(field) > 9:
+                field = field[0:9]
+        announcelines.append(";".join(field))
         # create selectors for stack for switches and range commands
-        select_tokens = []
-        token = field[0]
-        if field[1][1] == "r" or field[1][1] == "s" or field[1][1] == "t" or field[1][1] == "u" or field[1][1] == "p" or field[1][1] == "o":
+        if field[1][1] == "r" or field[1][1] == "s" or field[1][1] == "t" or field[1][1] == "u" or field[1][1] == "p":
+            # selector for "o" commands are ignored
             stack = field[2].split(",")
             all_selections = int(stack[0])
             if all_selections > 1:
@@ -280,6 +291,50 @@ def add_selectors(an):
                         else:
                             #  with {>mul<}>
                             create_mul(field[0], ",".join(des))
+    return
+
+
+def expand_p(an):
+    # split dimension
+    for line in an:
+        line = line.rstrip("\n")
+        field = line.split(";")
+        # 8: 1 demension + CHAPTER
+        if len(field) > 8 and field[1][1] == "p":
+            # split dimensions, second + ... only (
+            dim = 6
+            i = 1
+            while dim < len(field) - 2:
+                tok = field[0]
+                tok = tok + "p" + str(i)
+                line = tok + ";" + ";".join(field[1:3]) + ";" + ";".join(field[dim:dim + 3])
+                announcelines.append(line)
+                dim += 3
+                i += 1
+        if len(field) > 9 and field[1][1] == "o":
+            # split dimensions
+            step = 4
+            if ";b," in line:
+                # optional byte available
+                step += 1
+            if ";a," in line:
+                # optional LOOP LIMIT available
+                step += 1
+            i = 1
+            dim = 3 + step
+            while dim < len(field) - 2:
+                tok = field[0] + "q" + str(i)
+                line = tok + ";" + ";".join(field[1:3]) + ";" + ";".join(field[dim:dim + step])
+                announcelines.append(line)
+                dim += step
+                i += 1
+    return
+
+
+def expand_m_n(an):
+    for line in an:
+        line = line.rstrip("\n")
+        field = line.split(";")
         if field[1][1] == "m" or field[1][1] == "n":
             # create selectors for each row, column ... for memories
             # first row at pos 3
@@ -288,27 +343,34 @@ def add_selectors(an):
             while row_col < len(field):
                 sel_name = "mem_dimension"
                 if len(field[row_col].split(",")) > 1:
-                    if field[row_col].split(",")[1][0]!= "{":
+                    if field[row_col].split(",")[1][0] != "{":
                         sel_name = field[row_col].split(",")[1]
                 # range is used for "a" selectors with individual seletions
-                range = ""
+                rangex = ""
                 add_selections = field[row_col].split(",")[0]
                 if add_selections[0] == "a":
                     add_selections = add_selections[1:]
                     sel_name = "additional: "
                     if len(field[row_col].split(",")) > 1:
-                        range = field[row_col].split(",")[1]
+                        rangex = field[row_col].split(",")[1]
                     total += int(add_selections)
                 else:
                     total *= int(add_selections)
-                create_memory_selector(field[0], int(add_selections), sel_name, range, row_col - 3)
+                create_memory_selector(field[0], int(add_selections), sel_name, rangex, row_col - 3)
                 row_col += 1
             if field[1][1] == "n":
                 sel_name = ""
-                range = ""
+                rangex = ""
                 if len(field[1].split(",")) > 2:
                     sel_name = field[1].split(",")[1]
-                create_memory_selector(field[0], int(total) - 1, "number " + sel_name, range, row_col - 3)
+                create_memory_selector(field[0], int(total) - 1, "number " + sel_name, rangex, row_col - 3)
+    return
+
+
+def expand_a_b(an):
+    for line in an:
+        line = line.rstrip("\n")
+        field = line.split(";")
         if field[1][1] == "a" or field[1][1] == "b":
             # one selector
             ct = field[1].split(",")
@@ -333,40 +395,6 @@ def add_selectors(an):
                 while i < len(field) - 1:
                     li += ";" + str(i - 3) + "," + str(i - 2)
                 select_tokens.append(token + "_" + "1")
-        if field[1][1] == "p":
-            # split dimensions
-            dim = 3
-            i = 0
-            while dim < len(field):
-                tok = field[0]
-                if len(field) == 6:
-                    pass
-                else:
-                    if dim + 4 < (len(field)):
-                        tok = tok + "p" + str(i)
-                line = tok + ";" + ";".join(field[1:3]) + ";" + ";".join(field[dim:dim + 3])
-                announce[chapter_names.index(chapter_name)].append(line)
-                all_announcelines.append(line)
-                dim += 3
-                i += 1
-            done = 1
-        if field[1][1] == "o":
-            # split dimensions
-            dim = 3
-            i = 0
-            while dim < len(field):
-                tok = field[0]
-                if len(field) == 9:
-                    pass
-                else:
-                    if dim + 7 < (len(field)):
-                        tok = tok + "o" + str(i)
-                line = tok + ";" + ";".join(field[1:3]) + ";" + ";".join(field[dim:dim + 6])
-                announce[chapter_names.index(chapter_name)].append(line)
-                all_announcelines.append(line)
-                dim += 6
-                i += 1
-            done = 1
     return
 
 
@@ -385,8 +413,17 @@ cr_ann = replace_cr()
 #
 announcelines = []
 add_selectors(cr_ann)
+expand_p(cr_ann)
+expand_m_n(cr_ann)
+expand_a_b(cr_ann)
 #
 # copy announcelines to file
+for i in range(0, len(announcelines)):
+    for j in range(i+1, len(announcelines)):
+        if announcelines[i] > announcelines[j]:
+            temp = announcelines[i]
+            announcelines[i] = announcelines[j]
+            announcelines[j] = temp
 filename = "./" + device + "/" + "announce_lines"
 if os.path.exists(filename):
     os.remove(filename)

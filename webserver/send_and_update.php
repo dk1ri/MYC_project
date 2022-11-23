@@ -1,10 +1,13 @@
 <?php
 # send_and_update.php
-# DK1RI 20221110
+# DK1RI 20221114
 function send_and_update(){
+    # input:  $_SESSION["corrected_POST"]
+    # output:  $_SESSION["actual_data"][$device]
+    # output: $send  (hex string -> to device)
     # $_SESSION["corrected_POST"] send:
     # for xs xt xu : string (always)
-    # for or : aray with numebers of changed fields (only, if changed)
+    # for or : array with numbers of changed fields (only, if changed)
     $device = $_SESSION["device"];
     foreach ($_SESSION["corrected_POST"] as $key => $value) {
         if (!array_key_exists($key, $_SESSION["all_announce"][$device])) {
@@ -33,7 +36,7 @@ function send_and_update(){
             $ct = explode(",", $field[0])[0];
             $send = dec_hex($basic_tok, $_SESSION["tok_len"][$device]);
             if ($ct == "at"){
-                $ct = "ar";
+                $ct = "as";
             }
             switch ($ct) {
                 case "os":
@@ -62,38 +65,70 @@ function send_and_update(){
                     break;
                 case "or":
                     list($stack_value, $to_send) = handle_stacks($basic_tok);
-                    $send = $send . $stack_value;
+                    $orgsend = $send . $stack_value;
                     if (array_key_exists($basic_tok, $_SESSION["corrected_POST"])) {
-                        $i = 0;
                         if (gettype($_SESSION["corrected_POST"][$basic_tok]) == "string") {
                             # on off switch
-                            if ($_SESSION["actual_data"][$device][$basic_tok] == "on") {
-                                $_SESSION["actual_data"][$device][$basic_tok] = "off";
-                                $send .= "00";
+                            if ($_SESSION["actual_data"][$device][$basic_tok][0] == "on") {
+                                $_SESSION["actual_data"][$device][$basic_tok][0] = "off";
+                                $orgsend .= "00";
                             }
                             else{
-                                $_SESSION["actual_data"][$device][$basic_tok] = "on" ;
-                                $send .= "01";
+                                $_SESSION["actual_data"][$device][$basic_tok][0] = "on" ;
+                                $orgsend .= "01";
                             }
-                            send_to_device($send);
+                            send_to_device($orgsend);
                         } else {
-                            var_dump($_SESSION["corrected_POST"][$basic_tok]);
-                            var_dump($_SESSION["actual_data"][$device][$basic_tok]);
-                            if ($_SESSION["actual_data"][$device][$basic_tok] != $_SESSION["corrected_POST"][$basic_tok]) {
-                                while ($i < count($_SESSION["corrected_POST"][$basic_tok]) - 1) {
-                                    $element = $_SESSION["corrected_POST"][$basic_tok][$i];
-                                    if ($_SESSION["actual_data"][$device][$basic_tok][$element] == "0") {
+                            # multiple off/on switch
+                            # corrected_pOST is array with switches set to "1"
+                            $old_data = $_SESSION["actual_data"][$device][$basic_tok];
+                            $cc = count($_SESSION["corrected_POST"][$basic_tok]);
+                            $ca = count( $_SESSION["actual_data"][$device][$basic_tok]);
+                            if ($cc == $ca){
+                                $_SESSION["actual_data"][$device][$basic_tok] =$_SESSION["corrected_POST"][$basic_tok];
+                            }
+                            else {
+                                $i = 0;
+                                # set all to "0"
+                                $_SESSION["actual_data"][$device][$basic_tok] = [];
+                                while ($i < $ca) {
+                                    $_SESSION["actual_data"][$device][$basic_tok][] = "0";
+                                    $i += 1;
+                                }
+                                # set switches as per corrected_POST
+                                if ($_SESSION["corrected_POST"][$basic_tok][0] != 0) {
+                                    # all_off not selected
+                                    $i = 0;
+                                    while ($i < $cc) {
+                                        $element = $_SESSION["corrected_POST"][$basic_tok][$i];
                                         $_SESSION["actual_data"][$device][$basic_tok][$element] = "1";
-                                    } else {
-                                        $_SESSION["actual_data"][$device][$basic_tok][$element] = "0";
+                                        $i += 1;
                                     }
-                                    $i += 1;
-                                    $send .= dec_hex($element, 2);
-                                    $send .= dec_hex($_SESSION["actual_data"][$device][$basic_tok][$element], 2);
-                                    if ($to_send == 1) {
+                                }
+                                else {
+                                    $_SESSION["actual_data"][$device][$basic_tok][0] = "1";
+                                }
+                                $i = 1;
+                                if ($to_send){
+                                    # change of stack!
+                                    # send data for all switches, because old status is not known
+                                    # actual_data is the required
+                                    while ($i < $ca) {
+                                        $send = $orgsend . dec_hex($i, 2);
+                                        $send .= dec_hex($_SESSION["actual_data"][$device][$basic_tok][$i], 2);
                                         send_to_device($send);
+                                        $i += 1;
                                     }
-                                    $i += 1;
+                                }
+                                else {
+                                    while ($i < $ca) {
+                                        if ($old_data[$i] != $_SESSION["actual_data"][$device][$basic_tok][$i]) {
+                                            $send = $orgsend . dec_hex($i, 2);
+                                            $send .= dec_hex($_SESSION["actual_data"][$device][$basic_tok][$i], 2);
+                                            send_to_device($send);
+                                        }
+                                        $i += 1;
+                                    }
                                 }
                             }
                         }
@@ -103,36 +138,29 @@ function send_and_update(){
                     list($stack_value, $to_send) = handle_stacks($basic_tok);
                     $send = $send . $stack_value;
                     $_SESSION["read_data"] = 1;
-                    if ($to_send == 1){
+                    # send always
+                    foreach ($_SESSION["corrected_POST"][$basic_tok] as $switch){
+                        $send.= dec_hex($switch,2);
                         send_to_device($send);
                     }
                     break;
                 case "ou":
                     list($stack_value, $to_send) = handle_stacks($basic_tok);
                     $send = $send . $stack_value;
-                    if (array_key_exists($basic_tok, $_SESSION["corrected_POST"])) {
-                        if ($_SESSION["actual_data"][$device][$basic_tok][0] != $_SESSION["corrected_POST"][$basic_tok][0]) {
-                            $_SESSION["actual_data"][$device][$basic_tok][0] = $_SESSION["corrected_POST"][$basic_tok][0];
-                            $to_send = 1;
-                        }
-                    }
-                    if ($to_send == 1){
+                    if (count($_SESSION["all_announce"][$device][$basic_tok]) == 4){
                         send_to_device($send);
+                    }
+                    else {
+                        if ($_SESSION["corrected_POST"][$basic_tok][0] != "0") {
+                            send_to_device($send . $_SESSION["corrected_POST"][$basic_tok][0]);
+                        }
                     }
                     break;
                 case "op":
-                    $le = calculate_len(explode(",", $_SESSION["all_announce"][$device][$basic_tok][3][0]));
-                    $i = 1;
-                    $s_value = 0;
-                    while ($i < $_SESSION["des"][$basic_tok]) {
-                        if ($value < $_SESSION["des"][$basic_tok][$i + 3]) {
-                            $s_value += $_SESSION["des"][$basic_tok][$i + 2];
-                        } else {
-                            $s_value += $_SESSION["des"][$basic_tok][$i + 3] - $_SESSION["des"][$basic_tok][$i + 2];
-                        }
-                        $i += 4;
-                    }
-                    send_to_device($send . dec_hex($s_value, $le));
+                    # corrected_POST are data to be displayed
+                    $_SESSION["actual_data"][$device][$key] = $_SESSION["corrected_POST"];
+                    $send .= translate_actual_to_hex_for_p($device, $key);
+                    send_to_device($send);
                     break;
                 case "ap":
                     if ($to_send == 1){

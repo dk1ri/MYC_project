@@ -1,6 +1,7 @@
 <html lang = "de">
 <!-- werbserver for MYC system
-     Version 1.1 20221105 -->
+     myc.php
+     Version 1.1 20221115 -->
     <head>
         <title>MYC Apache Server</title>
         <meta name="author" content="DK1RI">
@@ -95,4 +96,4 @@
             </p><p><input type="submit" /></p>
         </form>
     </body>
-</html> 
+</html>
