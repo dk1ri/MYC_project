@@ -1,0 +1,13 @@
+0;m;DK1RI;test_a;V01.0;1;145;1;13;1-1
+1;oa;b;6,CHAPTER,memory
+2;aa;b;10;6,CHAPTER,memory
+3;oa,3_oa;a;6,CHAPTER,memory
+4;aa,4_aa;a;6,CHAPTER,memory
+5;oa,5_oa;c;i;w
+6;aa,6_aa;c,unsigned short;i,int;w,word,{1_0to100}
+7;oa,7_oa;e;L
+8;aa,8_aa;e;L
+9;oa,9_oa;10,9_name,{ALPHA0}
+10;aa,10_aa;10
+11;oa,11_oa;b,byte;10;3;3
+12;aa,12_aa;b;10;3
