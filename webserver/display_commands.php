@@ -1,47 +1,126 @@
 <?php
 # display_commands.php
-# DK1RI 20221114
-function display_commands($device, $chapter){
-    $announcelines = $_SESSION["all_announce"][$device];
-    foreach ($announcelines as $token => $value) {
-        if (!in_array($token,$_SESSION["chapter_token"][$device][$chapter])){
-            continue;
-        }
-        # token for actual chapter only
-        $basic_token = basic_tok($token);
-        if ($basic_token == $token) {
-            echo "<div class = flex-container><div>";
-            $command_type = explode(',', $value[0]);
-            if ($command_type[0] == "at"){
-                $command_type[0] = "as";
-            }
-            switch ($command_type[0]) {
+# DK1RI 20230107
+function display_commands(){
+    $device = $_SESSION["device"];
+    create_basic_command($_SESSION["original_announce"][$device][0]);
+    create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);
+    $tok_list = $_SESSION["chapter_token"][$device][$_SESSION["chapter"]];
+    $announcelines = $_SESSION["announce_all"][$device];
+    $actual = $_SESSION["actual_data"][$device];
+    $already_done = "";
+    foreach ($announcelines as $tok => $value) {
+        $basic_tok = basic_tok($tok);
+        if (array_key_exists($basic_tok, $tok_list)){
+            $announce = $_SESSION["announce_all"][$device][$tok];
+            switch ($announce[0]) {
                 case "os":
-                    create_os($token, $value, $_SESSION["actual_data"][$device][$token][0]);
+                    if ($already_done != $basic_tok) {
+                        echo "<div>";
+                        create_os($basic_tok);
+                        echo "</div>";
+                        $already_done = $basic_tok;
+                    }
                     break;
+                case "at":
                 case "as":
-                    create_as($token, $value, $_SESSION["actual_data"][$device][$token][0]);
+                    if ($already_done != $basic_tok) {
+                        echo "<div>";
+                        create_as($basic_tok, $actual[$tok]);
+                        echo "</div>";
+                        $already_done = $basic_tok;
+                    }
                     break;
                 case "or":
-                    create_or($token, $value, $_SESSION["actual_data"][$device][$token]);
+                    if ($already_done != $basic_tok) {
+                        echo "<div>";
+                        create_or($basic_tok);
+                        echo "</div>";
+                        $already_done = $basic_tok;
+                    }
                     break;
                 case "ar":
-                    create_ar($token, $value, $_SESSION["actual_data"][$device][$token]);
+                    if ($already_done != $basic_tok) {
+                        echo "<div>";
+                        create_ar($basic_tok);
+                        echo "</div>";
+                        $already_done = $basic_tok;
+                    }
                     break;
                 case "ou":
-                    create_ou($token, $value);
+                    if ($already_done != $basic_tok) {
+                        echo "<div>";
+                        create_ou($basic_tok);
+                        echo "</div>";
+                        $already_done = $basic_tok;
+                    }
                     break;
                 case "op":
-                    create_op_oo($token);
+                    # "oo is handled here as well
+                    if ($already_done != $basic_tok) {
+                        echo "<div>";
+                        create_op_oo($basic_tok);
+                        echo "</div>";
+                        $already_done = $basic_tok;
+                    }
                     break;
                 case "ap":
-                    create_ap($token, $value, $_SESSION["actual_data"][$device][$token]);
+                    if ($already_done != $basic_tok) {
+                        echo "<div>";
+                        create_ap($basic_tok);
+                        echo "</div>";
+                        $already_done = $basic_tok;
+                    }
                     break;
                 case "om":
-                    create_om($token, $value, $_SESSION["actual_data"][$device][$token]);
+                    if ($already_done != basic_tok($tok)) {
+                        echo "<div>";
+                        create_om(basic_tok($tok));
+                        echo "</div>";
+                        $already_done = basic_tok($tok);
+                    }
+                    break;
+                case "on":
+                    if ($already_done != basic_tok($tok)) {
+                        echo "<div>";
+                        create_on(basic_tok($tok));
+                        echo "</div>";
+                        $already_done = basic_tok($tok);
+                    }
+                    break;
+                case "am":
+                    if ($already_done != basic_tok($tok)) {
+                        echo "<div>";
+                        create_am(basic_tok($tok));
+                        echo "</div>";
+                        $already_done = basic_tok($tok);
+                    }
+                    break;
+                case "an":
+                    if ($already_done != basic_tok($tok)) {
+                        echo "<div>";
+                        create_an(basic_tok($tok));
+                        echo "</div>";
+                        $already_done = basic_tok($tok);
+                    }
+                    break;
+                case "oa":
+                    if ($already_done != basic_tok($tok)) {
+                        echo "<div>";
+                        create_oa(basic_tok($tok));
+                        echo "</div>";
+                        $already_done = basic_tok($tok);
+                    }
+                    break;
+                case "aa":
+                    if ($already_done != basic_tok($tok)) {
+                        echo "<div>";
+                        create_aa(basic_tok($tok));
+                        echo "</div>";
+                        $already_done = basic_tok($tok);
+                    }
                     break;
             }
-            echo "</div></div>";
         }
     }
 }

@@ -1,110 +1,136 @@
 <?php
 # action.php
-# DK1RI 20221118
-function dec_hex($key, $len){
-    $val = dechex($key);
-    $i = strlen($val);
-    if ($i < $len){
-        $val = "0".$val;
-        $i += 1;
-    }
-    return $val;
-}
-
-
-function calculate_len($number){
-    # length of binary number
-    $len = 2;
-    if ($number > 16777215){
-        $len = 8;
-    } elseif ($number > 65535) {
-        $len = 6;
-    } elseif ($number > 255){
-        $len = 4;
-    }
-    return $len;
-}
-
+# DK1RI 20230112
 function basic_tok($o_tok){
-    # return basic_token for _, a, p and o token
-    if (strstr($o_tok, "_")) {
-        $tok = explode("_", $o_tok)[0];
-    } elseif (strstr($o_tok, "a")) {
+    # return basic_token
+    if (strstr($o_tok, "a")) {
+        # for answer commands
         $tok = explode("a", $o_tok)[0];
-    } elseif (strstr($o_tok, "p")) {
-        $tok = explode("p", $o_tok)[0];
-    } elseif (strstr($o_tok, "q")) {
-        $tok = explode("q", $o_tok)[0];
-    }  elseif (strstr($o_tok, "u")) {
-        $tok = explode("u", $o_tok)[0];
+    } elseif (strstr($o_tok, "b")) {
+        # for stack
+        $tok = explode("b", $o_tok)[0];
+    } elseif (strstr($o_tok, "c")) {
+        # for ADD
+        $tok = explode("c", $o_tok)[0];
+    } elseif (strstr($o_tok, "x")) {
+        # for data
+        $tok = explode("x", $o_tok)[0];
     } else {
         $tok = $o_tok;
     }
     return $tok;
 }
 
-function expand_comma($num){
-    # eliminate comma (one position after comma ?
-    $conti = 1;
-    $i = 0;
-    while ($conti != 1){
-        $num_f = floor($num);
-        if ($num == $num_f) {
-            $conti = 0;
-        } else{
-            $num *= 10;
-        }
+function dec_hex($key, $len){
+    $val = dechex((int)$key);
+    $i = strlen($val);
+    while ($i < $len){
+        $val = "0".$val;
         $i += 1;
     }
-    return $num;
+    return $val;
 }
 
-function create_session_data_file_val($device, $name, $data){
-    $file = fopen("./".$device."/session_".$name, "w");
-        fwrite( $file,$data."\n");
-    fclose($file);
-}
-
-function create_session_data_file($device, $name, $data){
-    $file = fopen("./".$device."/session_".$name, "w");
-    foreach ($data as $key=> $value){
-        fwrite( $file,$key." ".$value."\n");
+function convert($num){
+    if (strstr($num, ".")){
+        return floatval($num);
     }
-    fclose($file);
+    else {
+        return intval($num);
+    }
 }
 
-function create_session_data_file_array($device, $name, $data){
-    # print($name);
-    $file = fopen("./".$device."/session_".$name, "w");
-    foreach ($data as $key=> $value){
-        $line = $key;
-        foreach ($value as $key_ => $val){
-            $line = $line." ".$key_.": ".$val;
+function length_of_type($data){
+    # no of bytes for transmit
+    if (is_numeric($data)){
+        $number = (int)$data;
+        # length of binary number
+        $len = 2;
+        if ($number > 16777215){
+            $len = 8;
+        } elseif ($number > 65535) {
+            $len = 6;
+        } elseif ($number > 255){
+            $len = 4;
         }
-        fwrite( $file,$line."\n");
+        return $len;
     }
-    fclose($file);
-}
-function create_session_data_file_array_array($device, $name, $data){
-    # print($name);
-    $file = fopen("./".$device."/session_".$name, "w");
-    foreach ($data as $key=> $value){
-        $line = $key."::subject: ";
-        foreach ($value as $key_ => $valu){
-            $line .= $key_."::element: ";
-            foreach ($valu as $key__ => $val){
-                $line .= $key__ . ":subelement: ";
-                foreach ($val as $key___ => $va) {
-                    $line .= $key___ . ":data ";
-                    foreach ($va as $key____ => $d) {
-                        $line .= $key____ . ": " . $d . " ";
-                    }
-                }
-            }
+    else {
+        switch ($data) {
+            case "a":
+            case "b":
+                return 2;
+            case "i":
+            case "w":
+                return 4;
+            case "e":
+            case "L":
+            case "s":
+                return 8;
+            case "d":
+            case "t":
+                return 16;
         }
-        fwrite( $file,$line."\n");
     }
-    fclose($file);
+    # dummy
+    return $data;
+}
+
+function find_allowed($type){
+    switch ($type){
+        case "a":
+            return "0|1";
+        case "b":
+            return "0 to 255";
+        case "c":
+            return "-128 to 127";
+        case "i":
+            return "-32768 to 32767";
+        case "w":
+            return "0 to 65535";
+        case "e":
+            return "-2147483648 to 2147483647";
+        case "L":
+            return "0 to 4294967295";
+    }
+}
+
+function find_name($type){
+    switch ($type){
+        case "a":
+            return "bit";
+        case "b":
+            return "byte";
+        case "c":
+            return "signedshort";
+        case "i":
+            return "signed word";
+        case "w":
+            return "word";
+        case "e":
+            return "signed long";
+        case "L":
+            return "long";
+        case is_numeric($type):
+            return "alpha";
+    }
+    # dummy
+    return $type;
+}
+
+function adapt_len($token, $element, $actual){
+    $device =$_SESSION["device"];
+    $result = "";
+    $length = $_SESSION["property_len"][$device][basic_tok($token)][2];
+    $i = strlen(strval($actual));
+    if ($length > 20){
+        $length = 20;
+    }
+    while ($i < $length){
+        $result .= " ";
+        $i += 1;
+    }
+    return $result.$actual;
 }
 ?>
 
@@ -127,6 +153,54 @@ function create_session_data_file_array_array($device, $name, $data){
                 padding: 10px;
                 font-size: 15px;
             }
+            .green {
+                color : green;
+            }
+            .red{
+                color : red;
+            }
+            .os{
+                color: #ffff00
+            }
+            .as{
+                color: #ffff80
+            }
+            .or{
+                color: #ff8000
+            }
+            .ar{
+                color: #ff8080
+            }
+            .at{
+                color: #ff80d0
+            }
+            .ou{
+                color: #ffff50
+            }
+            .op{
+                color : #ffff00;
+            }
+            .ap {
+                color: #ffff80;
+            }
+            .om{
+                color : #0000ff;
+            }
+            .am{
+                color : #0080ff;
+            }
+            .on{
+                color : #00ffff;
+            }
+            .an{
+                color : #00ff80;
+            }
+            .oa{
+                color : #ff00ff;
+            }
+            .aa{
+                color : #ff0080;
+            }
         </style>
     </head>
     <body>
@@ -142,12 +216,19 @@ function create_session_data_file_array_array($device, $name, $data){
         # create / read new device for $_SESSION, if not existing
         # not actually used devices are not deleted
         include  "translate.php";
-        if (!array_key_exists($device, $_SESSION["all_announce"])) {
+        include "send_and_update.php";
+        include "display_commands.php";
+        include "create_commands.php";
+        include "select_any.php";
+        include "for_tests.php";
+        include "serial.php";
+        include "split_to_display_objects.php";
+        if (!array_key_exists($device, $_SESSION["announce_all"])) {
             include "read_new_device.php";
-           read_new_device($device);
+            read_new_device($device);
+            for_tests($device);
         }
         correct_POST($device);
-        include "send_and_update.php";
         send_and_update();
         $actual_chapter = $_SESSION["chapter"];
         if ($_SESSION["read_data"] == 1){
@@ -155,9 +236,6 @@ function create_session_data_file_array_array($device, $name, $data){
             $_SESSION["read_data"] = 0;
         }
         # $_SESSION ready, create new page
-        include "display_commands.php";
-        include "create_commands.php";
-        include "select_any.php";
         ?>
         <div class = "flex-container"><div>
         <form action="action.php" method="post">
@@ -172,7 +250,7 @@ function create_session_data_file_array_array($device, $name, $data){
         echo ("</div><div>");
         select_any($_SESSION["chapter_names"][$device], $actual_chapter, "chapter");
         echo "</div>";
-        display_commands($_SESSION["device"], $actual_chapter);
+        display_commands();
         echo "</form>";
         echo"</div>";
         ?>
