@@ -1,9 +1,9 @@
-Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/Definitions.pdf
+Hint for the text-format-version: to read this version as PDF please load https://www.dk1ri.de/myc/Definitions.pdf
 
 MYC Definitions, Abbreviations and Formats
 
 Author: DK1RI
-Version V01.03.03 20201028
+Version V01.03.03 20230131
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -52,16 +52,19 @@ RU			rules device, device-type r
 			 All transmitted numbers are “0” based. 
 			In  on / an, of / af and ob and ab command a “0” of number of elements mean no element.
 			- For command-token the same rule apply; but the 16 token for reserved commands must be taken into account. For the full list
- of    			CR there are additional 16 token for communication with SK reserved.
+     			of the CR there are additional 16 token for communication with SK reserved.
 			– The length of the transmitted number of numeric memory-contents is defined by <ty> 
 <s>			string, all characters. The string is preceded by the length as unsigned number. The length is of type <n> and can 1, 2, 3..byte; 
 			depend on maximum length of thr string given in the announcement. This type exists in commands, answers and infos.
 <sm>			string (all characters except  , ;{}\) Used in announcements; forbidden characters must be escaped (preceded) by \
 <l>			maximum length of a string <s> in announcements
-<ty>			 type of memory cells in announcements
-			0 byte: z: no data transfer / use internal data; 1 byte: a : bit, b : byte; 2 bytes: i : signed integer, w : unsigned word; 
-			4 bytes: e: signed long, L : unsigned long, s : single;
-			8 bytes: d : double, t : (64 bit UNIX) time-date; variable number of bytes: c : command-token. 
+<ty>			 type of memory cells in announcements, signed use 2-complement representation
+			0 byte: z: no data transfer / use internal data;
+			1 byte: a: bit 0|1, b: byte, 0to255; c: signed short, -128to127
+			2 bytes: i: signed integer,-32768to327687;  w: unsigned integer, 0to65535
+			4 bytes: e: signed long, -2147483648to2147483647; L: unsigned long, 0to4294967295; s: single;
+			8 bytes: d : double, t : (64 bit UNIX) time-date
+			variable number of bytes: c : command-token. 
  			<l> : maximum length of a string.
 			A bit is transferred as a byte with the value of 0x00 or 0x01.
 			The 0 byte type z is used when internal data are used.
@@ -76,7 +79,7 @@ separators		For the announcement parser (CR, SK or LD eg):  , ; (comma, semicolo
 0xxxff			means highest number in 1, 2, 3..Byte number (hex format) (not used in announcements)
 [ ]			optional properties
 
-All numbers in announcements are numeric; Binary, octal, hex … format is not supported.
+All numbers in announcements are numeric; hex format 0xnn is allowed but not yet supported by the CR.
 
 Non valid data
 
