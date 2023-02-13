@@ -1,0 +1,143 @@
+Hint for the txt-format-version; to read this version as PDF please load https://www.dk1ri.de/myc/commands.pdf
+
+Webserver for a MYC System
+
+Author: DK1RI
+Version V01.01.03 20230213
+This paper is published in  https://github.com/dk1ri  as well
+
+Introduction
+
+This paper describes a special SK – a webserver. It is a user interface for a MYC system
+A browser should have access to this webserver and is the real SK (skin).
+For more details of the MYC system please check the reference.
+The program is not finished!
+
+Definitions and formats
+
+see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+
+Status
+
+Apache webserver (XAMPP) on windows set up
+Basics GUI and sending of commands ok
+USB interface to devices working (but may be changed)
+
+
+Some limitations
+
+The commandrouter has no interface to devices yet and a solution without commandrouter should work as a first step.
+So the webserver has some limitations:
+one device at the same time only.
+It is necessary to start three programs: browser, web-server and a python program for the device interface.
+For read commads there is a delay (dead) time of 3 s after a command.
+Most often used commands should work, but some special conditions are missing.
+Windows only is tested (Win10) with firefox.
+As long as the web-server is not finished, there may be problems using the CR.
+
+Starting / preparations
+
+The following programs must be installed:
+xampp (standard installation, nothing special [19])
+a browser (firefox is used)
+python (standard installation, nothing special [20])
+pyserial is necessary:
+open Powershell
+cd  C:\Users\your_name\AppData\Local\Programs\Python\Python_version\Scripts
+(you must replace yourname and version with your data)
+pip.exe install pyserial
+
+move the original \xampp\htdocs to another directory, (if you need this later usage).
+download a new htdocs from [17], unzip and copy to xampp
+create a new  \xampp\htdocs\devices
+download a device from [18], unzip and copy the content to \xampp\htdocs\devices
+For most existing devices these data will be available soon.
+
+Actual usage of the SK
+
+call the xampp control Panel
+start modul Apache (at least)
+it may be necessary to enable firewall for Apache web server
+in a powershell:
+cd \xampp\htdocs
+C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe USB_serial.py
+
+In a browser (on the same computer as the webserver) call
+localhost/myc.php
+
+Some tips for usage, which may help:
+- to unselect a switch of an or command “control” + mouse-click!
+
+Other devices
+For devices not found in [18] you can create your own
+create the directory \xampp\devices\your_new_device
+copy your announcefile to this directory
+open powershell
+cd \xampp\htdocs
+C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe helper_202210.py
+
+Some additional explanations
+
+I did some basic HTML programming earlier, and this is my first PHP program; so some enhancement have to be done.
+
+My intention was:
+- the web-server should work without the need of internet access (standalone).
+- the programming should be as simple as possible and require as less resources as possible to work on simple equipment as an old raspberry.
+- the web-server do not use a database program, but calculate many data at the first start.
+ - the usage should be simple (there is a lot to do)
+- the web-pages will be completely dynamic, so that all kinds of announce-lists can be used.
+
+Later additions:
+- The user calls his own individual web site and get his personal web layout.
+- Functions may disappear when a device disappears.
+- The labels of those functions may disappear or be grayed out.
+- The user should find a knob to switch to an edit mode.
+- In this mode the web page behaves like a web editor. The user can modify those functions defined by the full announcement-list.
+- So the user can define his own colors and view of the functions in the edit mode and use it later on.
+- The result is stored in a user individual config file or data base.
+- For simple usage preconfigured files (skins) can be used.
+
+External programs
+
+Because I found no simple way for the web-server to communicate with USB device, a additional pyton script is necessary.. The web-server create file file with the data to send, and wait for an answer (for answer commands).
+The script USB_serial read the file, send data to the device, wait for answer (for answer commands) and put it to a file.
+The web-server read it, and update the values and display the page
+
+My Test environment
+
+I work with one windows laptop.
+For development of the pages I use PhpStorm, and I installed a web-server (XAMPP)..
+
+Copyright
+
+Dieses Dokument darf unverändert kopiert werden.
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence,V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Veforwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
+This document can be copied without changes.
+The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+
+Reference
+
+[1]	https://dk1ri.de/myc/MYC.pdf  (german)
+[2]	https://dk1ri.de/myc/MYC.en.pdf
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf
+[17]	https://dk1ri.de/myc/htdocs.zip 
+[18]	https://dk1ri.de/ew_dat.htm 
+[19]	https://www.apachefriends.org/de/download_success.html 
+[20]	https://www.python.org/downloads/ 
+
