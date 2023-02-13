@@ -1,8 +1,8 @@
 <?php
 function read_device_list(){
-    $handle = opendir(".");
+    $handle = opendir("./devices");
     while (($file = readdir($handle)) !== false){
-        if (is_dir ($file) and $file != "." and $file != ".." and $file != ".idea" ) {
+        if ($file != "." and $file != ".." ) {
             $_SESSION["device_list"][] = $file;
         }
     }

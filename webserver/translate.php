@@ -6,51 +6,59 @@ function correct_POST($device){
     # now data beyond the limits can be inputted for op oo commands with > 100 distinct values
     # before using for send and actual_data, they will be corrected to nearest valid data
     # all $_SESSION["corrected_POST"] values are strings
-    $_SESSION["corrected_POST"] = [];
+    $_SESSION["corrected_POST"][$device] = [];
     foreach ($_POST as $token => $value) {
         if (!array_key_exists($token, $_SESSION["announce_all"][$device])) {
             #interface device ...
             if ($token == "device") {
                 if ($value != $_SESSION["device"]) {
                     $_SESSION["device"] = $value;
+                    $_POST = [];
                 }
-                # other than device are not used now
             }
+            if ($token == "chapter") {
+                if ($value != $_SESSION["chapter"]) {
+                    $_SESSION["chapter"] = $value;
+                }
+            }
+            # other than device are not used now
         }
-       else{
+    }
+    foreach ($_POST as $token => $value) {
+        if (array_key_exists($token, $_SESSION["announce_all"][$device])) {
             $basic_tok = basic_tok($token);
             $ct = explode(",", $_SESSION["announce_all"][$device][$token][0])[0];
             switch ($ct) {
                 case "ap":
                 case "op":
                 case "oo":
-                    $_SESSION["corrected_POST"][$token] = correct_memory_range($token, $value);
+                    $_SESSION["corrected_POST"][$device][$token] = correct_op_oo_range($token, $value);
                     break;
                 case "om":
                 case "am":
                 case "on";
                 case "an":
                     if (strstr($token, "b")) {
-                        $_SESSION["corrected_POST"][$token] = correct_memory_range($token, $value);
+                        $_SESSION["corrected_POST"][$device][$token] = correct_memory_range($token, $value);
                     }
                     elseif (strstr($token, "x")){
                         # data
                         $type = $_SESSION["des_type"][$device][$token][0];
-                        $_SESSION["corrected_POST"][$token] = correct_data($value, $type);
+                        $_SESSION["corrected_POST"][$device][$token] = correct_data($value, $type);
                     }
                     else {
-                        $_SESSION["corrected_POST"][$token] = $value;
+                        $_SESSION["corrected_POST"][$device][$token] = $value;
                     }
                     break;
                 case "oa";
                     if (strstr($token, "b")){
                         # position: no correction
-                        $_SESSION["corrected_POST"][$token] = $value;
+                        $_SESSION["corrected_POST"][$device][$token] = $value;
                     }
                     else{
                         # $_POST has data for a specific element; with number of either corrected_POST or actual_data
-                        if (array_key_exists($basic_tok."b0", $_SESSION["corrected_POST"])) {
-                            $tok_sub_number = $_SESSION["corrected_POST"][$basic_tok."b0"];
+                        if (array_key_exists($basic_tok."b0", $_SESSION["corrected_POST"][$device])) {
+                            $tok_sub_number = $_SESSION["corrected_POST"][$device][$basic_tok."b0"];
                         }
                         else{
                             if (array_key_exists($basic_tok."b0", $_SESSION["actual_data"][$device])) {
@@ -62,23 +70,33 @@ function correct_POST($device){
                             }
                         }
                         $type = $_SESSION["des_type"][$device][$token][0];
-                        $_SESSION["corrected_POST"][$token] = correct_data($value, $type);
+                        $_SESSION["corrected_POST"][$device][$token] = correct_data($value, $type);
                     }
                     break;
                 case "aa":
                     # no correction
-                    $_SESSION["corrected_POST"][$token] = $value;
+                    $_SESSION["corrected_POST"][$device][$token] = $value;
                     break;
                 default:
                     # switches
-                    $_SESSION["corrected_POST"][$token] = $value;
+                    $_SESSION["corrected_POST"][$device][$token] = $value;
             }
         }
     }
 }
 
+function correct_op_oo_range($token, $value){
+    # for op/oo commands
+    $device = $_SESSION["device"];
+    if (strstr($token, "x") and explode(",",$_SESSION["announce_all"][$device][$token][1])[0] > 256){
+        # only these may have not valid data
+        # not ready
+    }
+    return $value;
+}
+
 function correct_memory_range($token, $value){
-    # for memory-positions
+    # for memory-positions (and some op/oo commands
     # has discrete values always !
     #  needed only, if manual entry is provided (not now)
     $device = $_SESSION["device"];
@@ -180,51 +198,30 @@ function translate_dec_to_hex($type, $data, $length){
     # $type is a MYC datatype
     # $type == n is number with length
     # $type == n is unsigned number with $length
+    # $data is already corrected
     switch ($type) {
         case "n":
-            return fillup(dechex((int)$data), $length);
+            return dec_hex((int)$data, $length);
         case "a":
         case "b":
             # 0 or 1
             # byte
-            return fillup(dechex((int)$data),2);
+            return dec_hex((int)$data,2);
         case "c":
             # 1 byte signed short
-            if (strstr($data, "-")) {
-                $data = str_replace("-", "", $data);
-                $data = dechex((~(int)$data) +1);
-            }
-            else{
-                $data = dechex((int)$data);
-            }
-  #         print ($data);
-            return fillup($data, 2) ;
+            return dec_hex($data + 128, 2) ;
         case "i":
             # 2 byte signed integer
-            if (strstr($data, "-")) {
-                $data = str_replace("-", "", $data);
-                $data = dechex((~(int)$data) + 1);
-            }
-            else{
-                $data = dechex((int)$data);
-            }
-            return fillup($data, 4);
+            return dec_hex($data + 32768, 4);
         case "w":
             # 2 byte unsigned word
-            return fillup(dechex((int)$data), 4);
+            return dec_hex((int)$data, 4);
         case "e":
             # 4 byte signed long
-            if (strstr($data, "-")) {
-                $data = str_replace("-", "", $data);
-                $data = dechex(~(int)$data);
-            }
-            else{
-                $data = dechex((int)$data);
-            }
-            return fillup($data, 8) ;
+            return dec_hex($data + 2147483647, 4);
         case "L":
             # 4 byte unsigned long
-            return fillup(dechex((int)$data), 8);
+            return dec_hex((int)$data, 8);
         case (is_numeric($type)):
             # string
             $length_of_len = length_of_type($length);
@@ -251,47 +248,6 @@ function fillup($data, $length){
         $data = $dat . $data;
     }
     return $data;
-}
-
-function translate_hex_to_actual($device, $token, $data){
-    # input: one line decimal value (string) from device; must be converted to actual data for GUI
-    # in $_SESSION["actual_data"]..
-    $ct = explode(",",$_SESSION["announce_all"][$device][$token][1]);
-    $real_value = "";
-    if ($ct == "op" or $ct == "ap") {
-        $des = $_SESSION["des"][$device][$token];
-        # des: name factor min max ...
-        if ($des[1] == 0 and count($des) == 4) {
-            # one range only and no translation,
-            $real_value = $data;
-        } else {
-            $real_value = 0;
-            $i = 1;
-            $tx_data_range = 0;
-            while ($i < count($des)) {
-                # actual range of transmitted values
-                $tx_data_range += ($des[$i + 2] - $des[$i + 1]) / $des[$i];
-                if ($data * $des[$i] + $des[$i + 1] < $des[$i + 2]) {
-                    # found!
-                    $real_value = $data * $des[$i] + $des[$i + 1];
-                    break;
-                } else {
-                    $data -= $tx_data_range;
-                }
-                $i += 3;
-            }
-        }
-        return $real_value;
-    }
-    elseif ($ct == "oo"){
-        foreach ($data as $item) {
-            $real_value[] = hexdec($item);
-        }
-        return $real_value;
-    }
-    else{
-        return $data;
-    }
 }
 
 function translate_actual_to_hex_for_p($token){
@@ -325,208 +281,135 @@ function translate_actual_to_hex_for_p($token){
     }
 }
 
-function hex_to_dec_for_type($type, $data){
-    # $data contains one or more 2 byte hex values
-    # $type is a MYC datatype
-    $temp =[];
-    switch ($type) {
-        case "a":
-            # 0 or 1
-            return hexdec($data);
+function translate_hex_to_actual($device, $token, $data){
+    # data for memory type
+    # input: array of ascii value (string) from device; must be converted to actual data for GUI
+    # in $_SESSION["actual_data"]..
+    $type = $_SESSION["des_type"][$device][$token][0];
+    $dat = "";
+    switch ($type){
+        case "a";
         case "b":
-            # byte
-            return hexdec($data);
-        case "i":
-            # 2 complement
-            $i =0;
-            # 4 hex bytes
-            while (($i + 4) < count($data)) {
-                $dat = substr($data, $i, 4);
-                if (hexdec(($dat) < (2 ** (4 - 1)))) {
-                    $temp[] = hexdec(($dat));
-                } else {
-                    $temp[]=  ("-" . (2 ** 4 - hexdec($dat)));
-                }
-                $temp[]=" ";
-                $i += 4;
-            }
-            return $temp;
+            $dat = chr($data);
+            break;
+        case "c":
+            $dat = (int)chr($data) - 128;
+            break;
         case "w":
-            # 2 complement
-            $i =0;
-            # 4 hex bytes
-            while (($i + 4) < count($data)) {
-                $dat = substr($data, $i, 4);
-                $temp[] = hexdec(($dat));
-                $temp[]=" ";
-                $i += 4;
-            }
-            return $temp;
+            $dat = (int)chr($data[0]) * 256 + (int)chr($data[1]);
+            break;
+        case "i":
+            $dat = (int)chr($data[0]) * 256 + (int)chr($data[1]) - 32768;
+            break;
         case "e":
-            # 2 complement
-            $i =0;
-            # 8 hex bytes
-            while (($i + 8) < count($data)) {
-                $dat = substr($data, $i, 8);
-                if (hexdec(($dat) < (2 ** (8 - 1)))) {
-                    $temp[] = hexdec(($dat));
-                } else {
-                    $temp[]=  ("-" . (2 ** 8 - hexdec($dat)));
-                }
-                $temp[]=" ";
-                $i += 8;
-            }
-            return $temp;
+            $dat = (int)chr($data[0]) * 16777216 + (int)chr($data[0]) * 65536 + (int)chr($data[0]) * 256 + (int)chr($data[1]) - 2147483647;
+            break;
         case "L":
-            # 2 complement
-            $i =0;
-            # 8 hex bytes
-            while (($i + 8) < count($data)) {
-                $dat = substr($data, $i, 8);
-                $temp[] = hexdec(($dat));
-                $temp[]=" ";
-                $i += 8;
-            }
-            return $temp;
+            $dat = (int)chr($data[0]) * 16777216 + (int)chr($data[0]) * 65536 + (int)chr($data[0]) * 256 + (int)chr($data[1]);
+            break;
         case "s":
-            # double
-            $i =0;
-            # 8 hex bytes
-            while ($i + 8 < count($data)) {
-                $dat = substr($data, $i, 8);
-                $hex = sscanf($dat, "%02x%02x%02x%02x%02x%02x%02x%02x");
-                $hex = array_reverse($hex);
-                $bin = implode('', array_map('chr', $hex));
-                $temp = unpack("dnum", $bin);
-                $i += 8;
+            $dat = $data[0] . "," . strval((int)chr($data[0]) * 65536 + (int)chr($data[0]) * 256 + (int)chr($data[1]));
+            break;
+        case (is_numeric($type)):
+            $i = 1;
+            while ($i < count($data)){
+                $dat .= chr($data[$i]);
+                $i += 1;
             }
-            return $temp['num'];
-        case "d":
-            # double
-            $i =0;
-            # 8 hex bytes
-            while ($i + 16 < count($data)) {
-                $dat = substr($data, $i, 16);
-                $hex = sscanf($dat, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x");
-                $hex = array_reverse($hex);
-                $bin = implode('', array_map('chr', $hex));
-                $temp = unpack("dnum", $bin);
-                $i += 16;
-            }
-            return $temp['num'];
-        case is_numeric($data):
-            $string='';
-            for ($i=0; $i < strlen($data) ; $i+=2) {
-                $string .= chr(hexdec($data[$i] . $data[$i + 1]));
-            }
-            return $string;
-        case "t":
-            #date missing
-            return("");
     }
-    return($data);
+    return $dat;
 }
 
-function device_data_to_actual($type, $data){
-    # translate data from device
-    # $data contains one or more 2 byte hex values
-    # $type is a MYC datatype
-    $temp =[];
-    switch ($type) {
-        case "a":
-            # 0 or 1
-            return hexdec($data);
-        case "b":
-            # byte
-            return hexdec($data);
-        case "i":
-            # 2 complement
-            $i =0;
-            # 4 hex bytes
-            while (($i + 4) < count($data)) {
-                $dat = substr($data, $i, 4);
-                if (hexdec(($dat) < (2 ** (4 - 1)))) {
-                    $temp[] = hexdec(($dat));
-                } else {
-                    $temp[]=  ("-" . (2 ** 4 - hexdec($dat)));
-                }
-                $temp[]=" ";
-                $i += 4;
-            }
-            return $temp;
-        case "w":
-            # 2 complement
-            $i =0;
-            # 4 hex bytes
-            while (($i + 4) < count($data)) {
-                $dat = substr($data, $i, 4);
-                $temp[] = hexdec(($dat));
-                $temp[]=" ";
-                $i += 4;
-            }
-            return $temp;
-        case "e":
-            # 2 complement
-            $i =0;
-            # 8 hex bytes
-            while (($i + 8) < count($data)) {
-                $dat = substr($data, $i, 8);
-                if (hexdec(($dat) < (2 ** (8 - 1)))) {
-                    $temp[] = hexdec(($dat));
-                } else {
-                    $temp[]=  ("-" . (2 ** 8 - hexdec($dat)));
-                }
-                $temp[]=" ";
-                $i += 8;
-            }
-            return $temp;
-        case "L":
-            # 2 complement
-            $i =0;
-            # 8 hex bytes
-            while (($i + 8) < count($data)) {
-                $dat = substr($data, $i, 8);
-                $temp[] = hexdec(($dat));
-                $temp[]=" ";
-                $i += 8;
-            }
-            return $temp;
-        case "s":
-            # double
-            $i =0;
-            # 8 hex bytes
-            while ($i + 8 < count($data)) {
-                $dat = substr($data, $i, 8);
-                $hex = sscanf($dat, "%02x%02x%02x%02x%02x%02x%02x%02x");
-                $hex = array_reverse($hex);
-                $bin = implode('', array_map('chr', $hex));
-                $temp = unpack("dnum", $bin);
-                $i += 8;
-            }
-            return $temp['num'];
-        case "d":
-            # double
-            $i =0;
-            # 8 hex bytes
-            while ($i + 16 < count($data)) {
-                $dat = substr($data, $i, 16);
-                $hex = sscanf($dat, "%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x%02x");
-                $hex = array_reverse($hex);
-                $bin = implode('', array_map('chr', $hex));
-                $temp = unpack("dnum", $bin);
-                $i += 16;
-            }
-            return $temp['num'];
-        case is_numeric($data):
-            $string='';
-            for ($i=0; $i < strlen($data)-1; $i+=2) {
-                $string .= chr(hexdec($data[$i] . $data[$i + 1]));
-            }
-            return $string;
-        case "t":
-            #date missing
-            return("");
+function translate_simple_range($tok, $pos){
+    # range is comma separated list 1,a,2,b,3,1,4,2,5,4...
+    # return the value for the postion
+    $device = $_SESSION["device"];
+    $range = explode(",", $_SESSION["des_range"][$device][$tok]);
+    return $range[$pos];
+}
+
+function retranslate_simple_range($tok, $actual, $add ){
+    # this is the inverse of translate_simple_range
+    # range is comma separated list 1,a,2,b,3,1,4,2,5,4...
+    # return is position of actual in range
+    # actual is found always
+    # for stacks: $add = 2
+    # for memory-positions $add = 1
+    $device = $_SESSION["device"];
+    $i = 0;
+    $found = 0;
+    $value = 0;
+    $range = explode(",", $_SESSION["des_range"][$device][$tok]);
+    while ($i <  count($range) and $found == 0) {
+        if ($actual == $range[$i + 1]) {
+            $found = 1;
+        }
+        else {
+            $value += 1;
+        }
+        $i += $add;
     }
+    return $value;
+}
+
+function retranslate_full($tok, $actual){
+    # for $actual > 255 $_SESSION["des_range"][$device][$tok] has copy of original announcement
+    # max[,label][{a,b,c,x_ytoz}]
+    $device = $_SESSION["device"];
+    $i = 0;
+    $found = 0;
+    $value = 0;
+    $ranges = explode(",",$_SESSION["des_range"][$device][$tok]);
+    if (count($ranges) == 1){
+        # no translation
+        $value = $actual;
+    }
+    # remove max
+    $temp = array_splice($ranges,0,1);
+    if (count($ranges)> 0){
+        if (!strstr($ranges[0],"_") and !strstr($ranges[0], "to")){
+            # label has no _ and to
+            $temp = array_splice($ranges,0,1);
+        }
+    }
+    if (count($ranges)> 0){
+        $ra = implode(",", $ranges[0]);
+        $ra = str_replace("{", "",$ra);
+        $ra = str_replace("{", "",$ra);
+        $ra = explode(",", $ra);
+        $i = 0;
+        while ($i < count($ra)){
+            if (strstr($ra[$i], "_")){
+                #
+                $to_a = explode("to", $ra[$i]);
+                $to = $to_a[1];
+                $spacing_a = explode("_", $to_a[0]);
+                $spacing = $spacing_a[0];
+                $from = $spacing_a[1];
+                $number_of_values = ($to - $from) / $spacing;
+                if ($actual > $to){
+                    $value .= $number_of_values;
+                }
+                else{
+                    # something with the range
+                    $rel_pos = ($to - $from) / $actual;
+                    $value .= $rel_pos / $spacing;
+                    $found = 1;
+                }
+            }
+            else {
+                #deskrete valuse
+                if ($ra[$i] == $actual){
+                    $found = 1;
+                }
+            }
+            if (!$found) {
+                $value += 1;
+            }
+            $i += 1;
+        }
+    }
+    return $value;
 }
 ?>
 

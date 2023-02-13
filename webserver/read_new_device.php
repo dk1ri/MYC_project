@@ -1,12 +1,11 @@
 <?php
 # read_new_device.php
-# DK1RI 20230121
+# DK1RI 20230210
 function read_new_device($device){
     #create additional device (old ones not deleted)
     # split anouncelist to display objects and get chapter_names
     split_to_display_objects();
     $_SESSION["chapter"] = $_SESSION["chapter_names"][$device][0];
-    calculate_sel_len($device);
     calculate_property_len();
     # now length of properties for all commands in $_SESSION["property_len"][$device] ??
     calculate_cor_token($device);
@@ -19,26 +18,6 @@ function read_new_device($device){
     # now actual data for all commands in $_SESSION["actual_data"]
 }
 
-function calculate_sel_len($device){
-    # stack_token with value
-    $_SESSION["sel_len"][$device] = [];
-    foreach ($_SESSION["announce_all"][$device] as $key => $value) {
-        # not for memories
-        if ($key == "0") {
-            continue;
-        }
-        # stack only
-        if (strstr($key,"b") or strstr($key,"c")) {
-            $no_pos =  count($value) + 1;
-            if ($no_pos == 1) {
-                $_SESSION["sel_len"][$device][$key] = 0;
-            } else {
-                $_SESSION["sel_len"][$device][$key] = length_of_type($no_pos);
-            }
-         }
-    }
-}
-
 function calculate_property_len(){
     # for all basic-toks !!
     # stacks added with stacktoken
@@ -49,9 +28,6 @@ function calculate_property_len(){
     $tok_len = length_of_type(basic_tok(key($_SESSION["original_announce"][$device])));
     $_SESSION["property_len"][$device] = [];
     foreach ($_SESSION["original_announce"][$device] as $key => $value) {
-        if ($key == "0"){
-            continue;
-        }
         $_SESSION["property_len"][$device][$key][] = $tok_len;
         $cta = explode(";",$value[0])[0];
         $ct = explode(",",$cta)[0];
@@ -142,6 +118,8 @@ function calculate_cor_token($device){
         if (explode(",",$_SESSION["announce_all"][$device][$key][0])[0] == "oo"){
             # add to last ("op")token only
             $_SESSION["cor_token"][$device][$new_basic_tok][] = $key;
+            # necessary for indivdual send of oo command:
+            $_SESSION["cor_token"][$device][$basic_tok][] = $key;
         }
         else {
             $new_basic_tok = $basic_tok;
@@ -193,6 +171,10 @@ function init_data($device){
     foreach ($_SESSION["announce_all"][$device] as $key => $value) {
         $ct = explode(",", $value[0])[0];
         switch ($ct) {
+            case "m":
+                $field = $_SESSION["original_announce"][$device][$key];
+                $_SESSION["actual_data"][$device][$key] = $field[2] . "," . $field[3] . "," . $field[1];
+                break;
             case "as":
             case "os":
             case "ou":
@@ -240,16 +222,39 @@ function init_data($device){
                 # always one dimension data or stack
                 if (strstr($key, "x")) {
                     # always one dimension data
-                    $_SESSION["actual_data"][$device][$key] = explode(",",$_SESSION["des_range"][$device][$key])[0];
+                    if (!strstr($key, "x0")) {
+                        # x0 is dummy
+                        $_SESSION["actual_data"][$device][$key] = explode(",", $_SESSION["des_range"][$device][$key])[0];
+                    }
                 }
                 elseif (strstr($key, "b")) {
                     # stack
-                    $_SESSION["actual_data"][$device][$key] = strval(explode(",",$_SESSION["des_range"][$device][$key])[0]);
+                    $_SESSION["actual_data"][$device][$key] = strval(explode(",",$_SESSION["des_range"][$device][$key])[1]);
                 }
                 else {
                     # for answer command
                     $_SESSION["actual_data"][$device][$key] = 0;
                 }
+                break;
+            case "oo":
+                # data only
+                if (strstr($key, "r")) {
+                    # steps
+                    $_SESSION["actual_data"][$device][$key] = "idle";
+                }
+                elseif (strstr($key, "t")) {
+                    # time
+                    if ($_SESSION["des_range"][$device][$key] == 0){
+                        $_SESSION["actual_data"][$device][$key] = 0;
+                    }
+                    else {
+                        $_SESSION["actual_data"][$device][$key] = strval(explode(",", $_SESSION["des_range"][$device][$key])[1]);
+                    }
+                }
+                elseif (strstr($key, "s")) {
+                    $_SESSION["actual_data"][$device][$key] = 0;
+                }
+                # others are dummy
                 break;
             case "om":
             case "am":
@@ -261,7 +266,7 @@ function init_data($device){
                 }
                 elseif(strstr($key, "x")) {
                     # for data
-                    $_SESSION["actual_data"][$device][$key] = explode(",",$_SESSION["des_type"][$device][$key])[2];
+                    $_SESSION["actual_data"][$device][$key] = explode(",",$_SESSION["des_type"][$device][$key])[4];
                 }
                 else{
                     # for answer command
@@ -276,17 +281,31 @@ function init_data($device){
                 }
                 elseif(strstr($key, "x")) {
                     # for data, comma separated value
-                    $types = explode(";",  $_SESSION["des_type"][$device][$key]);
-                    $i = 0;
-                    $dat = "";
-                    while ($i < count($types)){
-                        if( $i != 0){
-                            $dat .= ",";
-                        }
-                        $dat .= explode(",", $types[$i])[2];
-                        $i += 1;
+                    if(!strstr($key,"x0")) {
+                        $start = explode(",", $_SESSION["des_type"][$device][$key])[4];
+                        $_SESSION["actual_data"][$device][$key] = $start;
                     }
-                    $_SESSION["actual_data"][$device][$key] = $dat;
+                }
+                else {
+                    # for answer command
+                    $_SESSION["actual_data"][$device][$key] = 0;
+                }
+                break;
+            case "ob":
+            case "ab":
+                if (strstr($key, "b")) {
+                    # for pos and number
+                    $_SESSION["actual_data"][$device][$key] = "0";
+                }
+                elseif(strstr($key, "x")) {
+                    # for data, comma separated value
+                    if(!strstr($key,"x0")) {
+                        $start = explode(",", $_SESSION["des_type"][$device][$key])[4];
+                        $_SESSION["actual_data"][$device][$key] = $start;
+                    }
+                    else {
+                        $_SESSION["actual_data"][$device][$key] = 0;
+                    }
                 }
                 else {
                     # for answer command

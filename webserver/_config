@@ -1,5 +1,29 @@
-# sequence maust not be changed
-# comment lines must have # as first character
-#
 # annoncementfile name
 ___announcements
+# dir for data i/o files
+c:\xampp\htdocs\usb_interface\
+# color background basic
+ #6c9ccb;
+# color background sub
+ #d1f8ff;
+# color background answer
+ #d1f8a0;
+# color s
+ #ffff00;
+# color r
+ #ffffff;
+# color at
+ #d1f8a0;
+# color ou
+ #01f8a0;
+# color p
+ #d08000;
+# color m
+ #0000ff;
+# color n
+ #000400;
+# color a
+ #ff0000;
+# color b
+ #ff80ff;
+

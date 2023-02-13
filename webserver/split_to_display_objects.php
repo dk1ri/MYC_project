@@ -1,6 +1,6 @@
 <?php
 # split_to_display_objects.php
-# DK1RI 20230121
+# DK1RI 20230207
 function split_to_display_objects(){
     $device = $_SESSION["device"];
     $_SESSION["chapter_names"][$device] = [];
@@ -11,15 +11,14 @@ function split_to_display_objects(){
     $_SESSION["des_range"][$device] = [];
     $_SESSION["des_type"][$device] = [];
     # create $_SESSION["original_announce"][$device] from announcefile
-    if (file_exists($device."/announcements")) {
-        $file = fopen($device . "/announcements", "r");
+    if (file_exists("./devices/".$device."/announcements")) {
+        $file = fopen("./devices/".$device . "/announcements", "r");
         while (!(feof($file))) {
             $pure = fgets($file);
             $pure = str_replace("\n", '', $pure);
             $pure = str_replace("\r", '', $pure);
             $field = explode(";", $pure);
             $token = $field[0];
-            $t = array_slice($field, 1);
             $lda =[];
             $i= 1;
             while ($i < count($field)) {
@@ -39,66 +38,70 @@ function split_to_display_objects(){
                 if (!in_array($chap, $_SESSION["chapter_names"][$device])) {
                     $_SESSION["chapter_names"][$device][] = $chap;
                 }
-                $_SESSION["chapter_token"][$device][$chap][] = $token;
+                $_SESSION["chapter_token"][$device][$chap][$token] = 1;
             }
             $_SESSION["original_announce"][$device][$token] = $lda;
         }
         fclose($file);
     }
     # create display-objexts and other data
-    foreach ($_SESSION["original_announce"][$device] as $basic_tok => $announce) {
-        $ctm = substr(explode(",", $announce[0])[0],1);
-        if ($ctm == "r" or $ctm == "s" or $ctm == "t" or $ctm == "u" or $ctm == "p") {
-            add_stack($basic_tok, $announce);
+    foreach ($_SESSION["original_announce"][$device] as $basic_tok => $announce_o) {
+        $ctm = substr(explode(",", $announce_o[0])[0],1);
+        if ($announce_o[0] == "m") {
+            expand_m($basic_tok, $announce_o);
+        }
+        if ($ctm == "r" or $ctm == "s" or $ctm == "t" or $ctm == "u" or $ctm == "p" or $ctm == "o") {
+            add_stack($basic_tok, $announce_o);
         }
         if ($ctm == "s" or $ctm == "t" or $ctm == "u") {
-            expand_s($basic_tok, $announce);
+            expand_s($basic_tok, $announce_o);
         }
         if ($ctm == "r") {
-            expand_r($basic_tok, $announce);
+            expand_r($basic_tok, $announce_o);
         }
         if ($ctm == "p") {
-            expand_p($basic_tok, $announce);
+            expand_p($basic_tok, $announce_o);
         }
         if ($ctm == "o"){
-            expand_o($basic_tok, $announce);
+            expand_o($basic_tok, $announce_o);
         }
         if ($ctm == "m" or $ctm == "n") {
-            expand_m_n($basic_tok, $announce);
+            expand_m_n($basic_tok, $announce_o);
         }
-        if ($ctm == "a") {
-            expand_a($basic_tok, $announce);
-        }
-        if ($ctm == "b") {
-            expand_b($basic_tok, $announce);
+        if ($ctm == "a" or $ctm == "b") {
+            expand_a_b($basic_tok, $announce_o);
         }
     }
 }
 
-function add_stack($basic_tok, $field){
+function add_stack($basic_tok, $announce_o){
     # for stacks:  additional lines are added as a selector
     $device = $_SESSION["device"];
-    $ct = explode(",",$field[0])[0];
-    $stack = explode(",",$field[1]);
+    $ct = explode(",",$announce_o[0])[0];
+    $stack = explode(",",$announce_o[1]);
     $stacks = (int)$stack[0];
+    $max = explode(",", $announce_o[1])[0];
     if ($stacks > 1){
         # selectors necessary
+        # remove $stacks:
         $t = array_splice( $stack,0, 1);
-        if (!strstr($field[1],"MUL")) {
+        if (!strstr($announce_o[1],"MUL")) {
             # no MUL no ADD
             # [name],[{max,[name],[{..}]]
             if (count($stack) == 0) {
                 # no name, no range
                 $_SESSION["des_name"][$device][$basic_tok . "b0"] = "stack";
                 $_SESSION["des_range"][$device][$basic_tok . "b0"] = add_selector_for_max($stacks);
-                $_SESSION["announce_all"][$device][$basic_tok . "b0"][0] = explode(",", $field[0])[0];
+                $_SESSION["announce_all"][$device][$basic_tok . "b0"][0] = $ct;
+                $_SESSION["announce_all"][$device][$basic_tok . "b0"][1] = $max;
             }
             if (count($stack) == 1) {
                 if (!strstr($stack[0], "{")) {
                     # name only no range
                     $_SESSION["des_name"][$device][$basic_tok . "b0"] = $stack[0];
                     $_SESSION["des_range"][$device][$basic_tok . "b0"] = add_selector_for_max($stacks);
-                    $_SESSION["announce_all"][$device][$basic_tok . "b0"][] = $ct;
+                    $_SESSION["announce_all"][$device][$basic_tok . "b0"][0] = $ct;
+                    $_SESSION["announce_all"][$device][$basic_tok . "b0"][1] = $max;
                     $t = array_splice($stack, 0, 1);
                 }
             }
@@ -108,16 +111,19 @@ function add_stack($basic_tok, $field){
                     # name
                     $_SESSION["des_name"][$device][$basic_tok . "b0"] = $stack[0];
                     $_SESSION["des_range"][$device][$basic_tok . "b0"] = add_selector_for_max($stacks);
-                    $_SESSION["announce_all"][$device][$basic_tok . "b0"][] = $ct;
+                    $_SESSION["announce_all"][$device][$basic_tok . "b0"][0] = $ct;
+                    $_SESSION["announce_all"][$device][$basic_tok . "b0"][1] = $max;
                     $t = array_splice($stack, 0, 1);
                 }
             }
             if (count($stack) > 0) {
                 # {... }
-                $value = str_replace("{", "", $stack[0]);
+                $value = implode(",", $stack);
+                $value = str_replace("{", "", $value);
                 $value =str_replace("}", "", $value);
                 $_SESSION["des_range"][$device][$basic_tok . "b0"] = expand_range($value);
-                $_SESSION["announce_all"][$device][$basic_tok . "b0"][] = $ct;
+                $_SESSION["announce_all"][$device][$basic_tok . "b0"][0] = $ct;
+                $_SESSION["announce_all"][$device][$basic_tok . "b0"][1] = $max;
             }
         }
         else{
@@ -142,16 +148,25 @@ function add_stack($basic_tok, $field){
                 # selections,[name],[{   }]
                 $result = create_selector($basic_tok. "b". $i, $mul[$i], "stack");
                 $_SESSION["des_range"][$device][$basic_tok .  "b" . $i] = $result;
-                $_SESSION["announce_all"][$device][$basic_tok .  "b" . $i][] = $ct;
+                $_SESSION["announce_all"][$device][$basic_tok .  "b" . $i][0] = $ct;
+                $_SESSION["announce_all"][$device][$basic_tok . "b" . $i][1] = $max;
                 $i += 1;
             }
             if (count($add) > 1) {
                 $result = create_selector($basic_tok . "c0", $add[1], "ADD");
                 $_SESSION["des_range"][$device][$basic_tok . "c0"] = $result;
-                $_SESSION["announce_all"][$device][$basic_tok . "c0"][] = $ct;
+                $_SESSION["announce_all"][$device][$basic_tok . "c0"][0] = $ct;
+                $_SESSION["announce_all"][$device][$basic_tok . "c0"][1] = $max;
             }
         }
     }
+}
+
+function expand_m($token, $announce){
+    $device = $_SESSION["device"];
+    $_SESSION["announce_all"][$device][$token][0] = $announce[0][0];
+    $_SESSION["des_name"][$device][$token] = "basic_ command";
+
 }
 
 function expand_s($token, $announce){
@@ -219,9 +234,15 @@ function expand_p($basic_tok, $announce){
     $dim = 2;
     while ($dim < count($announce)) {
         $_SESSION["announce_all"][$device][$basic_tok . "x" . $ip][0] = explode(",",$announce[0])[0];
-        $_SESSION["announce_all"][$device][$basic_tok . "x" . $ip][1] = explode(",", $_SESSION["original_announce"][$device][$basic_tok][$dim])[0];
-        $desc_part = create_selector($basic_tok . "x" . $ip, $announce[$dim] , "value");
-        $_SESSION["des_range"][$device][$basic_tok . "x" . $ip] = $desc_part;
+        $max = explode(",", $_SESSION["original_announce"][$device][$basic_tok][$dim])[0];
+        $_SESSION["announce_all"][$device][$basic_tok . "x" . $ip][1] = $max;
+        if ($max < 256) {
+            $desc_part = create_selector($basic_tok . "x" . $ip, $announce[$dim], "value");
+            $_SESSION["des_range"][$device][$basic_tok . "x" . $ip] = $desc_part;
+        }
+        else{
+            $_SESSION["des_range"][$device][$basic_tok . "x" . $ip] = $announce[$dim];
+        }
         $dim += 3;
         $ip += 1;
     }
@@ -262,19 +283,37 @@ function expand_o($basic_tok, $announce){
     $io = 1;
     while ($dim < (count($announce) - $no_use)){
         $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "r"][0] = explode(",",$announce[0])[0];
-        $desc_part = create_selector($basic_tok . "x" . $io . "r", $announce[$dim] , "steps");
-        $_SESSION["des_range"][$device][$basic_tok . "x" . $io . "r"] = $desc_part;
-        $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "r"][1] = explode(",", $_SESSION["original_announce"][$device][$basic_tok][$dim])[0];
+        $max = explode(",", $_SESSION["original_announce"][$device][$basic_tok][$dim])[0];
+        $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "r"][1] = $max;
+        if ($max < 256) {
+            $desc_part = create_selector($basic_tok . "x" . $io . "r", $announce[$dim], "steps");
+            $_SESSION["des_range"][$device][$basic_tok . "x" . $io . "r"] = $desc_part;
+        }
+        else{
+            $_SESSION["des_range"][$device][$basic_tok . "x" . $io . "r"] = $announce[$dim];
+        }
         #
         $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "s"][0] = explode(",",$announce[0])[0];
-        $desc_part = create_selector($basic_tok . "x" . $io . "s", $announce[$dim + 1] , "stepsize");
-        $_SESSION["des_range"][$device][$basic_tok . "x" . $io . "s"] = $desc_part;
-        $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "s"][1] = explode(",", $_SESSION["original_announce"][$device][$basic_tok][$dim])[0];
+        $max = explode(",", $_SESSION["original_announce"][$device][$basic_tok][$dim])[0];
+        $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "s"][1] = $max;
+        if ($max < 256) {
+            $desc_part = create_selector($basic_tok . "x" . $io . "s", $announce[$dim + 1], "stepsize");
+            $_SESSION["des_range"][$device][$basic_tok . "x" . $io . "s"] = $desc_part;
+        }
+        else{
+            $_SESSION["des_range"][$device][$basic_tok . "x" . $io . "r"] = $announce[$dim + 1];
+        }
         #
         $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "t"][0] = explode(",",$announce[0])[0];
-        $desc_part = create_selector($basic_tok . "x" . $io . "t", $announce[$dim + 2] , "steptime");
-        $_SESSION["des_range"][$device][$basic_tok . "x" . $io . "t"] = $desc_part;
-        $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "t"][1] = explode(",", $_SESSION["original_announce"][$device][$basic_tok][$dim])[0];
+        $max = explode(",", $_SESSION["original_announce"][$device][$basic_tok][$dim])[0];
+        $_SESSION["announce_all"][$device][$basic_tok . "x" . $io . "t"][1] = $max;
+        if ($max < 256) {
+            $desc_part = create_selector($basic_tok . "x" . $io . "t", $announce[$dim + 2], "steptime");
+            $_SESSION["des_range"][$device][$basic_tok . "x" . $io . "t"] = $desc_part;
+        }
+        else{
+            $_SESSION["des_range"][$device][$basic_tok . "x" . $io] = $announce[$dim + 2];
+        }
         $dim += 4;
         $io += 1;
     }
@@ -283,7 +322,7 @@ function expand_o($basic_tok, $announce){
 
 function expand_m_n($basic_tok, $announce){
     # create display-object for each row, column and data
-    # first row (or count) at pos 3
+    # first row (or count) at pos 3 of announcement
     $device = $_SESSION["device"];
     $ct = explode(",",$announce[0]);
     count($ct) > 1 ? $name = $ct[1] : $name = "memory";
@@ -293,7 +332,7 @@ function expand_m_n($basic_tok, $announce){
     while ($row_col < count($announce)){
         $tok = $basic_tok . "b" . strval($row_col - 2);
         # announce_all
-        $_SESSION["announce_all"][$device][$tok][0] = explode(",",$announce[0])[0];
+        $_SESSION["announce_all"][$device][$tok][0] = $ct[0];
         # des_range
         if (($ct[0] == "on" or $ct[0] == "an") and $row_col == 2) {
             $desc_part = create_selector($basic_tok . "b" . strval($row_col - 2), $announce[$row_col], "elements");
@@ -310,90 +349,142 @@ function expand_m_n($basic_tok, $announce){
     # des-type
     $typ_a = explode(",", $announce[1]);
     $_SESSION["des_type"][$device][$basic_tok . "x0"] = add_type($typ_a);
+    if ($typ_a[0] == "s" or $typ_a[0] == "d"){
+        # add exponent
+        $_SESSION["des_name"][$device][basic_tok($basic_tok) . "x1"] = $name;
+        $_SESSION["announce_all"][$device][$basic_tok . "x1"][0] = $ct[0];
+        $_SESSION["des_type"][$device][$basic_tok . "x1"] = "e,,exponent,0 to 255,0,,end";
+    }
     if($ct[0] == "am" or $ct[0] == "an"){
         $_SESSION["announce_all"][$device][$basic_tok . "a0"][0] = $ct[0];
     }
 }
 
-function expand_a($basic_tok, $announce){
-    # [one b0 and] one x0 display element
+function expand_a_b($basic_tok, $announce){
+    # [ b0 and b1] one tok per <ty> element
     $device = $_SESSION["device"];
     $name = "array element";
-    $ct = explode(",",$announce[0]);
+    $ct = explode(",", $announce[0]);
     if (count($ct) > 1) {
         $name = $ct[1];
     }
-    # selector for more than one <ty> element
-    if (count($announce) > 2) {
+    # sequence determines the display - sequence
+    if (!(($ct[0] == "oa" or $ct[0] == "aa") and count($announce) <= 3)) {
         # additional selector for <ty>
         $_SESSION["announce_all"][$device][$basic_tok . "b0"][0] = $ct[0];
         $_SESSION["des_name"][$device][$basic_tok . "b0"] = $name;
-        $li = "";
-        $i = 1;
-        while ($i < count($announce)) {
-            $typ_a = explode(",", $announce[$i]);
-            $type = add_type($typ_a);
-            # $type : type,allowed,start,name,{..}
-            $type_b = explode(",", $type);
-            if ($i != 1){
-                $li .= ",";
-            }
-            $li .= strval($i - 1) . "," . strval($i - 1) . "_" . $type_b[3] . ": " . $type_b[1];
-            $i += 1;
+        if ($ct[0] == "ob" or $ct[0] == "ab") {
+            $_SESSION["announce_all"][$device][$basic_tok . "b1"][0] = $ct[0];
+            $_SESSION["des_name"][$device][$basic_tok . "b1"] = $name;
         }
-        $_SESSION["des_range"][$device][$basic_tok . "b0"] = $li;
     }
-    # des_type
-    $i = 1;
-    $type = "";
-    while ($i < count($announce)){
-        $typ_a = explode(",",$announce[$i]);
-        if($i != 1){
-            $type .= ";";
-        }
-        $type .= add_type($typ_a);
-        $i += 1;
-    }
-    $_SESSION["des_type"][$device][$basic_tok . "x0"] = $type;
-    #
+    # x0 used for basic name
     $_SESSION["announce_all"][$device][$basic_tok . "x0"][0] = $ct[0];
     $_SESSION["des_name"][$device][$basic_tok . "x0"] = $name;
-    if($ct[0] == "aa"){
+    # ob /ab as number of elements to transmit
+    # des_type
+    $i = 1;
+    $j = 1;
+    while ($i < count($announce)){
+        $typ_a = explode(",",$announce[$i]);
+        $_SESSION["announce_all"][$device][$basic_tok . "x" . $j][0] = $ct[0];
+        $_SESSION["des_type"][$device][$basic_tok . "x" . $j] = add_type($typ_a);
+        if ($typ_a[0] == "s" or $typ_a[0] == "d"){
+            # add exponent
+            $j += 1;
+            $_SESSION["des_name"][$device][basic_tok($basic_tok) . "x" .$j] = $name;
+            $_SESSION["announce_all"][$device][$basic_tok . "x". $j][0] = $ct[0];
+            $_SESSION["des_type"][$device][$basic_tok . "x". $j] = "f,,exponent,0 to 255,0,,end";
+        }
+        $i += 1;
+        $j += 1;
+    }
+    # selector for more than one <ty> element
+    # for a command: used for answer commands only
+    if (!(($ct[0] == "oa" or $ct[0] == "aa") and count($announce) <= 3)) {
+        # additional selector for <ty> (number for b and) position
+        $li = "";
+        $li_n = "0,0,";
+        $i = 1;
+        $j = 1;
+        $found = 1;
+        while ($found) {
+            $tok = $basic_tok . "x" . $i;
+            if (!array_key_exists($tok, $_SESSION["des_type"][$device])) {
+                $found = 0;
+            } else {
+                if ($_SESSION["des_type"][$device][$tok][0] != "f") {
+                    # ignore exponent
+                    if ($i != 1) {
+                        $li .= ",";
+                        $li_n .= ",";
+                    }
+                    $value = explode(",", $_SESSION["des_type"][$device][$tok])[2];
+                    $li .= strval($i - 1) . "," . strval($i - 1) . "_" . $value;
+                    $li_n .= $j . "," . $j;
+                    $j += 1;
+                }
+            }
+            $i += 1;
+        }
+        $_SESSION["des_range"][$device][$basic_tok . "b0"] = $li_n;
+        $_SESSION["des_range"][$device][$basic_tok . "b1"] = $li;
+    }
+    if($ct[0] == "ab" or $ct[0] == "aa"){
         $_SESSION["announce_all"][$device][$basic_tok . "a0"][0] = $ct[0];
     }
 }
 
-function  expand_b($basic_tok, $announce){
-
-}
-
 function add_type($desc){
     #create des_type
-    # array: type [name] [{...}]
-    # return: type,allowed,start,name,{..}
-    $type = $desc[0] . ",";
-    if (is_numeric($desc[0])) {
-        $type .= "alpha,a";
+    # $desc: array: type [CODING] [name] [{...}]
+    # return:type,CODING,name,range,startvalue,allowed (some may be empty
+    $typ = $desc[0];
+    $type = $typ . ",,,,,,end";
+    $type_a = explode(",", $type);
+    if (is_numeric($desc[0])){
+        $type_a[2] = "alpha";
+        $type_a[3] = "ALPHA";
+        $type_a[4]= "a";
     }
     else {
-        $type .= find_allowed($desc[0]) . ",0";
+        $type_a[5] .= find_allowed($desc[0]);
+        $type_a[4]= "0";
+        # default, may be overwritten
+        $type_a[2] =  $type_a[5];
     }
-    $name = find_name($desc[0]);
-    if (count($desc) == 1) {
-        $type .= "," . $name . ",{}";
-    }
-    if (count($desc) == 2) {
-        if (strstr($desc[1],"{")) {
-            $type .= "," . $name . "," . $desc[1];
+    # eliminate type:
+    $temp = array_splice($desc,0, 1);
+    if (count($desc) > 0){
+        $upcase = strtoupper($desc[0]);
+        if ($upcase == $desc[0]){
+            $type_a[1] = $desc[0];
+            $temp = array_splice($desc,0, 1);
         }
-        else {
-            $type .= "," . $desc[1] . ",{}";
+    }
+    if (count($desc) > 0){
+        $name = find_name($desc[0]);
+        if (!strstr($desc[0], "{")){
+            $type_a[2] = $desc[0];
+            $temp = array_splice($desc,0, 1);
         }
     }
-    if (count($desc) == 3) {
-        $type .= "," . $desc[1] . "," . $desc[2];
+    if (count($desc) > 0){
+        # {...,.},xxx
+        $desc = implode(",", $desc);
+        $desc = explode("}", $desc);
+        $desc = str_replace("{", "", $desc[0]);
+        $type_a[3] = $desc;
+        # find displaystart
+        $desc_a = explode(",", $desc);
+        if (!strstr($desc_a[0], "_") and !strstr($desc_a[0], "to")){
+           $type_a[4] = $desc_a[0];
+        }
+        else{
+            $type_a[4]  = explode("_", explode("to",$desc_a[0])[0])[1];
+        }
     }
-    return $type;
+    return implode(",",$type_a);
 }
 
 function create_selector($tok, $desc, $default_name){

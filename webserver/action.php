@@ -1,6 +1,6 @@
 <?php
 # action.php
-# DK1RI 20230112
+# DK1RI 20230209
 function basic_tok($o_tok){
     # return basic_token
     if (strstr($o_tok, "a")) {
@@ -76,6 +76,39 @@ function length_of_type($data){
     return $data;
 }
 
+function display_length($type){
+    # max length to display the ral value
+    if (is_numeric($type)){
+        # string
+        return $type;
+    }
+    else {
+        switch ($type) {
+            case "a":
+                return 1;
+            case "b":
+            case "f":
+                return 3;
+            case "c":
+                return 4;
+            case "w":
+                return 5;
+            case "i":
+                return 6;
+            case "s":
+                return 8;
+            case "L":
+                return 10;
+            case "e":
+                return 11;
+            case "d":
+                return 18;
+            default:
+                return 2;
+        }
+    }
+}
+
 function find_allowed($type){
     switch ($type){
         case "a":
@@ -92,6 +125,12 @@ function find_allowed($type){
             return "-2147483648 to 2147483647";
         case "L":
             return "0 to 4294967295";
+        case "s":
+            return "3 byte / 0 to 255";
+        case "d":
+            return "7byte / 0 to 255";
+        default:
+            return "";
     }
 }
 
@@ -111,6 +150,10 @@ function find_name($type){
             return "signed long";
         case "L":
             return "long";
+        case "s":
+            return "single";
+        case "d":
+            return "double";
         case is_numeric($type):
             return "alpha";
     }
@@ -135,6 +178,9 @@ function adapt_len($token, $element, $actual){
 ?>
 
 <html lang = "de">
+<?php
+    session_start();
+?>
     <head>
         <title>MYC Apache Server</title>
         <meta name="author" content="DK1RI">
@@ -148,7 +194,7 @@ function adapt_len($token, $element, $actual){
             }
 
             .flex-container > div {
-                background-color: #d1f1f1;
+                background-color: #d1f8ff;
                 margin: 5px;
                 padding: 10px;
                 font-size: 15px;
@@ -159,53 +205,28 @@ function adapt_len($token, $element, $actual){
             .red{
                 color : red;
             }
-            .os{
-                color: #ffff00
-            }
-            .as{
-                color: #ffff80
-            }
-            .or{
-                color: #ff8000
-            }
-            .ar{
-                color: #ff8080
-            }
-            .at{
-                color: #ff80d0
-            }
-            .ou{
-                color: #ffff50
-            }
-            .op{
-                color : #ffff00;
-            }
-            .ap {
-                color: #ffff80;
-            }
-            .om{
-                color : #0000ff;
-            }
-            .am{
-                color : #0080ff;
-            }
-            .on{
-                color : #00ffff;
-            }
-            .an{
-                color : #00ff80;
-            }
-            .oa{
-                color : #ff00ff;
-            }
-            .aa{
-                color : #ff0080;
-            }
+            <?php
+            echo ".os{color: " . $_SESSION["conf"]["s"] . ";}";
+            echo ".as{color: " . $_SESSION["conf"]["s"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            echo ".or{color: " . $_SESSION["conf"]["r"] . ";}";
+            echo ".ar{color: " . $_SESSION["conf"]["r"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            echo ".at{color: " . $_SESSION["conf"]["at"] . ";}";
+            echo ".ou{color: " . $_SESSION["conf"]["ou"] . ";}";
+            echo ".op{color: " . $_SESSION["conf"]["p"] . ";}";
+            echo ".ap{color: " . $_SESSION["conf"]["p"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            echo ".om{color: " . $_SESSION["conf"]["m"] . ";}";
+            echo ".am{color: " . $_SESSION["conf"]["m"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            echo ".on{color: " . $_SESSION["conf"]["n"] . ";}";
+            echo ".an{color: " . $_SESSION["conf"]["n"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            echo ".oa{color: " . $_SESSION["conf"]["a"] . ";}";
+            echo ".aa{color: " . $_SESSION["conf"]["a"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            echo ".ob{color: " . $_SESSION["conf"]["b"] . ";}";
+            echo ".ab{color: " . $_SESSION["conf"]["b"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            ?>
         </style>
     </head>
     <body>
         <?php
-        session_start();
         if (array_key_exists("devices", $_POST)) {
             # other device?
             $device = htmlspecialchars($_POST['devices']);
@@ -222,6 +243,7 @@ function adapt_len($token, $element, $actual){
         include "select_any.php";
         include "for_tests.php";
         include "serial.php";
+        include "update_received.php";
         include "split_to_display_objects.php";
         if (!array_key_exists($device, $_SESSION["announce_all"])) {
             include "read_new_device.php";
@@ -230,11 +252,10 @@ function adapt_len($token, $element, $actual){
         }
         correct_POST($device);
         send_and_update();
-        $actual_chapter = $_SESSION["chapter"];
-        if ($_SESSION["read_data"] == 1){
-            # not used now
-            $_SESSION["read_data"] = 0;
+        If ($_SESSION["received_data"] != ""){
+            update_received();
         }
+        $actual_chapter = $_SESSION["chapter"];
         # $_SESSION ready, create new page
         ?>
         <div class = "flex-container"><div>
@@ -244,10 +265,19 @@ function adapt_len($token, $element, $actual){
         Ihr Name: <input type="text" name='name' size = 14 value = <?php echo $_SESSION["name"]?>>
         </div><div>
         Interface: <input type="text" name = "interface" size = 14 name='name' value = <?php echo $_SESSION["interface"] ?>>
+        <br>
+                <?php
+                if ($_SESSION["last_command_status"]){
+                    echo "<strong class = 'red'>last command not ok</strong>";
+                }
+                else{
+                    echo "<strong class = 'green'>last command ok</strong>";
+                }
+                ?>
         </div><div>
         <?php
         select_any( $_SESSION["device_list"], $_SESSION["device"], "devices");
-        echo ("</div><div>");
+        echo ("<br>");
         select_any($_SESSION["chapter_names"][$device], $actual_chapter, "chapter");
         echo "</div>";
         display_commands();

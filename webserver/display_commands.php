@@ -1,9 +1,8 @@
 <?php
 # display_commands.php
-# DK1RI 20230107
+# DK1RI 20230205
 function display_commands(){
     $device = $_SESSION["device"];
-    create_basic_command($_SESSION["original_announce"][$device][0]);
     create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);
     $tok_list = $_SESSION["chapter_token"][$device][$_SESSION["chapter"]];
     $announcelines = $_SESSION["announce_all"][$device];
@@ -14,6 +13,14 @@ function display_commands(){
         if (array_key_exists($basic_tok, $tok_list)){
             $announce = $_SESSION["announce_all"][$device][$tok];
             switch ($announce[0]) {
+                case "m":
+                    if ($already_done != $basic_tok) {
+                        echo "<div>";
+                        create_basic_command($basic_tok);
+                        echo "</div>";
+                        $already_done = $basic_tok;
+                    }
+                    break;
                 case "os":
                     if ($already_done != $basic_tok) {
                         echo "<div>";
@@ -116,6 +123,21 @@ function display_commands(){
                     if ($already_done != basic_tok($tok)) {
                         echo "<div>";
                         create_aa(basic_tok($tok));
+                        echo "</div>";
+                        $already_done = basic_tok($tok);
+                    }
+                case "ob":
+                    if ($already_done != basic_tok($tok)) {
+                        echo "<div>";
+                        create_ob(basic_tok($tok));
+                        echo "</div>";
+                        $already_done = basic_tok($tok);
+                    }
+                    break;
+                case "ab":
+                    if ($already_done != basic_tok($tok)) {
+                        echo "<div>";
+                        create_ab(basic_tok($tok));
                         echo "</div>";
                         $already_done = basic_tok($tok);
                     }
