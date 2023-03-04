@@ -1,201 +1,99 @@
 <?php
 # create_commands.php
-# DK1RI 20230119
-
-function head_stack($basic_tok){
-    $device = $_SESSION["device"];
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $ctoken) {
-        if (strstr($ctoken,"b") or strstr($ctoken,"c")){
-            $ct = explode(",", $_SESSION["announce_all"][$device][$ctoken][0])[0];
-            if ($ct != "oo") {
-                $actual = $_SESSION["actual_data"][$device][$ctoken];
-                echo $_SESSION["des_name"][$device][$ctoken] . ": ";
-                $stacks = explode(",", $_SESSION["des_range"][$device][$ctoken]);
-                simple_selector($ctoken, $stacks, $actual);
-            }
-        }
-    }
-}
-
-function simple_selector($token, $range, $actual){
-    # simple selector for limited number of elements
-    if (count($range) > 2) {
-        echo "<select name=" . $token . " id=" . $token . ">";
-        $i = 0;
-        while ($i < count($range)) {
-            echo "<option value=" . $range[$i];
-            if ($range[$i] == $actual) {
-                echo " selected";
-            }
-            echo ">" . $range[$i + 1] . "</option>";
-            $i += 2;
-        }
-        echo "</select>";
-    }
-}
-
-function display_memory_selector($token){
-    # generate display for memory-selectors for des - string ( {...} )
-    # pa is: max_number,name,{ ..}
-    $device = $_SESSION["device"];
-    $desc = explode("," , $_SESSION["des_range"][$device][$token]);
-    $max_number = (int)$desc[0];
-    echo $_SESSION["des_name"][$device][$token] . ": ";
-    $actual = $_SESSION["actual_data"][$device][$token];
-    if ($max_number < 100) {
-        echo "<select name=" . $token . " id=" . $token . ">";
-        # valid for op commands only:
-        for ($des_pointer = 0; $des_pointer < count($desc); $des_pointer += 2) {
-            $value = $desc[$des_pointer];
-            $value1 = $desc[$des_pointer + 1];
-            echo "<option value=" . $value;
-            if ($actual == $value) {
-                echo(" selected>");
-            } else {
-                echo ">";
-            }
-            echo $value1 . "</option>";
-        }
-        echo "</select>";
-    }
-    else {
-        $ranges = "";
-        for ($des_pointer = 0; $des_pointer < count($desc); $des_pointer += 1) {
-            if (!strstr($desc[$des_pointer], "a")) {
-                $ranges .= " " . $desc[$des_pointer + 1] . "to" . $desc[$des_pointer +2] . " ";
-                $des_pointer += 2;
-            } else {
-                $ranges .= ", " . substr($desc[$des_pointer],1);
-            }
-        }
-        echo " " . $ranges;
-        echo "<input type='text' name = " . $token . " size = " . strlen(adapt_len($token,0, $actual[0])) . " placeholder =" . $actual[0] . ">";
-    }
-}
-
+# DK1RI 20230304
+# creates display elements
 function create_basic_command($basic_tok){
     $device = $_SESSION["device"];
     $field = explode(",", $_SESSION["actual_data"][$device][$basic_tok]);
     echo "<div>Device: " . $field[0] . ", Version: " . $field[1] . ", Author: ". $field[2];
-    echo "<br> new data: ";
+    echo "<br>" . $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["new_data"] . ": ";
     echo "<input type='checkbox' id=".$basic_tok . " name=".$basic_tok." value=1>";
     echo "</div>";
 }
 
 function create_os($basic_tok) {
     $device = $_SESSION["device"];
-    echo "<div><h3 class='os'>";
-    head_stack($basic_tok);
+    echo "<div><h3 class='op'>";
     echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
-    # one "x0" tok
-    echo "<select name=" . $basic_tok."x0" . " id=" . $basic_tok. "x0" . ">";
-    $field_x = $_SESSION["announce_all"][$device][$basic_tok."x0"];
-    $i = 1;
-    while ($i < count($field_x)){
-        $switch = explode(",", $field_x[$i]);
-        count($switch) > 1 ? $val = $switch[1] : $val = "x";
-        echo "<option value=" . $switch[0];
-        if ($switch[0] == $_SESSION["actual_data"][$device][$basic_tok."x0"]) {
-            echo " selected";
-        }
-        echo ">" . $val . "</option>";
-        $i += 1;
+    if (array_key_exists($basic_tok. "b0", $_SESSION["des_range"][$device])){
+        head_stack($basic_tok);
     }
-    echo "</select>";
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
+        if (strstr($tok, "x0")) {
+            echo "<select name=" . $tok . " id=" . $tok . ">";
+            $field_x = $_SESSION["announce_all"][$device][$basic_tok . "x0"];
+            $i = 1;
+            while ($i < count($field_x)) {
+                $switch = explode(",", $field_x[$i]);
+                count($switch) > 1 ? $val = $switch[1] : $val = "x";
+                echo "<option value=" . $switch[0];
+                if ($switch[0] == $_SESSION["actual_data"][$device][$basic_tok . "x0"]) {
+                    echo " selected";
+                }
+                echo ">" . $val . "</option>";
+                $i += 1;
+            }
+            echo "</select>";
+        } elseif(strstr($tok, "a0")) {
+            display_as($tok,"read_data");
+        }
+    }
     echo "</h3></div>";
 }
 
-function create_as($basic_tok, $actual) {
+function create_as($basic_tok) {
     $device = $_SESSION["device"];
     echo "<div><h3 class='as'>";
-    echo $_SESSION["des_name"][$device][$basic_tok. "x0"];
+    echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
     head_stack($basic_tok);
+    $actual =$_SESSION["actual_data"][$device][$basic_tok."x0"];
     $label = explode(",",$_SESSION["announce_all"][$device][$basic_tok."x0"][$actual + 1])[1];
     echo  ": " . $label;
-    echo " new data:";
-    echo "<input type='checkbox' id=".$basic_tok."a0" . " name=".$basic_tok."x0 value=1>";
+    echo "<br>" . $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["new_data"] . ": ";
+    echo "<input type='checkbox' id=".$basic_tok."a0" . " name=".$basic_tok."a0 value=1>";
     echo "</h3></div>";
 }
 
-function create_or($basic_tok){
-    # _POST deliver no data, if no switch is selected, so a possible reset of switches cannot be done
-    # therefor the all_off is necessary
+function create_or_ar($basic_tok){
+    # selecting a switch as operate will toggle the status
     echo "<div><h3 class='or'>";
     $device = $_SESSION["device"];
-    head_stack($basic_tok);
-    $actual = explode(",",$_SESSION["actual_data"][$device][$basic_tok . "x0"]);
     echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
-    $announce = $_SESSION["announce_all"][$device][basic_tok($basic_tok)."x0"];
-    if (count($announce) == 3){
-        # simple switch
-        echo $actual[0]."</br> change:";
-        echo "<input type='checkbox' id=".$basic_tok."x0"." name=".$basic_tok."x0 value=1>";
-    } else {
-        echo "<label for=" . $basic_tok."x0" . ">".  "</label>&nbsp; <select name=" . $basic_tok."x0".  " id=" . $basic_tok."x0" . " multiple='multiple'>";
-        $i = 1;
-        while ($i < count($announce)) {
-            $f = explode(",", $announce[$i]);
+    if (array_key_exists($basic_tok. "b0", $_SESSION["des_range"][$device])){
+        head_stack($basic_tok);
+    }
+    $announce = $_SESSION["original_announce"][$device][$basic_tok];
+    echo "<br>";
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
+        if (strstr($tok, "x")) {
+            $announce = $_SESSION["announce_all"][$device][$tok];
+            $actual = $_SESSION["actual_data"][$device][$tok];
+            $f = explode(",", $announce[1]);
             count($f) > 1 ? $label = $f[1] : $label = "x";
-            echo "<option value=", $i - 1;
-            if ($actual[$i -1] == "1") {
-                echo(" selected='selected'>");
+            echo "<input type='checkbox' name=" . $tok . " id=" . $tok . " label=" . $tok . ">";
+            if($actual == "0"){
+                echo "<strong class = 'red'>";
             }
-            echo ">".$label . "</option>";
-            $i += 1;
+            else{
+                echo "<strong class = 'green'>";
+            }
+            echo "<label for " .$tok . ">" . $label . "</label></strong><br>";
         }
-        echo "</select>";
+        elseif (strstr($tok, "a0") and explode(",", $announce[0])[0] == "or") {
+            display_as($tok,"read_data");
+        }
     }
     echo "</h3></div>";
-}
-
-function create_ar($basic_tok){
-    $device = $_SESSION["device"];
-    echo "<div><h3 class='ar'>";
-    $actual = explode(",", $_SESSION["actual_data"][$device][$basic_tok."x0"]);
-    head_stack($basic_tok);
-    echo $_SESSION["des_name"][$device][$basic_tok. "x0"];
-    $announce = $_SESSION["announce_all"][$device][$basic_tok."x0"];
-    if (count($announce) > 3) {
-        echo "<label for=" . $basic_tok."x0" . ">".  "</label>&nbsp; <select name=" . $basic_tok."x0".  " id=" . $basic_tok."x0" . ">";
-        $i = 1;
-        while ($i < count($announce)) {
-            $f = explode(",", $announce[$i]);
-            count($f) > 1 ? $label = $f[1] : $label = "x";
-            echo "<option value=", $i;
-            if ($actual[$i - 1] == "1") {
-                echo(" selected='selected'>");
-            }
-            echo  ">" . $label . "</option>";
-            $i += 1;
-        }
-        echo "</select>";
-    }
-    $sw_a = explode(",", $_SESSION["actual_data"][$device][$basic_tok."x0"]);
-    $i = 1;
-    $result = "";
-    while ($i < count($announce)){
-        $label = explode(",",$announce[$i])[1];
-        if ($sw_a[$i - 1] == 0){
-            $result .= "<strong class = 'green'>".$label . "</strong>";
-        }
-        else{
-            $result .= "<strong class = 'red'>".$label . "</strong>";
-        }
-        $result .= " ";
-        $i += 1;
-    }
-    echo " status: ". $result;
-    echo " new data:";
-    echo "<input type='checkbox' id=".$basic_tok. "a0"." name=".$basic_tok. "x0 value=1>";
-echo "</h3></div>";
 }
 
 function create_ou($basic_tok) {
     $device = $_SESSION["device"];
     echo "<div><h3 class='ou'>";
+    echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
+    if (array_key_exists($basic_tok. "b0", $_SESSION["des_range"][$device])){
+        head_stack($basic_tok);
+    }
     $announce = $_SESSION["announce_all"][$device][basic_tok($basic_tok)."x0"];
-    head_stack($basic_tok);
-    echo $_SESSION["des_name"][$device][$basic_tok. "x0"]. ": ";
     if (count($announce) == 2) {
         echo "<input type='checkbox' id=" . $basic_tok."x0" . " name=" . $basic_tok."x0 value=1>";
     }
@@ -220,74 +118,85 @@ function  create_op_oo($basic_tok){
     if (array_key_exists($basic_tok. "b0", $_SESSION["des_range"][$device])){
         head_stack($basic_tok);
     }
+    $count_zero = 0;
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
-        if (strstr($tok, "b") or strstr($tok, "c") or strstr($tok, "x0")) {
-            continue;
-        }
-        if ($_SESSION["announce_all"][$device][$tok][1] < 255){
-            $des = $_SESSION["des_range"][$device][$tok];
-            if ($des != 0) {
-                $actual = $_SESSION["actual_data"][$device][$tok];
-                echo " " . $_SESSION["des_name"][$device][$tok] . ": ";
-                echo "<select name=" . $tok, " id=", $tok, ">";
-                if (strstr($tok, "r")) {
-                    echo "<option value=idle>idle</option>";
-                }
-                $i = 0;
-                # discrete values only.
-                $des_a = explode(",", $des);
-                while ($i < count($des_a)) {
-                    echo "<option value=", $des_a[$i];
-                    echo "<option value=", $des_a[$i];
-                    if ($actual == $des_a[$i]) {
-                        echo(" selected='selected'");
+        if(strstr($tok, "b") or strstr($tok, "c") or strstr($tok, "x0")){continue;}
+        elseif (strstr($tok, "x")) {
+            if ($_SESSION["announce_all"][$device][$tok][1] < 255) {
+                if (strstr($tok,"r")){echo "<br>";}
+                $des = $_SESSION["des_range"][$device][$tok];
+                if ($des == 0) {
+                    $label  = "?";
+                    # for default 3 times a "0" will apear
+                    $count_zero += 1;
+                    if ($count_zero == 1){
+                        if (array_key_exists($tok, $_SESSION["des_name"][$device])) {
+                            $label = $_SESSION["des_name"][$device][$tok];
+                        }
                     }
-                    echo ">" . $des_a[$i + 1] . "</option>";
-                    $i += 2;
+                    if ($count_zero == 3) {
+                        echo $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["set_default"] . ": " .$label. " ";
+                        echo "<input type='checkbox' id=" . $tok." name=" . $tok . " value=set_def>";
+                    }
                 }
-                echo "</select>";
+                else{
+                    $actual = $_SESSION["actual_data"][$device][$tok];
+                    echo " " . $_SESSION["des_name"][$device][$tok] . ": ";
+                    echo "<select name=" . $tok, " id=", $tok, ">";
+                    $i = 0;
+                    # discrete values only.
+                    $des_a = explode(",", $des);
+                    while ($i < count($des_a)) {
+                        echo "<option value=", $des_a[$i];
+                        if ($actual == $des_a[$i]) {
+                            echo(" selected='selected'");
+                        }
+                        echo ">" . $des_a[$i + 1] . "</option>";
+                        $i += 2;
+                    }
+                    echo "</select>";
+                    if (!strstr($tok, "r") and !strstr($tok, "s") and !strstr($tok,"t")) {
+                        echo $_SESSION["unit"][$device][$tok] . "<br>";
+                    }
+                    $count_zero = 0;
+                }
+            } else {
+                if (strstr($tok, "r")){$label = "count";}
+                elseif (strstr($tok, "s")){$label = "step";}
+                elseif (strstr($tok, "t")){$label = "steptime";}
+                else{$label = "value";}
+                echo " new " . $label . ": ";
+                echo "<input type='text' name = " . $tok . " size = 14 placeholder =" . $_SESSION["actual_data"][$device][$tok] . ">";
+                if (!strstr($tok, "r") and !strstr($tok, "s") and !strstr($tok,"t")) {
+                    echo $_SESSION["unit"][$device][$tok] . "<br>";
+                }
             }
         }
         else{
-            if (strstr($tok, "r")) {
-                $label = "count";
-            }
-            elseif (strstr($tok, "s")){
-                $label = "step";
-            }
-            elseif (strstr($tok, "t")){
-                $label = "steptime";
-            }
-            else{
-                $label = "value";
-            }
-            echo " new ". $label . ": ";
-            echo "<input type='text' name = " . $tok . " size = 14 placeholder =" . $actual = $_SESSION["actual_data"][$device][$tok] . ">";
+            display_as($tok,"read_data");
         }
     }
     echo "</h3></div>";
 }
 
-function create_ap($basic_tok) {
-    echo "<div><h3 class='ap'>";
-    head_stack($basic_tok);
+function create_ap($basic_tok){
     $device = $_SESSION["device"];
+    echo "<div><h3 class='ap'>";
+    echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
+    head_stack($basic_tok);
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
-        if (strstr($tok, "b")){
-            continue;
-        }
+        if (strstr($tok, "b")){continue;}
         if (strstr($tok, "x")) {
             if (!strstr($tok, "x0")) {
                 # x0 is dummy
                 #data
                 echo $_SESSION["des_name"][$device][$tok] . ": ";
-                echo $_SESSION["actual_data"][$device][$tok][0] . " ";
+                echo $_SESSION["actual_data"][$device][$tok] . " ";
+                echo $_SESSION["unit"][$device][$tok]."<br>";
             }
         }
         else {
-            # answer command
-            echo "<br>new data:";
-            echo "<input type='checkbox' id=" . $basic_tok."a0" . " name=" . $basic_tok . "a0 value=1>";
+            display_as($basic_tok. "a0", "new_data");
         }
     }
     echo "</h3></div>";
@@ -301,14 +210,19 @@ function create_om($basic_tok) {
         if (strstr($token, "b")) {
             # memory- selector
             display_memory_selector($token);
-        } else {
-            # data
-            echo explode(",",$_SESSION["des_type"][$device][$token])[2] . ": ";
-            $dat = $_SESSION["actual_data"][$device][$token];
-            $type = $_SESSION["des_type"][$device][$token][0];
-            echo "<input type=text name=" . $token . " size =" . display_length($type)." placeholder =" . $dat . ">";
+            echo "<br>";
         }
-        echo "<br>";
+        elseif(strstr($token, "x1")) {
+            # data
+            $destype =  explode(";",$_SESSION["des_type"][$device][$token]);
+            echo $destype[2] . ": ";
+            $dat = $_SESSION["actual_data"][$device][$token];
+            echo "<input type=text name=" . $token . " size =" . display_length($destype[0])." placeholder =" . $dat . ">";
+            echo "<br>";
+        }
+        elseif(strstr($token, "a0")) {
+            display_as($token, "read_data");
+        }
     }
     echo "</h3></div>";
 }
@@ -320,19 +234,17 @@ function create_am($basic_tok){
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
         if (strstr($token, "b")) {
             display_memory_selector($token);
+            echo "<br>";
         }
-        elseif (strstr($token, "x")) {
-            echo explode(",", $_SESSION["des_type"][$device][$token])[2] . ": ";
+        elseif (strstr($token, "x1")) {
+            echo explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
             $dat = $_SESSION["actual_data"][$device][$token][0];
             echo " " . $dat;
+            echo "<br>";
         }
-        else {
-            echo "<br>new data: ";
-            echo "<input type='checkbox' id=" . $basic_tok."a0" . " name=" . $basic_tok . "a0 value=1>";
-            # reset
-            $_SESSION["actual_data"][$device][$token] = 0;
+        elseif(strstr($token, "a0")) {
+            display_as($token, "new_data");
         }
-        echo "<br>";
     }
     echo "</h3></div>";
 }
@@ -340,7 +252,8 @@ function create_am($basic_tok){
 function create_on($basic_tok) {
     $device = $_SESSION["device"];
     echo "<div><h3 class='on'>";
-    echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . "<br>";
+    echo $_SESSION["des_name"][$device][$basic_tok. "x0"];
+    echo "<br>";
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
         $type = "";
         if (strstr($token, "b")) {
@@ -349,20 +262,35 @@ function create_on($basic_tok) {
                 if ($_SESSION["des_range"][$device][$token] != 0) {
                     # not for FIFO
                     display_memory_selector($token);
+                    echo "<br>";
                 }
             }
-        } else {
-            # data
-            echo explode(",",$_SESSION["des_type"][$device][$token])[2] . ": ";
-            $max_elements = explode(",", $_SESSION["original_announce"][$device][basic_tok($token)][2])[0];
-            echo "max: " . $max_elements . " elements ";;
-            $dat = $_SESSION["actual_data"][$device][$token];
-            $type = $_SESSION["des_type"][$device][$token][0];
-            echo "<input type=text name=" . $token . " size = " . display_length($type)." placeholder =" . $dat . ">";
         }
-        if ($type != "s") {
+        elseif (strstr($token, "x1")){
+            # data
+            $des_type = explode(";",$_SESSION["des_type"][$device][$token]);
+            echo $des_type[2] . ": ";
+            $max_elements = explode(",", $_SESSION["original_announce"][$device][basic_tok($token)][2])[0];
+            echo "max: " . $max_elements . " elements ";
+            $dat = $_SESSION["actual_data"][$device][$token];
+            echo "<input type=text name=" . $token . " size = " . display_length($des_type[0])." placeholder =" . $dat . ">";
             echo "<br>";
         }
+        elseif(strstr($token, "a0")) {
+            display_as($token, "read_data");
+        }
+    }
+    if(array_key_exists($basic_tok, $_SESSION["as_token_as_to_basic"][$device])){
+      #  print "xxx";
+        if(array_key_exists($basic_tok. "b1", $_SESSION["des_range"][$device])){
+            if ($_SESSION["des_range"][$device][$basic_tok. "b1"] == 0) {
+                # for FIFO
+                display_memory_selector($basic_tok. "b0");
+            }
+        }
+    }
+    if ($type != "s") {
+        echo "<br>";
     }
     echo "</h3></div>";
 }
@@ -383,18 +311,16 @@ function create_an($basic_tok){
             else {
                 display_memory_selector($token);
             }
-        } elseif (strstr($token, "x")) {
-            echo explode(",", $_SESSION["des_type"][$device][$token])[2] . ": ";
+            echo "<br>";
+        } elseif (strstr($token, "x1")) {
+            echo explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
             $dat = $_SESSION["actual_data"][$device][$token];
             echo " <marquee width='20'>" . $dat . "</marquee>";
+            echo "<br>";
         }
-        else{
-            echo "<br>new data: ";
-            echo "<input type='checkbox' id=" . $basic_tok."a0" . " name=" . $basic_tok . "a0 value=1>";
-            # reset
-            $_SESSION["actual_data"][$device][$token] = 0;
+        elseif(strstr($token, "a0")) {
+            display_as($token, "new_data");
         }
-        echo "<br>";
     }
     echo "</h3></div>";
 }
@@ -405,19 +331,20 @@ function create_oa($basic_tok){
     echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ":<br>";
     $actual_pos = 0;
     $i = 0;
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
-        if (strstr($token, "x")) {
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $c_token) {
+        if (strstr($c_token, "x") and !strstr($c_token, "x0")) {
             # data
-            if (!strstr($token, "x0")) {
-                $name = explode(",", $_SESSION["des_type"][$device][$token])[2];
-                if ($name != ""){
-                    echo explode(",", $_SESSION["des_type"][$device][$token])[2] . ": ";
-                }
-                $dat = explode(",", $_SESSION["actual_data"][$device][$token])[$actual_pos];
-                $type = $_SESSION["des_type"][$device][$token][0];
-                echo "<input type=text name=" . $token . " size = " . display_length($type)." placeholder =" . $dat . ">";
-                echo "<br>";
+            $des_type = explode(";", $_SESSION["des_type"][$device][$c_token]);
+            $name = $des_type[2];
+            if ($name != "") {
+                echo $des_type[2] . ": ";
             }
+            $dat = explode(",", $_SESSION["actual_data"][$device][$c_token])[$actual_pos];
+            echo "<input type=text name=" . $c_token . " size = " . display_length($des_type[0]) . " placeholder =" . $dat . ">";
+            echo "<br>";
+        }
+        elseif(strstr($c_token, "a0")){
+            display_as($c_token, "read_data");
         }
         $i += 5;
     }
@@ -428,26 +355,21 @@ function create_aa($basic_tok) {
     $device = $_SESSION["device"];
     echo "<div><h3 class='aa'>";
     echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
-    $actual_pos = 0;
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
         if (strstr($token, "b")) {
             $range = explode(",", $_SESSION["des_range"][$device][$token]);
             simple_selector($token, $range, $_SESSION["actual_data"][$device][$token]);
-            $actual_pos = $_SESSION["actual_data"][$device][basic_tok($token) . "b0"];
         }
         elseif (strstr($token, "x")) {
             # data
             if (!strstr($token, "x0")) {
-                echo explode(",", $_SESSION["des_type"][$device][$token])[2] . ": ";
+                echo explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
                 $dat = $_SESSION["actual_data"][$device][$token];
                 echo " " . $dat . "<br>";
             }
         }
         else{
-            echo "new data: ";
-            echo "<input type='checkbox' id=" . $basic_tok."a0" . " name=" . $basic_tok . "a0 value=1>";
-            # reset
-            $_SESSION["actual_data"][$device][$token] = 0;
+            display_as($token, "new_data");
         }
     }
     echo "</h3></div>";
@@ -460,28 +382,28 @@ function create_ob($basic_tok){
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
         $type = "";
         if (strstr($token, "b")) {
-            if (strstr($token, "b")) {
-                if (strstr($token, "b0")) {
-                    echo "number of elements: ";
+            if (strstr($token, "b0")) {
+                echo "number of elements: ";
+            }
+            else{
+                echo "start at: ";
+            }
+            $range = explode(",", $_SESSION["des_range"][$device][$token]);
+            simple_selector($token, $range, $_SESSION["actual_data"][$device][$token]);
+        }
+        elseif(strstr($token, "x")) {
+            # data
+            if (!strstr($token, "x0")) {
+                $des_type = explode(";", $_SESSION["des_type"][$device][$token]);
+                $name =$des_type[2];
+                if ($name != ""){
+                    echo $des_type[2] . ": ";
                 }
-                else{
-                    echo "start at: ";
-                }
-                $range = explode(",", $_SESSION["des_range"][$device][$token]);
-                simple_selector($token, $range, $_SESSION["actual_data"][$device][$token]);
-                $actual_pos = $_SESSION["actual_data"][$device][basic_tok($token) . "b0"];
+                echo "<input type=text name=" . $token . " size = " . display_length($des_type[0])." placeholder =" . $_SESSION["actual_data"][$device][$token] . ">";
             }
         }
         else {
-            # data
-            if (!strstr($token, "x0")) {
-                $name = explode(",", $_SESSION["des_type"][$device][$token])[2];
-                if ($name != ""){
-                    echo explode(",", $_SESSION["des_type"][$device][$token])[2] . ": ";
-                }
-                $type = $_SESSION["des_type"][$device][$token][0];
-                echo "<input type=text name=" . $token . " size = " . display_length($type)." placeholder =" . $_SESSION["actual_data"][$device][$token] . ">";
-            }
+            display_as($token, "read_data");
         }
         if ($type != "s") {
             echo "<br>";
@@ -495,7 +417,6 @@ function create_ab($basic_tok) {
     $device = $_SESSION["device"];
     echo "<div><h3 class='ab'>";
     echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
-    $actual_pos = 0;
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
         if (strstr($token, "b")) {
             if (strstr($token, "b0")) {
@@ -506,23 +427,44 @@ function create_ab($basic_tok) {
             }
             $range = explode(",", $_SESSION["des_range"][$device][$token]);
             simple_selector($token, $range, $_SESSION["actual_data"][$device][$token]);
-            $actual_pos = $_SESSION["actual_data"][$device][basic_tok($token) . "b0"];
         }
         elseif (strstr($token, "x")) {
             # data
             if (!strstr($token, "x0")) {
-                echo explode(",", $_SESSION["des_type"][$device][$token])[2] . ": ";
-                $dat =  $_SESSION["actual_data"][$device][$token];
-                echo " " . $dat . "<br>";
+                echo "<br>".explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
+                echo " " . $_SESSION["actual_data"][$device][$token];
             }
         }
         else{
-            echo "new data: ";
-            echo "<input type='checkbox' id=" . $basic_tok."a0" . " name=" . $basic_tok . "a0 value=1>";
-            # reset
-            $_SESSION["actual_data"][$device][$token] = 0;
+            echo "<br>";
+            display_as($token, "new_data");
         }
     }
     echo "</h3></div>";
+}
+
+function head_stack($basic_tok){
+    # create stack display elements at first element of a command
+    $device = $_SESSION["device"];
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $ctoken) {
+        if (strstr($ctoken,"b") or strstr($ctoken,"c")){
+            # for basic_tok only
+            if ($basic_tok == basic_tok($ctoken)){
+                $actual = $_SESSION["actual_data"][$device][$ctoken];
+                echo $_SESSION["des_name"][$device][$ctoken] . ": ";
+                $stacks = explode(",", $_SESSION["des_range"][$device][$ctoken]);
+                simple_selector($ctoken, $stacks, $actual);
+            }
+        }
+    }
+}
+
+function display_as($token,$label){
+    # for "as"token
+    $device = $_SESSION["device"];
+    echo $_SESSION["user"]["language"][$_SESSION["user"]["username"]][$label] . ": ";
+    echo "<input type='checkbox' id=" .$token . " name=" . $token . " value=1>";
+    # reset
+    $_SESSION["actual_data"][$device][$token] = 0;
 }
 ?>

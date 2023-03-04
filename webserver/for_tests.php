@@ -2,7 +2,7 @@
 # read_new_device.php
 # DK1RI 20221215
 function for_tests($device){
-    create_session_data_file($device, "chapter_names", $_SESSION["chapter_names"][$device]);
+    create_session_data($device, "chapter_names", $_SESSION["chapter_names"][$device]);
     create_session_data_file_array($device, "original_announce", $_SESSION["original_announce"][$device]);
     create_session_data_file_array($device, "announce_all", $_SESSION["announce_all"][$device]);
     create_session_data_file_array($device, "chapter_token", $_SESSION["chapter_token"][$device]);
@@ -17,8 +17,15 @@ function for_tests($device){
     create_session_data_file("$device", "conf", $_SESSION["conf"]);
 }
 
+function create_session_data($device, $name, $data){
+  #  print ($name);
+    $file = fopen("./devices/".$device."/session_".$name, "w");
+        fwrite( $file,$data."\n");
+    fclose($file);
+}
+
 function create_session_data_file($device, $name, $data){
-  #   print ($name);
+ #    print ($name);
     $file = fopen("./devices/".$device."/session_".$name, "w");
     foreach ($data as $key=> $value){
         fwrite( $file,$key." ".$value."\n");

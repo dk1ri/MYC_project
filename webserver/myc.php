@@ -1,7 +1,7 @@
 <html lang = "de">
 <!-- werbserver for MYC system
      myc.php
-     Version 1.1 20230205
+     Version 1.1 20230228
      to check:
      retranslate_simple_range required? or wrong?
 
@@ -10,11 +10,12 @@
      ext
      range commands: sequence like log, date.. (lin only)
      CONVERT
+     analyze read data
      -->
     <head>
         <title>MYC Apache Server</title>
         <meta name="author" content="DK1RI">
-        <meta http-equiv="refresh" content="1030">
+        <meta http-equiv="refresh" content="1000">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             .flex-container {
@@ -40,13 +41,18 @@
         include "select_any.php";
         ?>
         <form action="action.php" method="post">
-            <!--name will be used later to create user individual caches -->
-            <p>Ihr Name: <input type="text" name = "name" size = 15>
-            Interface: <input type="text" name = "interface" size = 15>
             <?php
-            select_any($_SESSION["device_list"],  $_SESSION["device_list"][0], "devices")
+            $name = $_SESSION["user"]["username"];
+            echo $_SESSION["user"]["language"][$name]["language"] . ": ";
+            simple_selector("languages", $_SESSION["lang_select"], $_SESSION["is_lang"]);
+            echo " " .$_SESSION["user"]["language"][$name]["your_name"] . ": ";
+            # name will be used later to create user individual caches
+            echo "<input type='text' name = 'user_name' size = 15 value=" . $_SESSION["user"]["username"] . ">";
+            echo " Interface: <input type='text' name = 'interface' size = 15>";
+            echo $_SESSION["user"]["language"][$name]["device"] . ": ";
+            simple_selector("device",  explode(",", $_SESSION["device_list"]), $_SESSION["actual_data"]["_device_"])
             ?>
-            </p><p><input type="submit" /></p>
+           <p><input type="submit" /></p>
         </form>
     </body>
 </html>

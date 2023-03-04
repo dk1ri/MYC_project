@@ -1,29 +1,12 @@
 <?php
 # translate.php
-# DK1RI 20230119
+# DK1RI 20230302
 function correct_POST($device){
     # make mods on op ap oo commands only
     # now data beyond the limits can be inputted for op oo commands with > 100 distinct values
     # before using for send and actual_data, they will be corrected to nearest valid data
     # all $_SESSION["corrected_POST"] values are strings
     $_SESSION["corrected_POST"][$device] = [];
-    foreach ($_POST as $token => $value) {
-        if (!array_key_exists($token, $_SESSION["announce_all"][$device])) {
-            #interface device ...
-            if ($token == "device") {
-                if ($value != $_SESSION["device"]) {
-                    $_SESSION["device"] = $value;
-                    $_POST = [];
-                }
-            }
-            if ($token == "chapter") {
-                if ($value != $_SESSION["chapter"]) {
-                    $_SESSION["chapter"] = $value;
-                }
-            }
-            # other than device are not used now
-        }
-    }
     foreach ($_POST as $token => $value) {
         if (array_key_exists($token, $_SESSION["announce_all"][$device])) {
             $basic_tok = basic_tok($token);
@@ -36,15 +19,14 @@ function correct_POST($device){
                     break;
                 case "om":
                 case "am":
-                case "on";
                 case "an":
                     if (strstr($token, "b")) {
                         $_SESSION["corrected_POST"][$device][$token] = correct_memory_range($token, $value);
                     }
                     elseif (strstr($token, "x")){
                         # data
-                        $type = $_SESSION["des_type"][$device][$token][0];
-                        $_SESSION["corrected_POST"][$device][$token] = correct_data($value, $type);
+                        $des_type = explode(";", $_SESSION["des_type"][$device][$token])[0];
+                        $_SESSION["corrected_POST"][$device][$token] = correct_data($value, $des_type);
                     }
                     else {
                         $_SESSION["corrected_POST"][$device][$token] = $value;
@@ -69,8 +51,8 @@ function correct_POST($device){
                                 $tok_sub_number = 0;
                             }
                         }
-                        $type = $_SESSION["des_type"][$device][$token][0];
-                        $_SESSION["corrected_POST"][$device][$token] = correct_data($value, $type);
+                        $des_type = explode(";", $_SESSION["des_type"][$device][$token])[0];
+                        $_SESSION["corrected_POST"][$device][$token] = correct_data($value, $des_type);
                     }
                     break;
                 case "aa":
@@ -78,7 +60,7 @@ function correct_POST($device){
                     $_SESSION["corrected_POST"][$device][$token] = $value;
                     break;
                 default:
-                    # switches
+                    # switches and on ( comman separated list
                     $_SESSION["corrected_POST"][$device][$token] = $value;
             }
         }
@@ -194,9 +176,8 @@ function correct_data($data, $type){
     return strval($data);
 }
 
-function translate_dec_to_hex($type, $data, $length){
+function translate_dec_to_hex($basic_tok, $type, $data, $length){
     # $type is a MYC datatype
-    # $type == n is number with length
     # $type == n is unsigned number with $length
     # $data is already corrected
     switch ($type) {
@@ -224,10 +205,16 @@ function translate_dec_to_hex($type, $data, $length){
             return dec_hex((int)$data, 8);
         case (is_numeric($type)):
             # string
-            $length_of_len = length_of_type($length);
-            return fillup(strlen($data), $length_of_len).bin2hex($data);
+            $device = $_SESSION["device"];
+            $string_length = strlen($data);
+            if ($string_length > $length){
+                $string_length = $length;
+                $data = substr($data,0,$string_length);
+            }
+            $s_length = $_SESSION["property_len"][$device][$basic_tok][2];
+            $result = dec_hex($string_length, $s_length);
+            return $result . bin2hex($data);
     }
-    #dummy
     return "";
 }
 
@@ -285,7 +272,7 @@ function translate_hex_to_actual($device, $token, $data){
     # data for memory type
     # input: array of ascii value (string) from device; must be converted to actual data for GUI
     # in $_SESSION["actual_data"]..
-    $type = $_SESSION["des_type"][$device][$token][0];
+    $type = explode(";",$_SESSION["des_type"][$device][$token])[0];
     $dat = "";
     switch ($type){
         case "a";
@@ -328,18 +315,16 @@ function translate_simple_range($tok, $pos){
     return $range[$pos];
 }
 
-function retranslate_simple_range($tok, $actual, $add ){
+function retranslate_simple_range($range, $actual, $add ){
     # this is the inverse of translate_simple_range
     # range is comma separated list 1,a,2,b,3,1,4,2,5,4...
     # return is position of actual in range
     # actual is found always
     # for stacks: $add = 2
     # for memory-positions $add = 1
-    $device = $_SESSION["device"];
     $i = 0;
     $found = 0;
     $value = 0;
-    $range = explode(",", $_SESSION["des_range"][$device][$tok]);
     while ($i <  count($range) and $found == 0) {
         if ($actual == $range[$i + 1]) {
             $found = 1;
@@ -356,7 +341,6 @@ function retranslate_full($tok, $actual){
     # for $actual > 255 $_SESSION["des_range"][$device][$tok] has copy of original announcement
     # max[,label][{a,b,c,x_ytoz}]
     $device = $_SESSION["device"];
-    $i = 0;
     $found = 0;
     $value = 0;
     $ranges = explode(",",$_SESSION["des_range"][$device][$tok]);
@@ -365,11 +349,11 @@ function retranslate_full($tok, $actual){
         $value = $actual;
     }
     # remove max
-    $temp = array_splice($ranges,0,1);
+    $t = array_splice($ranges,0,1);
     if (count($ranges)> 0){
         if (!strstr($ranges[0],"_") and !strstr($ranges[0], "to")){
             # label has no _ and to
-            $temp = array_splice($ranges,0,1);
+            $t = array_splice($ranges,0,1);
         }
     }
     if (count($ranges)> 0){

@@ -1,7 +1,7 @@
 """
 name : helper_2022.py
 Author: DK1RI
-Version 01.0, 20230108
+Version 01.0, 20230214
 call with: helper_202210.py <device>
 Purpose :
 make some modifications on announcement file
@@ -13,63 +13,29 @@ import sys
 import shutil
 
 
-def basic_tok(token):
-    if token.find("c") != -1:
-        return token.split("c")[0]
-    # for "ADD"
-    elif token.find("b") != -1:
-        # for stack and memory selector
-        return token.split("b")[0]
-    elif token.find("k") != -1:
-        # oa aa ob ab
-        return token.split("k")[0]
-    elif token.find("l") != -1:
-        # os as or ar o at
-        return token.split("l")[0]
-    elif token.find("m") != -1:
-        # om an
-        return token.split("m")[0]
-    elif token.find("n") != -1:
-        # on an
-        return token.split("n")[0]
-    elif token.find("p") != -1:
-        # op ap
-        return token.split("p")[0]
-    if token.find("q") != -1:
-        # oo
-        return token.split("q")[0]
-    if token.find("w") != -1:
-        # memory selector
-        return token.split("w")[0]
-    if token.find("x") != -1:
-        # memory data
-        return token.split("x")[0]
-    else:
-        return token
-
 def replace_cr():
     # select operate and sole answer commands
     # ignore others ( i, z)
     # write dependent answer commands to answer_commands
     announce_file = ""
-    for afile in os.listdir(device):
+    for afile in os.listdir("devices/" + device):
         if afile == "_announcements":
-            announce_file = open(device + "/_announcements")
+            announce_file = open("devices/" + device + "/_announcements")
             break
         elif afile == "__announcements":
-            announce_file = open(device + "/__announcements")
+            announce_file = open("devices/" + device + "/__announcements")
             break
         elif afile == "___announcements":
-            announce_file = open(device + "/___announcements")
+            announce_file = open("devices/" + device + "/___announcements")
             break
         elif afile == "_announcements.bas":
-            announce_file = open(device + "/_announcements.bas")
+            announce_file = open("devices/" + device + "/_announcements.bas")
             break
         elif afile == "__announcements.bas":
-            announce_file = open(device + "/__announcements.bas")
+            announce_file = open("devices/" + device + "/__announcements.bas")
             break
         elif afile == "___announcements.bas":
-            announce_file = open(device + "/___announcements.bas")
+            announce_file = open("devices/" + device + "/___announcements.bas")
             break
     if announce_file == "":
         sys.exit("no annoncefile")
@@ -85,7 +51,7 @@ def replace_cr():
         if lines_[1][0] == "R":
             continue
         an.append(lines_[1])
-    # concatenate lines with same token
+    # concatenate lines with same token:
     ia = 0
     last_line = ""
     last_token = ""
@@ -113,49 +79,68 @@ def replace_cr():
         ann.append(last_line)
     an = []
     #
-    # delete answer "as" lines and "ext" lines
     answer_commands = []
     i = 0
     last_tok = ""
+    last_ann = ""
+    ank = []
     while i < len(ann):
-        # a and o and basiccommand only
-        if ann[i].split(";")[0] != "0":
-            ot = ann[i].split(";")[1].split(",")[0][0]
-            if ot != "o" and ot != "a":
-                i += 1
-                continue
+        # expand as commands
+        if (len(ann[i].split(";")[1].split(",")) > 1):
+            if ann[i].split(";")[1].split(",")[1][0:2] != "as" and ann[i].split(";")[1].split(",")[1][0:3] != "ext":
+                last_tok = ann[i].split(";")[0]
+                last_ann = ann[i]
+                ank.append(ann[i])
+            else:
+                # a commands follow directly
+                if last_ann != "":
+                    act_tok = ann[i].split(";")[0]
+                    act_ct = ann[i].split(";")[1]
+                    answer_commands.append(act_tok + " " + last_tok)
+                    ann[i] = last_ann
+                    a = ann[i].split(";")
+                    a[0] = act_tok
+                    a[1] = act_ct
+                    ank.append(";".join(a))
+                    last_ann = ""
+        else:
+            last_tok = ann[i].split(";")[0]
+            last_ann = ann[i]
+            ank.append(ann[i])
+        i += 1
+    i = 0
+    while i < len(ank):
+        ot = ank[i].split(";")[1].split(",")[0][0]
+        if ot != "o" and ot != "a" and ot != "m":
+            # change k / l to o / a and add CHAPTER
+            a = ank[i].split(";")
+            cm = a[1].split(",")
+            if cm[0][0] == "k":
+                cm[0] ="o" + cm[0][1:]
+            if cm[0][0] == "l":
+                cm[0] = "a" + cm[0][1:]
+            a[1]= ",".join(cm)
+            ank[i] = ";".join(a)
+            ank[i] += ";14,CHAPTER,ADMINISTRATION"
         # delete METER
-        field = ann[i].split(";")
-        if ann[i].find("METER") != -1:
+        field = ank[i].split(";")
+        if ank[i].find("METER") != -1:
             j = 0
             while j < len(field):
                 if field[j].find("METER") != -1:
                     break
                 j += 1
             field = field[:j]
-            ann[i] = ";".join(field)
-        act_tok = ann[i].split(";")[0]
-        if ann[i].split(";")[1].split(",")[0][0] != "a":
-            an.append(ann[i])
-            last_tok = ann[i].split(";")[0]
-        else:
-            # a commands
-            if len(ann[i].split(";")[1].split(",")) > 1:
-                asfield = ann[i].split(";")[1].split(",")[1]
-                if asfield[0:2] == "as" or asfield[0:3] == "ext":
-                    answer_commands.append(act_tok + " " + last_tok)
-                else:
-                    an.append(ann[i])
-            else:
-                an.append(ann[i])
+            ank[i] = ";".join(field)
+        an.append(ank[i])
         i += 1
-    return an
+    return answer_commands, an
 
 
 device = "commandrouter"
 if len(sys.argv) != 1:
     device = sys.argv[1]
-    path = "./" + device
+    path = "./devices/" + device
     if os.path.exists(path):
         pass
     else:
@@ -163,14 +148,25 @@ if len(sys.argv) != 1:
 else:
     sys.exit("call with: helper2022.py <device>")
 #
-cr_ann = replace_cr()
+answer_commands, cr_ann = replace_cr()
 #
-filename = "./" + device + "/" + "announcements"
+filename = "./devices/" + device + "/" + "announcements"
 if os.path.exists(filename):
     os.remove(filename)
 file = open(filename, "a")
 i = 0
 for lines in cr_ann:
+    if i > 0:
+        file.write(chr(10))
+    file.write(lines)
+    i += 1
+
+filename = "./devices/" + device + "/" + "as_commands"
+if os.path.exists(filename):
+    os.remove(filename)
+file = open(filename, "a")
+i = 0
+for lines in answer_commands:
     if i > 0:
         file.write(chr(10))
     file.write(lines)

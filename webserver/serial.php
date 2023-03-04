@@ -6,7 +6,6 @@ function serial_write($data){
     }
     $file = fopen($_SESSION["serialwrite"], "w");
     fwrite($file, $data);
-    ob_end_flush();
     fclose($file);
     $_SESSION["last_command_status"] = 0;
     if ($_SESSION["read"]){

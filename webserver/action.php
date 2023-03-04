@@ -1,180 +1,6 @@
 <?php
 # action.php
-# DK1RI 20230209
-function basic_tok($o_tok){
-    # return basic_token
-    if (strstr($o_tok, "a")) {
-        # for answer commands
-        $tok = explode("a", $o_tok)[0];
-    } elseif (strstr($o_tok, "b")) {
-        # for stack
-        $tok = explode("b", $o_tok)[0];
-    } elseif (strstr($o_tok, "c")) {
-        # for ADD
-        $tok = explode("c", $o_tok)[0];
-    } elseif (strstr($o_tok, "x")) {
-        # for data
-        $tok = explode("x", $o_tok)[0];
-    } else {
-        $tok = $o_tok;
-    }
-    return $tok;
-}
-
-function dec_hex($key, $len){
-    $val = dechex((int)$key);
-    $i = strlen($val);
-    while ($i < $len){
-        $val = "0".$val;
-        $i += 1;
-    }
-    return $val;
-}
-
-function convert($num){
-    if (strstr($num, ".")){
-        return floatval($num);
-    }
-    else {
-        return intval($num);
-    }
-}
-
-function length_of_type($data){
-    # no of bytes for transmit
-    if (is_numeric($data)){
-        $number = (int)$data;
-        # length of binary number
-        $len = 2;
-        if ($number > 16777215){
-            $len = 8;
-        } elseif ($number > 65535) {
-            $len = 6;
-        } elseif ($number > 255){
-            $len = 4;
-        }
-        return $len;
-    }
-    else {
-        switch ($data) {
-            case "a":
-            case "b":
-                return 2;
-            case "i":
-            case "w":
-                return 4;
-            case "e":
-            case "L":
-            case "s":
-                return 8;
-            case "d":
-            case "t":
-                return 16;
-        }
-    }
-    # dummy
-    return $data;
-}
-
-function display_length($type){
-    # max length to display the ral value
-    if (is_numeric($type)){
-        # string
-        return $type;
-    }
-    else {
-        switch ($type) {
-            case "a":
-                return 1;
-            case "b":
-            case "f":
-                return 3;
-            case "c":
-                return 4;
-            case "w":
-                return 5;
-            case "i":
-                return 6;
-            case "s":
-                return 8;
-            case "L":
-                return 10;
-            case "e":
-                return 11;
-            case "d":
-                return 18;
-            default:
-                return 2;
-        }
-    }
-}
-
-function find_allowed($type){
-    switch ($type){
-        case "a":
-            return "0|1";
-        case "b":
-            return "0 to 255";
-        case "c":
-            return "-128 to 127";
-        case "i":
-            return "-32768 to 32767";
-        case "w":
-            return "0 to 65535";
-        case "e":
-            return "-2147483648 to 2147483647";
-        case "L":
-            return "0 to 4294967295";
-        case "s":
-            return "3 byte / 0 to 255";
-        case "d":
-            return "7byte / 0 to 255";
-        default:
-            return "";
-    }
-}
-
-function find_name($type){
-    switch ($type){
-        case "a":
-            return "bit";
-        case "b":
-            return "byte";
-        case "c":
-            return "signedshort";
-        case "i":
-            return "signed word";
-        case "w":
-            return "word";
-        case "e":
-            return "signed long";
-        case "L":
-            return "long";
-        case "s":
-            return "single";
-        case "d":
-            return "double";
-        case is_numeric($type):
-            return "alpha";
-    }
-    # dummy
-    return $type;
-}
-
-function adapt_len($token, $element, $actual){
-    $device =$_SESSION["device"];
-    $result = "";
-    $length = $_SESSION["property_len"][$device][basic_tok($token)][2];
-    $i = strlen(strval($actual));
-    if ($length > 20){
-        $length = 20;
-    }
-    while ($i < $length){
-        $result .= " ";
-        $i += 1;
-    }
-    return $result.$actual;
-}
+# DK1RI 20230302
 ?>
 
 <html lang = "de">
@@ -195,8 +21,8 @@ function adapt_len($token, $element, $actual){
 
             .flex-container > div {
                 background-color: #d1f8ff;
-                margin: 5px;
-                padding: 10px;
+                margin: 2px;
+                padding: 2px;
                 font-size: 15px;
             }
             .green {
@@ -227,16 +53,36 @@ function adapt_len($token, $element, $actual){
     </head>
     <body>
         <?php
-        if (array_key_exists("devices", $_POST)) {
+        if (array_key_exists("user_name", $_POST)) {
+            $_SESSION["user"]["username"] = $_POST["user_name"];
+        }
+        if (array_key_exists("languages", $_POST)) {
+            $_SESSION["user"]["is_lang"] = $_POST["languages"];
+            # 0 englich 1 deutsch ...
+            $language = $_SESSION["lang_select"][$_POST["languages"] * 2 + 1];
+            $_SESSION["user"]["language"][$_SESSION["user"]["username"]] = $_SESSION["lang"][$language];
+        }
+        if (array_key_exists("device", $_POST)) {
             # other device?
-            $device = htmlspecialchars($_POST['devices']);
-            $_SESSION["device"] = $device;
-        }else{
-            $device = $_SESSION["device"];
+            $post_dev = $_POST["device"];
+            if ($post_dev != $_SESSION["actual_data"]["_device_"]) {
+                $_SESSION["actual_data"]["_device_"] = $post_dev;
+                $_SESSION["device"] = explode(",", $_SESSION["device_list"])[2 * $post_dev + 1];
+                # nothing else is done:
+                $_POST = [];
+            }
+        }
+        $device = $_SESSION["device"];
+        if (array_key_exists("chapter", $_POST)) {
+            $post_dev = $_POST["chapter"];
+            if ($post_dev != $_SESSION["actual_data"]["_device_"]) {
+                $_SESSION["actual_data"]["_chapter_"] = $post_dev;
+            }
         }
         # create / read new device for $_SESSION, if not existing
         # not actually used devices are not deleted
-        include  "translate.php";
+        include "translate.php";
+        include "subs.php";
         include "send_and_update.php";
         include "display_commands.php";
         include "create_commands.php";
@@ -262,23 +108,21 @@ function adapt_len($token, $element, $actual){
         <form action="action.php" method="post">
         <input type="submit" />
         </div><div>
-        Ihr Name: <input type="text" name='name' size = 14 value = <?php echo $_SESSION["name"]?>>
-        </div><div>
         Interface: <input type="text" name = "interface" size = 14 name='name' value = <?php echo $_SESSION["interface"] ?>>
         <br>
-                <?php
-                if ($_SESSION["last_command_status"]){
-                    echo "<strong class = 'red'>last command not ok</strong>";
-                }
-                else{
-                    echo "<strong class = 'green'>last command ok</strong>";
-                }
-                ?>
+        <?php
+        if ($_SESSION["last_command_status"]){
+            echo "<strong class = 'red'>last command not ok</strong>";
+        }
+        else{
+            echo "<strong class = 'green'>last command ok</strong>";
+        }
+        ?>
         </div><div>
         <?php
-        select_any( $_SESSION["device_list"], $_SESSION["device"], "devices");
+        simple_selector("device",  explode(",", $_SESSION["device_list"]), $_SESSION["actual_data"]["_device_"]);
         echo ("<br>");
-        select_any($_SESSION["chapter_names"][$device], $actual_chapter, "chapter");
+        simple_selector("chapter", explode(",", $_SESSION["chapter_names"][$_SESSION["device"]]), $_SESSION["actual_data"]["_chapter_"]);
         echo "</div>";
         display_commands();
         echo "</form>";

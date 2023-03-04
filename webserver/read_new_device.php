@@ -1,6 +1,6 @@
 <?php
 # read_new_device.php
-# DK1RI 20230210
+# DK1RI 20230224
 function read_new_device($device){
     #create additional device (old ones not deleted)
     # split anouncelist to display objects and get chapter_names
@@ -26,6 +26,7 @@ function calculate_property_len(){
     $device = $_SESSION["device"];
     end($_SESSION["original_announce"][$device]);
     $tok_len = length_of_type(basic_tok(key($_SESSION["original_announce"][$device])));
+    $_SESSION["command_len"][$device] = $tok_len;
     $_SESSION["property_len"][$device] = [];
     foreach ($_SESSION["original_announce"][$device] as $key => $value) {
         $_SESSION["property_len"][$device][$key][] = $tok_len;
@@ -40,7 +41,7 @@ function calculate_property_len(){
             case "at":
                 # token + stacks + no_of switches
                 stack_len($key, $value[1]);
-                $temp = end ($value);
+                $t = end ($value);
                 $_SESSION["property_len"][$device][$key][] = length_of_type(key($value) -2);
                 break;
             case "op":
@@ -109,21 +110,70 @@ function stack_len($key, $value){
 }
 
 function calculate_cor_token($device){
-    # list of token with same $basic_tok; exception : oo commands
+    $_SESSION["as_token"][$device] = [];
+    # list of token with same $basic_tok; exception : oo commands and y,asx commands
+    $asfile = "devices/".$device."/as_commands";
+    $as_command =[];
+    if (file_exists($asfile)) {
+        $file = fopen($asfile, "r");
+        while (!(feof($file))) {
+            $line = fgets($file);
+            $line = str_replace("\r", "", $line);
+            $line = str_replace("\n", "", $line);
+            if ($line != "") {
+                $li = explode(" ", $line);
+                $as_command[$li[0]] = $li[1];
+                $_SESSION["as_token"][$device][$li[0]] = $li[1];
+                $_SESSION["as_token_as_to_basic"][$device][$li[1]] = $li[0];
+            }
+        }
+        fclose($file);
+    }
     $_SESSION["cor_token"][$device] = [];
     $new_basic_tok = 0;
+    $oo_found = "";
+    $as_found = "";
     foreach ($_SESSION["announce_all"][$device] as $key => $value) {
-        $basic_tok = basic_tok($key);
-        # for "oo" token:
-        if (explode(",",$_SESSION["announce_all"][$device][$key][0])[0] == "oo"){
-            # add to last ("op")token only
-            $_SESSION["cor_token"][$device][$new_basic_tok][] = $key;
-            # necessary for indivdual send of oo command:
+        if (explode(",",$_SESSION["announce_all"][$device][$key][0])[0] == "oo") {
+            $oo_found .= ",".$key;
+            $_SESSION["cor_token"][$device][basic_tok($key)][] = $key;
+        }
+        elseif (array_key_exists(basic_tok($key),$as_command)){
+            $as_found = $key;
+            $_SESSION["cor_token"][$device][basic_tok($key)][] = $key;
+        }
+        else{
+            # new: append oo as
+            $basic_tok = basic_tok($key);
+            if($basic_tok != $new_basic_tok) {
+                if ($oo_found != "") {
+                    $oo_a = explode(",", $oo_found);
+                    $j = 1;
+                    while ($j < count($oo_a)){
+                        $_SESSION["cor_token"][$device][$new_basic_tok][] = $oo_a[$j];
+                        $j += 1;
+                    }
+                }
+                if ($as_found != "") {
+                    $_SESSION["cor_token"][$device][$new_basic_tok][] = $as_found;
+                }
+                $new_basic_tok = $basic_tok;
+                $oo_found = "";
+                $as_found = "";
+            }
             $_SESSION["cor_token"][$device][$basic_tok][] = $key;
         }
-        else {
-            $new_basic_tok = $basic_tok;
-            $_SESSION["cor_token"][$device][$basic_tok][] = $key;
+    }
+    # if last entry was as or oo
+    if($as_found != "" or $oo_found != ""){
+        $j = 1;
+        $oo_a = explode(",", $oo_found);
+        while ($j < count($oo_a)){
+            $_SESSION["cor_token"][$device][$new_basic_tok][] = $oo_a[$j];
+            $j += 1;
+        }
+        if ($as_found != "") {
+            $_SESSION["cor_token"][$device][$new_basic_tok][] = $as_found;
         }
     }
 }
@@ -195,17 +245,7 @@ function init_data($device){
             case "ar":
             case "or":
                 if (strstr($key, "x")) {
-                    # result is comma separated with one element per position
-                    $data = "";
-                    $i = 1;
-                    while ($i < count($value)) {
-                        if ($i != 1) {
-                            $data .= ",";
-                        }
-                        $data .= "0";
-                        $i += 1;
-                    }
-                    $_SESSION["actual_data"][$device][$key] = $data;
+                    $_SESSION["actual_data"][$device][$key] = "0";
                 }
                 elseif (strstr($key, "b")) {
                     # stack
@@ -218,14 +258,29 @@ function init_data($device){
                 break;
             case "ap":
             case "op":
-            case "oo":
                 # always one dimension data or stack
+                $start = 0;
                 if (strstr($key, "x")) {
                     # always one dimension data
                     if (!strstr($key, "x0")) {
                         # x0 is dummy
-                        $_SESSION["actual_data"][$device][$key] = explode(",", $_SESSION["des_range"][$device][$key])[0];
-                    }
+                        $range = $_SESSION["des_range"][$device][$key];
+                        $ra = explode(",", $range);
+                        if (count($ra) > 1) {
+                            if (!strstr($ra[1], "to")) {
+                                # a,g,b 1_...
+                                $r = explode(",", $ra[1])[0];
+                                $start = str_replace("{", "", $r);
+                            }
+                            else {
+                                # range
+                                $start = explode("_", explode("to", $ra[1])[0])[1];
+                            }
+                        }
+                        } else {
+                            $start = 0;
+                        }
+                        $_SESSION["actual_data"][$device][$key] = $start;
                 }
                 elseif (strstr($key, "b")) {
                     # stack
@@ -238,23 +293,7 @@ function init_data($device){
                 break;
             case "oo":
                 # data only
-                if (strstr($key, "r")) {
-                    # steps
-                    $_SESSION["actual_data"][$device][$key] = "idle";
-                }
-                elseif (strstr($key, "t")) {
-                    # time
-                    if ($_SESSION["des_range"][$device][$key] == 0){
-                        $_SESSION["actual_data"][$device][$key] = 0;
-                    }
-                    else {
-                        $_SESSION["actual_data"][$device][$key] = strval(explode(",", $_SESSION["des_range"][$device][$key])[1]);
-                    }
-                }
-                elseif (strstr($key, "s")) {
-                    $_SESSION["actual_data"][$device][$key] = 0;
-                }
-                # others are dummy
+                $_SESSION["actual_data"][$device][$key] = 0;
                 break;
             case "om":
             case "am":
@@ -264,9 +303,9 @@ function init_data($device){
                     # for memory positions
                     $_SESSION["actual_data"][$device][$key] = 0;
                 }
-                elseif(strstr($key, "x")) {
+                elseif(strstr($key, "x1")) {
                     # for data
-                    $_SESSION["actual_data"][$device][$key] = explode(",",$_SESSION["des_type"][$device][$key])[4];
+                    $_SESSION["actual_data"][$device][$key] = explode(";",$_SESSION["des_type"][$device][$key])[4];
                 }
                 else{
                     # for answer command
@@ -282,7 +321,7 @@ function init_data($device){
                 elseif(strstr($key, "x")) {
                     # for data, comma separated value
                     if(!strstr($key,"x0")) {
-                        $start = explode(",", $_SESSION["des_type"][$device][$key])[4];
+                        $start = explode(";", $_SESSION["des_type"][$device][$key])[4];
                         $_SESSION["actual_data"][$device][$key] = $start;
                     }
                 }
@@ -300,7 +339,7 @@ function init_data($device){
                 elseif(strstr($key, "x")) {
                     # for data, comma separated value
                     if(!strstr($key,"x0")) {
-                        $start = explode(",", $_SESSION["des_type"][$device][$key])[4];
+                        $start = explode(";", $_SESSION["des_type"][$device][$key])[4];
                         $_SESSION["actual_data"][$device][$key] = $start;
                     }
                     else {
