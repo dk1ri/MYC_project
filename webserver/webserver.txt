@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 Webserver for a MYC System
 
 Author: DK1RI
-Version V01.01.03 20230213
+Version V01.01.04 20230304
 This paper is published in  https://github.com/dk1ri  as well
 
 Introduction
@@ -67,14 +67,19 @@ localhost/myc.php
 
 Some tips for usage, which may help:
 - to unselect a switch of an or command “control” + mouse-click!
+- for switches and range commands: if you change the stack, the new values are shown and the operating requests are ignored, if a read command is available. You must initiate changes of the new stack by another command. It is recommended tto provide those read commands, bacause the webserver do not store the status for all stacks.
 
 Other devices
-For devices not found in [18] you can create your own
+For devices not found in [18] you can create your own.
 create the directory \xampp\devices\your_new_device
 copy your announcefile to this directory
 open powershell
 cd \xampp\htdocs
 C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe helper_202210.py
+Syntax errors in the announcement file may create crate crashes of this program or the webserver
+
+Other languages
+The names for labels given by the announcements cannot be changed yet, but the (default) labels and names defined by the web-server. English and german is available now, others can be added in the _lang file (“;” is the separator)
 
 Some additional explanations
 
