@@ -1,0 +1,14 @@
+0;m;DK1RI;test_b;V01.0;1;145;1;13;1-1
+1;ob;b,testbyte;6,CHAPTER,memory
+2;ab;a;10;6,CHAPTER,memory
+3;ob,3_ob;b,c;6,CHAPTER,memory
+4;ab,as3;b,c;6,CHAPTER,memory
+5;ab,5_ab;e;i,{2_3to11};6,CHAPTER,memory
+6;ob,6_ob;b,byte;b;a
+7;ab,as6;b,byte;b;a
+8;ab,8_ab;b,unsigned;w,word,{0.1_0to100,0}
+9;ob,9_ob;s;b;i,integer;w,word
+10;ab,as9;s;b;i,integer;w,word
+11;ob1_ob;10,9_name,{ALPHA0};4,next
+12;ab,as11;10,9_name,{ALPHA0};4,next
+13;ab,13_ab;10
