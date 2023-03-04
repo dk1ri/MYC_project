@@ -2,12 +2,17 @@
 1;oa;b;6,CHAPTER,memory
 2;aa;b;10;6,CHAPTER,memory
 3;oa,3_oa;a;6,CHAPTER,memory
-4;aa,4_aa;a;6,CHAPTER,memory
-5;oa,5_oa;c;i;w
-6;aa,6_aa;c,unsigned short;i,int;w,word,{1_0to100}
-7;oa,7_oa;e;L
-8;aa,8_aa;e;L
-9;oa,9_oa;10,9_name,{ALPHA0}
-10;aa,10_aa;10
-11;oa,11_oa;b,byte;10;3;3
-12;aa,12_aa;b;10;3
+4;aa,as3;a;6,CHAPTER,memory
+5;aa,5_aa;a;6,CHAPTER,memory
+6;oa,6_oa;c;i;w
+7;aa,as6;c;i;w
+8;aa,8_aa;c,unsigned short;i,int;w,word,{1_0to100}
+9;oa,9_oa;e;L
+10;aa,as9;e;L
+11;aa,11_aa;e;L
+12;oa,12_oa;10,9_name,{ALPHA0}
+13;aa,as12;10,9_name,{ALPHA0}
+14;aa,14_aa;10
+15;oa,15_oa;b,byte;10;3;3
+16;aa,as15;b,byte;10;3;3
+17;aa,17_aa;b;10;3
