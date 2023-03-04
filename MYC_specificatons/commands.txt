@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V02.12.11 20230131
+Version V02.12.12 20230403
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -36,14 +36,15 @@ Each command announcement line contain the unique command-number, the command-ty
 
 Each command belongs to a command-type. Command-types have two letters: the first denotes the operation type, the second the operating object / function
 .
-Operation type (first letter of command-type: o, a, r, s, k, l, i, j, z)
+Operation type (first letter of command-type: o, a, r, s, i, j, z)
 Active operating is denoted by “o”  as the first letter, answer commands start with “a”. If a function can operate and answer, the “as” notation should be used for the answer command: eg 33:as,as32 . The answer command should directly follow the operate command. The CR may extend the answer with the complete content and replace the “as32” by “ext32”  Depending on the SK the SK will not use these commands.
 The “ext” is always used to show the SK, that two commands belong together.
+It is recommended to use corresponding read commands if possible. This will help the SK to have an actual state always. If large numbers of stacks used, the SK  must initiate a mass of data at start otherwise. So the SK may not support this and will ask the state of the actual stack only.
 The “r” and “s” types are identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by simple devices as switches. The devices usually send commands similar to SK; the operating command means, the devices want another device to operate. The result of these commands is defined by rules. The r command denote what they can or want to send. The s command can be used by the LD to check a status. For details see [9]. These commands are not part of the full announce-list. 
-The “k” and “l” types are identical to the “o” and “a” type and therefore not mentioned in the list below. The CR will not include them in the full announce-list and also ignore them. They are used during a configuration phase of a device. The device may have rules for these commands, denoted by “S”.
 The operation type “i” denotes information only. They have no data traffic.
 The operation type “j” denotes information only. They have no data traffic. It is an operating command, which is used internally, usually by rules. An example is a reset under externally initiated conditions.
 z is used for commands without function (placeholder) 
+“k” and “l” commands are not supported anymore. These are commands for the configuration phase. This  is replaced by adding “14;CHAPTER,ADMINISTRATION” at the end of the announceline.
 
 Operating object / function (second letter of command-type: r, s, t, u, p, o, m, n, a, b) 
 Each operating object denotes a general function like “s” for a switch and exactly defines the number and type of the properties. From this other devices will know the details of the devices function and the length of a properties and therefore the length of a command. The list below show the announcement templates, corresponding command, answer / info for all defined command-types.
@@ -152,6 +153,7 @@ If a function can operate and answer, the answer announcement must follow the op
 	6;ap,as5			Nothing else must follow
 will be resolved by the CR to
 	6;ap,ext5,Rotatoroffset;360;lin:degree
+There is one answer “as” command for an operating command. This answer command directly follow the operating command.
 
 Optimize command transmission 
 If a command should be very short and a parameter should be part of the command-token, the following can be used
@@ -214,6 +216,7 @@ Some notes about CHAPTER
 CHAPTER is an info for SK only, for sorting the commands to menus; there are no transmitted data.
 Using a GUI the number of controls of a page should be limited, so that the elements can be clearly represented.
 Take into account, that one command may have more than one controls: additional selectors for memory command eg or multiple controls for multiple dimensional range commands.
+14,CHAPTER,ADMINISTRATION is used for some reserved token, but can be used for other commands as well.
   
 Meta-commands
 Meta commands are used to control the system, they do not initiate actions.
@@ -341,7 +344,8 @@ With the optional (one byte) field something like a,0,down is possible. This is 
 The last part is optional information of SK only: 4,LOOP means, that the device will loop the values; with 6,LIMIT it will stop at limits. Default is LOOP.
 The command is: <c><number_of_steps><step_size><steptime> or <c><number_of_stacks><number_of_steps><step_size><step_time>
 Value of 0 for all parameters an announcement in a dimensions mean fixed value as per <des> of number_of_steps. In fact, this mean: move to a default value. Any command <c>xxxxxx has the same result.
-A “0x00” at transmission for all values in a dimension will stop this dimension (no movement).
+A <c>0x000x000x00” at transmission for all values in a dimension will stop this dimension (no movement).
+When the “oo” command is used with more than one dimension, this may have unwanted results. A command must have have values for all dimensions.
 
 Example:
 1;op,range;1;10;lin;-;5,CHAPTER;range							1 stacks, 1 dimension
@@ -411,7 +415,7 @@ operate command or answer / info:	<c><n><data>					write one element to (read fr
 
 answer command:	<c><n>								n is the nth element (“0” based)
 
-announce:	<c>;xb[,<des>]...[,<des>];<ty>[,<des>]...[;<ty>[,<des>]			sequential access mode for array 
+announce:	<c>;xb[,<des>]...[,<destype>];<ty>[,<destype>]...[;<ty>[,<destype>]	sequential access mode for array 
 												can work as extension to a oa command 
 												one element allowed, but make no sense
 operate command or answer / info:	<c><n><m><data>					write m elements to memory, starting at position n (“0” based)
@@ -420,8 +424,10 @@ operate command or answer / info:	<c><n><m><data>					write m elements to memory
 												If end of memory is reached next element is written to n=0.
 answer command:			<c><n><m>						read m elements from memory, start at position n (“0” based)
 
-Hint for xb command:
-If this command should be used with a SK, the number of elements m should be limited to 3 eg. There will be no limit, but the SK may be not comfortable to use anymore.
+Hint for xa and xb command:
+These are very powerful commands and the number of memory elements is not restricted by the protocol.
+A high number of elements may result in a SK, which is difficult to handle. With the existing web SK up to 10 elements is a good choice.
+Depending on the (Web) SK the handling of oa / aa and ob /ab command may be very similar.
 
 More about Descriptions
 
@@ -468,7 +474,7 @@ For ADD: additional [label] is allowed; the following {…} is mandatory:
 n,ADD,[label],{<destrange>}
 <desranges> should match the value leading the <des>.
 
-For  all memory data type <ty> see <destype>
+For all memory data type <ty> see <destype>
 
 Details for <des_stack>
 If the stack number is high, it is recommended that the SK arrange the stack in rows and columns (and more).
@@ -511,10 +517,11 @@ With version 2.12.09 (202204) the step-distance was added to allow different dis
 1;om;a;2,{1,2};2,{3,4}				transmitted as 1 to  4, displayed as 1, 2 for row and 3, 4 for col
 
 Details of <destype>
-For <ty> of all memory commands: A description of the allowed values. For string type values, it is a restriction of the allowed characters. For others it is a restriction of the range and a translation to different values shown by the SK.
+For <ty> of all memory commands: A description of the allowed values. For string type values, it is a restriction of the allowed characters. For others it is a restriction of the range and a translation to different values shown by the SK. CODING is an information for the SK, if complex decoding is necessary (as for time):
+[label] is not numeric and not identical to CODING; (lower case preferred)
 Format:
-[{ranges}] 				for <ty> as strings
-[label][,<desranges>][;additional] 	for others
+[,CODING][,label][,<desranges>] 						for strings: type is number (length of string)
+[,CODING][,label][,<desranges>]			 			for others
 Examples:
 1;om;2,{a,c,d}		string of 2 characters (max); this limits the allowed characters, others will be ignored by the device.
 1;om;2,{atoz,AtoZ}		string of 2 characters (max); letters only allowed
@@ -526,8 +533,18 @@ The device will ignore commands with values out of range and may produce an erro
 
 For type byte (b): describe the individual bits,. All 8 bits must be given for low and high value starting with MSB_low, MSB_high.…
 it cannot be used together with {…}
-[[label][,0,1,0,1,…..,0,on]
+[,CODING][[label][,0,1,0,1,…..,0,on]
 32;oa;1;b,name,0,on,1,1,2,2,3,on,4,on,5,on,6,0,7.on
+
+CODING:
+If a translation of transmitted values to displayed valued cannot be described by <des>, CODING can be used. How to implement the decoding is up to the SK
+The following is defined now (more may follow):
+UNIXTIME:  b,4294967295,UNIXTIME
+DAYSEC	b:86400,DAYSEC
+DAYMIN	b,1440,DAYMIN
+DAYHOUR	b,24,DAYHOUR
+YEARDAY	b,365,YEARDAY
+YEARMON	b,12,YEARMON
 
 Errors and Error Handling
 
