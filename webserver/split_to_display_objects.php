@@ -3,17 +3,20 @@
 # DK1RI 20230227
 function split_to_display_objects(){
     $device = $_SESSION["device"];
-    $_SESSION["chapter_names"][$device] = "0,all,1,no_ADMINISTRATION";
+    $_SESSION["chapter_names"][$device] = "0,all,1,no_ADMINISTRATION,2,ADMINISTRATION";
     $_SESSION["chapter_index"][$device] = [];
     $_SESSION["chapter_token"][$device] = [];
+    $_SESSION["chapter_token"][$device][1] =[];
+    $_SESSION["chapter_token"][$device][2] = [];
     $_SESSION["announce_all"][$device] = [];
     $_SESSION["des_name"][$device] = [];
     $_SESSION["des_range"][$device] = [];
     $_SESSION["des_type"][$device] = [];
     $_SESSION["unit"][$device] = [];
     # create $_SESSION["original_announce"][$device] from announcefile
+    # and $_SESSION["chapter_token"][$device]
     if (file_exists("./devices/".$device."/announcements")) {
-        $l = 2;
+        $l = 3;
         $file = fopen("./devices/".$device . "/announcements", "r");
         while (!(feof($file))) {
             $pure = fgets($file);
@@ -32,24 +35,38 @@ function split_to_display_objects(){
             $_SESSION["original_announce"][$device][$token] =  $lda;
             $line = implode(";", $field);
             $pos = strpos($line, "CHAPTER");
-            # referenced by index (that is what POST delivers for dospay
+            # referenced by index (that is what POST delivers)
+            # all;
             $_SESSION["chapter_token"][$device][0][$token] = 1;
             $admin_pos = strpos($line, "14,CHAPTER,ADMINISTRATION");
             if (!$admin_pos){
+                # no_ADMIN
                 $_SESSION["chapter_token"][$device][1][$token] = 1;
             }
+            else{
+                $_SESSION["chapter_token"][$device][2][$token] = 1;
+            }
             # CHAPTER comes with all toks with required CHAPTER
-            if ($pos) {
+            if ($pos and !$admin_pos) {
                 $ar = explode("CHAPTER", "$line");
                 $chap = explode(",", $ar[1])[1];
                 $chap_comma = "," . $chap;
                 if (!strstr($_SESSION["chapter_names"][$device], $chap_comma)) {
                     $_SESSION["chapter_names"][$device] .= ",". $l . "," . $chap;
-                    $_SESSION["chapter_token"][$device][$l][$token] = 1;
+                    $_SESSION["chapter_token"][$device][$l] = [];
                     $l += 1;
                 }
-                else {
-                    $_SESSION["chapter_token"][$device][$chap][$token] = 1;
+                # find key
+                $i = 0;
+                $found = 0;
+                $chaps = explode(",", $_SESSION["chapter_names"][$device]);
+                while ($i < count($chaps) and $found == 0) {
+                    $index = $chaps[$i];
+                    if ($chaps[$i +1] == $chap) {
+                        $found = 1;
+                        $_SESSION["chapter_token"][$device][$index][$token] = 1;
+                    }
+                    $i += 2;
                 }
             }
         }
@@ -169,8 +186,8 @@ function add_stack($basic_tok, $announce_o){
 
 function expand_m($token, $announce){
     $device = $_SESSION["device"];
-    $_SESSION["announce_all"][$device][$token][0] = $announce[0][0];
-    $_SESSION["des_name"][$device][$token] = "basic_ command";
+    $_SESSION["announce_all"][$device][$token."a0"][0] = $announce[0][0];
+    $_SESSION["des_name"][$device][$token."a0"] = "basic_ command";
 
 }
 
@@ -370,11 +387,12 @@ function expand_a_b($basic_tok, $announce){
     # sequence determines the display - sequence -> do this first:
     if (count($announce) > 2) {
         # additional selector for <ty>
-        $_SESSION["announce_all"][$device][$basic_tok . "b0"][0] = $ct[0];
-        $_SESSION["des_name"][$device][$basic_tok . "b0"] = $name;
+        $_SESSION["announce_all"][$device][$basic_tok . "b1"][0] = $ct[0];
+        $_SESSION["des_name"][$device][$basic_tok . "b1"] = $name;
         if ($ct[0] == "ob" or $ct[0] == "ab") {
-            $_SESSION["announce_all"][$device][$basic_tok . "b1"][0] = $ct[0];
-            $_SESSION["des_name"][$device][$basic_tok . "b1"] = $name;
+            # used for number_of_elements
+            $_SESSION["announce_all"][$device][$basic_tok . "b0"][0] = $ct[0];
+            $_SESSION["des_name"][$device][$basic_tok . "b0"] = $name;
         }
         # x0 used for basic name
         $_SESSION["announce_all"][$device][$basic_tok . "x0"][0] = $ct[0];
@@ -441,7 +459,12 @@ function add_type($desc){
     $type = $typ . ";;;;;;end";
     $type_a = explode(";", $type);
     if (is_numeric($desc[0])){
-        $type_a[2] = "alpha";
+        if (array_key_exists(1,$desc)){
+            $type_a[2] = $desc[1];
+        }
+        else {
+            $type_a[2] = "alpha";
+        }
         $type_a[3] = "ALPHA";
         $type_a[4]= "a";
     }
@@ -454,8 +477,7 @@ function add_type($desc){
     # eliminate type:
     $t = array_splice($desc,0, 1);
     if (count($desc) > 0){
-        $upcase = strtoupper($desc[0]);
-        if ($upcase == $desc[0]){
+        if (array_key_exists($desc[0], $_SESSION["coding"])){
             $type_a[1] = $desc[0];
             $t = array_splice($desc,0, 1);
         }

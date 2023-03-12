@@ -40,7 +40,7 @@ function convert($num){
     }
 }
 
-function length_of_type($data){
+function length_of_number($data){
     # no of bytes for transmit
     if (is_numeric($data)){
         $number = (int)$data;
@@ -53,12 +53,25 @@ function length_of_type($data){
         } elseif ($number > 255){
             $len = 4;
         }
-        return $len;
+    }
+    else{
+        $len = 0;
+    }
+    # dummy
+    return $len;
+}
+function length_of_type($data){
+    # no of bytes for transmit
+    if (is_numeric($data)){
+        # string
+        $number = (int)$data;
+        return $number;
     }
     else {
         switch ($data) {
             case "a":
             case "b":
+            case "c":
                 return 2;
             case "i":
             case "w":
@@ -77,7 +90,7 @@ function length_of_type($data){
 }
 
 function display_length($type){
-    # max length to display the ral value
+    # max length to display the real value
     if (is_numeric($type)){
         # string
         return $type;

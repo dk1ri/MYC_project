@@ -2,6 +2,7 @@
 # read_new_device.php
 # DK1RI 20221215
 function for_tests($device){
+    create_session_data("$device", "device_list", $_SESSION["device_list"]);
     create_session_data($device, "chapter_names", $_SESSION["chapter_names"][$device]);
     create_session_data_file_array($device, "original_announce", $_SESSION["original_announce"][$device]);
     create_session_data_file_array($device, "announce_all", $_SESSION["announce_all"][$device]);
@@ -15,6 +16,7 @@ function for_tests($device){
     create_session_data_file($device, "des_type", $_SESSION["des_type"][$device]);
     create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);
     create_session_data_file("$device", "conf", $_SESSION["conf"]);
+    create_session_data_file_array("$device", "chapter_token", $_SESSION["chapter_token"][$device]);
 }
 
 function create_session_data($device, $name, $data){

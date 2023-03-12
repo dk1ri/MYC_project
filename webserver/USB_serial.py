@@ -41,18 +41,19 @@ while 1:
         dat = f.readline()
         f.close()
         if len(dat) != 0:
-            print (dat)
+            print ("received: " + dat)
             ser_write(ser, bytes.fromhex(dat))
-            print (len(bytes.fromhex(dat)))
 
             in_dat = ser_read(ser)
             if len(in_dat) != 0:
+                print (in_dat)
                 if os.path.exists(to_web):
                     os.remove(to_web)
                 f = open(to_web, "a")
-                send = hex(int.from_bytes(in_dat, "big"))
+                send = in_dat.hex()
                 f.write(send)
                 f.close()
+                print ("sent: ")
                 print(send)
         os.remove(from_web)
     time.sleep(1)

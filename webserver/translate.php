@@ -2,7 +2,7 @@
 # translate.php
 # DK1RI 20230302
 function correct_POST($device){
-    # make mods on op ap oo commands only
+    # make mods on op ap oo commands only (???)
     # now data beyond the limits can be inputted for op oo commands with > 100 distinct values
     # before using for send and actual_data, they will be corrected to nearest valid data
     # all $_SESSION["corrected_POST"] values are strings

@@ -1,6 +1,6 @@
 <?php
 # read_new_device.php
-# DK1RI 20230224
+# DK1RI 20230312
 function read_new_device($device){
     #create additional device (old ones not deleted)
     # split anouncelist to display objects and get chapter_names
@@ -25,11 +25,13 @@ function calculate_property_len(){
     # this will replace tok_len, sel_len,
     $device = $_SESSION["device"];
     end($_SESSION["original_announce"][$device]);
-    $tok_len = length_of_type(basic_tok(key($_SESSION["original_announce"][$device])));
+    $tok_len = length_of_number(basic_tok(key($_SESSION["original_announce"][$device])));
     $_SESSION["command_len"][$device] = $tok_len;
     $_SESSION["property_len"][$device] = [];
+    $_SESSION["property_len_byte"][$device] = [];
     foreach ($_SESSION["original_announce"][$device] as $key => $value) {
         $_SESSION["property_len"][$device][$key][] = $tok_len;
+        $_SESSION["property_len_byte"][$device][$key][] = $tok_len / 2;
         $cta = explode(";",$value[0])[0];
         $ct = explode(",",$cta)[0];
         switch ($ct) {
@@ -42,20 +44,23 @@ function calculate_property_len(){
                 # token + stacks + no_of switches
                 stack_len($key, $value[1]);
                 $t = end ($value);
-                $_SESSION["property_len"][$device][$key][] = length_of_type(key($value) -2);
+                $_SESSION["property_len"][$device][$key][] = length_of_number(key($value) -2);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(key($value) -2))/ 2;
                 break;
             case "op":
             case "ap":
             case "oo":
                 # token + stacks + no_of_range
                 stack_len($key, $value[1]);
-                $_SESSION["property_len"][$device][$key][] = length_of_type(explode(",",$value[2])[0]);
+                $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",",$value[2])[0]);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",",$value[2])[0])) / 2;
                 break;
             case "om":
             case "am":
                 # token + type + pos
                 # type:
                 $_SESSION["property_len"][$device][$key][] = length_of_type(explode(",",$value[1])[0]);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_type(explode(",",$value[1])[0])) / 2;
                 # pos:
                 $i = 2;
                 $result = 1;
@@ -65,14 +70,19 @@ function calculate_property_len(){
                     }
                     $i += 1;
                 }
-                $_SESSION["property_len"][$device][$key][] = length_of_type($result);
+                $_SESSION["property_len"][$device][$key][] = length_of_number($result);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number($result)) / 2;
                 break;
             case "on":
             case "an":
                 # token + type + no_of_element, start
                 # type:
                 $_SESSION["property_len"][$device][$key][] = length_of_type(explode(",",$value[1])[0]);
-                $_SESSION["property_len"][$device][$key][] = length_of_type(explode(",",$value[2])[0]);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_type(explode(",",$value[1])[0])) / 2;
+                # number_of_elements
+                $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",",$value[2])[0]);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",",$value[2])[0])) / 2;
+                # pos
                 $i = 3;
                 $result = 1;
                 while ($i < count($value)){
@@ -81,7 +91,8 @@ function calculate_property_len(){
                     }
                     $i += 1;
                 }
-                $_SESSION["property_len"][$device][$key][] = length_of_type($result);
+                $_SESSION["property_len"][$device][$key][] = length_of_number($result);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number($result)) / 2;
                 break;
             case "oa":
             case "aa":
@@ -89,7 +100,9 @@ function calculate_property_len(){
                 $i = 1;
                 while ($i < count($value)) {
                     if (!strstr($value[$i], "CHAPTER")) {
-                        $_SESSION["property_len"][$device][$key][] = (int)explode(",", $value[$i])[0];
+                        $result = explode(",", $value[$i])[0];
+                        $_SESSION["property_len"][$device][$key][] = length_of_type($result);
+                        $_SESSION["property_len_byte"][$device][$key][] = (length_of_type($result)) / 2;
                     }
                     $i += 1;
                 }
@@ -103,9 +116,11 @@ function stack_len($key, $value){
     $stacks = explode(",",$value)[0];
     if ($stacks == 1) {
         $_SESSION["property_len"][$device][$key][] = 0;
+        $_SESSION["property_len_byte"][$device][$key][] = 0;
     }
     else {
-        $_SESSION["property_len"][$device][$key][] = length_of_type($stacks);
+        $_SESSION["property_len"][$device][$key][] = length_of_number($stacks);
+        $_SESSION["property_len_byte"][$device][$key][] = (length_of_number($stacks))/ 2;
     }
 }
 
@@ -222,7 +237,7 @@ function init_data($device){
         $ct = explode(",", $value[0])[0];
         switch ($ct) {
             case "m":
-                $field = $_SESSION["original_announce"][$device][$key];
+                $field = $_SESSION["original_announce"][$device][basic_tok($key)];
                 $_SESSION["actual_data"][$device][$key] = $field[2] . "," . $field[3] . "," . $field[1];
                 break;
             case "as":
@@ -231,7 +246,7 @@ function init_data($device){
             case "at":
                 if (strstr($key, "x")) {
                     # always one dimension data
-                    $_SESSION["actual_data"][$device][$key] = explode(",",$_SESSION["announce_all"][$device][$key][1])[0];
+                    $_SESSION["actual_data"][$device][$key] = explode(",",$_SESSION["original_announce"][$device][basic_tok($key)][2])[0];
                 }
                 elseif (strstr($key, "b")) {
                     # stack

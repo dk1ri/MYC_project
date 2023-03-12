@@ -74,7 +74,7 @@ function read_config(){
     # token: array, data: string
     $_SESSION["corrected_POST"] = [];
     # actual_data: token: array: data: string
-    # used for ddevice and chapter (and commands / per device)
+    # used for device and chapter (and commands / per device)
     # a command: value, value,...
     # others: one value only
     $_SESSION["actual_data"] = [];
@@ -146,6 +146,20 @@ function read_config(){
         }
     }
     fclose($file);
+
+    $_SESSION["coding"] = [];
+    $config = "_coding";
+    if (file_exists($config)) {
+        $file = fopen($config, "r");
+        $i = 0;
+        while (!(feof($file))) {
+            $line = fgets($file);
+            $line = str_replace("\r", "", $line);
+            $line = str_replace("\n", "", $line);
+            $_SESSION["coding"][$line] = $line;
+        }
+        fclose($file);
+    }
     $_SESSION["serialwrite"] = $_SESSION["conf"]["serial_dir"] . "from_web";
     $_SESSION["serialread"] = $_SESSION["conf"]["serial_dir"] . "to_web";
     # language

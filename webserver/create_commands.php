@@ -1,13 +1,13 @@
 <?php
 # create_commands.php
-# DK1RI 20230304
+# DK1RI 20230308
 # creates display elements
 function create_basic_command($basic_tok){
     $device = $_SESSION["device"];
-    $field = explode(",", $_SESSION["actual_data"][$device][$basic_tok]);
+    $field = explode(",", $_SESSION["actual_data"][$device][$basic_tok."a0"]);
     echo "<div>Device: " . $field[0] . ", Version: " . $field[1] . ", Author: ". $field[2];
     echo "<br>" . $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["new_data"] . ": ";
-    echo "<input type='checkbox' id=".$basic_tok . " name=".$basic_tok." value=1>";
+    echo "<input type='checkbox' id=".$basic_tok . "a0 name=".$basic_tok."a0 value=1>";
     echo "</div>";
 }
 
@@ -281,7 +281,6 @@ function create_on($basic_tok) {
         }
     }
     if(array_key_exists($basic_tok, $_SESSION["as_token_as_to_basic"][$device])){
-      #  print "xxx";
         if(array_key_exists($basic_tok. "b1", $_SESSION["des_range"][$device])){
             if ($_SESSION["des_range"][$device][$basic_tok. "b1"] == 0) {
                 # for FIFO
@@ -315,7 +314,8 @@ function create_an($basic_tok){
         } elseif (strstr($token, "x1")) {
             echo explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
             $dat = $_SESSION["actual_data"][$device][$token];
-            echo " <marquee width='20'>" . $dat . "</marquee>";
+          #  echo "<div class='marquee'><h3>". $dat. "</h3></div>";
+            echo " <marquee width='90'>" . $dat . "</marquee>";
             echo "<br>";
         }
         elseif(strstr($token, "a0")) {
@@ -359,6 +359,7 @@ function create_aa($basic_tok) {
         if (strstr($token, "b")) {
             $range = explode(",", $_SESSION["des_range"][$device][$token]);
             simple_selector($token, $range, $_SESSION["actual_data"][$device][$token]);
+            echo "<br>";
         }
         elseif (strstr($token, "x")) {
             # data

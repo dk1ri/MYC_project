@@ -12,7 +12,7 @@ function send_and_update(){
     # this is the actual device
     $device = $_SESSION["device"];
     $announce = $_SESSION["announce_all"][$device];
-    $allready_done = 0;
+    $allready_done = -1;
     foreach ($_SESSION["corrected_POST"][$device] as $tok => $value) {
         # interface.. name .... device is updated in correct_POST
         if (array_key_exists($tok, $announce)) {
@@ -27,10 +27,9 @@ function send_and_update(){
                 switch ($ct) {
                     case "m":
                         if (array_key_exists($basic_tok . "a0", $_POST)) {
-                            if ($_POST[$basic_tok] == "1") {
+                            if ($_POST[$basic_tok. "a0"] == "1") {
                                 $send_ok = 1;
                                 $_SESSION["read"] = 1;
-                                $send = "00";
                             }
                         }
                         break;
@@ -72,6 +71,7 @@ function send_and_update(){
                                     $send = $_SESSION["tok_hex"][$device][basic_tok($a0_exist)];
                                     $send .= handle_stacks($basic_tok);
                                     $send_ok = 1;
+                                    $_SESSION["read"] = 1;
                                 }
                             }
                         }
@@ -171,7 +171,7 @@ function send_and_update(){
                                             $value = retranslate_simple_range($range, $_SESSION["actual_data"][$device][$tok], 2);
                                         }
                                         else{
-                                            $value = retranslate_full($range, $_SESSION["actual_data"][$device][$tok]);
+                                            $value = retranslate_full($tok, $_SESSION["actual_data"][$device][$tok]);
                                         }
                                         $length = $_SESSION["property_len"][$device][$basic_tok][2];
                                         $send .= translate_dec_to_hex($basic_tok,"n", $value, $length);
@@ -306,7 +306,7 @@ function send_and_update(){
                                         if ($_SESSION["corrected_POST"][$device][$c_token] != $_SESSION["actual_data"][$device][$c_token]) {
                                             # position:
                                             $send_a = $send;
-                                            if (array_key_exists($b0, $_SESSION["actual_data"][$device])) {
+                                            if (array_key_exists($b1, $_SESSION["actual_data"][$device])) {
                                                 $pos = explode("x",$c_token)[1] - 1;
                                                 $send_a .= translate_dec_to_hex($basic_tok,"n", $pos, 2);
                                             }
@@ -324,9 +324,9 @@ function send_and_update(){
                     case "aa":
                         $send_ok = update($device, $basic_tok);
                         # position of element
-                        $b0 = $basic_tok . "b0";
-                        if (array_key_exists($b0, $_SESSION["actual_data"][$device])){
-                            $pos = $_SESSION["actual_data"][$device][$b0];
+                        $b1 = $basic_tok . "b1";
+                        if (array_key_exists($b1, $_SESSION["actual_data"][$device])){
+                            $pos = $_SESSION["actual_data"][$device][$b1];
                             $send .= translate_dec_to_hex($basic_tok,"n", $pos, 2);
                         }
                         if (array_key_exists($basic_tok . "a0", $_POST)) {
@@ -495,7 +495,7 @@ function calculate_pos_hex($basic_tok, $on_an_adder){
         }
     }
     # max length of pos:
-    $length = $_SESSION["property_len"][$device][$basic_tok][3];
+    $length = $_SESSION["property_len"][$device][$basic_tok][2];
     if ($adder_exist){
         $pos = $maxmax + $_SESSION["actual_data"][$device][$token];
     }

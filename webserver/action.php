@@ -1,6 +1,6 @@
 <?php
 # action.php
-# DK1RI 20230302
+# DK1RI 20230312
 ?>
 
 <html lang = "de">
@@ -48,6 +48,10 @@
             echo ".aa{color: " . $_SESSION["conf"]["a"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
             echo ".ob{color: " . $_SESSION["conf"]["b"] . ";}";
             echo ".ab{color: " . $_SESSION["conf"]["b"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            # marquee do no work as required:
+            echo ".marquee {width: 200px; height: 40px; margin:0;overflow: hidden;}";
+            echo ".marquee.h3 {animation:marquee 5s linear infinite;";
+            echo "@keyframes marquee {from {left:0%} to {left:100%}}";
             ?>
         </style>
     </head>
@@ -64,19 +68,19 @@
         }
         if (array_key_exists("device", $_POST)) {
             # other device?
-            $post_dev = $_POST["device"];
-            if ($post_dev != $_SESSION["actual_data"]["_device_"]) {
-                $_SESSION["actual_data"]["_device_"] = $post_dev;
-                $_SESSION["device"] = explode(",", $_SESSION["device_list"])[2 * $post_dev + 1];
-                # nothing else is done:
+            $post_ = $_POST["device"];
+            if ($post_ != $_SESSION["actual_data"]["_device_"]) {
+                $_SESSION["actual_data"]["_device_"] = $post_;
+                $_SESSION["device"] = explode(",", $_SESSION["device_list"])[2 * $post_ + 1];
+                # nothing else to do:
                 $_POST = [];
             }
         }
         $device = $_SESSION["device"];
         if (array_key_exists("chapter", $_POST)) {
-            $post_dev = $_POST["chapter"];
-            if ($post_dev != $_SESSION["actual_data"]["_device_"]) {
-                $_SESSION["actual_data"]["_chapter_"] = $post_dev;
+            $post_ = $_POST["chapter"];
+            if ($post_ != $_SESSION["actual_data"]["_chapter_"]) {
+                $_SESSION["actual_data"]["_chapter_"] = $post_;
             }
         }
         # create / read new device for $_SESSION, if not existing
