@@ -96,7 +96,13 @@ function calculate_property_len(){
                 break;
             case "oa":
             case "aa":
-                # token + type + type
+                $number_of_elements = count($_SESSION["original_announce"][$device][$key]);
+                if ($number_of_elements > 3){
+                    # additional "b0" token for length og pos and number
+                    $_SESSION["property_len"][$device][$key. "b0"][0] = length_of_number($number_of_elements);
+                    $_SESSION["property_len_byte"][$device][$key."b0"][0] = (length_of_number($number_of_elements)) / 2;
+                }
+                # data: token + type + type
                 $i = 1;
                 while ($i < count($value)) {
                     if (!strstr($value[$i], "CHAPTER")) {

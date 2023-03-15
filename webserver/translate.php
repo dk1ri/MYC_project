@@ -205,14 +205,15 @@ function translate_dec_to_hex($basic_tok, $type, $data, $length){
             return dec_hex((int)$data, 8);
         case (is_numeric($type)):
             # string
+            # length is length_of_length
+            # $type is max of string_length
             $device = $_SESSION["device"];
             $string_length = strlen($data);
-            if ($string_length > $length){
-                $string_length = $length;
+            if ($string_length > $type){
+                $string_length = $type;
                 $data = substr($data,0,$string_length);
             }
-            $s_length = $_SESSION["property_len"][$device][$basic_tok][2];
-            $result = dec_hex($string_length, $s_length);
+            $result = dec_hex($string_length, $length);
             return $result . bin2hex($data);
     }
     return "";

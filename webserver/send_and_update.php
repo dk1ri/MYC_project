@@ -298,7 +298,6 @@ function send_and_update(){
                         break;
                     case "oa":
                         # more than one element may have changed, each generate a send
-                        $b0 = $basic_tok . "b0";
                         foreach ($_SESSION["cor_token"][$device][$basic_tok] as $c_token){
                             if (strstr($c_token,"x")){
                                 if (array_key_exists($c_token, $_SESSION["corrected_POST"][$device])){
@@ -311,7 +310,7 @@ function send_and_update(){
                                                 $send_a .= translate_dec_to_hex($basic_tok,"n", $pos, 2);
                                             }
                                             $des_type = explode(";",$_SESSION["des_type"][$device][$c_token]);
-                                            $length = length_of_type($des_type[0]);
+                                            $length = length_of_type($des_type[$pos]);
                                             $send_a .= translate_dec_to_hex($basic_tok, $des_type[0], $_SESSION["corrected_POST"][$device][$c_token], $length);
                                             $_SESSION["actual_data"][$device][$c_token] = $_SESSION["corrected_POST"][$device][$c_token];
                                             send_to_device($send_a);

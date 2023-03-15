@@ -1,6 +1,6 @@
 <?php
 # create_commands.php
-# DK1RI 20230308
+# DK1RI 20230312
 # creates display elements
 function create_basic_command($basic_tok){
     $device = $_SESSION["device"];
@@ -255,7 +255,6 @@ function create_on($basic_tok) {
     echo $_SESSION["des_name"][$device][$basic_tok. "x0"];
     echo "<br>";
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
-        $type = "";
         if (strstr($token, "b")) {
             if (!strstr($token, "b0")) {
                 # b0 is max number of transmitted elements -> not used
@@ -288,9 +287,6 @@ function create_on($basic_tok) {
             }
         }
     }
-    if ($type != "s") {
-        echo "<br>";
-    }
     echo "</h3></div>";
 }
 
@@ -315,7 +311,7 @@ function create_an($basic_tok){
             echo explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
             $dat = $_SESSION["actual_data"][$device][$token];
           #  echo "<div class='marquee'><h3>". $dat. "</h3></div>";
-            echo " <marquee width='90'>" . $dat . "</marquee>";
+            echo " <marquee width='200'>" . $dat . "</marquee>";
             echo "<br>";
         }
         elseif(strstr($token, "a0")) {

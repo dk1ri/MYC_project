@@ -63,8 +63,8 @@ function length_of_number($data){
 function length_of_type($data){
     # no of bytes for transmit
     if (is_numeric($data)){
-        # string
-        $number = (int)$data;
+        # for strings: length of length, not the max number allowed
+        $number = length_of_number($data);
         return $number;
     }
     else {

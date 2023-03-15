@@ -104,6 +104,7 @@ function split_to_display_objects(){
 
 function add_stack($basic_tok, $announce_o){
     # for stacks:  additional lines are added as a selector
+    # "bx" token are used
     $device = $_SESSION["device"];
     $ct = explode(",",$announce_o[0])[0];
     $stack = explode(",",$announce_o[1]);
@@ -112,7 +113,7 @@ function add_stack($basic_tok, $announce_o){
     if ($stacks > 1){
         # selectors necessary
         # remove $stacks:
-        $t = array_splice( $stack,0, 1);
+        array_splice( $stack,0, 1);
         if (!strstr($announce_o[1],"MUL")) {
             # no MUL no ADD
             # [name],[{max,[name],[{..}]]
@@ -126,7 +127,7 @@ function add_stack($basic_tok, $announce_o){
                     # name only no range
                     set_some($basic_tok, $stacks, $ct, $max);
                     $_SESSION["des_name"][$device][$basic_tok . "b0"] = $stack[0];
-                    $t = array_splice($stack, 0, 1);
+                    array_splice($stack, 0, 1);
                 }
             }
             if (count($stack) > 0) {
@@ -135,7 +136,7 @@ function add_stack($basic_tok, $announce_o){
                     # name
                     set_some($basic_tok, $stacks, $ct, $max);
                     $_SESSION["des_name"][$device][$basic_tok . "b0"] = $stack[0];
-                    $t = array_splice($stack, 0, 1);
+                    array_splice($stack, 0, 1);
                 }
             }
             if (count($stack) > 0) {
@@ -152,7 +153,7 @@ function add_stack($basic_tok, $announce_o){
             # stack: array: [name] {....MUL...}
             if (!strstr($stack[0], "{")) {
                 # name is not used
-                $t = array_splice( $stack,0, 1);
+                array_splice( $stack,0, 1);
             }
             $stack_minus_max = implode(",", $stack);
             # remove { } at begin and end
@@ -192,6 +193,7 @@ function expand_m($token, $announce){
 }
 
 function expand_s($token, $announce){
+    # # tok: x0 : defines on position (others off)
     $device = $_SESSION["device"];
     # one element only
     $result[] = explode(",", $announce[0])[0];
@@ -210,6 +212,7 @@ function expand_s($token, $announce){
 }
 
 function expand_r($basic_tok, $announce){
+    # tok: x0 ... xn : 0|1 ; position defined by number (xn)
     $device = $_SESSION["device"];
     count(explode(",",$announce[0])) > 1 ? $name = explode(",",$announce[0])[1]: $name = $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["switch"];
     # one token per switch strating witg 0
@@ -475,17 +478,17 @@ function add_type($desc){
         $type_a[2] =  $type_a[5];
     }
     # eliminate type:
-    $t = array_splice($desc,0, 1);
+    array_splice($desc,0, 1);
     if (count($desc) > 0){
         if (array_key_exists($desc[0], $_SESSION["coding"])){
             $type_a[1] = $desc[0];
-            $t = array_splice($desc,0, 1);
+            array_splice($desc,0, 1);
         }
     }
     if (count($desc) > 0){
         if (!strstr($desc[0], "{")){
             $type_a[2] = $desc[0];
-            $t = array_splice($desc,0, 1);
+            array_splice($desc,0, 1);
         }
     }
     if (count($desc) > 0){
@@ -524,7 +527,7 @@ function create_selector($tok, $desc, $default_name){
         # FIFO
         $result = "0";
     }
-    $t = array_splice($desca,0,1);
+    array_splice($desca,0,1);
     # max stripped
     # name:
     if (count($desca)> 0) {
@@ -533,13 +536,13 @@ function create_selector($tok, $desc, $default_name){
             if ($name =="ADD"){
                 if (!strstr($desca[1],"{")){
                     $name = $desca[1];
-                    $t = array_splice($desca, 0, 1);
+                    array_splice($desca, 0, 1);
                 }
                 else {
                     $name = "adder";
                 }
             }
-            $t = array_splice($desca, 0, 1);
+            array_splice($desca, 0, 1);
         }
     }
     if (count($desca)> 0) {

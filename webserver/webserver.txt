@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 Webserver for a MYC System
 
 Author: DK1RI
-Version V01.01.04 20230304
+Version V01.01.05 20230315
 This paper is published in  https://github.com/dk1ri  as well
 
 Introduction
@@ -20,7 +20,7 @@ see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 Status
 
 Apache webserver (XAMPP) on windows set up
-Basics GUI and sending of commands ok
+Basics GUI sending and receiving commands ok
 USB interface to devices working (but may be changed)
 
 
@@ -30,7 +30,8 @@ The commandrouter has no interface to devices yet and a solution without command
 So the webserver has some limitations:
 one device at the same time only.
 It is necessary to start three programs: browser, web-server and a python program for the device interface.
-For read commads there is a delay (dead) time of 3 s after a command.
+I did not found a solution to connect the webserver to USB directly. So data exchange is done by filetransfer using an additional python program. This cost time.
+For read commands there is a delay (dead) time of 3 s after a command.
 Most often used commands should work, but some special conditions are missing.
 Windows only is tested (Win10) with firefox.
 As long as the web-server is not finished, there may be problems using the CR.
@@ -40,8 +41,11 @@ Starting / preparations
 The following programs must be installed:
 xampp (standard installation, nothing special [19])
 a browser (firefox is used)
+Enable javascript (not yet used, but will be used in future)
 python (standard installation, nothing special [20])
-pyserial is necessary:
+pyserial is necessary
+
+
 open Powershell
 cd  C:\Users\your_name\AppData\Local\Programs\Python\Python_version\Scripts
 (you must replace yourname and version with your data)
@@ -76,7 +80,7 @@ copy your announcefile to this directory
 open powershell
 cd \xampp\htdocs
 C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe helper_202210.py
-Syntax errors in the announcement file may create crate crashes of this program or the webserver
+Syntax errors in the announcement file may create a crash of this program or the webserver
 
 Other languages
 The names for labels given by the announcements cannot be changed yet, but the (default) labels and names defined by the web-server. English and german is available now, others can be added in the _lang file (“;” is the separator)

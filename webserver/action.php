@@ -1,8 +1,7 @@
 <?php
 # action.php
-# DK1RI 20230312
+# DK1RI 20230313
 ?>
-
 <html lang = "de">
 <?php
     session_start();
@@ -14,44 +13,39 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <style>
             .flex-container {
-                display: flex;
-                flex-wrap: wrap;
-                background-color: #6c9ccb;
+                display:flex;
+                flex-wrap:wrap;
+                background-color:#6c9ccb;
             }
-
             .flex-container > div {
-                background-color: #d1f8ff;
-                margin: 2px;
-                padding: 2px;
-                font-size: 15px;
-            }
-            .green {
-                color : green;
-            }
-            .red{
-                color : red;
+                background-color:#d1f8ff;
+                margin:2px;
+                padding:2px;
+                font-size:15px;
             }
             <?php
-            echo ".os{color: " . $_SESSION["conf"]["s"] . ";}";
-            echo ".as{color: " . $_SESSION["conf"]["s"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
-            echo ".or{color: " . $_SESSION["conf"]["r"] . ";}";
-            echo ".ar{color: " . $_SESSION["conf"]["r"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
-            echo ".at{color: " . $_SESSION["conf"]["at"] . ";}";
-            echo ".ou{color: " . $_SESSION["conf"]["ou"] . ";}";
-            echo ".op{color: " . $_SESSION["conf"]["p"] . ";}";
-            echo ".ap{color: " . $_SESSION["conf"]["p"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
-            echo ".om{color: " . $_SESSION["conf"]["m"] . ";}";
-            echo ".am{color: " . $_SESSION["conf"]["m"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
-            echo ".on{color: " . $_SESSION["conf"]["n"] . ";}";
-            echo ".an{color: " . $_SESSION["conf"]["n"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
-            echo ".oa{color: " . $_SESSION["conf"]["a"] . ";}";
-            echo ".aa{color: " . $_SESSION["conf"]["a"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
-            echo ".ob{color: " . $_SESSION["conf"]["b"] . ";}";
-            echo ".ab{color: " . $_SESSION["conf"]["b"] . ";background-color: " . $_SESSION["conf"]["bga"] . "}";
+            echo ".green{color : green;}";
+            echo ".red{color : red;}";
+            echo ".os{color: ".$_SESSION["conf"]["s"].";}";
+            echo ".as{color: ".$_SESSION["conf"]["s"].";background-color:".$_SESSION["conf"]["bga"]."}";
+            echo ".or{color: ".$_SESSION["conf"]["r"].";}";
+            echo ".ar{color: ".$_SESSION["conf"]["r"].";background-color:".$_SESSION["conf"]["bga"]."}";
+            echo ".at{color: ".$_SESSION["conf"]["at"].";}";
+            echo ".ou{color: ".$_SESSION["conf"]["ou"].";}";
+            echo ".op{color: ".$_SESSION["conf"]["p"].";}";
+            echo ".ap{color: ".$_SESSION["conf"]["p"].";background-color:".$_SESSION["conf"]["bga"]."}";
+            echo ".om{color: ".$_SESSION["conf"]["m"].";}";
+            echo ".am{color: ".$_SESSION["conf"]["m"].";background-color:".$_SESSION["conf"]["bga"]."}";
+            echo ".on{color: ".$_SESSION["conf"]["n"].";}";
+            echo ".an{color: ".$_SESSION["conf"]["n"].";background-color:".$_SESSION["conf"]["bga"]."}";
+            echo ".oa{color: ".$_SESSION["conf"]["a"].";}";
+            echo ".aa{color: ".$_SESSION["conf"]["a"].";background-color:".$_SESSION["conf"]["bga"]."}";
+            echo ".ob{color: ".$_SESSION["conf"]["b"].";}";
+            echo ".ab{color: ".$_SESSION["conf"]["b"].";background-color:".$_SESSION["conf"]["bga"]."}";
             # marquee do no work as required:
-            echo ".marquee {width: 200px; height: 40px; margin:0;overflow: hidden;}";
-            echo ".marquee.h3 {animation:marquee 5s linear infinite;";
-            echo "@keyframes marquee {from {left:0%} to {left:100%}}";
+            echo ".marquee {width:200px;height:40px;margin:0;overflow:hidden;}";
+            echo ".marquee.h3{animation:marquee 5s linear infinite;";
+            echo "@keyframes marquee{from {left:0%}to{left:100%}}";
             ?>
         </style>
     </head>
@@ -112,7 +106,7 @@
         <form action="action.php" method="post">
         <input type="submit" />
         </div><div>
-        Interface: <input type="text" name = "interface" size = 14 name='name' value = <?php echo $_SESSION["interface"] ?>>
+        Interface: <input type="text" name = "interface" size = 14 value = <?php echo $_SESSION["interface"] ?>>
         <br>
         <?php
         if ($_SESSION["last_command_status"]){
