@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V02.12.12 20230403
+Version V02.12.12 202303
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -517,11 +517,8 @@ With version 2.12.09 (202204) the step-distance was added to allow different dis
 1;om;a;2,{1,2};2,{3,4}				transmitted as 1 to  4, displayed as 1, 2 for row and 3, 4 for col
 
 Details of <destype>
-For <ty> of all memory commands: A description of the allowed values. For string type values, it is a restriction of the allowed characters. For others it is a restriction of the range and a translation to different values shown by the SK. CODING is an information for the SK, if complex decoding is necessary (as for time):
-[label] is not numeric and not identical to CODING; (lower case preferred)
-Format:
-[,CODING][,label][,<desranges>] 						for strings: type is number (length of string)
-[,CODING][,label][,<desranges>]			 			for others
+For <ty> of all memory commands: A description of the allowed values. For string type values, it is a restriction of the allowed characters. For others it is a restriction of the range and a translation to different values shown by the SK. 
+
 Examples:
 1;om;2,{a,c,d}		string of 2 characters (max); this limits the allowed characters, others will be ignored by the device.
 1;om;2,{atoz,AtoZ}		string of 2 characters (max); letters only allowed
@@ -531,20 +528,31 @@ Examples:
 1;om;b,{0.5_0to100},%	will allow percent values with 0,5% steps from 0 to 100%
 The device will ignore commands with values out of range and may produce an error message.
 
-For type byte (b): describe the individual bits,. All 8 bits must be given for low and high value starting with MSB_low, MSB_high.…
-it cannot be used together with {…}
-[,CODING][[label][,0,1,0,1,…..,0,on]
-32;oa;1;b,name,0,on,1,1,2,2,3,on,4,on,5,on,6,0,7.on
-
 CODING:
-If a translation of transmitted values to displayed valued cannot be described by <des>, CODING can be used. How to implement the decoding is up to the SK
-The following is defined now (more may follow):
-UNIXTIME:  b,4294967295,UNIXTIME
-DAYSEC	b:86400,DAYSEC
-DAYMIN	b,1440,DAYMIN
-DAYHOUR	b,24,DAYHOUR
-YEARDAY	b,365,YEARDAY
-YEARMON	b,12,YEARMON
+If a translation of transmitted values to displayed values cannot be described by <des> in a simple way, CODING can be used. How to implement the decoding is up to the SK. The device must not send values out of range.
+CODING is an information for the SK, if complex decoding is necessary (as for time)
+This CODING as an optional first uppercase notifier is used for reserved token in the same manner as well. Only well defined names should be used.
+[label] is not numeric and not identical to CODING; (lower case preferred)
+Format:
+[,CODING, CODINGNAME][,label],{… allowed for bit definition only}
+The following is defined now (more may follow); the SK decides about the displayed format
+UNIXTIME8:	t,CODING,UNIXTIME8	8byte UNIX-time
+UNIXTIME4:	w,CODING,UNIXTIME4	4byte UNIX-time
+TIME		k,CODING,TIME		0 to 86400
+DAYSEC	b,CODING,DAYSEC		0 to 60
+DAYMIN	b,CODING,DAYMIN	0 to 60
+DAYHOUR	b,CODING,DAYHOUR	0 to 24
+DAY		b,CODING,DAY		0 to 31
+YEARDAY	w,CODING,YEARDAY	0 to 365
+YEARDAY0	L,CODING,YEARDAY0	0 to 4294967295 day from 1.1.00;
+MON		b,CODING,MON		0 to 12
+YEAR0	w,CODING,YEAR0		0 to 65535 year from year “00”
+YEARNA	e,CODING,YEARNA	-2147483648to2147483647; nearly all years before and after year “00” 
+
+BIT		b,CODING,BIT
+describe the individual bits,. Labels for all 8 bits must be given for low and high value starting with MSB_low, MSB_high.…
+Example:
+32;oa;b,CODING.BIT,name,{off,on,1,start,off,2,3,on,4,on,5,on,6,test,7.on}
 
 Errors and Error Handling
 

@@ -3,7 +3,7 @@ Hint for the text-format-version: to read this version as PDF please load https:
 MYC Definitions, Abbreviations and Formats
 
 Author: DK1RI
-Version V01.03.03 20230131
+Version V01.03.05 20230407
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -34,12 +34,11 @@ RU			rules device, device-type r
 			<des> are optional sometimes. They can be used better human reading and for informative display of the SK. 
 			They are also used for the translation to real values or restriction of values. 
 <n>			numeric value, binary in commands and properties; decimal readable in announcements, 0xxx, 0bxx notation allowed in 
-			announcements. This notation is translated by the CR, when creating the full list, but not in <des>.This notation is not allowed in 
-			“” and “I” lines.
+			announcements, but not supported now. This notation is not allowed in “I” lines.
 			Numbers are transmitted “big endian”: MSB first. 
 			<n> has different environments:
 			- <n> is used as a positional parameter as unsigned numbers for switches, range control and position of memory cells. The
-			transmitted values have a range from 0 to x, as defined by  the announcement.
+			transmitted values have a range from 0 to x, as defined by the announcement.
 			For the selection of these numbers it is important, how many different values are needed. So a (real) range of -3 to
 			+200 has 204 values and a byte with the range of 0 to 203 is used for transmission.
 			A range from 1,0 to 2.0 needs 11 values from 0 to 10 – a byte is also sufficient. 
@@ -55,28 +54,36 @@ RU			rules device, device-type r
      			of the CR there are additional 16 token for communication with SK reserved.
 			– The length of the transmitted number of numeric memory-contents is defined by <ty> 
 <s>			string, all characters. The string is preceded by the length as unsigned number. The length is of type <n> and can 1, 2, 3..byte; 
-			depend on maximum length of thr string given in the announcement. This type exists in commands, answers and infos.
-<sm>			string (all characters except  , ;{}\) Used in announcements; forbidden characters must be escaped (preceded) by \
+			depend on maximum length of the string given in the announcement. This type exists in commands, answers and infos.
+<sm>			string (all characters except , ;{}\) Used in announcements; forbidden characters must be escaped (preceded) by \
 <l>			maximum length of a string <s> in announcements
-<ty>			 type of memory cells in announcements, signed use 2-complement representation
+<ty>			type of memory cells in announcements,
+			type t is replaced by the use of CODING
 			0 byte: z: no data transfer / use internal data;
 			1 byte: a: bit 0|1, b: byte, 0to255; c: signed short, -128to127
-			2 bytes: i: signed integer,-32768to327687;  w: unsigned integer, 0to65535
-			4 bytes: e: signed long, -2147483648to2147483647; L: unsigned long, 0to4294967295; s: single;
-			8 bytes: d : double, t : (64 bit UNIX) time-date
-			variable number of bytes: c : command-token. 
- 			<l> : maximum length of a string.
+			2 bytes: w: unsigned integer, 0to65535; i: signed integer,-32768to327687;
+			3 bytes: k: unsigned. 0to16777215; l: signed: -8388608 to 8388607
+			4 bytes: L: unsigned long, 0to4294967295; e: signed long, -2147483648to2147483647; s: single;
+			8 bytes: t: unsigned, u: signed; d: double, 
+			Until 202304 “t” was used for UNIX-time only. This is handled now by CODING.
+ 			<l>: maximum length of a string.
 			A bit is transferred as a byte with the value of 0x00 or 0x01.
 			The 0 byte type z is used when internal data are used.
+			Coding for signed numbers ans single and double is not standard!!!!
+			Coding of signed numbers: 0x00 is transferred for the most negative (2exp(n-1)) number; 0xff the most positive (2exp(n-1) – 1). 
+			Coding of single and double:
+			1 byte signed exponent of 10 (-50 to 49); others are mantissa
+			transferred 0x320x000x000x02	means 2 * 10exp0 = 2
+			for more details see [4]
 <default>		a default value in an announcement (not mandatory)
 <fixed>		a fixed informative value in an announcement
 <announce>		complete announcement or announcement line, a string <sm>; as answer it is transmitted in <s> format
 <data>			<s> or <n> in commands answers or info 
 separators		For the announcement parser (CR, SK or LD eg):  , ; (comma, semicolon) 
-			, is the separator between pa and des.
 			; is the separator between <c>, <ct> and <pa> 
+			, is the separator inside pa (pa and des and within des)
 			There are no separators in commands, answers and infos
-0xxxff			means highest number in 1, 2, 3..Byte number (hex format) (not used in announcements)
+0xxxff			means highest number in 1, 2, 3, 4 Byte number (hex format) (not used in announcements)
 [ ]			optional properties
 
 All numbers in announcements are numeric; hex format 0xnn is allowed but not yet supported by the CR.
@@ -86,6 +93,8 @@ Non valid data
 There is no character reserved for non valid data.
 Any device must answer with valid data. In some cases a device is polled for data, but data may be not valid at that time. The default polling wait time for the caller is 100ms. If a device do not have valid data, it will send a not valid command-token.
 
+
+
 Copyright
 
 Dieses Dokument darf unverändert kopiert werden.
@@ -94,8 +103,6 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 This document can be copied without changes.
 The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
-
-
 
 Reference
 
