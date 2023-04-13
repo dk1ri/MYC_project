@@ -1,16 +1,16 @@
 'name : Feinstaubsensor.bas
-'Version V01.1, 20201113
+'Version V01.2, 20230412
 'purpose : Program for Sensitron SPS30 Feinstaubsensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware ICOM_Interface_eagle Version V03.2 by DK1RI
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.11 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.12 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.11\_Introduction_master_copyright.bas"
+$include "common_1.12\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -23,6 +23,7 @@ $include "common_1.11\_Introduction_master_copyright.bas"
 '
 '------------------------------------------------------
 'Missing/errors:
+' Info ser no etc ? dezimal Zahlen? -> checken!
 '
 '------------------------------------------------------
 ' Detailed description
@@ -33,7 +34,7 @@ $regfile = "m1284pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.11\_Processor.bas"
+$include "common_1.12\_Processor.bas"
 $Baud1 = 115200
 '
 '----------------------------------------------------
@@ -52,7 +53,7 @@ Const Rx_data_length = 100
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.11\_Constants_and_variables.bas"
+$include "common_1.12\_Constants_and_variables.bas"
 '
 DIm Sum As Word
 Dim MC10(Memory_size) As Word
@@ -82,39 +83,41 @@ Dim Stuffing_pointer As Byte
 Dim Check_overflow As Byte
 Dim Cleaning_intervall As Dword
 Dim Cleaning_intervall_b(4) As Byte At Cleaning_intervall Overlay
+Dim S_temp1 As String * 3
+Dim S_temp1_b(4) As Byte at S_temp1 Overlay
 '
 '----------------------------------------------------
-$include "common_1.11\_Macros.bas"
+$include "common_1.12\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Config.bas"
+$include "common_1.12\_Config.bas"
 '
 '----------------------------------------------------
 Waitms 500
 '
 '----------------------------------------------------
-$include "common_1.11\_Main.bas"
+$include "common_1.12\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Loop_start.bas"
+$include "common_1.12\_Loop_start.bas"
 '
 '----------------------------------------------------
 Gosub Ananlyze_in
 '
-$include "common_1.11\_Main_end.bas"
+$include "common_1.12\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.11\_Reset.bas"
+$include "common_1.12\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Init.bas"
+$include "common_1.12\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Subs.bas"
+$include "common_1.12\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -180,29 +183,15 @@ Ananlyze_in:
                            Select Case Rx_data_b(3)
                              ' CMD
                               Case 3
-                                 If Last_command = &H14 Then
-                                    Tx_b(1)= &H14
-                                    Tx_b(2) = 20
-                                    B_temp2 = 3
-                                    For B_temp1 = 6 To 26
-                                       Tx_b(B_temp2) = Rx_data_b(B_temp1)
-                                       Incr B_temp2
-                                    Next B_temp1
-                                    Tx_write_pointer = 23
-                                    If Command_mode = 1 Then Gosub Print_tx
-                                    Rx_pointer = 1
-                                    Last_command = 0
-                                 Else
-                                    Gosub Analyze_data
-                                 End If
+                                 Gosub Analyze_data
                               Case &H80
                                  Gosub Read_cleaning_intervall
                               Case &HD0
                                  Gosub Get_info
                               Case &HD1
-                                 Gosub Get_info
+                                 Gosub Get_info_numeric
                               Case &HD2
-                                 Gosub Get_info
+                                 Gosub Get_info_numeric
                            End Select
                         Else
                            No_data_available
@@ -289,6 +278,23 @@ Read_cleaning_intervall:
    If Command_mode = 1 Then Gosub Print_tx
 Return
 '
+Get_info_numeric:
+' numeric 0x00 .. 0x9 -> to ASC
+Gosub Byte_stuffing
+Tx_b(1) = Command_b(1)
+Tx_b(2) = Rx_data_b(5)
+B_temp2 = 3
+B_temp3 = 6
+For B_temp1 = 1 To Rx_data_b(5)
+   B_temp1 = Rx_data_b(B_temp3) + 48
+   Tx_b(B_temp2) = B_temp1
+   Incr B_temp2
+   Incr B_temp3
+Next B_temp1
+Tx_write_pointer = B_temp2
+If Command_mode = 1 Then Gosub Print_tx
+Return
+'
 Get_info:
 Gosub Byte_stuffing
 Tx_b(1) = Command_b(1)
@@ -296,7 +302,9 @@ Tx_b(2) = Rx_data_b(5)
 B_temp2 = 3
 B_temp3 = 6
 For B_temp1 = 1 To Rx_data_b(5)
-   Tx_b(B_temp2) = Rx_data_b(B_temp3)
+   B_temp1 = hexval(Rx_data_b(B_temp3))
+   S_temp1 = chr(B_temp1)
+   Tx_b(B_temp2) = S_temp1_b(1)
    Incr B_temp2
    Incr B_temp3
 Next B_temp1
@@ -366,18 +374,19 @@ Send_data:
 Return
 '
 Send_memory_content:
-   If Commandpointer >= 5 Then
-      W_temp1 = Command_b(2) * 256
-      W_temp1 = W_temp1 + Command_b(3)
-      W_temp2 = Command_b(4) * 256
-      W_temp2 = W_temp2.+ Command_b(5)
-      If W_temp1 < Memory_size And W_temp2 < 125 Then
+   If Commandpointer >= 4 Then
+      ' number
+      B_temp1 = Command_b(2)
+      ' position
+      W_temp1 = Command_b(3) * 256
+      W_temp1 = W_temp1.+ Command_b(4)
+      If W_temp1 < Memory_size And B_temp1 < 127 Then
          If W_temp1 < Memory_pointer Then
             W_temp1 = Memory_pointer - W_temp1
             Check_overflow = 0
          Else
             W_Temp1 = W_temp1 - Memory_pointer
-            W_temp1 = Memory_pointer - W_temp1
+            W_temp1 = Memory_size - W_temp1
             Check_overflow = 1
          End If
          Tx_time = 1
@@ -385,9 +394,8 @@ Send_memory_content:
          Tx_b(2) = Command_b(2)
          Tx_b(3) = Command_b(3)
          Tx_b(4) = Command_b(4)
-         Tx_b(5) = Command_b(5)
-         Tx_write_pointer = 6
-         For B_temp1 = 1 To W_temp2
+         Tx_write_pointer = 5
+         For B_temp2 = 1 To B_temp1
             Select Case Command_b(1)
                Case &H01
                   W_temp3 = Mc10(W_Temp1)
@@ -420,6 +428,7 @@ Send_memory_content:
                   Incr Tx_write_pointer
                   Tx_b(Tx_write_pointer) = Low (W_temp3)
                Else
+                  ' no valid (old data anymore
                   Tx_b(Tx_write_pointer) = &H00
                   Incr Tx_write_pointer
                   Tx_b(Tx_write_pointer) = &H00
@@ -431,7 +440,7 @@ Send_memory_content:
                W_temp1 = Memory_size
                Check_overflow = 1
             End If
-         Next B_temp1
+         Next B_temp2
          If Tx_write_pointer > 1 Then Gosub Print_tx
       Else
          Parameter_error
@@ -442,9 +451,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.11\_Commands_required.bas"
+$include "common_1.12\_Commands_required.bas"
 '
-$include "common_1.11\_Commandparser.bas"
+$include "common_1.12\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End

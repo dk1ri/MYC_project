@@ -1,5 +1,5 @@
 ' Commands
-' 20200506
+' 20230309
 '
 00:
    Tx_time = 1
@@ -223,22 +223,6 @@ Return
 Return
 '
 14:
-If Rx_started = 1 Then
-   Temps_b(1) = &H7E
-   Temps_b(2) = &H00
-   Temps_b(3) = &H03
-   Temps_b(4) = &H00
-   Temps_b(5) = &HFC
-   Temps_b(6) = &H7E
-   Send_len = 6
-   Last_command = &H14
-   Gosub Send_data
-Else
-   Not_valid_at_this_time:
-End If
-Return
-'
-15:
    Temps_b(1) = &H7E
    Temps_b(2) = &H00
    Temps_b(3) = &HD3
@@ -250,7 +234,7 @@ Return
 Gosub Clear_memory
 Return
 '
-16:
+15:
    Temps_b(1) = &H7E
    Temps_b(2) = &H00
    Temps_b(3) = &HD2
