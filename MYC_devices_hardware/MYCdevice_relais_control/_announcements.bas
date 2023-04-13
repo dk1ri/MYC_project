@@ -5,7 +5,7 @@ Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI; 4 Relais Bord;V05.1;1;190;1;32;1-1"
+Data "0;m;DK1RI;4 Relais Bord;V05.1;1;190;1;33;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -101,7 +101,7 @@ Data "15;ap,INP4;1;1024;lin;-"
 'Befehl &H10
 'liest digital alle
 'read digital all
-Data"16;aa,all;w,{0 to 4095}"
+Data"16;aa,all;w,{1_0to4095}"
 '
 'Announce17:
 'Befehl &H11
@@ -113,7 +113,7 @@ Data "17;os,relais1;1;0,off;1,on"
 'Befehl &H12
 'liest Status Relais1
 'read state relais1
-Data "18;as;as17"
+Data "18;as,as17"
 '
 'Announce19:
 'Befehl &H13
@@ -125,7 +125,7 @@ Data "19;os,relais2;1;0,off;1,on"
 'Befehl &H14
 'liest Status Relais2
 'read state relais2
-Data "20;as;as19"
+Data "20;as,as19"
 '
 'Announce21:
 'Befehl &H15
@@ -137,7 +137,7 @@ Data "21;os,relais3;1;0,off;1,on"
 'Befehl &H16
 'liest Status Relais3
 'read state relais3
-Data "22;as;as21"
+Data "22;as,as21"
 '
 'Announce23:
 'Befehl &H17
@@ -149,25 +149,25 @@ Data "23;os, relais4;1;0,off;1,on"
 'Befehl &H18
 'liest Status Relais4
 'read state relais4
-Data "24;as;as23"
+Data "24;as,as23"
 '
 'Announce25:
 'Befehl &H19
-'schreibt Referenz default: 0:5V 1: 1.1V
+'schreibt Referenz default: 0: 5V 1: 1.1V
 'write reference voltage
-Data "25;oa;a"
+Data "25;os,reference;1;0,5V;1,1.1V"
 '
 'Announce26:
 'Befehl &H1A
-'liest Referenz default: 0:5V 1: 1.1V
+'liest Referenz default: 0: 5V 1: 1.1V
 'read reference voltage
-Data "26;aa;as238"
+Data "26;as,as25"
 '
 'Announce27:
 'Befehl &HF0
 'announcement aller Befehle lesen
 'read announcement lines
-Data "240;ln,ANNOUNCEMENTS;190;32"
+Data "240;an,ANNOUNCEMENTS;190;33;14;CHAPTER,ADMINISTRATION"
 '
 'Announce28:
 'Befehl &HFC
@@ -185,10 +185,10 @@ Data "253;aa,MYC INFO;b,ACTIVE"
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{1_0to127};a,SERIAL,1;14;CHAPTER,ADMINISTRATION"
 '
 'Announce31:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14;CHAPTER,ADMINISTRATION"

@@ -2,221 +2,31 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Relaissteuerung
 
-Author DK1RI, Version V05.2, 20200501
+Author DK1RI, Version V05.3, 20230411
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
-Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
-Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden. Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: siehe [7]
+Die Relaissteuerung arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung
 
 Die Eagledaten stehen bei [1].
 Als Stromversorgung (7-12V) werden  maximal 150mA benötigt.
-Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Diese Leiterplatte hat vier Relais mit je zwei Umschaltkontakten, 7 digitale Eingänge und 4 Eingänge, die sich jeweils analog (1024 Stufen Auflösung) oder digital auslesen lasen. Beim Analogbetrieb liegt die Eingangsspannung zwischen 0  und  5V (nicht isoliert und nicht geschützt mit pullup Widerständen). Der Eingangsspannungsbereich ist auf 0 - 1,1V umschaltbar. Der  Eingangsspannungsbereich gilt für alle Eingänge, da die Referenzspannung umgeschaltet wird. Der Eingangsspannungsbereich wird im EERAM gespeichert.
 Die Kondensatoren an den Eingängen müssen an die Verwendung angepasst werden. Hohe Werte begrenzen möglicherweise den Frequenzbereich und verhindern die Programmierung des Prozessors über ISP.
 Da mit Version V04.0 der Leiterplatte die Beschreibung der Anschlüsse  geändert wurde, ist die aktuelle Firmware nicht mit älteren Leiterplatten verwendbar! 
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
 
 Die Relaisausgänge sind nicht für das Schalten hoher Spannungen (> 60V) geeignet !!!
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-Announce:
-'Befehl &H00
-'basic annoumement wird gelesen
-'basic announcement is read
-Data "0;m;DK1RI; 4 Relais Bord;V05.1;1;190;1;32;1-1"
-'
-'Announce1:
-'Befehl &H01
-'liest digital Wert INP1
-'read digital INP1
-Data"1;as,INP1;1;0,0;1,1"
-'
-'Announce2:
-'Befehl &H02
-'liest digital Wert INP2
-'read digital INP2
-Data"2;as,INP2;1;0,0;1,1"
-'
-'Announce3:
-'Befehl &H03
-'liest digital Wert INP3
-'read digital INP3
-Data"3;as,INP3;1;0,0;1,1"
-'
-'Announce4:
-'Befehl &H04
-'liest digital Wert INP4
-'read digital INP4
-Data "4;as,INP4;1;0,0;1,1"
-'
-'Announce5:
-'Befehl &H05
-'liest digital Wert INP5
-'read digital INP5
-Data"5;as,INP5;1;0,0;1,1"
-'
-'Announce6:
-'Befehl &H06
-'liest digital Wert INP6
-'read digital INP6
-Data "6;as,INP6;1;0,0;1,1"
-'
-'Announce7:
-'Befehl &H07
-'liest digital Wert INP7
-'read digital INP7
-Data"7;as,INP7;1;0,0;1,1"
-'
-'Announce8:
-'Befehl &H08
-'liest digital Wert INP8
-'read digital INP8
-Data "8;as,INP8;1;0,0;1,1"
-'
-'Announce9:
-'Befehl &H09
-'liest digital Wert INP9
-'read digital INP9
-Data "9;as,INP9;1;0,0;1,1"
-'
-'Announce10:
-'Befehl &H0A
-'liest digital Wert INP10
-'read digital INP10
-Data "10;as,INP10;1;0,0;1,1"
-'
-'Announce11:
-'Befehl &H0B
-'liest digital Wert INP11
-'read digital INP11
-Data "11;as,INP11;1;0,0;1,1"
-'
-'Announce12:
-'Befehl &H0C
-'liest analog Wert INP1
-'read analog INP1
-Data "12;ap,INP1;1;1024;lin;-"
-'
-'Announce13:
-'Befehl &H0D
-'liest analog Wert INP2
-'read analog INP2
-Data "13;ap,INP2;1;1024;lin;-"
-'
-'Announce14:
-'Befehl &H0E
-'liest analog Wert INP3
-'read analog INP3
-Data "14;ap,INP3;1;1024;lin;-"
-'
-'Announce15:
-'Befehl &H0F
-'liest analog Wert INP4
-'read analog INP4
-Data "15;ap,INP4;1;1024;lin;-"
-'
-'Announce16:
-'Befehl &H10
-'liest digital alle
-'read digital all
-Data"16;am,all;w,{0 to 4095}"
-'
-'Announce17:
-'Befehl &H11
-'schaltet Relais1
-'switch relais1
-Data "17;os,relais1;1;0,off;1,on"
-'
-'Announce18:
-'Befehl &H12
-'liest Status Relais1
-'read state relais1
-Data "18;as;as17"
-'
-'Announce19:
-'Befehl &H13
-'schaltet Relais2
-'switch relais2
-Data "19;os,relais2;1;0,off;1,on"
-'
-'Announce20:
-'Befehl &H14
-'liest Status Relais2
-'read state relais2
-Data "20;as;as19"
-'
-'Announce21:
-'Befehl &H15
-'schaltet Relais3
-'switch relais3
-Data "21;os,relais3;1;0,off;1,on"
-'
-'Announce22:
-'Befehl &H16
-'liest Status Relais3
-'read state relais3
-Data "22;as;as21"
-'
-'Announce23:
-'Befehl &H17
-'schaltet Relais4
-'switch relais4
-Data "23;os, relais4;1;0,off;1,on"
-'
-'Announce24:
-'Befehl &H18
-'liest Status Relais4
-'read state relais4
-Data "24;as;as23"
-'
-'Announce25:
-'Befehl &H19
-'schreibt Referenz default: 0:5V 1: 1.1V
-'write reference voltage
-Data "25;oa;a"
-'
-'Announce26:
-'Befehl &H1A
-'liest Referenz default: 0:5V 1: 1.1V
-'read reference voltage
-Data "26;aa;as238"
-'
-'Announce27:
-'Befehl &HF0
-'announcement aller Befehle lesen
-'read announcement lines
-Data "240;ln,ANNOUNCEMENTS;190;32"
-'
-'Announce28:
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce29:
-'Befehl &HFD
-'Geraet aktiv antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce30:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1"
-'
-'Announce31:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -225,7 +35,7 @@ aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
-Reset
+Hardeare Reset
 
 Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
 
@@ -241,7 +51,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.12 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -270,9 +80,15 @@ SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt. Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet. 
 Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
 
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an den der Feinstaubsensor über die USB Schnittstelle  anschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+
 SMD
 
-Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ große Bauteile.
+Die Leiterplatte ist teilweise mit SMD bestückt.
 
 Stromversorgung
 
@@ -365,7 +181,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 05.0
-Bascom Version 05.1
+Bascom Version 05.2
 
 Copyright
 
@@ -382,4 +198,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.10.zip
+[6]	https://dk1ri.de/dhw/common_1.12.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm
