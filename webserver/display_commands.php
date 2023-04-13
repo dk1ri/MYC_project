@@ -1,15 +1,27 @@
 <?php
 # display_commands.php
-# DK1RI 20230227
+# DK1RI 20230410
+function create_tok_list($device){
+    $_SESSION["tok_list"][$device] = [];
+    foreach ($_SESSION["original_announce"][$device] as $tok => $value) {
+        foreach ($_SESSION["activ_chapters"][$device] as $chapter => $val){
+            if (array_key_exists($tok, $_SESSION["chapter_token"][$device][$chapter])) {
+                if (!array_key_exists($tok, $_SESSION["tok_list"][$device])) {
+                    $_SESSION["tok_list"][$device][$tok] = 1;
+                }
+            }
+        }
+    }
+}
+
 function display_commands(){
     $device = $_SESSION["device"];
     create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);
-    $tok_list = $_SESSION["chapter_token"][$device][$_SESSION["actual_data"]["_chapter_"]];
     $announcelines = $_SESSION["announce_all"][$device];
     $already_done = "";
     foreach ($announcelines as $tok => $value) {
         $basic_tok = basic_tok($tok);
-        if (array_key_exists($basic_tok, $tok_list)){
+        if (array_key_exists($basic_tok, $_SESSION["tok_list"][$device])){
             if ($already_done == $basic_tok) {
                 # for same basic_tok
                 continue;

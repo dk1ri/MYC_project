@@ -2,6 +2,7 @@
 <!-- werbserver for MYC system
      myc.php
      Version 1.1 20230228
+     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
      to check:
      retranslate_simple_range required? or wrong?
 

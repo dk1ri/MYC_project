@@ -1,6 +1,7 @@
 <?php
 # subs.php
-# DK1RI 20230302
+# DK1RI 20230411
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function basic_tok($o_tok){
     # return basic_token
     if (strstr($o_tok, "a")) {
@@ -60,6 +61,7 @@ function length_of_number($data){
     # dummy
     return $len;
 }
+
 function length_of_type($data){
     # no of bytes for transmit
     if (is_numeric($data)){
@@ -76,12 +78,16 @@ function length_of_type($data){
             case "i":
             case "w":
                 return 4;
+            case "k":
+            case "l":
+                return 6;
             case "e":
             case "L":
             case "s":
                 return 8;
             case "d":
             case "t":
+            case "u":
                 return 16;
         }
     }
@@ -115,6 +121,8 @@ function display_length($type){
             case "e":
                 return 11;
             case "d":
+            case "t":
+            case "u":
                 return 18;
             default:
                 return 2;
@@ -156,9 +164,13 @@ function find_name($type){
         case "c":
             return "signedshort";
         case "i":
-            return "signed word";
+            return "signed integer";
         case "w":
-            return "word";
+            return "integer";
+        case "k":
+            return "signed 3byteword";
+        case "l":
+            return "3byteword";
         case "e":
             return "signed long";
         case "L":
@@ -167,6 +179,10 @@ function find_name($type){
             return "single";
         case "d":
             return "double";
+        case "t":
+            return "8byte";
+        case "u":
+            return "signed 8byte";
         case is_numeric($type):
             return "alpha";
     }
@@ -188,5 +204,18 @@ function adapt_len($token, $element, $actual){
     }
     return $result.$actual;
 }
+
+function calculate_real($byte_values){
+    # bytes to decimal
+    $real = 0;
+    $i = 0;
+    while ($i < count($byte_values)){
+        $real *= 16;
+        $real += $byte_values[$i];
+        $i += 1;
+    }
+    return $real;
+}
+
 ?>
 

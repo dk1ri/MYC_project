@@ -1,6 +1,7 @@
 <?php
 # create_commands.php
-# DK1RI 20230312
+# DK1RI 20230409
+#The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 # creates display elements
 function create_basic_command($basic_tok){
     $device = $_SESSION["device"];
@@ -44,7 +45,7 @@ function create_os($basic_tok) {
 function create_as($basic_tok) {
     $device = $_SESSION["device"];
     echo "<div><h3 class='as'>";
-    echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
+    echo $_SESSION["des_name"][$device][$basic_tok. "x0"];
     head_stack($basic_tok);
     $actual =$_SESSION["actual_data"][$device][$basic_tok."x0"];
     $label = explode(",",$_SESSION["announce_all"][$device][$basic_tok."x0"][$actual + 1])[1];
@@ -182,7 +183,6 @@ function  create_op_oo($basic_tok){
 function create_ap($basic_tok){
     $device = $_SESSION["device"];
     echo "<div><h3 class='ap'>";
-    echo $_SESSION["des_name"][$device][$basic_tok. "x0"] . ": ";
     head_stack($basic_tok);
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
         if (strstr($tok, "b")){continue;}
@@ -238,7 +238,7 @@ function create_am($basic_tok){
         }
         elseif (strstr($token, "x1")) {
             echo explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
-            $dat = $_SESSION["actual_data"][$device][$token][0];
+            $dat = $_SESSION["actual_data"][$device][$token."x1"][0];
             echo " " . $dat;
             echo "<br>";
         }
@@ -360,7 +360,9 @@ function create_aa($basic_tok) {
         elseif (strstr($token, "x")) {
             # data
             if (!strstr($token, "x0")) {
-                echo explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
+                if (count($_SESSION["original_announce"][$device][basic_tok($token)]) > 2) {
+                    echo explode(";", $_SESSION["des_type"][$device][$token])[2] . ": ";
+                }
                 $dat = $_SESSION["actual_data"][$device][$token];
                 echo " " . $dat . "<br>";
             }

@@ -1,6 +1,7 @@
 <?php
 # translate.php
 # DK1RI 20230302
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function correct_POST($device){
     # make mods on op ap oo commands only (???)
     # now data beyond the limits can be inputted for op oo commands with > 100 distinct values

@@ -1,6 +1,7 @@
 <?php
 # send_and_update.php
 # DK1RI 20230327
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function send_and_update(){
     # input:  $_SESSION["corrected_POST"]
     # output:  $_SESSION["actual_data"][$device]
@@ -258,12 +259,14 @@ function send_and_update(){
                         break;
                     case "on":
                         $send_ok = update($device, $basic_tok);
+                        $data = "";
                         if ($send_ok) {
                             # number of elements are calculated by using data
                             $dataelements = explode(",", $_SESSION["actual_data"][$device][$basic_tok . "x1"]);
                             $no_element = count($dataelements);
                             $length = $_SESSION["property_len"][$device][$basic_tok][1];
-                            $send .= translate_dec_to_hex($basic_tok,"n", $no_element, $length);
+                            $data .= translate_dec_to_hex($basic_tok,"n", $no_element, $length);
+                            $send .= $data;
                             # position
                             if ($_SESSION["des_range"][$device][$basic_tok . "b1"] == 0) {
                                 # FIFO
@@ -288,9 +291,11 @@ function send_and_update(){
                             if ($_SESSION["actual_data"][$device][$basic_tok . "b0"] != 0) {
                                 # number of elements + position
                                 $length = $_SESSION["property_len"][$device][$basic_tok][2];
-                                $send .= translate_dec_to_hex($basic_tok, "n", $_SESSION["actual_data"][$device][$basic_tok . "b0"], $length);
+                                $data = translate_dec_to_hex($basic_tok, "n", $_SESSION["actual_data"][$device][$basic_tok . "b0"], $length);
+                                $send .= fillup($data, $length);
                                 $length = $_SESSION["property_len"][$device][$basic_tok][3];
-                                $send .= calculate_pos_hex($basic_tok, 1);
+                                $data = calculate_pos_hex($basic_tok, 1);
+                                $send .= fillup($data, $length);
                                 $send_ok = 1;
                                 $_SESSION["read"] = 1;
                             }
@@ -463,7 +468,7 @@ function update($device, $basic_tok){
 }
 
 function calculate_pos_hex($basic_tok, $on_an_adder){
-    # for position for m / n commands
+    # for position for momory commands
     # for 3 dimensions: z = n_x*my*mz + n_y*mz + nz
     $device = $_SESSION["device"];
     $maxmax = 1;
@@ -473,6 +478,7 @@ function calculate_pos_hex($basic_tok, $on_an_adder){
     # max of 0,0,1,1,2,2,... max,max for eaxh b token:
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
         if (strstr($token, "b")) {
+            # for on / an b0 is number of elements
             if ($on_an_adder and $token == $basic_tok . "b0") {
                 $i += 1;
                 continue;

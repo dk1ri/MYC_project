@@ -1,7 +1,7 @@
 """
 name : serial.py
 Author: DK1RI
-Version 01.0, 20230209
+Version 01.0, 20230406
 call with: serial.py <comport>
 Purpose :
 interface between webserver and USB devices
@@ -15,7 +15,7 @@ import serial
 def ser_read(ser):
     # Pause the program for 1 second to avoid overworking the serial port
     while 1:
-        x = ser.readline(100)
+        x = ser.read(100)
         return x
 
 
@@ -26,13 +26,13 @@ def ser_write(ser, da):
 if len(sys.argv) != 1:
     comport = sys.argv[1]
 else:
-    sys.exit("call with: serial.py <comport>")
+    sys.exit("call with: serial.py <COMx>")
 #
 dir = "/xampp/htdocs/usb_interface"
 if  not os.path.exists(dir):
     os.mkdir(dir)
 #print (serial.version)
-ser = serial.Serial('COM3', 19200, timeout=0.5)
+ser = serial.Serial(comport, 19200, timeout=0.5)
 to_web = dir + "/to_web"
 from_web = dir + "/from_web"
 while 1:
@@ -46,7 +46,6 @@ while 1:
 
             in_dat = ser_read(ser)
             if len(in_dat) != 0:
-                print (in_dat)
                 if os.path.exists(to_web):
                     os.remove(to_web)
                 f = open(to_web, "a")

@@ -1,5 +1,6 @@
 <?php
 # read_config.php
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 # DK1RI 20220228
 function read_config(){
     $_SESSION = [];
@@ -56,7 +57,9 @@ function read_config(){
     $_SESSION["announce_all"] = [];
     # chapter_names: array
     $_SESSION["chapter_names"] = [];
+    $_SESSION["chapter_names_array"] = [];
     # des_range: token: array data: string
+    $_SESSION["tok_list"][$device] = [];
     $_SESSION["des_range"] = [];
     # des_name: token: array data: string
     $_SESSION["des_name"] = [];

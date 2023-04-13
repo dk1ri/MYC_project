@@ -1,11 +1,28 @@
 <?php
 # read_new_device.php
 # DK1RI 20230312
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function read_new_device($device){
     #create additional device (old ones not deleted)
+    # read answercpmmands
+    $_SESSION["answer_tok"][$device] = [];
+    if (file_exists("./devices/".$device."/as_commands")) {
+        $l = 3;
+        $file = fopen("./devices/" . $device . "/as_commands", "r");
+        while (!(feof($file))) {
+            $pure = fgets($file);
+            $pure = str_replace("\n", '', $pure);
+            $line = str_replace("\r", '', $pure);
+            $field = explode(" ", $line);
+            $_SESSION["answer_tok"][$device][$field[0]] = $field[1];
+        }
+    }
+    fclose($file);
     # split anouncelist to display objects and get chapter_names
+    $_SESSION["tok_list"][$device] = [];
     split_to_display_objects();
-    $_SESSION["chapter"] = $_SESSION["chapter_names"][$device][0];
+    $_SESSION["chapter"] = "all";
+    $_SESSION["chapter_array"][$device] = [];
     calculate_property_len();
     # now length of properties for all commands in $_SESSION["property_len"][$device] ??
     calculate_cor_token($device);
@@ -238,7 +255,12 @@ function init_data($device){
     # set data  for all token to "0" (or corresponding real data by translate)
     # all actual_data are strings
     # create $_SESSION[actual_data][$device]
+    $_SESSION["activ_chapters"][$device] = [];
+    $_SESSION["activ_chapters"][$device]["all_basic"] = "all_basic";
+    $_SESSION["activ_chapters"][$device]["ADMINISTRATION"] = "ADMINISTRATION";
     $_SESSION["actual_data"][$device] = [];
+    $_SESSION["actual_data"][$device] = [];
+    # others
     foreach ($_SESSION["announce_all"][$device] as $key => $value) {
         $ct = explode(",", $value[0])[0];
         switch ($ct) {

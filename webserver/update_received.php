@@ -1,6 +1,7 @@
 <?php
 # update_received.php
 # DK1RI 20230315
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function update_received(){
     $from_device = $_SESSION["received_data"];
     $i = 0;
@@ -106,24 +107,25 @@ function update_one_command($rec){
             }
             break;
         case "am":
+            # multiple dimensions not yet supported
             $position_length = $_SESSION["property_len_byte"][$device][$basic_tok][1];
-            $position = array_splice($rec,$position_length);
-            $position = update_memory_pos($basic_tok, $position, 2);
+            $position = array_splice($rec,0, $position_length);
             $data_length = $_SESSION["property_len_byte"][$device][$basic_tok][2];
-            $data = array_splice($rec,$data_length);
-            list($data, $delete_bytes) =update_memory_data($basic_tok, $rec, 0, 3);
+            $data = array_splice($rec,0, $data_length);
+            list($data, $delete_bytes) = update_memory_data($basic_tok."x1", $data, 0, 3);
             array_splice($rec,$delete_bytes);
-            $_SESSION["actual_data"][$device][$basic_tok] = $data;
+            $_SESSION["actual_data"][$device][$basic_tok."x1"] = $data;
+            update_corresponding_opererating($basic_tok, "x1", $data);
             break;
         case "an":
-            $no_of_elements_length = $_SESSION["property_len_byte"][$device][$basic_tok][1];
+            $no_of_elements_length = $_SESSION["property_len_byte"][$device][$basic_tok][2];
             $no_of_elements = array_splice($rec, 0, $no_of_elements_length);
             $no_of_elements = update_memory_pos($basic_tok."b0", $no_of_elements, 0);
-            $position_length = $_SESSION["property_len_byte"][$device][$basic_tok][2];
+            $position_length = $_SESSION["property_len_byte"][$device][$basic_tok][3];
             $position = array_splice($rec, 0, $position_length);
             $position = update_memory_pos($basic_tok."b0", $position, 3);
             $_SESSION["actual_data"][$device][$basic_tok."x1"] = "";
-            for ($i=0; $i <$no_of_elements; $i ++){
+            for ($i=0; $i < $no_of_elements; $i ++){
                 if ($i != 0){$_SESSION["actual_data"][$device][$basic_tok."x1"].=",";}
                 list($data, $delete_bytes) = update_memory_data($basic_tok."x1", $rec, 0, 3);
                 array_splice($rec, 0,$delete_bytes);
@@ -131,6 +133,7 @@ function update_one_command($rec){
             }
             break;
         case "aa":
+            $element_number = 0;
             if(count($_SESSION["original_announce"][$device][$basic_tok]) < 3){
                 # no position
                 list($data, $delete_bytes) = update_memory_data($basic_tok . "x1" , $rec, 0, 1);
@@ -213,15 +216,12 @@ function update_memory_pos($basic_tok, $position, $start){
 }
 
 function update_memory_data($token, $rec, $typeindex, $lenindex){
-    # translate received array of byte (decimal) depending on type
-    print $token;
-    var_dump($rec);
+    # translate received array of byte ($rec) depending on type
     if($rec==[]){return["",0];}
     $basic_tok = basic_tok($token);
     $device = $_SESSION["device"];
     $bytes_to_delete = 0;
     $type = explode(";", $_SESSION["des_type"][$device][$token])[$typeindex];
-    print $type." t ";
     $result = "";
     switch ( $type){
         case (is_numeric($type)):
@@ -254,32 +254,61 @@ function update_memory_data($token, $rec, $typeindex, $lenindex){
         case "w":
             $result = 256 * $rec[0] + $rec[1];
             $bytes_to_delete = 2;
-            print " ".$result. " r ";
+            break;
+        case "i":
+            $result = 256 * $rec[0] + $rec[1];
+            $result -= 32768;
+            $bytes_to_delete = 2;
+            break;
+        case "k":
+            $result = 256 * $rec[0] + $rec[1];
+            $result = 256 * $result + $rec[2];
+            $bytes_to_delete = 3;
+            break;
+        case "l":
+            $result = 256 * $rec[0] + $rec[1];
+            $result = 256 * $result + $rec[2];
+            $result -= 8388608;
+            $bytes_to_delete = 3;
             break;
         case "e":
             # 4 byte signed long
-            $result =  $rec[1] * 16777215 + $rec[2] * 65535 + $rec[3] * 256 + $rec[4];
+            $result =  $rec[0] * 256 + $rec[1];
+            $result = 256 * $result + $rec[2];
+            $result = 256 * $result + $rec[3];
             $result -= 2147483647;
             $bytes_to_delete = 4;
             break;
         case "L":
             # 4 byte unsigned long
-            $result =  $rec[1] * 16777215 + $rec[2] * 65535 + $rec[3] * 256 + $rec[4];
+            $result =  $rec[0] * 256 + $rec[1];
+            $result = 256 * $result + $rec[2];
+            $result = 256 * $result + $rec[3];
             $bytes_to_delete = 4;
+            break;
+        case "t":
+            $result = 256 * $rec[0] + $rec[1];
+            $result = 256 * $result + $rec[2];
+            $result = 256 * $result + $rec[3];
+            $result = 256 * $result + $rec[4];
+            $result = 256 * $result + $rec[5];
+            $result = 256 * $result + $rec[6];
+            $result = 256 * $result + $rec[7];
+            $bytes_to_delete = 8;
+            break;
+        case "u":
+            $result = 256 * $rec[0] + $rec[1];
+            $result = 256 * $result + $rec[2];
+            $result = 256 * $result + $rec[3];
+            $result = 256 * $result + $rec[4];
+            $result = 256 * $result + $rec[5];
+            $result = 256 * $result + $rec[6];
+            $result = 256 * $result + $rec[7];
+            $result -= 0x8000000000000000 ;
+            $bytes_to_delete = 8;
             break;
     }
     return [$result,$bytes_to_delete];
-}
-
-function calculate_real($byte_values){
-    $real = 0;
-    $i = 0;
-    while ($i < count($byte_values)){
-        $real *= 256;
-        $real += $byte_values[$i];
-        $i += 1;
-    }
-    return $real;
 }
 
 function one_numeric_element ($basic_tok, $rec){
@@ -307,4 +336,13 @@ function one_numeric_element ($basic_tok, $rec){
     array_splice($rec, 0, $length_of_pos);
     return $result;
 }
+
+function update_corresponding_opererating($basic_tok, $extension, $data){
+    $device = $_SESSION["device"];
+    if (array_key_exists($basic_tok, $_SESSION["answer_tok"][$device])) {
+        $tok = $_SESSION["answer_tok"][$device][$basic_tok];
+        $_SESSION["actual_data"][$device][$tok . $extension] = $data;
+    }
+}
+return;
 ?>

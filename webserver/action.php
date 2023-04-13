@@ -1,11 +1,18 @@
 <?php
 # action.php
 # DK1RI 20230313
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 ?>
 <html lang = "de">
 <?php
     session_start();
 ?>
+<script>
+    function do_action() {
+        document.getElementById("action").submit();
+    }
+</script>
+
     <head>
         <title>MYC Apache Server</title>
         <meta name="author" content="DK1RI">
@@ -51,6 +58,16 @@
     </head>
     <body>
         <?php
+        include "translate.php";
+        include "subs.php";
+        include "send_and_update.php";
+        include "display_commands.php";
+        include "create_commands.php";
+        include "select_any.php";
+        include "for_tests.php";
+        include "serial.php";
+        include "update_received.php";
+        include "split_to_display_objects.php";
         if (array_key_exists("user_name", $_POST)) {
             $_SESSION["user"]["username"] = $_POST["user_name"];
         }
@@ -71,28 +88,32 @@
             }
         }
         $device = $_SESSION["device"];
+        # new chapters?
+        $chapters = [];
+        foreach ($_POST as $key => $value){
+            if (strstr($key,"chapter_")){
+                $chapters[] =   explode("chapter_", $key)[1];
+            }
+        }
+        if ($chapters != []){
+            $_SESSION["activ_chapters"][$device] = [];
+            foreach ($chapters as $chap){
+                $_SESSION["activ_chapters"][$device][$chap] = $chap;
+            }
+            create_tok_list($_SESSION["device"]);
+        }
+        if (!array_key_exists($device, $_SESSION["announce_all"])) {
+            # create / read new device for $_SESSION, if not existing
+            # not actually used devices are not deleted
+            include "read_new_device.php";
+            read_new_device($device);
+            for_tests($device);
+        }
         if (array_key_exists("chapter", $_POST)) {
             $post_ = $_POST["chapter"];
             if ($post_ != $_SESSION["actual_data"]["_chapter_"]) {
                 $_SESSION["actual_data"]["_chapter_"] = $post_;
             }
-        }
-        # create / read new device for $_SESSION, if not existing
-        # not actually used devices are not deleted
-        include "translate.php";
-        include "subs.php";
-        include "send_and_update.php";
-        include "display_commands.php";
-        include "create_commands.php";
-        include "select_any.php";
-        include "for_tests.php";
-        include "serial.php";
-        include "update_received.php";
-        include "split_to_display_objects.php";
-        if (!array_key_exists($device, $_SESSION["announce_all"])) {
-            include "read_new_device.php";
-            read_new_device($device);
-            for_tests($device);
         }
         correct_POST($device);
         send_and_update();
@@ -103,8 +124,9 @@
         # $_SESSION ready, create new page
         ?>
         <div class = "flex-container"><div>
-        <form action="action.php" method="post">
-        <input type="submit" />
+        <form id = "action" action="action.php" method="post">
+
+        <input type="button" onclick="do_action()" value="abschicken">
         </div><div>
         Interface: <input type="text" name = "interface" size = 14 value = <?php echo $_SESSION["interface"] ?>>
         <br>
@@ -120,8 +142,21 @@
         <?php
         simple_selector("device",  explode(",", $_SESSION["device_list"]), $_SESSION["actual_data"]["_device_"]);
         echo ("<br>");
-        simple_selector("chapter", explode(",", $_SESSION["chapter_names"][$_SESSION["device"]]), $_SESSION["actual_data"]["_chapter_"]);
+        $i = 0;
+        foreach ($_SESSION["chapter_names"][$_SESSION["device"]] as $tok) {
+            echo "<input type='checkbox' name=" . "chapter_".$tok . " id=" . "chapter_".$tok . ">";
+            if (array_key_exists($tok, $_SESSION["activ_chapters"][$device])) {
+                echo "<strong class = 'green'>";
+            } else {
+                echo "<strong class = 'red'>";
+            }
+            echo "<label for " .$tok . ">" . $tok . "</label></strong><br>";
+            $i += 2;
+        }
         echo "</div>";
+        if ( $_SESSION["tok_list"][$device] == []) {
+            create_tok_list($device);
+        }
         display_commands();
         echo "</form>";
         echo"</div>";

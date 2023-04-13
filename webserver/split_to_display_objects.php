@@ -1,13 +1,13 @@
 <?php
 # split_to_display_objects.php
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 # DK1RI 20230227
 function split_to_display_objects(){
     $device = $_SESSION["device"];
-    $_SESSION["chapter_names"][$device] = "0,all,1,no_ADMINISTRATION,2,ADMINISTRATION";
+    $_SESSION["chapter_names"][$device]["all_basic"] = "all_basic";
+    $_SESSION["chapter_names"][$device]["ADMINISTRATION"] = "ADMINISTRATION";
     $_SESSION["chapter_index"][$device] = [];
     $_SESSION["chapter_token"][$device] = [];
-    $_SESSION["chapter_token"][$device][1] =[];
-    $_SESSION["chapter_token"][$device][2] = [];
     $_SESSION["announce_all"][$device] = [];
     $_SESSION["des_name"][$device] = [];
     $_SESSION["des_range"][$device] = [];
@@ -21,53 +21,39 @@ function split_to_display_objects(){
         while (!(feof($file))) {
             $pure = fgets($file);
             $pure = str_replace("\n", '', $pure);
-            $pure = str_replace("\r", '', $pure);
-            $field = explode(";", $pure);
+            $line = str_replace("\r", '', $pure);
+            $field = explode(";", $line);
             $token = $field[0];
             $lda =[];
+            # delete CHAPTER
             $i= 1;
+            $temp = "";
             while ($i < count($field)) {
                 if(!strstr($field[$i],"CHAPTER")) {
-                    $lda[] = $field[$i];
+                    $last_temp = $temp;
+                    $temp = $field[$i];
+                }
+                else {
+                    $temp  = "";
+                    $last_temp ="";
+                }
+                if ($last_temp != ""){
+                    $lda[] = $last_temp;
                 }
                 $i += 1;
             }
+            if ($temp != ""){
+                $lda[] = $temp;
+            }
             $_SESSION["original_announce"][$device][$token] =  $lda;
-            $line = implode(";", $field);
-            $pos = strpos($line, "CHAPTER");
-            # referenced by index (that is what POST delivers)
-            # all;
-            $_SESSION["chapter_token"][$device][0][$token] = 1;
-            $admin_pos = strpos($line, "14,CHAPTER,ADMINISTRATION");
-            if (!$admin_pos){
-                # no_ADMIN
-                $_SESSION["chapter_token"][$device][1][$token] = 1;
+            if (!strpos($line, "14;CHAPTER,ADMINISTRATION")){
+                $_SESSION["chapter_token"][$device]["all_basic"][$token] = 1;
             }
-            else{
-                $_SESSION["chapter_token"][$device][2][$token] = 1;
-            }
-            # CHAPTER comes with all toks with required CHAPTER
-            if ($pos and !$admin_pos) {
+            if (strpos($line, "CHAPTER,")) {
                 $ar = explode("CHAPTER", "$line");
                 $chap = explode(",", $ar[1])[1];
-                $chap_comma = "," . $chap;
-                if (!strstr($_SESSION["chapter_names"][$device], $chap_comma)) {
-                    $_SESSION["chapter_names"][$device] .= ",". $l . "," . $chap;
-                    $_SESSION["chapter_token"][$device][$l] = [];
-                    $l += 1;
-                }
-                # find key
-                $i = 0;
-                $found = 0;
-                $chaps = explode(",", $_SESSION["chapter_names"][$device]);
-                while ($i < count($chaps) and $found == 0) {
-                    $index = $chaps[$i];
-                    if ($chaps[$i +1] == $chap) {
-                        $found = 1;
-                        $_SESSION["chapter_token"][$device][$index][$token] = 1;
-                    }
-                    $i += 2;
-                }
+                $_SESSION["chapter_token"][$device][$chap][$token] = 1;
+                $_SESSION["chapter_names"][$device][$chap] = $chap;
             }
         }
         fclose($file);
@@ -452,11 +438,49 @@ function expand_a_b($basic_tok, $announce){
 function add_type($desc){
     #create des_type
     # $desc: array: type [CODING] [name] [{...}]
-    # return:type;CODING;name;range;startvalue;allowed (some may be empty
+    # return:type;CODING;name;range;startvalue;allowed (some may be empty)
     $typ = $desc[0];
+    # find "CODING"
+    if (count($desc)> 1){
+        if ($desc[1] == "CODING"){
+            if (count($desc) > 3){
+                $label = $desc[3];
+            }
+            else {
+                $label = $desc[2];
+            }
+            switch ($desc[2]) {
+                case "UNIXTIME8":
+                    return $typ . ";UNIXTIME8;".$label.";0;0to1000000000000;0;0 to 1000000000000;end";
+                case "UNIXTIME4":
+                    return $typ . ";UNIXTIME4;".$label.";0;0to4294967295;0;0 to 4294967295;end";
+                case "TIME":
+                    return $typ . ";TIME;".$label.";0;0to86400;0;0 to 86400;end";
+                case "DAYSEC":
+                    return $typ . ";DAYSEC;".$label.";0;0to60;0;0 to 60;end";
+                case "DAYMIN":
+                    return $typ . ";DAYMIN;".$label.";0;0to60;0;0 to 60;end";
+                case "DAYHOUR":
+                    return $typ . ";DAYHOUR;".$label.";0;0to60;0;0 to 60;end";
+                case "DAY":
+                    return $typ . ";DAY;".$label.";0;0to31;0;0 to 31;end";
+                case "YEARDAY":
+                    return $typ . ";YEARDAY;".$label.";0;0to365;0;0 to 365;end";
+                case "YEARDAY0":
+                    return $typ . ";YEARDAY;".$label.";0;0to4294967295;0;0 to 4294967295;end";
+                case "MON":
+                    return $typ . ";MON;".$label.";0;0to12;0;0 to 12;end";
+                case "YEAR0":
+                    return $typ . ";YEAR0;".$label.";0;0to65535;0;0 to 65535;end";
+                case "YEARNA":
+                    return $typ . ";YEAR0;".$label.";0;-2147483648to2147483647;0;-2147483648 to 2147483647;end";
+            }
+        }
+    }
+    # no CODING:
     if ($typ == "s" or $typ == "d") {
         # add exponent
-        return "f;;exponent;0 to 255;0;;end";
+        return "f;;exponent;-128to127;0;;end";
     }
     # else
     $type = $typ . ";;;;;;end";
