@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rtc_bascom.bas
-'Version V03.2, 20200428
+'Version V03.3, 20230411
 'purpose : Programm as realtime clock using the ELV RTC-DCF module
 'The interface communicates with the module via SPI
 'This Programm can be controlled via I2C or serial
@@ -8,11 +8,11 @@
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,10 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1,12 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
+$include "common_1.12\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -34,7 +34,7 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.10\_Processor.bas"
+$include "common_1.12\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -47,16 +47,29 @@ Const S_length = 35
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.12\_Constants_and_variables.bas"
 '
 Const Length_spi = 11
 Const Length_spi_1 = Length_spi - 1
 Const Start_delay_end = 1000000
 ' 5 second about
 '
+Dim Second As Byte
+Dim S_second As String * 5
+Dim S_second_b(4) As Byte At S_second Overlay
+Dim Minute As Byte
+Dim S_minute As String * 5
+Dim S_minute_b(4) As Byte At S_minute Overlay
+Dim Hour As Byte
+Dim S_hour As String * 5
+Dim S_hour_b(4) As Byte At S_hour Overlay
+Dim D_time As Dword
+Dim D_time_b(4) As Byte At D_time Overlay
 Dim B_temp3w As Dword
 Dim Year As Dword
+Dim Year_w As Word
 Dim Day As Dword
+Dim Day_b As Byte
 Dim Month As Byte
 Dim Unixtime As Dword
 Dim Unixtime0 As Byte At Unixtime Overlay
@@ -80,24 +93,23 @@ Dim Schaltjahre As Dword
 Dim Value_ As Byte
 Dim Spi_buffer(Length_spi) As Byte
 Dim Spi_buffer1 As String * Length_spi_1 At Spi_buffer Overlay
-Dim Spi_bytes as Byte
 Dim Start_delay As Dword
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.12\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.12\_Config.bas"
 '
 '----------------------------------------------------
 Spiinit
 Start_delay = 1
 '
 '----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.12\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.12\_Loop_start.bas"
 '
 '----------------------------------------------------
 If Start_delay > 0 Then
@@ -110,24 +122,40 @@ If Start_delay > 0 Then
 End If
 '
 '----------------------------------------------------
-$include "common_1.10\_Main_end.bas"
+$include "common_1.12\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.12\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.12\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.12\_Subs.bas"
 '
 '----------------------------------------------------
+'
+Read_time:
+Waitus 70
+Reset PortB.2
+For B_temp1 = 1 To 7
+   B_temp2 = B_temp1 + 191
+   'read register 0 to 6
+   Spiout B_temp2, 1
+   Waitus 70
+   Spiin Spi_buffer(B_temp1), 1
+   Waitus 70
+Next B_temp1
+Set PortB.2
+Gosub Calculate_unix_time
+Return
 '
 Calculate_unix_time:
+   ' each byte contain 2 BCD coded numbers
    Value_ = Spi_buffer(1)
    B_temp1 = Value_ AND &B01110000
    'seconds
@@ -136,7 +164,9 @@ Calculate_unix_time:
    B_temp2 = Value_ And &B00001111
    B_temp2 = B_temp1 + B_temp2
    Unixtime = B_temp2
-'
+   Second = B_temp2
+   S_second = str(Second)
+   S_second = format(S_Second, "00")
    Value_ = Spi_buffer(2)
    'minutes
    B_temp1 = Value_ And &B01110000
@@ -145,16 +175,22 @@ Calculate_unix_time:
    B_temp2 = Value_ AND &B00001111
    B_temp2 = B_temp2 + B_temp1
    B_temp3w = B_temp2
+   Minute = B_temp2
+   S_minute = str(Minute)
+   S_minute = format(S_Minute, "00")
    B_temp3w   = B_temp3w * 60
    Unixtime = Unixtime + B_temp3w
 '
    Value_ = Spi_buffer(3)
    'hours
-   B_temp1 = Value_ And &B00110000
+   B_temp1 = Value_ And &B01110000
    Shift B_temp1 ,Right , 4
    B_temp1 = B_temp1 * 10
    B_temp2 = Value_ And &B00001111
    B_temp2 = B_temp2 + B_temp1
+   Hour = B_temp2
+   S_hour = str(Hour)
+   S_hour = format(S_Hour, "00")
    B_temp3w = B_temp2
    B_temp3w = B_temp3w * 3600
    Unixtime = Unixtime + B_temp3w
@@ -169,9 +205,10 @@ Calculate_unix_time:
    B_temp1 = B_temp1 * 10
    B_temp2 = Value_ And &B00001111
    B_temp2 = B_temp2 + B_temp1
+   Day_b = B_temp2
+   'without actual day
    Decr B_temp2
    Day = B_temp2
-   'without actual day
 '
    Value_ = Spi_buffer(6)
    'month
@@ -201,7 +238,8 @@ Calculate_unix_time:
    B_temp1 = B_temp1 * 10
    B_temp2 = B_temp2 + B_temp1
    Year = B_temp2
-   'Year sinse 2000
+   Year_w = Year + 2000
+   'Year since 2000
    B_temp3w = Year + 30
    'complete years since 1. 1. 1970 (without actual year) (31 - 1)
 '
@@ -227,16 +265,11 @@ Calculate_unix_time:
          Unixtime = Unixtime + 86400
       End If
    End If
-'
-   Tx_b(2) = 0
-   Tx_b(3) = 0
-   Tx_b(4) = 0
-   Tx_b(5) = 0
-   Tx_b(6) = Unixtime3
-   'first 4 byte are 0  little endian -> big endian
-   Tx_b(7) = Unixtime2
-   Tx_b(8) = Unixtime1
-   Tx_b(9) = Unixtime0
+   D_time = Hour * 24
+   D_time = D_time + Minute
+   D_time = D_time * 60
+   D_time = D_time + Second
+
 Return
 '
 Start_dcf:
@@ -255,9 +288,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.12\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.12\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End

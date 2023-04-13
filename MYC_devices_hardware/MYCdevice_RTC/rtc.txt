@@ -2,88 +2,35 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Realtime Clock mit DCF
 
-Author DK1RI, Version V03.1, 20200429
+Author DK1RI, Version V03.2, 20230411
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
 Dieses Interface ist bindet das RTC DCF  Modul von ELV in das MYC System ein.
-Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: siehe [7]
 Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 / USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung und Bedienung
 
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
-Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Als Realtime Modul wird der RTC-DCF Modul von ELV verwendet.
 Das Modul wird als Arduino Shield verwendet, dadurch wird die Leiterplatte zwar etwas größer, aber so entfällt die Pegelwandlung.
 Die Kommunikation mit dem DCF Modul erfolgt über die SPI Schnittstelle. 
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
+Im folgenden werden auch Befehlsfolgen beschrieben, wie sie über die Schnittstellen direkt eingegeben werden. Alle Befehlsfolgen stehen auch mit dem Browser zur Verfügung.
+
 Die MYC Befehle müssen binär über die I2C Schnittstelle oder über USB eingegeben werden.
 Defaultmäßig wird der DCF Empfang eingeschaltet und die LED leuchtet, sobald die Uhrzeit gültig ist. Es dauert einige Zeit, bis die Uhrzeit richtig empfangen wird..
-
-Die Uhrzeit wird im Format 8 Byte Unixzeit in Sekunden nach dem 1. 1. 1970 angegeben; allerdings nicht in UTC sondern in ME(S)Z angegeben. Es werden also 3600  (7200) Sekunden mehr angezeigt als die „wahre“ (UTC) Unixzeit.
-Mit dem Befehl &H02<n><m>, &H3<n> können die 15 Register des Moduls beschrieben / gelesen werden. Detais stehen in der Dokumentation des Moduls. Normalerweise werden diese Funktionen nicht gebraucht.
+Die Uhrzeit wird im Format 4 Byte Unixzeit in Sekunden nach dem 1. 1. 1970 angegeben; allerdings nicht in UTC sondern in ME(S)Z angegeben. Es werden also 3600  (7200) Sekunden mehr angezeigt als die „wahre“ (UTC) Unixzeit.
+Mit dem Befehl &H07<n><m>, &H08<n> können die 15 Register des Moduls beschrieben / gelesen werden. Details stehen in der Dokumentation des Moduls. Normalerweise werden diese Funktionen nicht gebraucht.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-Announce:
-'Befehl &H00
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;RTC;V03.2;1;145;1;9;1-1"
-'
-'Announce1:
-'Befehl  &H01
-'liest Uhrzeit
-'read time
-Data "1;aa,read time;t"
-'
-'Announce2:
-'Befehl  &H02 <0..14><m>
-'schreibt register
-'write register
-Data "2;om,write register;b;15"
-'
-'Announce3:
-'Befehl  &H03 <0..14>
-'liest register
-'read register
-Data "3;am,,as2"
-'
-'Announce4:
-'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;9"
-'
-'Announce5:                                                  '
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce6:                                                  '
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce7:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{0 to 127};a,SERIAL,1"
-'
-'Announce8:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
-'
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -92,7 +39,7 @@ aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
-Reset
+Hardware Reset
 
 Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
 
@@ -109,7 +56,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.12 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -138,6 +85,12 @@ Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
 
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an den der Feinstaubsensor über die USB Schnittstelle  anschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+
 SMD
 
 Die Leiterplatte ist teilweise mit SMD bestückt.
@@ -145,7 +98,7 @@ Die Leiterplatte ist teilweise mit SMD bestückt.
 Stromversorgung
 
 Die Stromversorgung ist 12V +- 10%, Stromaufnahme ca. 20mA max. 
-Alternativ erfolgt die Stromversorgung über USB
+Alternativ erfolgt die Stromversorgung über USB.
 
 RTC-DCF Modul
 
@@ -162,11 +115,10 @@ Mit I2C:
 Siehe I2C oben.
 
 Mit serieller Schnittstelle:
-Bei Verwendung der RS232 Schnittstelle alle Bauteile bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2, IC4 , X1, X2 und DC1 nicht bestückt werden! D1 und C1, C6 – C9, C11, C12,  L1, L2 braucht auch nicht bestückt werden.
+Bei Verwendung der RS232 Schnittstelle werden alle Bauteile bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. Dann darf IC2, IC4 , X1, X2 und DC1 nicht bestückt werden! D1 und C1, C6 – C9, C11, C12,  L1, L2 braucht auch nicht bestückt werden.
 Die Buchsen ST1 –  ST4 nehmen das RTC Modul auf und sollten daher passende Höhe haben.
 ST2 und ST4 werden (elektrisch) nicht benötigt.
 JP1 muss für Normalbetrieb überbrückt werden.
-
 
 Anschlüsse
 
@@ -198,7 +150,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V03.1
-Bascom Version V03.2
+Bascom Version V03.3
 
 Copyright
 
@@ -214,4 +166,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.10.zip
+[6]	https://dk1ri.de/dhw/common_1.12.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm
