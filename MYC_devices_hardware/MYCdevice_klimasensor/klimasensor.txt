@@ -2,14 +2,15 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Klimasensor
 
-Author DK1RI, Version V03.3, 20200504
+Author DK1RI, Version V04.0, 20230501
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
 Dies ist die Beschreibung eines Klimasensors mit dem Sensor BME280
-Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
-Das Interface (grosse Leiterplatte) arbeitet als Slave am I2C Bus oder kann über RS232 /USB gesteuert werden. Die kleine Leiterplatte hat nur ein USB Interface.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: siehe [7]
+Das Interface (große Leiterplatte) arbeitet als Slave am I2C Bus oder kann über RS232 /USB gesteuert werden. Die kleine Leiterplatte hat nur ein USB Interface.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
  
 Beschreibung
@@ -21,138 +22,12 @@ Die Schaltung verwendet das Sparkfun BM280 Hookup Modul (TM).
 Neben dem Auslesen von Temperatur, Feuchte und Luftdruck können auch die Parameter des BME280 geändert werden. Die genauen Auswirkungen müssen im Datenblatt nachgelesen werden.
 Die Default - Einstellung sollte für viele Anwendungen passen.
 Ein Reset liest auch die Korrekturdaten. Dies ist nötig, wenn der Sensormodul gewechselt wird.
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-Announce0:
-'Befehl &H00
-'basic annoumement wird gelesen
-'basic announcement is read
-Data "0;m;DK1RI;Klimasensor;V02.2;1;145;1;21;1-1"
-'
-Announce1:
-'Befehl &H01
-'liest Temperatur
-'read temperature
-Data "1;ap,read temperature;1;12500,{-40.00 to 84.99};lin;DegC"
-'
-Announce2:
-'Befehl &H02
-'liest Feuchtigkeit
-'read humidity
-Data "2;ap,read humidity;1;100001,{0.000 to 100.000};lin;%"
-'
-Announce3:
-'Befehl &H03
-'liest Druck
-'read pressure
-Data "3;ap,read pressure;1;1100001,{0.000 to 1100.000};lin;hPa"
-'
-Announce4:
-'Befehl &H04 0 to 5
-'schreibt Oversampling Feuchte
-'write Oversampling humidity
-Data "4;oa,oversampling humidity;b,{0,1,2,4,8,16}"
-'
-Announce5:
-'Befehl &H05
-'liest Oversampling Feuchte
-'read Oversampling humidity
-Data "5;aa,as4"
-'
-Announce6:
-'Befehl &H06 0 to 5
-'schreibt Oversampling Druck
-'write Oversampling pressure
-Data "6;oa,oversampling pressure;b,{0,1,2,4,8,16}"
-'
-Announce7:
-'Befehl &H07
-'liest Oversampling Druck
-'read Oversampling pressure
-Data "7;aa,as6"
-'
-Announce8:
-'Befehl &H08
-'schreibt Oversampling Temperatur
-'write Oversampling Temperature
-Data "8;oa,oversampling Temperatur;b,{0,1,2,4,8,16}"
-'
-Announce9:
-'Befehl &H09
-'liest Oversampling Temperatur
-'read Oversampling Temperatur
-Data "1;aa,as8"
-'
-Announce10:
-'Befehl &H0A
-'schreibt Pause Zeit
-'write non active time
-Data "10;oa,non activ time;b,{0.5,62.5,125,500,1000,10,20},ms"
-'
-Announce11:
-'Befehl &H0B
-'liest Pause Zeit
-'read non active time
-Data "11;aa,as10"
-'
-Announce12:
-'Befehl &H0C
-'schreibt Filter
-'write Filter
-Data "12;oa,filter;b,{0,2,4,8,16}"
-'
-Announce13:
-'Befehl &H0D
-'liest Filter
-'read Filter
-Data "13;aa,as12"
-'
-Announce14:
-'Befehl &H0E
-'liest ID
-'read ID
-Data "14;aa,read ID;b"
-'
-Announce15:
-'Befehl &H0F
-'Reset
-'Reset
-'Data "15;ot,reset;0"
-'
-Announce16:
-'Befehl &HF0<n><m>
-'liest announcements
-'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;21"
-'
-Announce17:
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-Announce18:
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-Announce19:
-'Befehl &HFE <n><data>
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,SERIAL,1"
-'
-Announce20:
-'Befehl &HFF <n>
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
-'
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -164,6 +39,8 @@ Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 Reset
 
 Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+
+
 
 Watchdog
 
@@ -208,6 +85,12 @@ SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 SMD
 
@@ -264,7 +147,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V02.1
-Bascom Version V03.3
+Bascom Version V04.0
 
 Copyright
 
@@ -280,5 +163,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.10.zip
-
+[6]	https://dk1ri.de/dhw/common_1.12.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder 	https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm

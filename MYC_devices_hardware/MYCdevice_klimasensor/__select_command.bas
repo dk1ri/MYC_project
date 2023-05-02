@@ -5,6 +5,7 @@
       If Command_b(1) < &H10 Then
          On Command_b(1) Gosub 00,01,02,03,04,05,06,07,08,09,0A,0B,0C,0D,0E,0F
       Else
+         Command_not_found
          Gosub Command_received
       End If
    Else
