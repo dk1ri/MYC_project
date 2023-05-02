@@ -6,3 +6,16 @@ Config Timer1 = Pwm , Pwm = 8 , Compare_A_Pwm = Clear_Up , Compare_B_Pwm = DISCO
 'LCD r/w pin!
 Config PortC.0 = Output
 Reset PortC.0
+'*********************************
+' for 16x2 Display:
+'Config LCD = 16*2
+'B_chars = 32
+'*********************************
+' for 16x2 Display:
+Config LCD = 20*2
+B_chars = 40
+'*********************************
+Initlcd
+Home upper
+Cls
+Cursor on blink

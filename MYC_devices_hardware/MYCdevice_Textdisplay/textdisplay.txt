@@ -3,131 +3,35 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Textdisplay
 					
 
-Author DK1RI, Version V03.1, 20200421
+Author DK1RI, Version V04.0, 20230501
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
 
-Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
-Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: siehe [7]
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 / USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Dieses Gerät kann zwei Typen von LCD Modulen steuern, die in meiner Bastelkiste lagen:
-LM016XML (32 Zeichen zweireihig) und TLC501-30 (40 Zeichen, zweireihig)
+LM016XML (32 Zeichen zweireihig) und TLC501-30 (40 Zeichen, zweireihig).
 Diese Module sind mindestens 20 Jahre alt, aber ähnliche Displays mit HD44780 kompatibler Ansteuerung und identischer Pinbelegung sind auch heute noch erhältlich.
+Für die verschiedenen Module muss die Software angepasst werden.
 
 Beschreibung und Bedienung
 
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
-
-Es können LCD Module mit HD44780 kompatiblen Chips mit der Standard Pinbelegung direkt angeschlossen werden. 
-Es können Displays mit einer Länge von 32  oder 40 Zeichen angeschlossen werden. Die Konfiguration erfolgt vor dem Einsatz in einem MYC System mit dem Befehl &HFE05000 (36 Zeichen) oder &HFE0501 (40 Zeichen).
+Es können LCD Module mit HD44780 kompatiblen Chips mit der Standard Pinbelegung mit einer Länge von 32  oder 40 Zeichen direkt angeschlossen werden. 
+Zur Steuerung mit einem Browser: siehe [7]. Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
 Der Text wird umlaufend eingelesen; möglicherweise wird vorhandener Text überschrieben.
-Der Befehl &H01 erwartet einen String mit Stringlänge, der an die aktuelle Position geschrieben wird. Der Befehl &H02 schreibt an die Position n (2. Byte) m (3.Byte) Zeichen; also zB &H0205026162 .Die Befehle &H04 und &H05 entsprechend für 40 Zeichen Displays.
+Der Befehl &H01 erwartet einen String mit Stringlänge, der an die aktuelle Position geschrieben wird. Der Befehl &H02 schreibt an die Position n (2. Byte) m (3.Byte) Zeichen; also zB &H0205026162 
 Falls das Display nichts anzeigt, muss möglicherweise die Kontrasteinstellung verändert werden. Die nötige Einstellung variiert stark in Abhängigkeit mit dem verwendeten Display.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-Announce:
-'Befehl &H00
-'eigenes basic announcement lesen
-'basic announcement is read to I2C buffer or output
-Data "0;m;DK1RI;Textdisplay;V03.2;1;230;1;17;1-1"
-'
-'Announce1:
-'Befehl &H01
-'LCD schreiben
-'write LCD
-Data "1;oa,write text;32"
-'
-'Announce2:
-'Befehl &H02
-'an position schreiben
-'goto position and write
-Data "2;om,write to position;32;32"
-'
-'Announce3:
-'Befehl  &H03
-'gehe zu Cursorposition
-' go to Cursorposition
-Data "3;op,Cursorposition;32;lin;-"
-'
-'Announce4:
-'Befehl &H04
-'LCD schreiben
-'write LCD
-Data "4;oa,write text;40"
-'
-'Announce5:
-'Befehl &H05
-'an position schreiben
-'goto position and write
-Data "5;om,write to position;40;40"
-'
-'Announce6:
-'Befehl  &H06
-'gehe zu Cursorposition
-'go to Cursorposition
-Data "6;op,Cursorposition;40;lin;-"
-'
-'Announce7:
-'Befehl &H07
-'Anzeige lÃ¶schen
-'clear screen
-Data "7;ou,CLS;0,CLS"
-'
-'Announce8:
-'Befehl &H08
-'Kontrast schreiben
-'write Contrast
-Data "8;oa,contrast;b"
-'
-'Announce9:
-'Befehl &H09
-'Kontrast lesen
-'read Contrast
-Data "9;oa,contrast;b"
-'
-'Announce10:
-'Befehl &HF0<n><m>
-'lieIgnorest announcements
-'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;230;17"
-'
-'Announce11:                                                  '
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce12:                                                  '
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce13:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1;a,DISPLAYSIZE,0,{16x2,20x2}"
-'
-'Announce14:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,DISPLAYSIZE,0,{16x2,20x2}"
-'
-'Announce15:
-Data "R !($1 $2 $3) IF $255&5 = 1"
-'
-'Announce16:
-Data "R !($4 $5 $6) IF $255&5 = 0"
-'
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -153,13 +57,16 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden.
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.12 [6] in das Verzeichnis mit dem Programm kopiert werden.
+Die Änderung zur Verwendung der unterschiedlichen Anzeigemodule kann in der Datei __conifg  vorgenommen werden. Es gibt zwei angepasste Hex Dateien.
 
 Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
 Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
 Der Jumper J1 sollte während der Programmierung entfernt werden.
+Fuer die einfache Programmierung ist je eine Hexdatei für das 32 bzw 40 Zeichen Display vorhanden.
+Im Bascom-Programm  müssen 5 gekennzeichnete Zeilen in der announcement und _config Datei an die unterschiedlichen Displays angepasst werden.
 
 Serielle (RS232 / USB) Schnittstelle
 
@@ -181,6 +88,12 @@ Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und 
 SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 SMD
 
@@ -264,7 +177,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V03.0
-Bascom Version V03.3
+Bascom Version V04.0
 
 Copyright
 
@@ -280,4 +193,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/myc/common_1.10.zip
+[6]	https://dk1ri.de/myc/common_1.12.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm

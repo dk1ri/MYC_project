@@ -1,6 +1,7 @@
 ' additional init
+'20230501 
 '
-b_Chars = b_Chars_eeram
-Gosub Config_lcd
 B_cmp1 = B_cmp1_eeram
-B_cmp2 = B_cmp2_eeram
+B_row = 1
+B_col = 1
+B_chars2 = B_chars / 2
