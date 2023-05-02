@@ -2,12 +2,14 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Morse Sender
 
-Author DK1RI, Version V02.2, 20200512
+Author DK1RI, Version V03.0, 20230421
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
-Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Dieses Gerät wandelt Eingabedaten in Morsezeichen.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: siehe [7].
 Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Dieses Interface ist eine Vorlage für ein Interface, das ein Gerät, das sich mit Morse Signalen steuern lässt, in ein MYC System einbindet.
@@ -17,122 +19,39 @@ Beschreibung
 Es wird die gleiche Leiterplatte wie für das I2C_RS232_Interface verwendet.
 Die Eagle Datenstehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max oder über USB.
-Das Programm ist nur das Framework, weitere MYC Befehle zur Steuerung anderer Geräte mit Morsecodes müssen nach Bedarf eingefügt werden. Man kann aber Strings direkt entsprechend den MYC Regeln eingeben, die dann in Morsesignale umgesetzt werden.
+Das Programm ist nur das Framework; weitere MYC Befehle zur Steuerung anderer Geräte mit Morsecodes müssen nach Bedarf eingefügt werden. Man kann aber auch Daten direkt eingeben, die dann in Morsesignale weit möglich umgesetzt werden.
 Das Interface kann auch als selbstständiger Morsetrainer verwendet werden.
 Die Tonhöhe des Morsesignals ist von 100Hz bis 2kHz einstellbar, die Geschwindigkeit von 5 bis 100 Wpm. Diese Werte sind nicht sehr genau.
 
-Es gibt drei Betriebsarten; die Betriebsart bleibt nach dem Ausschalten erhalten:
+Es gibt vier Betriebsarten; die Betriebsart bleibt nach dem Ausschalten erhalten:
 
-MYC_mode, default  (&H0600)
+Direkter Browser mode, default (&H0600)
+Die Daten werden im Klartext eingeben.
+Bei Verwendung eines Browsers sollte nur dieser Mode und der 5er Gruppen  Mode verwendet werden
+
+MYC_mode (&H0601)
 Die Befehlsdaten müssen binär eingegeben werden; er erfolgt keine Wandlung, hier als Beispiel im HEX Format:
 010447465737
 01 ist der Befehl zur Morse  Ausgabe. 04 ist die Länge des nachfolgenden Strings test
-Die Zeichen werden auf der seriellen Schittstelle ausgegeben. Werden weitere Befehle eingegeben, bevor alles Zeichen ausgegeben wurden, gehen diese verloren.
+Die Zeichen werden an der seriellen Schnittstelle eingegeben. Werden weitere Befehle eingegeben, bevor alles Zeichen ausgegeben wurden, gehen diese verloren.
 Es können 250 Zeichen maximal am Stück übertragen werden; die Länge des Strings wird mit einem Byte übertragen.
 
-Direkt_mode, nicht MYC Mode (&H0601):
+Direkt_mode, nicht MYC Mode (&H0602):
 Alle erlaubten Morsezeichen werden in Morsezeichen umgesetzt, sobald ein LF (&H0A) empfangen wurde.
-Die Zeichen werden auf der seriellen Schittstelle ausgegeben.
 Dieser Mode wird durch einen gültigen Befehlscode (&H00 bis &H07, >= &H240 sofort verlassen..
 
-Verschiedene  5er Gruppen (&H0602 bis &H0608):
+Verschiedene  5er Gruppen (&H0603 bis &H0609):
 Es gibt die Möglichkeit, 5er Gruppen mit verschiedenen Zeichensätzen auszugeben
-Der Mode wird durch eine beliebige weitere Eingabe beendet.
+Die Zeichenausgabe wird durch eine beliebige weitere Eingabe beendet.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert::
-
-Announce:
-'Befehl &H00
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;morse sender;V04.2;1;190;1;15;1-1"
-'
-'Announce1:
-'Befehl  &H01 <s>
-'I2C / serial String als Morse senden
-'send I2C / serial String as Morse
-Data "1;oa,send morse;250,{.,\,,:,\;,?,-,_,(,),',=,+,/,@,0 to 10,a to z, A to Z}"
-'
-'Announce2:
-'Befehl  &H02 0 to 19
-'Geschwindigkeit schreiben
-'write speed
-Data "2;op,morse speed;1;20,{5 to 100};lin;Wpm"
-'
-'Announce3:
-'Befehl  &H03
-'Geschwindigkeit lesen
-'read speed
-Data "3;ap,as2"
-'
-'Announce4:
-'Befehl  &H04
-'Frequenz schreiben 100 - 2000Hz
-'write frequency
-Data "4;op,morse frequency;1;20,{100 to 2000};lin;Hz"
-'
-'Announce5:
-'Befehl  &H05
-'Frequenz lesen
-'read frequency
-Data "5;ap,as4"
-'
-'Announce6:
-
-'Befehl  &H06
-'Mode einstellen, Myc, direkteingabe, 5er Gruppen
-'set mode
-Data "6;os,mode;1;0,myc mode;1,morse input;2,0 to 9;3,a to f;4,g to l;5,m to s;6,t to z;7,special;8,all"
-'
-'Announce7:
-'Befehl  &H07
-'Morse mode lesen
-'read morse mode
-Data "7;as,as6"
-'
-'Announce8:
-'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;190;15"
-'
-'Announce9:                                                  '
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce10:                                          '
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce11:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,18,{0 to 127};a,SERIAL,1"
-'
-'Announce12:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,18,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
-'
-'Announce13:
-Data "R !* IF $6&1"
-'
-'Announce14:
-Data "R &6 IF $6&1"
-'
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Regeln
 
-Während des Morse_mode = 1 kann nur der Morse_mode geändert werden.
+Während des Morse_mode = 2 kann nur der Morse_mode geändert werden.
 
 Fehlermeldungen
 
@@ -188,6 +107,15 @@ SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Der Browser funktioniert mit allen modes.
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+
+
+
 Morse  Ausgang
 
 Das Morsesignal kann direkt herausgeführt werden (R15 =0 Ohm, C12 entfällt)  oder über einen Tiefpass (1k/100nF). Das Ausgangssignal ist ein Rechtecksignal und auch nach der Filterung nicht gleichspannungsfrei. Der Pegel im Ruhezustand ist unbestimmt. Ein Koppelkondensator und eine Anpassung des Pegels an den Empfänger wird daher empfohlen.
@@ -203,7 +131,7 @@ Alternativ erfolgt die Stromversorgung über USB
 
 Bestückung der Leiterplatte
 
-Da die Leiterplatte auch für andere Anwendungen eingesetzt werden kann, brauchen nur folgende Bauteile  bestückt werden: X1, D1, IC1, IC2, Q1, C1 – C5, C10, JP1(muss für Normalbetrieb überbrückt werden), R3, R4, SL4, ohne Tiefpass: R15=0
+Da die Leiterplatte RS232_interface auch für andere Anwendungen eingesetzt werden kann, brauchen nur folgende Bauteile  bestückt werden: X1, D1, IC1, IC2, Q1, C1 – C5, C10, JP1(muss für Normalbetrieb überbrückt werden), R3, R4, SL4, ohne Tiefpass: R15=0
 
 Verwendung von ISP:
 JP6
@@ -233,7 +161,6 @@ I2C (SL1, SL2)
 Morsesignal (SL4)
 1	Morsesignal 
 5	GND
-
 Jumper
 
 JP1 		Power
@@ -247,8 +174,8 @@ JP7		Anschluss für USB Modul
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V05.1
-Bascom Version V04.2
+Leiterplattenversion V05.0
+Bascom Version V05.0
 
 Copyright
 
@@ -261,7 +188,9 @@ Referenzen
 
 [1]	dk1ri.de/dhw/i2c_rs232_interface_eagle.zip
 [2]	dk1ri.de/dhw/morse_sender_bascom.zip
-[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[3]	https://www.dk1ri.de/myc/MYC.pdf
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.10.zip
+[6]	https://dk1ri.de/dhw/common_1.12.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm

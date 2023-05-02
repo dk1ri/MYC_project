@@ -1,14 +1,14 @@
 '-----------------------------------------------------------------------
 'name : morse_sender.bas
-'Version V04.2, 20200513
-'Can be used with hardware i2c_rs232_interface Version V05.1 by DK1RI
+'Version V05.0, 20230420
+'Can be used with hardware i2c_rs232_interface Version V05.0 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,10 must be copied to the directory of this file!
+' To run the compiler the directory comon_1,12 must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
+$include "common_1.12\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -30,7 +30,7 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.10\_Processor.bas"
+$include "common_1.12\_Processor.bas"
 '
 '----------------------------------------------------
 ' 8: for 8/32pin, ATMEGAx8; 4 for 40/44pin, ATMEGAx4 packages
@@ -39,7 +39,7 @@ Const Processor = "8"
 Const Command_is_2_byte    = 0
 '2...254:
 Const I2c_address = 36
-Const No_of_announcelines = 15
+Const No_of_announcelines = 14
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
@@ -51,7 +51,7 @@ Const Initial_frequency = 6
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.12\_Constants_and_variables.bas"
 '
 '----------------------------------------------------
 '
@@ -94,25 +94,25 @@ Dim Morse_read_pointer As Byte
 Dim Morse_buffer_b(stringlength) As Byte At Morse_buffer Overlay
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.12\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.12\_Config.bas"
 '
 '----------------------------------------------------
 '
 ' procedures at start
 '
 '----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.12\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.12\_Loop_start.bas"
 '
 '----------------------------------------------------
 'Specific actions
 '
-If Morse_mode > 1 Then
+If Morse_mode > 2 Then
    'send groups of 5
    'send 1 character
    b_Temp3 = Rnd(char_num)
@@ -152,11 +152,6 @@ If New_data > 0 Then
             ' Commandpointer is >= 1
             If Command_b(Command_pointer) > 7 And Command_b(Command_pointer) < 239 Then
                ' find Lf
-            '   B_temp1 = 1
-             '  B_temp2 = Command_pointer + 1
-              ' While B_temp1 <= B_temp2 And Command_b(B_temp1) <> Lf
-               '   Incr B_temp1
-             '  Wend
                If Command_b(Command_pointer) = Lf Then
                   ' LF found
                   For B_temp1 = 1 To Command_pointer
@@ -166,7 +161,7 @@ If New_data > 0 Then
                      End If
                   Next B_temp1
                   Morse_read_pointer = 1
-                  Command_pointer = 0
+                  Gosub Command_received
                End If
             Else
                ' is any command parameter
@@ -189,20 +184,20 @@ Stop Watchdog                                               '
 Goto Loop_
 '----------------------------------------------------
 ' not used:
-'$include "common_1.10\_Main_end.bas"
+'$include "common_1.12\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.12\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.12\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.12\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -333,9 +328,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.12\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.12\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
