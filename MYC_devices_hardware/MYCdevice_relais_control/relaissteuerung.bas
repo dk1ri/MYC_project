@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : relaisteuerung_basom.bas
-'Version V05.2, 20230406
+'Version V06.0, 20230501
 'purpose : Control of a board with 4 Relais and 11 Inputs
 'Can be used with hardware relaisteuerung Version V05.0 by DK1RI
 'Pin description was changed with V03,0, so it is not compatible with earlier boards!!
@@ -41,7 +41,7 @@ $include "common_1.12\_Processor.bas"
 '
 '1...127:
 Const I2c_address = 8
-Const No_of_announcelines = 33
+Const No_of_announcelines = 32
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32

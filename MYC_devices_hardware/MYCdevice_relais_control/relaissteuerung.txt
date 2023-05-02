@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Relaissteuerung
 
-Author DK1RI, Version V05.3, 20230411
+Author DK1RI, Version V06.0, 20230502
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -82,7 +82,7 @@ Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angesc
 
 Browser Schnittstelle
 
-Es gibt einen (Windows) Webserver, an den der Feinstaubsensor über die USB Schnittstelle  anschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
 Details dazu stehen in [7].
 Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
@@ -181,7 +181,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 05.0
-Bascom Version 05.2
+Bascom Version 06.0
 
 Copyright
 
