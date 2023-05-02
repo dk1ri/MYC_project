@@ -1,11 +1,11 @@
 ' announcements
-' 20230410
+' 20230502
 '
 Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;RTC;V03.3;1;145;1;14;1-1"
+Data "0;m;DK1RI;RTC;V04.0;1;145;1;14;1-1"
 '
 'Announce1:
 'Befehl  &H01
@@ -47,7 +47,7 @@ Data "6;aa,read day;b,CODING,DAY,day"
 'Befehl  &H07
 'schreibt register
 'write register
-Data "7;om,write register;b;15,register;14;CHAPTER,ADMINISTRATION"
+Data "7;om,write register;b,1 byte;15,register;14,CHAPTER,ADMINISTRATION"
 '
 'Announce8:
 'Befehl  &H08
@@ -59,7 +59,7 @@ Data "8;am,as7"
 'Befehl &HF0
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;145;9;14;CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;9;14,CHAPTER,ADMINISTRATION"
 '
 'Announce10:                                                  '
 'Befehl &HFC
@@ -77,11 +77,11 @@ Data "253;aa,MYC INFO;b,ACTIVE"
 'Befehl &HFE:
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{1_0to127};a,SERIAL,1;14;CHAPTER,ADMINISTRATION"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{1_0to127};a,SERIAL,1;14,CHAPTER,ADMINISTRATION"
 '
 'Announce13:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14;CHAPTER,ADMINISTRATION"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,19,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '

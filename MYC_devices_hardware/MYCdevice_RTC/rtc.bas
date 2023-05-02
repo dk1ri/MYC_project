@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rtc_bascom.bas
-'Version V03.3, 20230411
+'Version V04.0 20230502
 'purpose : Programm as realtime clock using the ELV RTC-DCF module
 'The interface communicates with the module via SPI
 'This Programm can be controlled via I2C or serial
@@ -40,7 +40,7 @@ $include "common_1.12\_Processor.bas"
 '
 '1...127:
 Const I2c_address = 19
-Const No_of_announcelines = 9
+Const No_of_announcelines = 14
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 35
@@ -265,10 +265,11 @@ Calculate_unix_time:
          Unixtime = Unixtime + 86400
       End If
    End If
-   D_time = Hour * 24
+   D_time = Hour * 60
    D_time = D_time + Minute
    D_time = D_time * 60
    D_time = D_time + Second
+   Incr Month
 
 Return
 '

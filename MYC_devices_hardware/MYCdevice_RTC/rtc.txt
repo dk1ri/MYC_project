@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Realtime Clock mit DCF
 
-Author DK1RI, Version V03.2, 20230411
+Author DK1RI, Version V04.0, 20230502
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -46,7 +46,7 @@ Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden
 Watchdog
 
 Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
-Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach circa 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
 Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
 Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
 Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
@@ -87,7 +87,7 @@ Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angesc
 
 Browser Schnittstelle
 
-Es gibt einen (Windows) Webserver, an den der Feinstaubsensor über die USB Schnittstelle  anschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
 Details dazu stehen in [7].
 Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
@@ -150,7 +150,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V03.1
-Bascom Version V03.3
+Bascom Version V04.0
 
 Copyright
 
