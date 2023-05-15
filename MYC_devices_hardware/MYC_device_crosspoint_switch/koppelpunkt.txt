@@ -3,13 +3,14 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 8 x 8 Audio / Video Koppelpunkt
 
-Author DK1RI, Version V01.4, 20200826
+Author DK1RI, Version V02.0, 20230513
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
 Dies ist die Beschreibung eines 8 x8 Kopelpunkts für Audio oder Video Signale.
-Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden.Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: siehe [7]
 Das Interface arbeitet als Slave am I2C Bus oder kann über RS232 / USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
@@ -23,6 +24,7 @@ Auch ein 3fach 8x8 Koppelpunkt (Video + Stereo) ist mit 2 weiteren teilbestückte
 Die Eingänge können mit einem Kopppelkondensator (bis 22uF) versehen werden. Dieser kann für analoge Videosignale auch überbrückt werden.
 Der Eingangswiderstand beträgt.75Ohm, kann aber geändert werden
 Die Ausgangsimpedanz beträgt 75 Ohm. Die Impedanz kann durch andere Widerstände geändert werden.
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend. 
 
 Messwerte
 
@@ -37,147 +39,37 @@ Nachbarkanaldämpfung (bis18Mz)	> -40dB *
 
 * mit HMS3010 (50Ohm)
 
+
+
 Grundsätzliche Bedienung:
 
+Die Bedienung wurde mit Version V02.0 (Bascom Version V02.0) (202305) geändert.
 Ein Ausgang kann nur mit einem Eingang verbunden sein, ein Eingang aber mit mehreren Ausgängen.
-Es gibt drei Modes, einstellbar mit:
-&H0800	: 8x8 Koppelpunkt; die Umschaltbefehle sind &H01, &H02
-&H0801	: 8x4 Koppelpunkt; die Umschaltbefehle sind &H03, &H04
-&H0803	: 4x4 Koppelpunkt; die Umschaltbefehle sind &H05, &H06
-Der Mode ist lesbar mit &H09 ,
-Der Mode wird normalerweise nur bei der Inbetriebnahme eingestellt und ist daher in einem MYC System nicht veränderbar.
+Es gibt drei Modes (Konfigurationen), einstellbar mit:
+&H0A00	: 8x8 Koppelpunkt
+&H0A01	: 8x4 Koppelpunkt	8 Eingänge; 4 Ausgänge
+&H0A02	: 4x4 Koppelpunkt	2 mal 4 Eingänge; 4 Ausgänge
+Der Mode ist lesbar mit &H0B,
+Der Mode wird normalerweise nur bei der Inbetriebnahme eingestellt.
 
 Die Ausgänge sind immer aktiv. Wird ein Ausgang mit Eingang 0 verbunden, ist der auf GND.
 
-Beim 8x4 Koppelpunkt werden die Ausgänge 5 – 8 wie die Ausgänge 1 bis 4 geschaltet. Wenn also Ausgang 1 mit Eingang 7 verbunden ist, ist auch Ausgang 5 mit Eingang 7 verbunden.
+Beim 8x4 Koppelpunkt werden die Ausgänge 5 – 8 an die gleichen Eingänge wie die Ausgänge 1 bis 4 geschaltet. Wenn also Ausgang 1 mit Eingang 7 verbunden ist, ist auch Ausgang 5 mit Eingang 7 verbunden. Beim 8x4 haben die Schaltbefehle für die Ausgänge 5 - 8  die gleiche Wirkung wie die für 1 - 4	
 
-Beim 4x4 Koppelpunkt werden die Ausgänge 5 – 8 wie die Ausgänge 1 bis 4 geschaltet. Wenn also Ausgang 1 mit Eingang 1 verbunden ist, ist der Ausgang 5 mit Eingang 5 verbunden. Dies kann in einen Video / Audio System verwendet werden.
+Beim 4x4 Koppelpunkt werden die Ausgänge 5 – 8 wie die Ausgänge 1 bis 4 geschaltet. Wenn also Ausgang 1 mit Eingang 1 verbunden ist, ist der Ausgang 5 mit Eingang 5 verbunden. Dies kann in einen Video / Audio System verwendet werden. Beim 4x4 Mode haben die Schaltbefehle für die Ausgänge 5 -8  die gleiche Wirkung wie die für 1 – 4.	
 
 Ein Ausgang schaltet auf einen anderen Eingang um:
-&H010207	verbindet Ausgang 2 mit  Eingang 7
-&H010400	verbindet Ausgang 4 mit GND
-&H010004	schaltet alle Ausgänge, die mit Eingang 4 verbunden waren, an GND
-Verbinden aller Ausgänge gleichzeitig:
-&H020101010103030303 	verbindet Ausgang 1 - 4 mit Eingang1; Ausgang 5 – 8 mit Eingang 3
-Mit &H07 wird der Schaltstatus der Ausgänge gelesen:
-&H070101010103030303
+&H0107	verbindet Ausgang 1 mit  Eingang 7
+&H0400	verbindet Ausgang 4 mit GND
+Mit &H0A wird der Schaltstatus der Ausgänge gelesen:
+&H0A0101010103030303
 
-Defaultmässig sind beim Start alle Eingänge (intern) mit GND verbunden. Dies kann mit 
-&H0A0102030405060708 geändert werden. Bei diesem Beispiel werden alle Ausgänge mit Eingängen der gleichen Nummer verbunden.
+Beim ersten Start sind alle Ausgänge (intern) mit GND verbunden. Für jeden Mode kann ein Defaultstatus festgelegt werden, der dann geladen werden kann.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-Announce:
-'Befehl &H00
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;crosspoint;V01.3;1;180;1;20"
-'
-'Announce1:
-'Befehl &H01
-'schaltet 1 Ausgang 8x8
-'switch 1 output 8x8
-Data "1;os,8x8;2,out,in;2;0,GND;1;2;3;4;5;6;7;8"
-'
-'Announce2:
-'Befehl  &H02
-'schaltet alle Ausgänge 8x8
-'switch all outputs 8x8
-Data "2;om,8x8;1;b,{GND,1 To 8};9"
-'
-'Announce3:
-'Befehl &H03
-'schaltet 1 Ausgang 8x4
-'switch 1 output 8x4
-Data "3;os,8x4;2,out,in;2;0,GND;1;2;3;4;5;6;7;8"
-'
-'Announce4:
-'Befehl  &H04
-'schaltet alle Ausgänge 8x4
-'switch all outputs 8x4
-Data "4;om,8x4;1;b,{GND,1 To 8};4"
-'
-'Announce5:
-'Befehl  &H05
-'schaltet 1 Ausgang 4x4
-'switch 1 output 4x4
-Data "5;os,4x4;2,out,in;2;0,GND;1;2;3;4"
-'
-'Announce6:
-'Befehl  &H06
-'schaltet alle Ausgänge 4x4
-'switch all outputs 4x4
-Data "6;om,4x4;1;b,{GND,1 To 4};04"
-'
-'Announce7:
-'Befehl  &H07
-'liest status für alle Ausgänge
-'read status for all outputs
-Data "7;am,as2"
-'
-'Announce8:
-'Befehl  &H08
-'schreibt mode
-'write mode
-Data "8;ks,mode;1;0,8x8;1,8x4;2,4x4"
-'
-'Announce9:
-'Befehl  &H09
-'liest mode
-'read mode
-Data "9;ls,as8"
-'
-'Announce10:
-'Befehl  &H0A
-'schreibt Startbedingung 8x8
-'write startcondition 8x8
-Data "10;om,startcondition;1:b,{GND,1 To 8};8"
-'
-'Announce11:
-'Befehl  &H0B
-'liest Startbedingung 8x8
-'read startcondition 8x8
-Data "11;am,as10"
-'
-'Announce12:
-'Befehl &HF0<n><m>
-'announcement aller Befehle lesen
-'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;180;20"
-'
-'Announce13:                                                  '
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce14:                                                  '
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce15:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,27,{0 to 127};a,RS232,1;a,USB,1"
-'
-'Announce16:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,27,{0 to 127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1"
-'
-'Announce17:
-Data "R !$1,!$2 If $9 = 1 Or $9 = 2"
-'Announce18:
-Data "R !$3,!$4 If $9 = 0 Or $9 = 2"
-'Announce19:
-Data "R !$5,!$6 If $9 = 0 Or $9 = 1"
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -189,7 +81,6 @@ Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 Reset
 
 Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
-
 Watchdog
 
 Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
@@ -203,7 +94,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.11 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.12 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -230,6 +121,12 @@ SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+
 SMD
 
 Die Leiterplatte ist teilweise mit SMD bestückt.
@@ -253,7 +150,7 @@ Der USB Modul wird isoliert auf der Bestückungsseite angebracht,. Die mittleren 
 Bei Teilbestückung mit nur einem Koppelpunkt (8x4 oder 4x4) entfällt IC7, IC8, R19 – R30, X25 – X28.
 Die Kondensatoren C20 – C28 müssen nur eingebaut werden, wenn die Eingänge entkoppelt werden sollen, zum Beispiel für Audio Signale. Die Lötbrücken SJ1 – SJ8 bleiben dann offen. Andernfalls müssen sie überbrückt werden.
 
-Eine Leiterplatte kann die Steuerung von zwei weiteren übernehmen, wenn die Steuerung gleich ist: zum Beispiel bei einem 3fach 8x8 Koppelpunkt. Bei den gesteuerten Leiterplatten wird die Steuerung und Stromversorgung nicht bestückt: diese erfolgt über JP8. Es müssen also nur IC5—8, C20-28 (bei Bedarf), C12, C13, C16 – C19, R7-30 und die BNC Buchsen bestückt werden.
+Eine Leiterplatte kann die Steuerung von zwei weiteren übernehmen, wenn die Steuerung gleich ist: zum Beispiel bei einem 3fach 8x8 Koppelpunkt. Bei den gesteuerten Leiterplatten wird die Steuerung und Stromversorgung nicht bestückt: diese erfolgt über JP8. Es müssen also nur IC5—8, C20-28 (bei Bedarf), C12, C13, C16 – C19, R7-30 und die BNC Buchsen bestückt werden. 
 
 R31 bis R38 bestimmen die Eingangsimpedanz. Der Wert kann geändert werden.
 R7, R10, R13, R16, R19;R22, R25 bestimmen die Ausgangsimpedanz. Der Wert kann geändert werden.
@@ -293,8 +190,8 @@ JP8		Steuerung weiterer Leiterplatten
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V02.0
-Bascom Version V01.3
+Leiterplattenversion V02.0 (V01.1)
+Bascom Version V02.0
 
 Copyright
 
@@ -303,8 +200,6 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
-
-
 Referenzen
 
 [1]	dk1ri.de/dhw/koppelpunkt_eagle.zip
@@ -312,5 +207,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.11.zip
-
+[6]	https://dk1ri.de/dhw/common_1.12.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm
