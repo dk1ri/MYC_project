@@ -3,6 +3,7 @@
 # DK1RI 20230315
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function update_received(){
+    # data from device
     $from_device = $_SESSION["received_data"];
     $i = 0;
     $rec = [];
@@ -90,14 +91,14 @@ function update_one_command($rec){
             if ($stacks == 1){
                 $i = 1;
                 while (array_key_exists($basic_tok."x".$i, $_SESSION["announce_all"][$device])) {
-                    # for all demensions
+                    # for all dimensions
                     $data_length = $_SESSION["property_len_byte"][$device][$basic_tok][($i + 1)];
                     $data = array_splice($rec, 0, $data_length);
-                    $real_data = calculate_real($data);
-                    $_SESSION["actual_data"][$device][$basic_tok . "x".$i] = $real_data;
+                    $data = hex_to_decimal($data);
+                    $_SESSION["actual_data"][$device][$basic_tok . "x".$i] = $data;
                     if (array_key_exists($basic_tok, $_SESSION["as_token"][$device])) {
                         $org_token = $_SESSION["as_token"][$device][$basic_tok];
-                        $_SESSION["actual_data"][$device][$org_token . "x".$i] = $real_data;
+                        $_SESSION["actual_data"][$device][$org_token . "x".$i] = $data;
                     }
                     $i += 1;
                 }
@@ -135,14 +136,16 @@ function update_one_command($rec){
         case "aa":
             $element_number = 0;
             if(count($_SESSION["original_announce"][$device][$basic_tok]) < 3){
-                # no position
+                # one element, no position
                 list($data, $delete_bytes) = update_memory_data($basic_tok . "x1" , $rec, 0, 1);
+                update_corresponding_opererating($basic_tok, "x1", $data);
             }
             else {
                 $element_number = one_numeric_element($basic_tok, $rec);
                 # < 256 elemen allowed only -> length: 1
                 array_splice($rec, 0, 1);
                 list($data, $delete_bytes) = update_memory_data($basic_tok . "x" . ($element_number + 1), $rec, 0, $element_number);
+                update_corresponding_opererating($basic_tok, "x" . ($element_number + 1), $data);
             }
             $_SESSION["actual_data"][$device][$basic_tok."x".($element_number +1)] = $data;
             array_splice($rec, 0, $delete_bytes);
@@ -176,7 +179,7 @@ function update_memory_pos($basic_tok, $position, $start){
     $mul= [];
     $device = $_SESSION["device"];
     # real value of position
-    $real_pos = calculate_real($position);
+    $real_pos = hex_to_decimal($position);
     # find the max values of the dimension (row . col ...)
     if ($start == 0){
         $_SESSION["actual_data"][$device][$basic_tok."b0"] = $real_pos;
@@ -223,7 +226,7 @@ function update_memory_data($token, $rec, $typeindex, $lenindex){
     $bytes_to_delete = 0;
     $type = explode(";", $_SESSION["des_type"][$device][$token])[$typeindex];
     $result = "";
-    switch ( $type){
+    switch ($type){
         case (is_numeric($type)):
             $length_of_length = $_SESSION["property_len_byte"][$device][$basic_tok][$lenindex];
             $bytes_to_delete_a = array_splice($rec,0,$length_of_length);

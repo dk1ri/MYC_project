@@ -1,6 +1,22 @@
 <?php
 # select_any.php
 # DK1RI 20230217
+function most_simple_selector($token, $range, $actual){
+    # simple selector for limited number of elements (array)
+    echo "<select name=" . $token . " id=" . $token . ">";
+    $i = 0;
+    while ($i < count($range)) {
+        echo "<option value=" . $range[$i];
+        if ($range[$i] == $actual) {
+            echo " selected";
+        }
+        $i += 1;
+        echo ">" . $range[$i]."</option>";
+        $i += 1;
+    }
+    echo "</select>";
+}
+
 function simple_selector($token, $range, $actual){
     # simple selector for limited number of elements
     if (count($range) > 1) {

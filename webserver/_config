@@ -3,27 +3,29 @@ ___announcements
 # dir for data i/o files
 c:\xampp\htdocs\usb_interface\
 # color background basic
- #6c9ccb;
+ #6C9CCB;
 # color background sub
- #d1f8ff;
+ #D1F8FF;
 # color background answer
- #d1f8a0;
+ #D1F8A0;
 # color s
- #ff8000;
+ #000080;
 # color r
- #ffffff;
+ #8080FF;
 # color at
- #d1f8a0;
+ #FF80FF;
 # color ou
- #01f8a0;
+ #800080;
 # color p
- #d08000;
+ #D08080;
 # color m
- #0000ff;
+ #00FF00;
 # color n
- #000400;
+ #000FF80;
 # color a
- #ff0000;
+ #FF0000;
 # color b
- #ff80ff;
+ #FF8080;
+# limit for selectors
+ 100
 

@@ -1,17 +1,21 @@
 <html lang = "de">
 <!-- werbserver for MYC system
      myc.php
-     Version 1.1 20230228
+     Version 1.1 20230608
      The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
-     to check:
-     retranslate_simple_range required? or wrong?
+
+     This version is temporary, and some commands not working due to major rework
+     Following commands are ok (with some exceptions):
+     switches
+
+    found errors:
+    stack: more than one MUL: multiply wrong?
 
      not implemented / missing:
      switches: DIMENSIONS
      ext
      range commands: sequence like log, date.. (lin only)
      CONVERT
-     analyze read data
      -->
     <head>
         <title>MYC Apache Server</title>

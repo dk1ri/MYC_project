@@ -1,6 +1,6 @@
 <?php
 # action.php
-# DK1RI 20230313
+# DK1RI 20230608
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 ?>
 <html lang = "de">
@@ -37,7 +37,7 @@
             echo ".as{color: ".$_SESSION["conf"]["s"].";background-color:".$_SESSION["conf"]["bga"]."}";
             echo ".or{color: ".$_SESSION["conf"]["r"].";}";
             echo ".ar{color: ".$_SESSION["conf"]["r"].";background-color:".$_SESSION["conf"]["bga"]."}";
-            echo ".at{color: ".$_SESSION["conf"]["at"].";}";
+            echo ".at{color: ".$_SESSION["conf"]["at"].";background-color:".$_SESSION["conf"]["bga"]."}";
             echo ".ou{color: ".$_SESSION["conf"]["ou"].";}";
             echo ".op{color: ".$_SESSION["conf"]["p"].";}";
             echo ".ap{color: ".$_SESSION["conf"]["p"].";background-color:".$_SESSION["conf"]["bga"]."}";
@@ -68,6 +68,9 @@
         include "serial.php";
         include "update_received.php";
         include "split_to_display_objects.php";
+        foreach ($_POST as $key => $value){
+            if ($value != "0"){print $key." ".$value." <br>";}
+        }
         if (array_key_exists("user_name", $_POST)) {
             $_SESSION["user"]["username"] = $_POST["user_name"];
         }
@@ -113,11 +116,13 @@
             $post_ = $_POST["chapter"];
             if ($post_ != $_SESSION["actual_data"]["_chapter_"]) {
                 $_SESSION["actual_data"]["_chapter_"] = $post_;
+                create_tok_list($device);
             }
         }
         correct_POST($device);
         send_and_update();
         If ($_SESSION["received_data"] != ""){
+            # data from device
             update_received();
         }
         $actual_chapter = $_SESSION["chapter"];
@@ -154,9 +159,6 @@
             $i += 2;
         }
         echo "</div>";
-        if ( $_SESSION["tok_list"][$device] == []) {
-            create_tok_list($device);
-        }
         display_commands();
         echo "</form>";
         echo"</div>";

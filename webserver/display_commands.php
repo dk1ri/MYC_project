@@ -1,19 +1,6 @@
 <?php
 # display_commands.php
 # DK1RI 20230410
-function create_tok_list($device){
-    $_SESSION["tok_list"][$device] = [];
-    foreach ($_SESSION["original_announce"][$device] as $tok => $value) {
-        foreach ($_SESSION["activ_chapters"][$device] as $chapter => $val){
-            if (array_key_exists($tok, $_SESSION["chapter_token"][$device][$chapter])) {
-                if (!array_key_exists($tok, $_SESSION["tok_list"][$device])) {
-                    $_SESSION["tok_list"][$device][$tok] = 1;
-                }
-            }
-        }
-    }
-}
-
 function display_commands(){
     $device = $_SESSION["device"];
     create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);
@@ -27,10 +14,11 @@ function display_commands(){
                 continue;
             }
             if (explode(",",$value[0])[0] == "oo"){
+                # oo token are handled with op token
                 continue;
             }
-            if (array_key_exists($basic_tok, $_SESSION["as_token"][$device])){
-                # oo token are handled with op token
+            if (array_key_exists($basic_tok, $_SESSION["a_to_o"][$device])){
+                # as token are handled with corresponding token
                 continue;
             }
             $announce = $_SESSION["announce_all"][$device][$tok];
@@ -43,12 +31,16 @@ function display_commands(){
                     create_os($basic_tok);
                     break;
                 case "at":
+                    create_at($basic_tok);
+                    break;
                 case "as":
                     create_as($basic_tok);
                     break;
                 case "or":
+                    create_or($basic_tok);
+                    break;
                 case "ar":
-                    create_or_ar($basic_tok);
+                    create_ar($basic_tok);
                     break;
                 case "ou":
                     create_ou($basic_tok);

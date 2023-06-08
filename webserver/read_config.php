@@ -80,6 +80,7 @@ function read_config(){
     # used for device and chapter (and commands / per device)
     # a command: value, value,...
     # others: one value only
+    # contail transmitted data (not the display ones)
     $_SESSION["actual_data"] = [];
     $_SESSION["actual_data"]["_device_"] = 0;
     $_SESSION["actual_data"]["_chapter_"] = 0;
@@ -143,6 +144,9 @@ function read_config(){
                     break;
                 case  13:
                     $_SESSION["conf"]["b"] = $line;
+                    break;
+                case  14:
+                    $_SESSION["conf"]["selector_limit"] = $line;
                     break;
             }
             $i++;
