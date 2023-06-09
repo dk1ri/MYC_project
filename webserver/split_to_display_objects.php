@@ -42,6 +42,7 @@ function split_to_display_objects(){
   #  $_SESSION["defaults"][$device] = [];
     # create $_SESSION["original_announce"][$device] from announcefile
     # and $_SESSION["chapter_token"][$device]
+    $last_is_op = 0;
     if (file_exists("./devices/".$device."/announcements")) {
         $file = fopen("./devices/".$device . "/announcements", "r");
         while (!(feof($file))) {
@@ -72,14 +73,19 @@ function split_to_display_objects(){
             if ($temp != "" and !$last_was_chap){
                 $lda[] = $temp;
             }
-            $new_tok = $token;
-            if ($lda[0] == "op") {
+            $ct = explode(",",$lda[0])[0];
+            if ($ct == "op") {
                 $last_is_op = 1;
                 $last_op_tok = basic_tok($token);
             }
-            elseif ($lda[0] == "oo"){
+            elseif ($ct == "oo"){
                 if ($last_is_op == 1) {
                     $_SESSION["oo_tok"][$device][$token] = $last_op_tok;
+                }
+            }
+            else {
+                if (!$ct == "ap") {
+                    $last_is_op = 0;
                 }
             }
             if (!array_key_exists($token, $_SESSION["a_to_o"][$device])) {
@@ -184,7 +190,7 @@ function des_one_mul($basic_tok, $des, $ct, $s_number, $defaultname){
     if (count($range) == 0){
         # max only
         $_SESSION["des_name"][$device][$basic_tok . $s_number] = $defaultname;
-        des_range($basic_tok, "1_0to". $max_r, $max_r, $s_number);
+        des_range($basic_tok, "1_0to". ($max_r-1), $max_r, $s_number);
         # done
         return;
     }
@@ -338,7 +344,7 @@ function expand_p($basic_tok, $announce){
         $dim += 3;
         $d_number += 1;
     }
-    if($ct[0] == "ap"){
+    if($ct == "ap"){
         $_SESSION["announce_all"][$device][$basic_tok . "a"][0] = $ct;
     }
 }

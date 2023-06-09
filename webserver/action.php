@@ -1,6 +1,6 @@
 <?php
 # action.php
-# DK1RI 20230608
+# DK1RI 20230609
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 ?>
 <html lang = "de">
@@ -68,9 +68,6 @@
         include "serial.php";
         include "update_received.php";
         include "split_to_display_objects.php";
-        foreach ($_POST as $key => $value){
-            if ($value != "0"){print $key." ".$value." <br>";}
-        }
         if (array_key_exists("user_name", $_POST)) {
             $_SESSION["user"]["username"] = $_POST["user_name"];
         }

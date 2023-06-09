@@ -1,6 +1,6 @@
 <?php
 # send_and_update.php
-# DK1RI 20230608
+# DK1RI 20230609
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function send_and_update(){
     # input:  $_SESSION["corrected_POST"]
@@ -173,29 +173,38 @@ function send_and_update(){
                         break;
                     case "op":
                         list($send, $senda, $change_found) = handle_stacks($basic_tok, $send, $senda);
-                        foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
-                            if (basic_tok($tok) == $basic_tok) {
-                                # not "oo" commands!
-                                if (strstr($tok, "d")) {
-                                    $change_found_ = update_one_only($tok);
-                                    if ($change_found_) {
-                                        $change_found = 1;
+                        $tok = $basic_tok. "a";
+                        if (array_key_exists($tok, $_SESSION["corrected_POST"][$device]) and $_SESSION["corrected_POST"][$device][$tok] == 1) {
+                            # if answer set-> ignore change of data
+                            $send = $senda;
+                            $send_ok = 1;
+                            $_SESSION["read"] = 1;
+                        }
+                        else {
+                            foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
+                                if (basic_tok($tok) == $basic_tok) {
+                                    # not "oo" commands!
+                                    if (strstr($tok, "d")) {
+                                        $change_found_ = update_one_only($tok);
+                                        if ($change_found_) {
+                                            $change_found = 1;
+                                        }
                                     }
                                 }
                             }
-                        }
-                        # add to send:
-                        foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
-                            if (basic_tok($tok) == $basic_tok) {
-                                # not "oo" commands!
-                                if (strstr($tok, "d")) {
-                                    $length = $_SESSION["property_len"][$device][$basic_tok][2];
-                                    $send .= translate_dec_to_hex($basic_tok, "n", $_SESSION["actual_data"][$device][$tok], $length);
+                            # add to send:
+                            foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
+                                if (basic_tok($tok) == $basic_tok) {
+                                    # not "oo" commands!
+                                    if (strstr($tok, "d")) {
+                                        $length = $_SESSION["property_len"][$device][$basic_tok][2];
+                                        $send .= translate_dec_to_hex($basic_tok, "n", $_SESSION["actual_data"][$device][$tok], $length);
+                                    }
                                 }
                             }
-                        }
-                        if ($change_found) {
-                            $send_ok = 1;
+                            if ($change_found) {
+                                $send_ok = 1;
+                            }
                         }
                         break;
                     case "oo":
@@ -544,7 +553,6 @@ function handle_stacks($basic_tok, $send, $senda){
     # return: send, change_found
     $change_found = 0;
     $device = $_SESSION["device"];
-  #  var_dump($_SESSION["corrected_POST"][$device]);
     # do nothing, if stacks == 1
     if (explode(",", $_SESSION["original_announce"][$device][$basic_tok][1])[0] == 1){
         return [$send, $senda, $change_found];

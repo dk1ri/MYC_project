@@ -1,12 +1,13 @@
 <html lang = "de">
 <!-- werbserver for MYC system
      myc.php
-     Version 1.1 20230608
+     Version 1.1 20230609
      The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
      This version is temporary, and some commands not working due to major rework
      Following commands are ok (with some exceptions):
      switches
+     range
 
     found errors:
     stack: more than one MUL: multiply wrong?

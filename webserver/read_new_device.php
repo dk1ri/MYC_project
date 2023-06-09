@@ -188,22 +188,15 @@ function calculate_cor_token($device){
         $_SESSION["cor_token"][$device][basic_tok($key)][] = $key;
     }
     # add oo comands
-    $last_is_op = 0;
-    $last_op_tok = "";
     foreach ($_SESSION["announce_all"][$device] as $key => $value) {
         if ($value[0] == "oo"){
-            $_SESSION["cor_token"][$device][$last_op_tok][] = $_SESSION["oo_tok"][$device][$key];
+            if (strstr($key, "r") or strstr($key, "s") or strstr($key, "t")) {
+                $o_tok = $_SESSION["oo_tok"][$device][basic_tok($key)];
+                $_SESSION["cor_token"][$device][basic_tok($o_tok)][] = $key;
+            }
         }
-    }
-    # for oo commands:
- #   foreach ($_SESSION["announce_all"][$device] as $key => $value) {
-  #      if ($value[0] == "oo"){
-   #         if (strstr($key, "r") or strstr($key, "s") or strstr($key, "t")) {
-    #            $_SESSION["cor_token"][$device][basic_tok($key)][] = $key;
-     #       }
-      #  }
-     #}
-    #as commands
+     }
+    # add as commands
     # as command get the tok of the corresponding op tok!
     foreach ($_SESSION["o_to_a"][$device] as $key => $value) {
         $_SESSION["cor_token"][$device][basic_tok($key)][] = $key. "a";

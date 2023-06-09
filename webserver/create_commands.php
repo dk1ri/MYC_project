@@ -142,11 +142,6 @@ function create_ou($basic_tok) {
 function  create_op_oo($basic_tok){
     $device = $_SESSION["device"];
     echo "<div><h3 class='op'>";
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok){
-        if (strstr($tok, "a")){
-            display_as($tok);
-        }
-    }
     echo $_SESSION["des_name"][$device][$basic_tok] . ": ";
     if (array_key_exists($basic_tok. "m0", $_SESSION["des"][$device])){
         # one or more stack display elements available
@@ -197,6 +192,11 @@ function  create_op_oo($basic_tok){
             }
         }
     }
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok){
+        if (strstr($tok, "a")){
+            display_as($tok);
+        }
+    }
     echo "</h3></div>";
 }
 
@@ -218,7 +218,7 @@ function create_ap($basic_tok){
             echo $_SESSION["unit"][$device][$tok]."<br>";
         }
     }
-    echo "<input type='checkbox' id=".$basic_tok."a" . " name=".$basic_tok."a value=1>";
+    echo "read: <input type='checkbox' id=".$basic_tok."a" . " name=".$basic_tok."a value=1>";
     echo "</h3></div>";
 }
 
