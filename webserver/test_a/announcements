@@ -1,18 +1,16 @@
 0;m;DK1RI;test_a;V01.0;1;145;1;13;1-1
 1;oa;b;6,CHAPTER,memory
-2;aa;b;10;6,CHAPTER,memory
+2;aa;b,was,{1_1to30};10,mot;6,CHAPTER,memory
 3;oa,3_oa;a;6,CHAPTER,memory
 4;aa,as3;a;6,CHAPTER,memory
-5;aa,5_aa;a;6,CHAPTER,memory
-6;oa,6_oa;c;i;w
-7;aa,as6;c;i;w
+6;oa,6_oa;c,ctec,{1_1to19};i;w,word
+7;aa,as6;c,ctec,{1_1to19};i;w,word
 8;aa,8_aa;c,unsigned short;i,int;w,word,{1_0to100}
 9;oa,9_oa;e;L
 10;aa,as9;e;L
 11;aa,11_aa;e;L
-12;oa,12_oa;10,9_name,{ALPHA0}
-13;aa,as12;10,9_name,{ALPHA0}
-14;aa,14_aa;10
-15;oa,15_oa;b,byte;10;3;3
-16;aa,as15;b,byte;10;3;3
-17;aa,17_aa;b;10;3
+13;oa,12_oa;b,9name
+14;aa,as13;b,9name
+15;aa,14_aa;10
+16;oa,15_oa;b,byte;10;3;3
+17;aa,as16;b,byte;10;3;3
