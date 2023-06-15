@@ -1,9 +1,9 @@
 <?php
 # display_commands.php
-# DK1RI 20230410
+# DK1RI 20230615
 function display_commands(){
     $device = $_SESSION["device"];
-    create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);
+    if ($_SESSION["conf"]["testmode"]){create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);}
     $announcelines = $_SESSION["announce_all"][$device];
     $already_done = "";
     foreach ($announcelines as $tok => $value) {
@@ -75,6 +75,12 @@ function display_commands(){
                     break;
                 case "ab":
                     create_ab($basic_tok);
+                    break;
+                case "of":
+                    create_of($basic_tok);
+                    break;
+                case "af":
+                    create_af($basic_tok);
                     break;
             }
             echo "</div>";

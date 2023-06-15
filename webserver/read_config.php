@@ -1,9 +1,15 @@
 <?php
 # read_config.php
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
-# DK1RI 20220228
+# DK1RI 20220614
 function read_config(){
     $_SESSION = [];
+    # user data
+    $_SESSION["user"] = [];
+    $_SESSION["user"]["username"] = "user";
+    $_SESSION["user"]["language"] = [];
+    # for individual langusge
+    $_SESSION["lang_select"] = [] ;
     # command length
     $_SESSION["command_len"] = [];
     $_SESSION["started"] = 1;
@@ -13,74 +19,23 @@ function read_config(){
     $_SESSION["interface"] = '';
     # answer command sent; read data
     $_SESSION["read"] = 0;
-    # last command status
+    # last command status ok?
     $_SESSION["last_command_status"] = 0;
     # not used
     $_SESSION["init_read"] = 0;
-    # user name
+    # actual user name
     $_SESSION["name"] = '';
     # list of available device
     $_SESSION["device_list"] = "";
-    # read $_SESSION["device_list"]
+    # read $_SESSION["device_list"] (dirnames of devices directory)
     read_device_list();
     # device_list: array
-    $device = explode(",",$_SESSION["device_list"])[1];
-    # actual index for device in POST, num
-    $_SESSION["device_index"] = 0;
-    # announce_all: token: array data: array
-    # switches: ct switch-labels
-    # memory / range commands: ct only
-    $_SESSION["announce_all"] = [];
+    $_SESSION["device"] = explode(",",$_SESSION["device_list"])[1];
     # chapter_token: token: array data: 1
     $_SESSION["chapter_token"] = [];
-    # token length: string
-    $_SESSION["tok_len"][$device] = 0;
-    # token converted to hex: token: array, data: string
-    $_SESSION["tok_hex"][$device] = [];
-    # token with identical basic_tok : token: array, data: array
-    $_SESSION["cor_token"][$device] = [];
-    # token with ADD token : token: array, data: string
-    $_SESSION["adder_token"][$device] = [];
-    # token for oo commands: oo-token array data master-token (num)
-    $_SESSION["oo_token"] = [];
-    # token for as commands: as-token array data master-token (num)
-    $_SESSION["as_token"] = [];
-    # token for as commands: master-token array data as-token (num)
-    $_SESSION["as_token_as_to_basic"] = [];
-    # transmission length for each dimension (if applicable) token: array data: string
-    $_SESSION["p_len"][$device] = [];
-    # original_announce: spltted announcefile token; array data: array: line split by ";"
-    $_SESSION["original_announce"] = [];
-    # announcements: token: array data: , separated string
-    # 0: ct
-    # 1: max_length (for dimensions of range commands)
+    # must be defined here, used before read_new_device
     $_SESSION["announce_all"] = [];
-    # chapter_names: array
-    $_SESSION["chapter_names"] = [];
-    $_SESSION["chapter_names_array"] = [];
-    # des_range: token: array data: string
-    $_SESSION["tok_list"][$device] = [];
-    $_SESSION["des_range"] = [];
-    # des_name: token: array data: string
-    $_SESSION["des_name"] = [];
-    # des_type: for memory commands: token: array data: array -> string
-    # range is copy of announcement (not resolved)
-    # m / n commands: type,CODING,name,startvalue,range
-    # a / b commands: type,CODING,name,startvalue,range type,CODING,startvalue,range ...
-    # except a / b command: use <tok>x1 only; a / b: <tok>x1 ... <tok>xn
-    $_SESSION["des_type"] = [];
-    # property_len: for transmitted data: sequence as per announcemnets: baic_tok:array data: array
-    $_SESSION["property_len"] = [];
-    # for p commands :unit
-    $_SESSION["unit"] = [];
-    # corrected _POST (has no [$device] !!!) (as $_POST)
-    # token: array, data: string
-    $_SESSION["corrected_POST"] = [];
-    # actual_data: token: array: data: string
-    # used for device and chapter (and commands / per device)
-    # a command: value, value,...
-    # others: one value only
-    # contail transmitted data (not the display ones)
+    # actual_data: used for device and chapter (and commands / per device)
     $_SESSION["actual_data"] = [];
     $_SESSION["actual_data"]["_device_"] = 0;
     $_SESSION["actual_data"]["_chapter_"] = 0;
@@ -88,9 +43,6 @@ function read_config(){
     $_SESSION["device"] = explode(",",$_SESSION["device_list"])[1];
     # reveived data
     $_SESSION["received_data"] = "";
-    # user data
-    $_SESSION["user"] = [];
-    $_SESSION["user"]["username"] = "user";
     #
     $_SESSION["conf"] = [];
     $config = "_config";
@@ -146,19 +98,24 @@ function read_config(){
                     $_SESSION["conf"]["b"] = $line;
                     break;
                 case  14:
+                    $_SESSION["conf"]["f"] = $line;
+                    break;
+                case  15:
                     $_SESSION["conf"]["selector_limit"] = $line;
+                    break;
+                case  16:
+                    $_SESSION["conf"]["testmode"] = $line;
                     break;
             }
             $i++;
         }
+        fclose($file);
     }
-    fclose($file);
 
     $_SESSION["coding"] = [];
     $config = "_coding";
     if (file_exists($config)) {
         $file = fopen($config, "r");
-        $i = 0;
         while (!(feof($file))) {
             $line = fgets($file);
             $line = str_replace("\r", "", $line);
@@ -175,15 +132,17 @@ function read_config(){
     $_SESSION["is_lang"] = "";
     # used for selector
     $config = "_lang";
-    $i = 0;
-    $_SESSION["lang_select"] = [];
+    $islang = "";
     if (file_exists($config)) {
         $file = fopen($config, "r");
+        $i = 0;
         while (!(feof($file))) {
+            # 1st line: item
             $itemname = fgets($file);
             $itemname = str_replace("\r", "", $itemname);
             $itemname = str_replace("\n", "", $itemname);
             $_SESSION["lang"][$itemname] = "";
+            # 2nd line: translations
             $translated_to = fgets($file);
             $translated_to = str_replace("\r", "", $translated_to);
             $translated_to = str_replace("\n", "", $translated_to);

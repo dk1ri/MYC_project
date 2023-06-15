@@ -26,6 +26,10 @@ c:\xampp\htdocs\usb_interface\
  #FF0000;
 # color b
  #FF8080;
+# color f
+ #FF8000;
 # limit for selectors
- 100
+100
+# testmode (write data files)
+1
 

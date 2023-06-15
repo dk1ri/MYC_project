@@ -16,6 +16,7 @@ function for_tests($device){
     create_session_data_file($device, "des", $_SESSION["des"][$device]);
     create_session_data_file($device, "to_correct", $_SESSION["to_correct"][$device]);
     create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);
+    create_session_data_file($device, "real_range_for_type", $_SESSION["real_range_for_type"][$device]);
     create_session_data_file("$device", "conf", $_SESSION["conf"]);
     create_session_data_file_array("$device", "chapter_token", $_SESSION["chapter_token"][$device]);
 }

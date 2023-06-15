@@ -1,23 +1,24 @@
 <html lang = "de">
-<!-- werbserver for MYC system
-     myc.php
-     Version 1.1 20230609
-     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+<!--
+    werbserver for MYC system
+    myc.php
+   Version 1.1 20230615
+    The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
-     This version is temporary, and some commands not working due to major rework
-     Following commands are ok (with some exceptions):
-     switches
-     range
+    To understand the program, you should be familiar with the announcements and commands of the MYC system (at least)
+    please read https://dk1ri.de/myc/commands.pdf or https://dk1ri.de/myc/commands.txt
+
+    To understand the program flow see action.php
+
+    This version is temporary, and memory commands are not working due to major rework
 
     found errors:
-    stack: more than one MUL: multiply wrong?
 
      not implemented / missing:
-     switches: DIMENSIONS
      ext
      range commands: sequence like log, date.. (lin only)
      CONVERT
-     -->
+-->
     <head>
         <title>MYC Apache Server</title>
         <meta name="author" content="DK1RI">

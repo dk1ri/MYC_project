@@ -1,39 +1,80 @@
 <?php
 # read_new_device.php
-# DK1RI 20230608
+# DK1RI 20230613
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function read_new_device($device){
     #create additional device (old ones not deleted)
     # split anouncelist to display objects and get chapter_names
-    $_SESSION["chapter"] = "all";
-    $_SESSION["chapter_array"][$device] = [];
+    # define device dependent data
+    # basictok is the token given in the original annoucelist
+    # _POST is crrected to valid data
+    # contain transmitted data (not the display ones)
+    $_SESSION["corrected_POST"][$device] = [];
+    # original_announce: spltted original announcefile token; array data: array: line split by ";"
+    $_SESSION["original_announce"][$device] = [];
+    # announce_all: commandtype only for all displayed elements by token
+    # but: "as" commands have no entry (but a display element). They are handled with the cooresponding opearte command
+    # and get the basictok of the operating command
+    # token : basictok"identifier identifiers:
+    # m selectors for stack, memoryposition
+    # n selector for ADD
+    # o selector for number of data to send for an /on commands
+    # d data
+    # a answer element
+    $_SESSION["announce_all"][$device] = [];
+    # token of "as" command -> corresponding token
+    $_SESSION["a_to_o"][$device] = [];
+    # reverse
+    $_SESSION["o_to_a"][$device] = [];
+    # list of _POST indices, which are not tokents
     $_SESSION["special_token"][$device] = [];
+    # length of property (for send data) for each property
+    # for memorypositions the property may have more than one display elements _ stored in the first element only
+    $_SESSION["property_len"][$device] = [];
+    $_SESSION["property_len_byte"][$device] = [];
+    # all token (of displayd elements for a basictok
+    $_SESSION["cor_token"][$device] = [];
+    # actual data for each disply element
+    $_SESSION["actual_data"][$device] = [];
+    # not used ?
+    $_SESSION["chapter_array"][$device] = [];
+    # actual tokens, depend on selected chapters
     $_SESSION["tok_list"][$device] = [];
+    # commandtype of "as" commands
     $_SESSION["ct_of_as"][$device] = [];
+    # token for as commands: as-token array data master-token (num)
+    $_SESSION["as_token"][$device] = [];
+    # token for as commands: master-token array data as-token (num)
+    $_SESSION["as_token_as_to_basic"][$device] = [];
+    # names for display elements
+    $_SESSION["des_name"][$device] = [];
+    # for p commands: unit
+    $_SESSION["unit"][$device] = [];
+    # chapter_names: array
+    $_SESSION["chapter_names"][$device] = [];
+
+    $_SESSION["chapter"] = "all";
     # as answer token <-> operate token:
     read_a_o($device);
     # like interface ... :
     read_special_token();
     # for details see there:
     split_to_display_objects();
-    # ct for "as" commands (ct of corresponding "o" command
+    # ct for "as" commands (ct of corresponding "o" command)
     ct_of_as();
-    # length of properties for all commands in $_SESSION["property_len"][$device]
+    # length of properties
     calculate_property_len();
     # list of all token with identical basic token + answertoken + oo token:
     calculate_cor_token($device);
     # for active chapters:
     create_tok_list($device);
-    # actual data for all announcelines in $_SESSION["actual_data"]:
+    # actual data for all displaed elements
     init_data($device);
 }
 
 function read_a_o($device){
-    $_SESSION["a_to_o"][$device] = [];
-    $_SESSION["o_to_a"][$device] = [];
     # list of token with same $basic_tok; exception : oo commands and y,asx commands
     $asfile = "devices/" . $device . "/as_commands";
-    $as_command = [];
     if (file_exists($asfile)) {
         $file = fopen($asfile, "r");
         while (!(feof($file))) {
@@ -42,7 +83,6 @@ function read_a_o($device){
             $line = str_replace("\n", "", $line);
             if ($line != "") {
                 $li = explode(" ", $line);
-                $as_command[$li[0]] = $li[1];
                 $_SESSION["a_to_o"][$device][$li[0]] = $li[1];
                 $_SESSION["o_to_a"][$device][$li[1]] = $li[0];
             }
@@ -52,7 +92,7 @@ function read_a_o($device){
 }
 
 function read_special_token(){
-    $device =$_SESSION["device"];
+    $device = $_SESSION["device"];
     $_SESSION["special_token"][$device]["interface"] = 1;
     $_SESSION["special_token"][$device]["user_name"] = 1;
     $_SESSION["special_token"][$device]["user"] = 1;
@@ -78,7 +118,6 @@ function calculate_property_len(){
     end($_SESSION["original_announce"][$device]);
     $tok_len = length_of_number(basic_tok(key($_SESSION["original_announce"][$device])));
     $_SESSION["command_len"][$device] = $tok_len;
-    $_SESSION["property_len"][$device] = [];
     $_SESSION["property_len_byte"][$device] = [];
     foreach ($_SESSION["original_announce"][$device] as $key => $value) {
         $_SESSION["property_len"][$device][$key][] = $tok_len;
@@ -182,7 +221,6 @@ function stack_len($key, $value){
 }
 
 function calculate_cor_token($device){
-    $_SESSION["cor_token"][$device] = [];
     # all except oo and as:
     foreach ($_SESSION["announce_all"][$device] as $key => $value){
         $_SESSION["cor_token"][$device][basic_tok($key)][] = $key;
@@ -207,7 +245,6 @@ function init_data($device){
     # create $_SESSION[actual_data][$device]
     # actual_data contain transmitted data!
     # set data  for all numeric token to "0", strings to "input test"
-    $_SESSION["actual_data"][$device] = [];
     foreach ($_SESSION["announce_all"][$device] as $key => $value) {
         $ct = explode(",", $value[0])[0];
             if ($ct == "m") {

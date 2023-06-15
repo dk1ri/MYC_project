@@ -1,6 +1,6 @@
 <?php
 # translate.php
-# DK1RI 20230608
+# DK1RI 20230615
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function correct_POST($device){
     # real values are converted to nearest valid data and translated for transmit (stored as actual data), if necessary
@@ -86,5 +86,6 @@ function correct_POST($device){
             $_SESSION["corrected_POST"][$device][$token] = $value;
         }
     }
+    print "<br>";
 }
 ?>

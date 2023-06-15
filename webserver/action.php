@@ -1,7 +1,18 @@
 <?php
 # action.php
-# DK1RI 20230609
+# DK1RI 20230615
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+
+# action.php is the basic page and call all other functions
+# to store data the SESSION mechanism is used, which stores data for the next call of the page.
+# data are stored in $_SESSION["dataname"][$device] independent for each device
+# To reduce computing power most of these data are generated with the first call of the page for a device. So this will
+# take some more time with the first call.
+# Most of the these data are stored in files "session"dataname" in the devices/"devicename" folder. This may help debugging.
+# testmode must be set to 1 in _config
+# The initialisation and description of these data can be found in read_new_device.php
+# all other data (independent of a device) are initialized and described in read_config.php (called with myc.php)
+
 ?>
 <html lang = "de">
 <?php
@@ -49,6 +60,8 @@
             echo ".aa{color: ".$_SESSION["conf"]["a"].";background-color:".$_SESSION["conf"]["bga"]."}";
             echo ".ob{color: ".$_SESSION["conf"]["b"].";}";
             echo ".ab{color: ".$_SESSION["conf"]["b"].";background-color:".$_SESSION["conf"]["bga"]."}";
+            echo ".of{color: ".$_SESSION["conf"]["f"].";}";
+            echo ".af{color: ".$_SESSION["conf"]["f"].";background-color:".$_SESSION["conf"]["bga"]."}";
             # marquee do no work as required:
             echo ".marquee {width:200px;height:40px;margin:0;overflow:hidden;}";
             echo ".marquee.h3{animation:marquee 5s linear infinite;";
@@ -64,7 +77,6 @@
         include "display_commands.php";
         include "create_commands.php";
         include "select_any.php";
-        include "for_tests.php";
         include "serial.php";
         include "update_received.php";
         include "split_to_display_objects.php";
@@ -107,7 +119,10 @@
             # not actually used devices are not deleted
             include "read_new_device.php";
             read_new_device($device);
-            for_tests($device);
+            if ($_SESSION["conf"]["testmode"]){
+                include "for_tests.php";
+                for_tests($device);
+            }
         }
         if (array_key_exists("chapter", $_POST)) {
             $post_ = $_POST["chapter"];

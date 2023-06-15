@@ -1,30 +1,24 @@
 <?php
 # subs.php
-# DK1RI 20230608
+# DK1RI 20230615
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function basic_tok($o_tok){
     # return basic_token
     if (strstr($o_tok, "a")) {
         # for answer commands
         $tok = explode("a", $o_tok)[0];
-    } elseif (strstr($o_tok, "b")) {
-        # for stack
-        $tok = explode("b", $o_tok)[0];
-    } elseif (strstr($o_tok, "c")) {
-        # for ADD
-        $tok = explode("c", $o_tok)[0];
-    } elseif (strstr($o_tok, "x")) {
-        # for data
-        $tok = explode("x", $o_tok)[0];
     } elseif (strstr($o_tok, "d")) {
         # for data
         $tok = explode("d", $o_tok)[0];
     } elseif (strstr($o_tok, "m")) {
-        # for stack
+        # for stack and memorypositions
         $tok = explode("m", $o_tok)[0];
     } elseif (strstr($o_tok, "n")) {
         # for ADD
         $tok = explode("n", $o_tok)[0];
+    } elseif (strstr($o_tok, "o")) {
+        # for on elements
+        $tok = explode("o", $o_tok)[0];
     } else {
         $tok = $o_tok;
     }
@@ -51,7 +45,7 @@ function convert($num){
 }
 
 function length_of_number($data){
-    # no of bytes for transmit
+    # number of bytes for transmit
     # include 0!!!
     if (is_numeric($data)){
         $number = (int)$data;
@@ -162,6 +156,31 @@ function find_allowed($type){
     }
 }
 
+function find_name_of_type($type){
+    switch ($type){
+        case "a":
+            return "bit";
+        case "b":
+            return "byte";
+        case "s":
+            return "single";
+        case "d":
+            return "double";
+        case "c":
+            return "signed int";
+        case "i":
+            return "signed word";
+        case "w":
+            return "word";
+        case "e":
+            return "signed long";
+        case "L":
+            return "long";
+        default:
+            return "";
+    }
+}
+
 function real_to_transmit_simple($data, $type){
     # numeric values are shifted if necessary
     # convert to integer
@@ -185,7 +204,8 @@ function real_to_transmit_simple($data, $type){
     return $data;
 }
 
-function adapt_len($token, $element, $actual){
+function adapt_len($token, $actual){
+    # trim $actual to a length of property_len (or 20)
     $device =$_SESSION["device"];
     $result = "";
     $length = $_SESSION["property_len"][$device][basic_tok($token)][2];
@@ -241,7 +261,7 @@ function create_tok_list($device){
     }
 }
 
-function translate_dec_to_hex($basic_tok, $type, $data, $length){
+function translate_dec_to_hex($type, $data, $length){
     # $type is a MYC datatype
     # $type == n is unsigned number with $length
     # $data is already corrected
@@ -304,6 +324,7 @@ function fillup($data, $length){
 function retranslate_simple_range($range, $actual, $add ){
     # this is the inverse of translate_simple_range
     # range is comma separated list 1,a,2,b,3,1,4,2,5,4...
+    # without max!!!
     # return is position of actual in range
     # actual is found always
     # for stacks: $add = 2
@@ -327,13 +348,19 @@ function translate_received_data_type($tok, $data){
     # transmitted (actual) -> real
     # data returned from device (in actual_data) will be translated to real values, if necessary
     $device = $_SESSION["device"];
-    $des_type = $_SESSION["des_type"][$device];
-    if (array_key_exists($tok, $des_type)) {
-        # $range : maxnumber {... }
-        if (!is_numeric($des_type[$tok][0])) {
+    $des_type = $_SESSION["des"][$device];
+    if (array_key_exists($tok, $des_type) and $des_type[$tok][0] != "alpha") {
+        $range1 = explode(",", explode(";", $des_type[$tok])[0]);
+        # $range : maxnumber, range
+        $range_pure = explode(",",$range1[0]);
+        if (!is_numeric($range_pure[0])) {
             # numeric type
-            $range_pure = explode(",", explode(";", $des_type[$tok])[3]);
-            $data = numeric_range($range_pure, $data);
+            if ($des_type[$tok][0] > $_SESSION["conf"]["selector_limit"]){
+                $data = numeric_range($range_pure, $data);
+            }
+            else{
+                $data = retranslate_simple_range($range_pure, $_SESSION["actual_data"][$device][$tok], 2 );
+            }
         }
     }
     #else: string; all data from device are valid
@@ -378,16 +405,62 @@ function numeric_range($range_pure, $data)
     }
     return $data;
 }
+
 function split_range($data){
     $range = explode("_", $data);
     $separator = $range[0];
     $range2 = explode("to", $range[1]);
     return [$separator, $range2[0], $range2[1]];
 }
+
 function delete_bracket($data){
-    $data = str_replace("{","",$data);
-    $data = str_replace("}","",$data);
+    $replace = array("{","}");
+    str_replace($replace,"",$data);
     return $data;
+}
+
+function type_data($typ){
+    # return: name, min, max
+    if (($typ[0]) == "CODING"){
+        switch ($typ[1]) {
+            case "UNIXTIME8":
+                return [$typ[1], 0,1000000000000];
+            case "TIME":
+                return [$typ[1], 0, 86400];
+            case "DAYSEC":
+            case "DAYMIN":
+            case "DAYHOUR":
+                return [$typ[1], 0,60];
+            case "DAY":
+                return [$typ[1], 0,31];
+            case "YEARDAY":
+                return [$typ[1], 0, 365];
+            case "YEARDAY0":
+            case "UNIXTIME4":
+                return [$typ[1], 0, 4294967295];
+            case "MON":
+                return [$typ[1], 0, 12];
+            case "YEAR0":
+                return [$typ[1], 0, 65535];
+            case "YEARNA":
+                return [$typ[1], -2147483648,2147483647];
+        }
+    }
+    else{
+        $name = find_name_of_type($typ);
+        switch ($typ[0]){
+            case"s":
+            case "d":
+                return [$name,-128, 127];
+            case is_numeric($typ[0]) :
+                # ranges of characters not yet supported
+                return [$name,"a", "z"];
+            default:
+                list($min, $max) = find_allowed($typ[0]);
+                return [$name,$min,$max];
+        }
+    }
+    return ["", 0, 0];
 }
 ?>
 

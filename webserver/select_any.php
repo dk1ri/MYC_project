@@ -1,8 +1,10 @@
 <?php
 # select_any.php
-# DK1RI 20230217
+# DK1RI 20230615
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function most_simple_selector($token, $range, $actual){
     # simple selector for limited number of elements (array)
+    # range with numbers; max,0,0,1,1..
     echo "<select name=" . $token . " id=" . $token . ">";
     $i = 0;
     while ($i < count($range)) {
@@ -19,6 +21,7 @@ function most_simple_selector($token, $range, $actual){
 
 function simple_selector($token, $range, $actual){
     # simple selector for limited number of elements
+    # range with numbers; max,0,0,1,1..
     if (count($range) > 1) {
         echo "<select name=" . $token . " id=" . $token . ">";
         $i = 0;
@@ -34,42 +37,69 @@ function simple_selector($token, $range, $actual){
     }
 }
 
-function display_memory_selector($token){
-    # generate display for memory-selectors for des - string ( {...} )
-    # pa is: max_number,name,{ ..}
-    $device = $_SESSION["device"];
-    $desc = explode("," , $_SESSION["des_range"][$device][$token]);
-    $max_number = (int)$desc[0];
-    echo $_SESSION["des_name"][$device][$token] . ": ";
-    $actual = $_SESSION["actual_data"][$device][$token];
-    if ($max_number < 100) {
-        echo "<select name=" . $token . " id=" . $token . ">";
-        # valid for op commands only:
-        for ($des_pointer = 0; $des_pointer < count($desc); $des_pointer += 2) {
-            $value = $desc[$des_pointer];
-            $value1 = $desc[$des_pointer + 1];
-            echo "<option value=" . $value;
-            if ($actual == $value) {
-                echo(" selected>");
-            } else {
-                echo ">";
-            }
-            echo $value1 . "</option>";
+function other_selector($token, $range, $actual){
+    # simple selector for limited number of elements
+    # range: like 1_1to10
+    list($separator, $from, $to) = split_range($range);
+    if ($from > $to){return;}
+    echo "<select name=" . $token . " id=" . $token . ">";
+    $i = 0;
+    $j = $from;
+    while ($j < $to) {
+        echo "<option value=" . $i;
+        if ($i == $actual) {
+            echo " selected";
         }
-        echo "</select>";
+        echo ">" . $j . "</option>";
+        $j += $separator;
+    }
+    echo "</select>";
+}
+function selector($basic_tok){
+    # create stack / memory display elements
+    # 0 for m n token, 1 for o token
+    $device = $_SESSION["device"];
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $ctoken) {
+        if (strstr($ctoken, "m") or strstr($ctoken, "n")) {
+            stack_memory_selector($ctoken);
+        }
+    }
+}
+
+function selector_for_o($basic_tok){
+    # create stack / memory display elements
+    # 0 for m n token, 1 for o token
+    $device = $_SESSION["device"];
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $ctoken) {
+        if (strstr($ctoken,"o")) {
+            stack_memory_selector($ctoken);
+        }
+    }
+}
+
+function stack_memory_selector($ctoken){
+    $device = $_SESSION["device"];
+    $actual = $_SESSION["actual_data"][$device][$ctoken];
+    echo $_SESSION["des_name"][$device][$ctoken] . ": ";
+    $stacks = explode(",", $_SESSION["des"][$device][$ctoken]);
+    $max_r = $stacks[0];
+    # remove max
+    array_splice($stacks, 0, 1);
+    if ($max_r > $_SESSION["conf"]["selector_limit"]){
+        if (array_key_exists($ctoken,$_SESSION["to_correct"][$device])){
+            # must be translated
+            $actual = actual_data_to_real($ctoken);
+            echo $_SESSION["to_correct"][$device][$ctoken]. ": ";
+        }
+        else {
+            echo $_SESSION["des"][$device][$ctoken] . ": ";
+        }
+        echo "<input type='text' id=" . $ctoken . " name=" . $ctoken . " value=". $actual.">";
+
     }
     else {
-        $ranges = "";
-        for ($des_pointer = 0; $des_pointer < count($desc); $des_pointer += 1) {
-            if (!strstr($desc[$des_pointer], "a")) {
-                $ranges .= " " . $desc[$des_pointer + 1] . "to" . $desc[$des_pointer +2] . " ";
-                $des_pointer += 2;
-            } else {
-                $ranges .= ", " . substr($desc[$des_pointer],1);
-            }
-        }
-        echo " " . $ranges;
-        echo "<input type='text' name = " . $token . " size = " . strlen(adapt_len($token,0, $actual[0])) . " placeholder =" . $actual[0] . ">";
+        most_simple_selector($ctoken, $stacks, $actual);
     }
+    echo " ";
 }
 ?>
