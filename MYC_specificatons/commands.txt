@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V03.00.00 20230525
+Version V03.00.01 20230615
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -348,16 +348,17 @@ A device may have some internal memory, which stores the state of another comman
 
 When reading / writing a memory with the type string, the access is done with the complete string with stringlength.There is no access to positions within the string.
 
-announce:	<c>;xm[<,label>]; <ty>[,<des_range>];m_positions[,<des_memory >	write a memory element of type <ty> with optional restrictions 
+announce:	<c>;xm[<,label>]; <ty>[,<des_range>];m_positions[,<des_memory>	write a memory element of type <ty> with optional restrictions 
 												as given in <des_range> of <ty>
+												dimensions of the memory are given by <des_memory>
 												for <des_memory>  see below
 operate command or answer / info:	<c><n><data>					write to / answer for position n
 answer command:			<c><n>						read position <n> (“0” based)
 
-announce:	<c>;xn,[,ext<c>]...[,<label>]; <ty>[,<des_range>];n[,<des_memory >]
-												sequential access of i elements for memory starting
-												with positon j. ( i, j < = n)
-												may work as extension to a xm command 
+announce:	<c>;xn,[,ext<c>]...[,<label>]; <ty>[,<des_range>];m_positions[,<des_memory>;n[,<des_memory >]
+												sequential access of i (i <= n)elements for memory starting
+												with positon j. (j < = m_positions)
+												may can work as extension to a xm command 
 												If end of memory is reached next element is written to n=0
 												one element allowed, but make no sense
 operate command or answer / info:	<c><n><m><data>					write n elements to memory, starting at position m (“0” based)
@@ -365,18 +366,18 @@ operate command or answer / info:	<c><n><m><data>					write n elements to memory
 answer command:			<c><n><m>						read n elements from memory, start at position m (“0” based)
 
 announce:	<c>;xf[,<label>];<ty>[,<des_range>];<m>[,<label>]			FIFO, stack, stream or similar functions, not more than m 
-												elements should be sent.
-operate command or answer / info:	<c><data><data>					2 elements
+												elements should be sent / read.
+operate command or answer / info:	<c>2<data><data>					2 elements are sent / read
 answer command:	<c><n>								send n elements
 
-announce:	<c>;xa[,<label>];<ty>[,<des_range>][<ty>[,<des_range>]]…		array of different elements of type <ty>
+announce:	<c>;xa[,<label>];<ty>[,<des_range>][<ty>[,<des_range>]…		array of different elements of type <ty>
 												For more than 255 elements use additional command.
 operate command or answer / info:	<c><n><data>					write one element to (read from) array, nth position
  												(“0” based)
 												<n> should be omitted for 1 element array.
 answer command:	<c><n>								n is the nth element (“0” based)
 
-announce:	<c>;xb[,<label>]...[,<des_range>];<ty>[,<des_range>]...[;<ty>[,<des_range>]	
+announce:	<c>;xb[,<label>];<ty>[,<des_range>][;<ty>[,<des_range>]...	
 												sequential access mode for array 
 												can work as extension to a oa command 
 												one element allowed, but make no sense
@@ -405,8 +406,12 @@ Description of OPTIONs:
 Description of command-type:
 [as|ext]|[,label]
 
-Descriptions for switches (os, as, or, ar, ou, at)
+Descriptions for stacks:
+n[,label][,<des_memory>]
+
+Descriptions for switches (os, as, or, ar, ou, at):
 Usually any button of switches has one label. {des_range} is not allowed.
+
 
 Descriptions for range commands (op, ap, oo):
 max1,<des>;max2,<des>...
@@ -432,6 +437,8 @@ For labeling english is preferred. If other languages are required, the translat
 Details of <des_range>
 Format: {[fixed_value],[“step-distance“_“from“to“to“]…}
 Mixed combinations of ranges and fixed values are allowed, but values must be unique.
+Fixed values may be nuemric and alpha, ranges may be numkeric or alpha. Alpha may be something like 1_atoz, 2BtoY but not 1_atoZ or 1_ato9.
+Use more than one range instead or hex values (may be not supported).
 With version 2.12.09 (202204) the step-distance was added to allow different distances.
 
 - For <ty> of data of memory commands:
@@ -462,7 +469,7 @@ Memory with one dimension:
 <number_of_positions>[,<label>][,<des_range>]
 
 Memory with with more than one dimension:
-<number_of_positions>[,<label>][,{n1,][,[label][,<des_range>][MULn2[,<label>][,<des_range>]… [ADDn_ADD[,label][,<des_range]]}
+<number_of_positions>[,<label>][,{n1,[,[label][,<des_range>][MULn2[,<label>][,<des_range>]… [ADDn_ADD[,label][,<des_range]]}
 If the stack / memory element number is high, it is recommended that the SK arrange this in rows and columns (and more).
 The SK can use separate selectors as defined by <des_memory>  fields separated by MULs and ADD.
 The number of MULs (selectors) is not limited, but MULs within the MULs are not supported.
