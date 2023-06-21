@@ -6,16 +6,22 @@ function read_new_device($device){
     #create additional device (old ones not deleted)
     # split anouncelist to display objects and get chapter_names
     # define device dependent data
-    # basictok is the token given in the original annoucelist
-    # _POST is crrected to valid data
-    # contain transmitted data (not the display ones)
+    # basic_tok is the token given in the original annoucelist
+    #
+    # for including necessary code only
+    $_SESSION["includes"][$device] = [];
+    $_SESSION["chapter_index"][$device] = [];
+    $_SESSION["chapter_token"][$device] = [];
+    # _POST is crrected / translated to data  for transmit
+    # contain transmitted data (not the displayed ones)
     $_SESSION["corrected_POST"][$device] = [];
     # original_announce: spltted original announcefile token; array data: array: line split by ";"
     $_SESSION["original_announce"][$device] = [];
     # announce_all: commandtype only for all displayed elements by token
-    # but: "as" commands have no entry (but a display element). They are handled with the cooresponding opearte command
-    # and get the basictok of the operating command
-    # token : basictok"identifier identifiers:
+    # but: "as" commands have no entry (but a display element). They are handled with the corresponding operate command
+    # and get the basic_tok of the operating command
+    # token : basic_tok"identifier"
+    # identifiers:
     # m selectors for stack, memoryposition
     # n selector for ADD
     # o selector for number of data to send for an /on commands
@@ -26,15 +32,16 @@ function read_new_device($device){
     $_SESSION["a_to_o"][$device] = [];
     # reverse
     $_SESSION["o_to_a"][$device] = [];
-    # list of _POST indices, which are not tokents
+    # list of _POST indices, which are not tokens
     $_SESSION["special_token"][$device] = [];
     # length of property (for send data) for each property
     # for memorypositions the property may have more than one display elements _ stored in the first element only
     $_SESSION["property_len"][$device] = [];
     $_SESSION["property_len_byte"][$device] = [];
-    # all token (of displayd elements for a basictok
+    # all token (of displayed elements for a basic_tok
     $_SESSION["cor_token"][$device] = [];
-    # actual data for each disply element
+    # actual data for each display element
+    # valid data; decimal not hex (or alpha), values to transmit (not displayed values)
     $_SESSION["actual_data"][$device] = [];
     # not used ?
     $_SESSION["chapter_array"][$device] = [];
@@ -46,13 +53,39 @@ function read_new_device($device){
     $_SESSION["as_token"][$device] = [];
     # token for as commands: master-token array data as-token (num)
     $_SESSION["as_token_as_to_basic"][$device] = [];
+    # type for memoried per display tok
+    $_SESSION["type_for_memories"][$device] = [];
+    # token of oo commands
+    $_SESSION["oo_tok"][$device] = [];
+    # per dispytoken:
+    # for memory data :
+    #       string: "alpha" (restriction not supported)
+    #       small numeric: max,0,0,1,1,2,4....
+    #       big numeric: max,<des-range>    (token is in "to_correct")
+    # others (all numeric)
+    #       small numeric: max,0,0,1,1,2,4....
+    #       big numeric: max,<des-range>     (token is in "to_correct")
+    $_SESSION["des"][$device] = [];
     # names for display elements
     $_SESSION["des_name"][$device] = [];
-    # for p commands: unit
+    # contain "1""
+    $_SESSION["to_correct"][$device] = [];
+    # to calculate stacks / memoryposition max values are required
+    $_SESSION["max_for_send"][$device] = [];
+    # for ADD token ("n"):
+    # product of MULS
+    $_SESSION["max_for_ADD"][$device] = [];
+    # for p / o commands: unit
     $_SESSION["unit"][$device] = [];
     # chapter_names: array
     $_SESSION["chapter_names"][$device] = [];
 
+    $_SESSION["chapter_names"][$device]["all_basic"] = "all_basic";
+    $_SESSION["activ_chapters"][$device]["all_basic"] = "all_basic";
+    $_SESSION["chapter_names"][$device]["ADMINISTRATION"] = "ADMINISTRATION";
+    $_SESSION["activ_chapters"][$device]["ADMINISTRATION"] = "ADMINISTRATION";
+    $_SESSION["chapter_token"][$device]["all_basic"] = [];
+    $_SESSION["chapter_token"][$device]["ADMINISTRATION"] = [];
     $_SESSION["chapter"] = "all";
     # as answer token <-> operate token:
     read_a_o($device);
@@ -68,6 +101,10 @@ function read_new_device($device){
     calculate_cor_token($device);
     # for active chapters:
     create_tok_list($device);
+    # max values for each display element
+    max_for_send();
+    # calculate max values for ADD
+    max_for_ADD();
     # actual data for all displaed elements
     init_data($device);
 }
@@ -96,7 +133,7 @@ function read_special_token(){
     $_SESSION["special_token"][$device]["interface"] = 1;
     $_SESSION["special_token"][$device]["user_name"] = 1;
     $_SESSION["special_token"][$device]["user"] = 1;
-    $_SESSION["special_token"][$device]["language"] = 1;
+    $_SESSION["special_token"][$device]["languages"] = 1;
     $_SESSION["special_token"][$device]["device"] = 1;
 }
 
@@ -105,7 +142,7 @@ function ct_of_as(){
     $device =$_SESSION["device"];
     foreach ($_SESSION["o_to_a"][$device] as $key => $value) {
         # there is a "d0" token always
-        $_SESSION["ct_of_as"][$device][$key] = $_SESSION["announce_all"][$device][$key."d0"][0];
+        $_SESSION["ct_of_as"][$device][$key] = $_SESSION["announce_all"][$device][$key . "d0"][0];
     }
 }
 
@@ -183,14 +220,15 @@ function calculate_property_len(){
                 $_SESSION["property_len"][$device][$key][] = length_of_number($result);
                 $_SESSION["property_len_byte"][$device][$key][] = (length_of_number($result)) / 2;
                 break;
+            case "of":
+            case "af":
+                $_SESSION["property_len"][$device][$key][] = length_of_type(explode(",",$value[1])[0]);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_type(explode(",",$value[1])[0])) / 2;
+                $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",",$value[2])[0]);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",",$value[2])[0])) / 2;
             case "oa":
             case "aa":
                 $number_of_elements = count($value);
-                if ($number_of_elements > 3){
-                    # additional "b0" token for length og pos and number
-                    $_SESSION["property_len"][$device][$key. "b0"][0] = length_of_number($number_of_elements);
-                    $_SESSION["property_len_byte"][$device][$key."b0"][0] = (length_of_number($number_of_elements)) / 2;
-                }
                 # data: token + type + type
                 $i = 1;
                 while ($i < count($value)) {
@@ -202,6 +240,14 @@ function calculate_property_len(){
                     }
                     $i += 1;
                 }
+            if ($number_of_elements > 3){
+                $_SESSION["property_len"][$device][$key][] = length_of_number($number_of_elements);
+                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number($number_of_elements)) / 2;
+            }
+            else{
+                $_SESSION["property_len"][$device][$key][] = 2;
+                $_SESSION["property_len_byte"][$device][$key][] = 1;
+            }
                 break;
         }
     }
@@ -239,6 +285,33 @@ function calculate_cor_token($device){
     foreach ($_SESSION["o_to_a"][$device] as $key => $value) {
         $_SESSION["cor_token"][$device][basic_tok($key)][] = $key. "a";
     }
+}
+
+function max_for_send(){
+    $device = $_SESSION["device"];
+    # _SESSION["des]  always: max,....
+    foreach ($_SESSION["des"][$device] as $token => $value){
+        $_SESSION["max_for_send"][$device][$token] = explode(",", $_SESSION["des"][$device][$token])[0];
+    }
+}
+
+function max_for_ADD(){
+    $device = $_SESSION["device"];
+    foreach ($_SESSION["original_announce"][$device] as $basic_tok => $value){
+        foreach ($value as $data){
+            if (strstr($data, "ADD")){
+                $bn = $basic_tok . "m";
+                $max = 1;
+                foreach ($_SESSION["max_for_send"][$device] as $ctoken => $cdat) {
+                    if (strstr($ctoken, $bn)) {
+                        $max *= explode(",", $_SESSION["des"][$device][$ctoken])[0];
+                    }
+                }
+                $_SESSION["max_for_ADD"][$device][$basic_tok . "n0"] = $max;
+            }
+        }
+    }
+
 }
 
 function init_data($device){

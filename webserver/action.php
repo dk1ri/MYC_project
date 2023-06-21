@@ -8,7 +8,7 @@
 # data are stored in $_SESSION["dataname"][$device] independent for each device
 # To reduce computing power most of these data are generated with the first call of the page for a device. So this will
 # take some more time with the first call.
-# Most of the these data are stored in files "session"dataname" in the devices/"devicename" folder. This may help debugging.
+# Most of these data are stored in files "session"dataname" in the devices/"devicename" folder. This may help debugging.
 # testmode must be set to 1 in _config
 # The initialisation and description of these data can be found in read_new_device.php
 # all other data (independent of a device) are initialized and described in read_config.php (called with myc.php)
@@ -71,15 +71,14 @@
     </head>
     <body>
         <?php
-        include "translate.php";
         include "subs.php";
+        include "serial.php";
+        include "select_includes.php";
+        include "update_received.php";
+        include "translate.php";
         include "send_and_update.php";
         include "display_commands.php";
-        include "create_commands.php";
         include "select_any.php";
-        include "serial.php";
-        include "update_received.php";
-        include "split_to_display_objects.php";
         if (array_key_exists("user_name", $_POST)) {
             $_SESSION["user"]["username"] = $_POST["user_name"];
         }
@@ -114,16 +113,22 @@
             }
             create_tok_list($_SESSION["device"]);
         }
+        if ($_SESSION["conf"]["testmode"]){
+            include "for_tests.php";
+        }
+        # other device?
         if (!array_key_exists($device, $_SESSION["announce_all"])) {
             # create / read new device for $_SESSION, if not existing
             # not actually used devices are not deleted
             include "read_new_device.php";
+            include "split_to_display_objects.php";
             read_new_device($device);
             if ($_SESSION["conf"]["testmode"]){
-                include "for_tests.php";
                 for_tests($device);
             }
         }
+        # necessary includes
+        select_includes();
         if (array_key_exists("chapter", $_POST)) {
             $post_ = $_POST["chapter"];
             if ($post_ != $_SESSION["actual_data"]["_chapter_"]) {

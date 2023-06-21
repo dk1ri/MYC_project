@@ -1,6 +1,7 @@
 <?php
 # display_commands.php
 # DK1RI 20230615
+# display one element for each tok (with some exceptions)
 function display_commands(){
     $device = $_SESSION["device"];
     if ($_SESSION["conf"]["testmode"]){create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);}
@@ -23,6 +24,7 @@ function display_commands(){
             }
             $announce = $_SESSION["announce_all"][$device][$tok];
             echo "<div>";
+            # most create_"xx" functions are found in commands_"x".php
             switch ($announce[0]) {
                 case "m":
                     create_basic_command($basic_tok);
@@ -87,5 +89,62 @@ function display_commands(){
             $already_done = $basic_tok;
         }
     }
+}
+
+function create_basic_command($basic_tok){
+    $device = $_SESSION["device"];
+    $field = explode(",", $_SESSION["actual_data"][$device][$basic_tok."a"]);
+    echo "<div>Device: " . $field[0] . ", Version: " . $field[1] . ", Author: ". $field[2];
+    echo "<br>" . $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["new_data"] . ": ";
+    echo "<input type='checkbox' id=".$basic_tok . "a0 name=".$basic_tok."a0 value=1>";
+    echo "</div>";
+}
+
+function display_as($tok, $display){
+    # for "as"token
+    $device = $_SESSION["device"];
+    $tok = basic_tok($tok)."a";
+    if (array_key_exists(basic_tok($tok), $_SESSION["ct_of_as"][$device]) or $display) {
+        echo $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["read_data"] . ": ";
+        echo "<input type='checkbox' id=" . $tok . " name=" . $tok . " value=1>";
+    }
+    # reset
+    $_SESSION["actual_data"][$device][$tok] = 0;
+}
+
+function actual_data_to_real($tok){
+    # $_SESSION["to_correct"][$device][$tok] must exist
+    $device = $_SESSION["device"];
+    $data = $_SESSION["actual_data"][$device][$tok];
+    if (!array_key_exists($tok, $_SESSION["to_correct"][$device])){return $data;}
+    $range_elements = explode(",", $_SESSION["to_correct"][$device][$tok]);
+    $act_value = 0;
+    $i = 0;
+    $found = 0;
+    $result = "";
+    while ($i < count($range_elements) and $found == 0){
+        if (strstr($range_elements[$i], "_")){
+            list ($separator, $from, $to) = split_range($range_elements[$i]);
+            if ($separator <= 0){$separator = 1;}
+            $temp_result = $from;
+            while ($temp_result < $to and $found == 0){
+                if ($act_value >= $data){
+                    $found = 1;
+                    $result = $temp_result;
+                }
+                $act_value += 1;
+                $temp_result += $separator;
+            }
+        }
+        else{
+            if ($i >= $data){
+                $found = 1;
+                $result = $range_elements[$i];
+            }
+            $act_value += 1;
+        }
+        $i += 1;
+    }
+    return $result;
 }
 ?>

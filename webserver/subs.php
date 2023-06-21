@@ -176,6 +176,8 @@ function find_name_of_type($type){
             return "signed long";
         case "L":
             return "long";
+        case is_numeric(($type)):
+            return "string";
         default:
             return "";
     }
@@ -332,6 +334,7 @@ function retranslate_simple_range($range, $actual, $add ){
     $i = 0;
     $found = 0;
     $value = 0;
+    var_dump($range);
     while ($i <  count($range) and $found == 0) {
         if ($actual == $range[$i + 1]) {
             $found = 1;
@@ -408,19 +411,28 @@ function numeric_range($range_pure, $data)
 
 function split_range($data){
     $range = explode("_", $data);
-    $separator = $range[0];
     $range2 = explode("to", $range[1]);
-    return [$separator, $range2[0], $range2[1]];
+    return [string_to_num($range[0]), string_to_num($range2[0]), string_to_num($range2[1])];
+}
+
+function string_to_num($dat){
+    if (strstr($dat, ".")){
+        $dat = floatval($dat);
+    }
+    else{
+        $dat = intval($dat);
+    }
+    return $dat;
 }
 
 function delete_bracket($data){
     $replace = array("{","}");
-    str_replace($replace,"",$data);
+   $data = str_replace($replace,"",$data);
     return $data;
 }
 
 function type_data($typ){
-    # return: name, min, max
+    # return: type, min, max
     if (($typ[0]) == "CODING"){
         switch ($typ[1]) {
             case "UNIXTIME8":
@@ -447,17 +459,16 @@ function type_data($typ){
         }
     }
     else{
-        $name = find_name_of_type($typ);
         switch ($typ[0]){
             case"s":
             case "d":
-                return [$name,-128, 127];
+                return [$typ[0],-128, 127];
             case is_numeric($typ[0]) :
                 # ranges of characters not yet supported
-                return [$name,"a", "z"];
+                return [$typ[0],"a", "z"];
             default:
                 list($min, $max) = find_allowed($typ[0]);
-                return [$name,$min,$max];
+                return [$typ[0],$min,$max];
         }
     }
     return ["", 0, 0];

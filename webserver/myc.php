@@ -2,7 +2,7 @@
 <!--
     werbserver for MYC system
     myc.php
-   Version 1.1 20230615
+   Version 1.1 20230621
     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
     To understand the program, you should be familiar with the announcements and commands of the MYC system (at least)
@@ -10,7 +10,7 @@
 
     To understand the program flow see action.php
 
-    This version is temporary, and memory commands are not working due to major rework
+    This version should work basically, but there are some errors
 
     found errors:
 
