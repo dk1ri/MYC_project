@@ -1,5 +1,5 @@
 ' announcements
-' 20230501
+' 20230621
 '
 Announce:
 'Befehl &H00
@@ -167,7 +167,7 @@ Data "26;as,as25"
 'Befehl &HF0
 'announcement aller Befehle lesen
 'read announcement lines
-Data "240;an,ANNOUNCEMENTS;190;32;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;190;32,start at;32;14,CHAPTER,ADMINISTRATION"
 '
 'Announce28:
 'Befehl &HFC

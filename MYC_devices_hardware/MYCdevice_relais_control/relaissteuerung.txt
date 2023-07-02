@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Relaissteuerung
 
-Author DK1RI, Version V06.0, 20230502
+Author DK1RI, Version V06.1, 20230630
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -16,7 +16,7 @@ Beschreibung
 
 Die Eagledaten stehen bei [1].
 Als Stromversorgung (7-12V) werden  maximal 150mA benötigt.
-Diese Leiterplatte hat vier Relais mit je zwei Umschaltkontakten, 7 digitale Eingänge und 4 Eingänge, die sich jeweils analog (1024 Stufen Auflösung) oder digital auslesen lasen. Beim Analogbetrieb liegt die Eingangsspannung zwischen 0  und  5V (nicht isoliert und nicht geschützt mit pullup Widerständen). Der Eingangsspannungsbereich ist auf 0 - 1,1V umschaltbar. Der  Eingangsspannungsbereich gilt für alle Eingänge, da die Referenzspannung umgeschaltet wird. Der Eingangsspannungsbereich wird im EERAM gespeichert.
+Diese Leiterplatte hat vier Relais mit je zwei Umschaltkontakten, 7 digitale Eingänge und 4 Eingänge, die sich jeweils analog (1024 Stufen Auflösung) oder digital auslesen lasen. Die Ausgabe der Analogwerte ist 0 bis 1023. Beim Analogbetrieb liegt die Eingangsspannung zwischen 0  und  5V (nicht isoliert und nicht schützt mit pullup Widerständen). Der Eingangsspannungsbereich ist auf 0 - 1,1V umschaltbar. Der  Eingangsspannungsbereich gilt für alle Eingänge, da die Referenzspannung umgeschaltet wird. Der Eingangsspannungsbereich wird im EERAM gespeichert. 
 Die Kondensatoren an den Eingängen müssen an die Verwendung angepasst werden. Hohe Werte begrenzen möglicherweise den Frequenzbereich und verhindern die Programmierung des Prozessors über ISP.
 Da mit Version V04.0 der Leiterplatte die Beschreibung der Anschlüsse  geändert wurde, ist die aktuelle Firmware nicht mit älteren Leiterplatten verwendbar! 
 Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
@@ -51,13 +51,15 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.12 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
 Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
 Der Jumper J1 sollte während der Programmierung entfernt werden.
+Es wurde die Bascom Version 2.0.8.5 verwendet.
+Mit dieser Version wird beim ersten Start der Devicename nicht richtig übernommen und muss manuell eingestestellt werde. Die Ursache ist unklar.
 
 Serielle (RS232 / USB) Schnittstelle
 
@@ -108,6 +110,7 @@ Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alter
 Anschlüsse
 
 Ansicht: RS232, I2C , Stromanschluss vorne, Leitungsanschlüsse hinten, von links nach rechts:
+
 
 X3
 1	Relais1 Kontakt 1 Ruhe 
@@ -181,7 +184,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 05.0
-Bascom Version 06.0
+Bascom Version 06.1
 
 Copyright
 
