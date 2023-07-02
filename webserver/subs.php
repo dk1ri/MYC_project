@@ -1,6 +1,6 @@
 <?php
 # subs.php
-# DK1RI 20230615
+# DK1RI 20230702
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function basic_tok($o_tok){
     # return basic_token
@@ -222,18 +222,6 @@ function adapt_len($token, $actual){
     return $result.$actual;
 }
 
-function hex_to_decimal($byte_values){
-    # bytes_values array contain decimal values -> to decimal
-    $real = 0;
-    $i = 0;
-    while ($i < count($byte_values)){
-        $real *= 256;
-        $real += $byte_values[$i];
-        $i += 1;
-    }
-    return $real;
-}
-
 function no_lower_case($data){
     # return 1 if string not contain any lower case characters
     $i = 0;
@@ -334,7 +322,6 @@ function retranslate_simple_range($range, $actual, $add ){
     $i = 0;
     $found = 0;
     $value = 0;
-    var_dump($range);
     while ($i <  count($range) and $found == 0) {
         if ($actual == $range[$i + 1]) {
             $found = 1;

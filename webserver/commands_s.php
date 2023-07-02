@@ -55,7 +55,7 @@ function create_as_at($basic_tok){
         selector($basic_tok);
     }
     $actual = $_SESSION["actual_data"][$device][$basic_tok."d0"];
-    $label = explode(",",$_SESSION["des"][$device][$basic_tok."d0"])[2 * ($actual + 1) + 1];
+    $label = explode(",",$_SESSION["des"][$device][$basic_tok."d0"])[2 * ($actual) + 1];
     echo  " ". $label. " read: ";
     echo "<input type='checkbox' id=".$basic_tok."a" . " name=".$basic_tok."a value=1>";
 }
@@ -101,5 +101,21 @@ function send_asat($basic_tok, $send, $senda){
         $_SESSION["read"] = 1;
     }
     return [$send, $send_ok];
+}
+
+function receive_s($basic_tok, $stacks, $from_device){
+    $device = $_SESSION["device"];
+    if ($stacks != 1) {
+        read_to_stacks();
+    }
+    # 256 switches max supported
+    $data = substr($from_device, 0, 2);
+    $_SESSION["actual_data"][$device][$basic_tok. "d0"] = $data;
+    if (array_key_exists($basic_tok,$_SESSION["as_token"][$device])){
+        $org_token = $_SESSION["as_token"][$device][$basic_tok];
+        $_SESSION["actual_data"][$device][$org_token. "d0"] = $data;
+    }
+    # 2 byte to delete
+    return 2;
 }
 ?>

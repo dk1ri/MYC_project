@@ -81,4 +81,19 @@ function send_am($basic_tok, $send, $senda){
     }
     return [$send, $send_ok];
 }
+
+function receive_m($basic_tok, $from_device){
+    $device = $_SESSION["device"];
+    # multiple dimensions not yet supported
+    $position_length = $_SESSION["property_len_byte"][$device][$basic_tok][1];
+    $position = hexdec(substr($from_device,0, $position_length));
+    $data_length = $_SESSION["property_len_byte"][$device][$basic_tok][2];
+    $from_device = substr($from_device,$position_length, null);
+    $data = array_splice($from_device,0, $data_length);
+    list($data, $delete_bytes) = update_memory_data($basic_tok."d0", $data, 0, 3);
+    $_SESSION["actual_data"][$device][$basic_tok."d0"] = $data;
+    update_corresponding_opererating($basic_tok, "x1", $data);
+    # to delete
+    return $delete_bytes + $position_length + $data_length;
+}
 ?>

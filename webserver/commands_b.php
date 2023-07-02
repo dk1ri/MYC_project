@@ -154,4 +154,21 @@ function send_ab($basic_tok, $send){
     }
     return [$send, $send_ok];
 }
+
+function receive_b($basic_tok, $from_device){
+    $device = $_SESSION["device"];
+    # 256 elemnets supported only
+    $start = one_numeric_element ($basic_tok, $from_device,2);
+    $element_number = one_numeric_element ($basic_tok, $from_device,4);
+    $i = $start;
+    $all_to_delete = 0;
+    while ($i < $element_number){
+        list($data, $delete_bytes) = update_memory_data($basic_tok . "d" . ($element_number + 1), $from_device, $i + 2, $element_number);
+        $from_device = substr($from_device,$delete_bytes, null);
+        $_SESSION["actual_data"][$device][$basic_tok . "d" . ($element_number + 1)] = $data;
+        $all_to_delete += $delete_bytes;
+    }
+    # to delete
+    return 4 + $all_to_delete;
+}
 ?>

@@ -130,4 +130,20 @@ function send_ar($basic_tok, $send, $senda){
     $send_ok = 0;
     return [$send, $send_ok];
 }
+
+function receive_r($basic_tok, $stacks, $from_device){
+    $device = $_SESSION["device"];
+    if ($stacks != 1) {
+        read_to_stacks();
+    }
+    # 256 switch positions supported
+    $position = hexdec(substr($from_device, 0, 2));
+    $value = hexdec(substr($from_device, 2, 2));
+    $_SESSION["actual_data"][$device][$basic_tok. "d".$position[0]] = $value;
+    if (array_key_exists($basic_tok,$_SESSION["as_token"][$device])){
+        $org_token = $_SESSION["as_token"][$device][$basic_tok];
+        $_SESSION["actual_data"][$device][$org_token. "d".$position[0]] = $value;
+    }
+    return 4;
+}
 ?>

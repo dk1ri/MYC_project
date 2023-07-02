@@ -419,6 +419,7 @@ function range_a_b_type($basic_tok, $announce, $ct){
         list( $min, $max) = find_allowed($type);
         $_SESSION["announce_all"][$device][$basic_tok. "d" . $subtoken][0] = $ct;
         $_SESSION["type_for_memories"][$device][$basic_tok. "d" . $subtoken] = $type;
+        $_SESSION["des_name"][$device][$basic_tok. "d" . $subtoken] = $name;
         $j += 1;
         $i += 1;
         $subtoken += 1;

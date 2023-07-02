@@ -68,7 +68,7 @@ function read_new_device($device){
     $_SESSION["des"][$device] = [];
     # names for display elements
     $_SESSION["des_name"][$device] = [];
-    # contain "1""
+    # contain "1"" used if values are "big"
     $_SESSION["to_correct"][$device] = [];
     # to calculate stacks / memoryposition max values are required
     $_SESSION["max_for_send"][$device] = [];
@@ -79,7 +79,6 @@ function read_new_device($device){
     $_SESSION["unit"][$device] = [];
     # chapter_names: array
     $_SESSION["chapter_names"][$device] = [];
-
     $_SESSION["chapter_names"][$device]["all_basic"] = "all_basic";
     $_SESSION["activ_chapters"][$device]["all_basic"] = "all_basic";
     $_SESSION["chapter_names"][$device]["ADMINISTRATION"] = "ADMINISTRATION";

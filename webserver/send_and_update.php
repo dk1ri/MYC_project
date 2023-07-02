@@ -39,8 +39,8 @@ function send_and_update(){
                 else {$senda = $send;}
                 switch ($ct) {
                     case "m":
-                        if (array_key_exists($basic_tok . "a0", $_POST)) {
-                            if ($_POST[$basic_tok . "a0"] == "1") {
+                        if (array_key_exists($basic_tok . "a", $_POST)) {
+                            if ($_POST[$basic_tok . "a"] == "1") {
                                 $send_ok = 1;
                                 $_SESSION["read"] = 1;
                             }

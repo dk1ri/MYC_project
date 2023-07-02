@@ -1,33 +1,18 @@
 <?php
 # update_received.php
-# DK1RI 20230315
+# DK1RI 20230701
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function update_received(){
     # data from device
     $from_device = $_SESSION["received_data"];
-    $i = 0;
-    $rec = [];
-    while ($i < strlen($from_device)) {
-        $rec[] = hexdec(substr($from_device, $i, 2));
-        $i += 2;
-    }
-    while (count($rec) > 0) {
-        # more than one command in a line possible
-        $rec = update_one_command($rec);
-    }
-    $_SESSION["received_data"] = "";
-}
-
-function update_one_command($rec){
-    # $rec is array_spliced by every commandproperty found for a command
     $device = $_SESSION["device"];
     if ($_SESSION["command_len"][$device] == 2) {
-        $basic_tok = $rec[0];
-        array_splice($rec, 0, 1);
+        $basic_tok = hexdec(substr($from_device,0, 2));
+        $from_device = substr($from_device,2, null);
     }
     else{
-        $basic_tok = $rec[0] * 256 + $rec[1];
-        array_splice($rec, 0, 2);
+        $basic_tok = hexdec($from_device[0] * 256 + $from_device[1]);
+        $from_device = substr($from_device,4, null);
     }
     if(!array_key_exists($basic_tok, $_SESSION["original_announce"][$device])){
         # error
@@ -35,15 +20,22 @@ function update_one_command($rec){
     }
     $announce = $_SESSION["original_announce"][$device][$basic_tok];
     $ct = explode(",",$announce[0])[0];
+    # characters to delete after handling
+    $to_delete = 0;
     switch ($ct) {
         case "m";
-            $length = array_splice($rec, 0, 1);
-            $line = array_splice($rec, 0, $length[0]);
+        #   basic command
+            $length = hexdec(substr($from_device, 0, 2));
+            $line = substr($from_device, 2, $length);
+            $to_delete = ($length + 1) * 2;
             $i = 0;
             $field[0] = "";
             $j = 0;
-            while ($i < count($line) and $j < 5){
-                $character = chr($line[$i]);
+            $strlen = strlen($line);
+            while ($i < $strlen and $j < 5){
+                $num = hexdec(substr($line,0,2));
+                $line = substr($line,0,2);
+                $character = chr($num);
                 If ($character == ";") {
                     $j += 1;
                     $field[$j] = "";
@@ -51,120 +43,41 @@ function update_one_command($rec){
                 else{
                     $field[$j] .= $character;
                 }
-                $i += 1;
+                $i += 2;
             }
-            $rec = [];
             if($i == 4){
-                $_SESSION["actual_data"][$device][$basic_tok. "a0"] = $field[3] . "," . $field[4] . "," . $field[2];
+                $_SESSION["actual_data"][$device][$basic_tok. "a"] = $field[3] . "," . $field[4] . "," . $field[2];
             }
             break;
         case "as":
         case "at":
-            $stacks = explode(",", $announce[1])[0];
-            if ($stacks != 1) {
-                read_to_stacks();
-                $rec = array_splice($rec, 0, 1);
-            }
-            $data = array_splice($rec, 0, 1);
-            $_SESSION["actual_data"][$device][$basic_tok. "x0"] = $data[0];
-            if (array_key_exists($basic_tok,$_SESSION["as_token"][$device])){
-                $org_token = $_SESSION["as_token"][$device][$basic_tok];
-                $_SESSION["actual_data"][$device][$org_token. "x0"] = $data[0];
-            }
+            $to_delete = receive_s($basic_tok, explode(",",$announce[1])[0], $from_device);
            break;
         case "ar":
-            $stacks = explode(",", $announce[1])[0];
-            if ($stacks != 1) {
-                read_to_stacks();
-                $rec = array_splice($rec, 0, 1);
-            }
-            $position = array_splice($rec, 0, 1);
-            $value = array_splice($rec, 0, 1);
-            $_SESSION["actual_data"][$device][$basic_tok. "x".$position[0]] = $value[0];
-            if (array_key_exists($basic_tok,$_SESSION["as_token"][$device])){
-                $org_token = $_SESSION["as_token"][$device][$basic_tok];
-                $_SESSION["actual_data"][$device][$org_token. "x".$position[0]] = $value[0];
-            }
+            $to_delete = receive_r($basic_tok, explode(",",$announce[1])[0], $from_device);
             break;
         case "ap":
-            $stacks = explode(",", $announce[1])[0];
-            if ($stacks == 1){
-                $i = 1;
-                while (array_key_exists($basic_tok."x".$i, $_SESSION["announce_all"][$device])) {
-                    # for all dimensions
-                    $data_length = $_SESSION["property_len_byte"][$device][$basic_tok][($i + 1)];
-                    $data = array_splice($rec, 0, $data_length);
-                    $data = hex_to_decimal($data);
-                    $_SESSION["actual_data"][$device][$basic_tok . "x".$i] = $data;
-                    if (array_key_exists($basic_tok, $_SESSION["as_token"][$device])) {
-                        $org_token = $_SESSION["as_token"][$device][$basic_tok];
-                        $_SESSION["actual_data"][$device][$org_token . "x".$i] = $data;
-                    }
-                    $i += 1;
-                }
-            }
-            else{
-                read_to_stacks();
-            }
+            $to_delete = receive_p($basic_tok, explode(",",$announce[1])[0], $from_device);
             break;
         case "am":
-            # multiple dimensions not yet supported
-            $position_length = $_SESSION["property_len_byte"][$device][$basic_tok][1];
-            $position = array_splice($rec,0, $position_length);
-            $data_length = $_SESSION["property_len_byte"][$device][$basic_tok][2];
-            $data = array_splice($rec,0, $data_length);
-            list($data, $delete_bytes) = update_memory_data($basic_tok."x1", $data, 0, 3);
-            array_splice($rec,$delete_bytes);
-            $_SESSION["actual_data"][$device][$basic_tok."x1"] = $data;
-            update_corresponding_opererating($basic_tok, "x1", $data);
+            $to_delete = receive_m($basic_tok, $from_device);
             break;
         case "an":
-            $no_of_elements_length = $_SESSION["property_len_byte"][$device][$basic_tok][2];
-            $no_of_elements = array_splice($rec, 0, $no_of_elements_length);
-            $no_of_elements = update_memory_pos($basic_tok."b0", $no_of_elements, 0);
-            $position_length = $_SESSION["property_len_byte"][$device][$basic_tok][3];
-            $position = array_splice($rec, 0, $position_length);
-            $position = update_memory_pos($basic_tok."b0", $position, 3);
-            $_SESSION["actual_data"][$device][$basic_tok."x1"] = "";
-            for ($i=0; $i < $no_of_elements; $i ++){
-                if ($i != 0){$_SESSION["actual_data"][$device][$basic_tok."x1"].=",";}
-                list($data, $delete_bytes) = update_memory_data($basic_tok."x1", $rec, 0, 3);
-                array_splice($rec, 0,$delete_bytes);
-                $_SESSION["actual_data"][$device][$basic_tok."x1"] .= $data;
-            }
+            $to_delete = receive_n($basic_tok, $from_device);
             break;
         case "aa":
-            $element_number = 0;
-            if(count($_SESSION["original_announce"][$device][$basic_tok]) < 3){
-                # one element, no position
-                list($data, $delete_bytes) = update_memory_data($basic_tok . "x1" , $rec, 0, 1);
-                update_corresponding_opererating($basic_tok, "x1", $data);
-            }
-            else {
-                $element_number = one_numeric_element($basic_tok, $rec);
-                # < 256 elemen allowed only -> length: 1
-                array_splice($rec, 0, 1);
-                list($data, $delete_bytes) = update_memory_data($basic_tok . "x" . ($element_number + 1), $rec, 0, $element_number);
-                update_corresponding_opererating($basic_tok, "x" . ($element_number + 1), $data);
-            }
-            $_SESSION["actual_data"][$device][$basic_tok."x".($element_number +1)] = $data;
-            array_splice($rec, 0, $delete_bytes);
+            $to_delete = receive_a($basic_tok, $from_device);
             break;
         case "ab":
-            $element_number = one_numeric_element ($basic_tok, $rec);
-            $start = one_numeric_element ($basic_tok, $rec);
-            $i = $start;
-            while ($i < $element_number){
-                list($data, $delete_bytes) = update_memory_data($basic_tok . "x" . ($element_number + 1), $rec, $i + 2, $element_number);
-                $_SESSION["actual_data"][$device][$basic_tok . "x" . ($element_number + 1)] = $data;
-                array_splice($rec, 0, $delete_bytes);
-            }
+            $to_delete = receive_b($basic_tok, $from_device);
             break;
         default:
-            $rec = [];
+            $to_delete = 0;
             break;
     }
-    return $rec;
+    # for one command $from_device should be empty
+    $from_device = substr($from_device, $to_delete, null );
+  #  print "Restlaenge ".  strlen($from_device)." ";
 }
 
 function read_to_stacks(){
@@ -179,7 +92,7 @@ function update_memory_pos($basic_tok, $position, $start){
     $mul= [];
     $device = $_SESSION["device"];
     # real value of position
-    $real_pos = hex_to_decimal($position);
+    $real_pos = hexdec($position);
     # find the max values of the dimension (row . col ...)
     if ($start == 0){
         $_SESSION["actual_data"][$device][$basic_tok."b0"] = $real_pos;
@@ -218,113 +131,94 @@ function update_memory_pos($basic_tok, $position, $start){
     return $real_pos;
 }
 
-function update_memory_data($token, $rec, $typeindex, $lenindex){
-    # translate received array of byte ($rec) depending on type
-    if($rec==[]){return["",0];}
+function update_memory_data($token, $from_device, $typeindex, $lenindex){
+    # translate received hex string depending on type
+    if($from_device == ""){return["",0];}
     $basic_tok = basic_tok($token);
     $device = $_SESSION["device"];
     $bytes_to_delete = 0;
-    $type = explode(";", $_SESSION["des_type"][$device][$token])[$typeindex];
+    $type = explode(";", $_SESSION["type_for_memories"][$device][$token])[$typeindex];
     $result = "";
     switch ($type){
         case (is_numeric($type)):
-            $length_of_length = $_SESSION["property_len_byte"][$device][$basic_tok][$lenindex];
-            $bytes_to_delete_a = array_splice($rec,0,$length_of_length);
-            $i = 0;
-            while ($i < count($bytes_to_delete_a)) {
-                $bytes_to_delete = 256 * $bytes_to_delete;
-                $bytes_to_delete += $bytes_to_delete_a[$i];
-                $i += 1;
+            $length_of_length = $_SESSION["property_len"][$device][$basic_tok][$lenindex];
+            # charcters -> *2
+            $stringlength = hexdec(substr($from_device,0,$length_of_length)) * 2;
+            $bytes_to_delete = $stringlength * 2 + $length_of_length;
+            $i = $length_of_length;
+            while ($i <= $stringlength + $length_of_length){
+                $result .= chr(hexdec(substr($from_device, 0, 2)));
+                $from_device = substr($from_device, 2, null);
+                $i += 2;
             }
-            $i = 0;
-            while ($i < count($rec)){
-                $result .= chr($rec[$i]);
-                $i += 1;
-            }
-            # due to length
-            $bytes_to_delete ++;
             break;
         case "a":
         case "b":
-            $result = $rec[0];
-            $bytes_to_delete = 1;
+            $result = hexdec(substr($from_device, 0, 2));
+            $bytes_to_delete = 2;
             break;
         case "c":
             # 1 byte signed short
-            $result = $rec[0] - 128;
-            $bytes_to_delete = 1;
+            $result = hexdec(substr($from_device, 0, 2)) - 128;
+            $bytes_to_delete = 2;
             break;
         case "w":
-            $result = 256 * $rec[0] + $rec[1];
-            $bytes_to_delete = 2;
+            $result = hexdec(substr($from_device, 0, 4));
+            $bytes_to_delete = 4;
             break;
         case "i":
-            $result = 256 * $rec[0] + $rec[1];
+            # 2 byte signed
+            $result = hexdec(substr($from_device, 0, 4));
             $result -= 32768;
-            $bytes_to_delete = 2;
+            $bytes_to_delete = 4;
             break;
         case "k":
-            $result = 256 * $rec[0] + $rec[1];
-            $result = 256 * $result + $rec[2];
-            $bytes_to_delete = 3;
+            $result = hexdec(substr($from_device, 0, 6));
+            $bytes_to_delete = 6;
             break;
         case "l":
-            $result = 256 * $rec[0] + $rec[1];
-            $result = 256 * $result + $rec[2];
+            # 3bate signed
+            $result = hexdec(substr($from_device, 0, 6));
             $result -= 8388608;
-            $bytes_to_delete = 3;
+            $bytes_to_delete = 6;
             break;
         case "e":
             # 4 byte signed long
-            $result =  $rec[0] * 256 + $rec[1];
-            $result = 256 * $result + $rec[2];
-            $result = 256 * $result + $rec[3];
+            $result = hexdec(substr($from_device, 0, 8));
             $result -= 2147483647;
-            $bytes_to_delete = 4;
+            $bytes_to_delete = 8;
             break;
         case "L":
             # 4 byte unsigned long
-            $result =  $rec[0] * 256 + $rec[1];
-            $result = 256 * $result + $rec[2];
-            $result = 256 * $result + $rec[3];
-            $bytes_to_delete = 4;
+            $result = hexdec(substr($from_device, 0, 8));
+            $bytes_to_delete = 8;
             break;
         case "t":
-            $result = 256 * $rec[0] + $rec[1];
-            $result = 256 * $result + $rec[2];
-            $result = 256 * $result + $rec[3];
-            $result = 256 * $result + $rec[4];
-            $result = 256 * $result + $rec[5];
-            $result = 256 * $result + $rec[6];
-            $result = 256 * $result + $rec[7];
-            $bytes_to_delete = 8;
+            # 8 byte
+            $result = hexdec(substr($from_device, 0, 16));
+            $bytes_to_delete = 16;
             break;
         case "u":
-            $result = 256 * $rec[0] + $rec[1];
-            $result = 256 * $result + $rec[2];
-            $result = 256 * $result + $rec[3];
-            $result = 256 * $result + $rec[4];
-            $result = 256 * $result + $rec[5];
-            $result = 256 * $result + $rec[6];
-            $result = 256 * $result + $rec[7];
+            # 8 byte signed
+            $result = hexdec(substr($from_device, 0, 16));
             $result -= 0x8000000000000000 ;
-            $bytes_to_delete = 8;
+            $bytes_to_delete = 16;
             break;
     }
     return [$result,$bytes_to_delete];
 }
 
-function one_numeric_element ($basic_tok, $rec){
+function one_numeric_element ($basic_tok, $from_device, $pos){
     #for pos or number_of_elements  (a / b commands)
+    # $pos is position in property_len_byte (one byte supported)
     $device = $_SESSION["device"];
-    $length_of_pos = 1;
     $result = 0;
     if(count($_SESSION["original_announce"][$device][$basic_tok]) < 3){
         # one element only
-        $result = $rec[0];
+        $result = hexdec(substr($from_device,0, 2));
     }
     else {
-        $length_of_pos = $_SESSION["property_len_byte"][$device][$basic_tok."b0"][0];
+        $length_of_pos = $_SESSION["property_len"][$device][$basic_tok][$pos];
         if($length_of_pos == 1){
             $result = $rec[0];
         }
@@ -336,14 +230,14 @@ function one_numeric_element ($basic_tok, $rec){
             }
         }
     }
-    array_splice($rec, 0, $length_of_pos);
+
     return $result;
 }
 
 function update_corresponding_opererating($basic_tok, $extension, $data){
     $device = $_SESSION["device"];
-    if (array_key_exists($basic_tok, $_SESSION["answer_tok"][$device])) {
-        $tok = $_SESSION["answer_tok"][$device][$basic_tok];
+    if (array_key_exists($basic_tok, $_SESSION["a_to_o"][$device])) {
+        $tok = $_SESSION["a_to_o"][$device][$basic_tok];
         $_SESSION["actual_data"][$device][$tok . $extension] = $data;
     }
 }
