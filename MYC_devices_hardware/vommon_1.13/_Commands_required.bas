@@ -138,7 +138,7 @@ FFFE:
                            Dev_name_b(B_temp2 - 3) = Command_b(B_temp2)
                         Next B_temp2
                         Dev_name_eeram = Dev_name
-                        Gosub Command_received       
+                        Gosub Command_received
                      End If
                   End If
                End If
@@ -252,6 +252,11 @@ FFFF:
             Tx_write_pointer = 0
             Case 0
                'Will send &HFF00 for empty string
+               S_temp1 = String(20,255)
+               If Dev_name = S_temp1 Then
+                  Dev_name = "Device1"
+                  Dev_name_eeram = Dev_name
+               End If
                B_temp3 = Len(Dev_name)
                Tx_b(3) = B_temp3
                Tx_write_pointer = 4
