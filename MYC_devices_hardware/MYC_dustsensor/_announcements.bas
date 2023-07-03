@@ -11,53 +11,53 @@ Data "0;m;DK1RI;Feinstaubsensor;V01.1;1;145;1;27;1-1"
 'Befehl &H01
 'liest Konzentration 1.0
 'read concentration 1.0
-Data "1;an,read mass concentration 1.0;w,ug/cbm;124,to sent;770,start at"
+Data "1;an,read mass concentration 1.0;w,ug/cbm;770,start at;124,to send"  
 '
 'Announce2:
 'Befehl &H02
 'liest Konzentration 2.5
 'read concentration 2.5
-Data "2;an,read mass concentration 2.5;w,ug/cbm;124,to sent;770,start at"
+Data "2;an,read mass concentration 2.5;w,ug/cbm;770,start at;124,to send"
 '
 'Announce3:
 'Befehl &H02
 'liest Konzentration 4.0
 'read concentration 4.0
-Data "3;an,read mass concentration 4.0;w,ug/cbm;124,to sent;770,start at"
+Data "3;an,read mass concentration 4.0;w,ug/cbm;770,start at;124,to send"
 '
 'Announce4:
 'Befehl &H04
 'liest Konzentration 10
 'read concentration 10
-Data "4;an,read mass concentration 10;w,ug/cbm;124,to sent;770,start at"
+Data "4;an,read mass concentration 10;w,ug/cbm;770,start at;124,to send"
 'Announce5:
 'Befehl &H05
 'liest Konzentration 0.5
 'read concentration 0.5
-Data "5;an,read number concentration 0.5;w,/cbcm;124,to sent;770,start at"
+Data "5;an,read number concentration 0.5;w,/cbcm;770,start at;124,to send"
 '
 'Announce6:
 'Befehl &H06
 'liest Konzentration 1.0
 'read concentration 1.0
-Data "6;an,read number concentration 1.0;w,/cbcm;124,to sent;770,start at"
+Data "6;an,read number concentration 1.0;w,/cbcm;770,start at;124,to send"
 'Announce7:
 'Befehl &H07
 'liest Konzentration 2.5
 'read concentration 2.5
-Data "7;an,read number concentration 2.5;w,/cbcm;124,to sent;770,start at"
+Data "7;an,read number concentration 2.5;w,/cbcm;770,start at;124,to send"
 '
 'Announce8:
 'Befehl &H08
 'liest Konzentration 4.0
 'reed concentration 4.0
-Data "8;an,read number concentration 4.0;w,/cbcm;124,to sent;770,start at"
+Data "8;an,read number concentration 4.0;w,/cbcm;770,start at;124,to send"
 '
 'Announce9:
 'Befehl &H09
 'liest Konzentration 10
 'read concentration 10
-Data "9;an,read number concentration 10;w,/cbcm;124,to sent;770,start at"
+Data "9;an,read number concentration 10;w,/cbcm;770,start at;124,to send"
 '
 'Announce10:
 'Befehl &H0A
@@ -129,13 +129,13 @@ Data "20;ou,reset;1;0,idle;1,reset"
 'Befehl &H15
 'Status Register
 'status register
-Data "21;aa,status register;1;10;14;CHAPTER,ADMINISTRATION"
+Data "21;aa,status register;1;10;14,CHAPTER,ADMINISTRATION"
 '
 'Announce22:
 'Befehl &HF0<n><m>
 'liest announcements
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;145;27;27;14;CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;27,start at;27;14,CHAPTER,ADMINISTRATION"
 '
 'Announce23:
 'Befehl &HFC
@@ -153,11 +153,11 @@ Data "253;aa,MYC INFO;b,ACTIVE"
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{1_0to127};a,SERIAL,1;14;CHAPTER,ADMINISTRATION"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{1_0to127};a,SERIAL,1;14,CHAPTER,ADMINISTRATION"
 '
 'Announce26:
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14;CHAPTER,ADMINISTRATION"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '

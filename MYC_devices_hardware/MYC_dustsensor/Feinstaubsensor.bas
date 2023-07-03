@@ -1,5 +1,5 @@
 'name : Feinstaubsensor.bas
-'Version V01.2, 20230412
+'Version V03.1, 20230702
 'purpose : Program for Sensitron SPS30 Feinstaubsensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware ICOM_Interface_eagle Version V03.2 by DK1RI
@@ -10,7 +10,7 @@
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.12\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -23,7 +23,6 @@ $include "common_1.12\_Introduction_master_copyright.bas"
 '
 '------------------------------------------------------
 'Missing/errors:
-' Info ser no etc ? dezimal Zahlen? -> checken!
 '
 '------------------------------------------------------
 ' Detailed description
@@ -34,7 +33,7 @@ $regfile = "m1284pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.12\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 $Baud1 = 115200
 '
 '----------------------------------------------------
@@ -53,7 +52,7 @@ Const Rx_data_length = 100
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.12\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 DIm Sum As Word
 Dim MC10(Memory_size) As Word
@@ -83,41 +82,39 @@ Dim Stuffing_pointer As Byte
 Dim Check_overflow As Byte
 Dim Cleaning_intervall As Dword
 Dim Cleaning_intervall_b(4) As Byte At Cleaning_intervall Overlay
-Dim S_temp1 As String * 3
-Dim S_temp1_b(4) As Byte at S_temp1 Overlay
 '
 '----------------------------------------------------
-$include "common_1.12\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
 Waitms 500
 '
 '----------------------------------------------------
-$include "common_1.12\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 Gosub Ananlyze_in
 '
-$include "common_1.12\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.12\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -125,6 +122,7 @@ Timer_interrupt:
 ' for read data
    If M_timer >= M_time Then
       If Rx_started = 1 Then
+         ' read measured values
          Temps_b(1) = &H7E
          Temps_b(2) = &H00
          Temps_b(3) = &H03
@@ -143,7 +141,7 @@ Return
 '
 Seri2:
    B_temp1 = Waitkey(#2)
- '  Printbin B_temp1
+'  Printbin B_temp1
    Rx_data_b(Rx_pointer) = B_temp1
    Incr Rx_pointer
 Return
@@ -189,8 +187,10 @@ Ananlyze_in:
                               Case &HD0
                                  Gosub Get_info
                               Case &HD1
+                                 ' version
                                  Gosub Get_info_numeric
                               Case &HD2
+                                 ' status register
                                  Gosub Get_info_numeric
                            End Select
                         Else
@@ -286,8 +286,8 @@ Tx_b(2) = Rx_data_b(5)
 B_temp2 = 3
 B_temp3 = 6
 For B_temp1 = 1 To Rx_data_b(5)
-   B_temp1 = Rx_data_b(B_temp3) + 48
-   Tx_b(B_temp2) = B_temp1
+   B_temp4 = Rx_data_b(B_temp3) + 48
+   Tx_b(B_temp2) = B_temp4
    Incr B_temp2
    Incr B_temp3
 Next B_temp1
@@ -302,9 +302,7 @@ Tx_b(2) = Rx_data_b(5)
 B_temp2 = 3
 B_temp3 = 6
 For B_temp1 = 1 To Rx_data_b(5)
-   B_temp1 = hexval(Rx_data_b(B_temp3))
-   S_temp1 = chr(B_temp1)
-   Tx_b(B_temp2) = S_temp1_b(1)
+   Tx_b(B_temp2) = Rx_data_b(B_temp3)
    Incr B_temp2
    Incr B_temp3
 Next B_temp1
@@ -375,11 +373,11 @@ Return
 '
 Send_memory_content:
    If Commandpointer >= 4 Then
-      ' number
-      B_temp1 = Command_b(2)
       ' position
-      W_temp1 = Command_b(3) * 256
-      W_temp1 = W_temp1.+ Command_b(4)
+      W_temp1 = Command_b(2) * 256
+      W_temp1 = W_temp1.+ Command_b(3)
+      ' number
+      B_temp1 = Command_b(4)
       If W_temp1 < Memory_size And B_temp1 < 127 Then
          If W_temp1 < Memory_pointer Then
             W_temp1 = Memory_pointer - W_temp1
@@ -451,9 +449,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.12\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.12\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
