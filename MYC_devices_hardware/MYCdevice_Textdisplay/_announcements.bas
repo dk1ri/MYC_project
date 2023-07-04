@@ -1,5 +1,5 @@
 ' announcements
-' 20230501
+' 20230704
 '
 Announce:
 'Befehl &H00
@@ -13,10 +13,10 @@ Data "0;m;DK1RI;Textdisplay;V04.0;1;230;1;11;1-1"
 'write LCD
 '*********************************
 ' for 16x2 Display
-'Data "1;oa,write text;32"
+Data "1;oa,write text;32"
 '*********************************
 ' for 20x2 Display
-Data "1;oa,write text;40"
+'Data "1;oa,write text;40"
 '*********************************
 '
 'Announce2:
@@ -25,10 +25,10 @@ Data "1;oa,write text;40"
 'goto position and write
 '*********************************
 ' for 16x2 Display
-'Data "2;om,write to position;32;32"
+Data "2;om,write to position;32;32"
 '*********************************
 ' for 20x2 Display
-Data "2;om,write to position;40;40"
+'Data "2;om,write to position;40;40"
 '*********************************
 '
 'Announce3:
@@ -65,7 +65,7 @@ Data "6;ap,as5"
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;230;11;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;230;11,start at;11,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce18:                                                  '
 'Befehl &HFC
