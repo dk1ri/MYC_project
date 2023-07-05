@@ -1,5 +1,5 @@
 ' announcements
-' 20230420
+' 20230704
 '
 Announce:
 'Befehl &H00
@@ -53,7 +53,7 @@ Data "7;as,as6"
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;190;15;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;190;15,start at;15,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce9:                                                  '
 'Befehl &HFC

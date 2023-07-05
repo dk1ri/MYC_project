@@ -1,14 +1,14 @@
 '-----------------------------------------------------------------------
 'name : morse_sender.bas
-'Version V05.0, 20230420
+'Version V05.1, 20230704
 'Can be used with hardware i2c_rs232_interface Version V05.0 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,12 must be copied to the directory of this file!
+' To run the compiler the directory comon_1,13 must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.12\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -30,7 +30,7 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.12\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 ' 8: for 8/32pin, ATMEGAx8; 4 for 40/44pin, ATMEGAx4 packages
@@ -51,7 +51,7 @@ Const Initial_frequency = 6
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.12\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 '----------------------------------------------------
 '
@@ -94,20 +94,20 @@ Dim Morse_read_pointer As Byte
 Dim Morse_buffer_b(stringlength) As Byte At Morse_buffer Overlay
 '
 '----------------------------------------------------
-$include "common_1.12\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
 '
 ' procedures at start
 '
 '----------------------------------------------------
-$include "common_1.12\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 'Specific actions
@@ -184,20 +184,20 @@ Stop Watchdog                                               '
 Goto Loop_
 '----------------------------------------------------
 ' not used:
-'$include "common_1.12\_Main_end.bas"
+'$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.12\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -328,9 +328,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.12\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.12\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End

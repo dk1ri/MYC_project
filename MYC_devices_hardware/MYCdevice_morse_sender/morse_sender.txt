@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Morse Sender
 
-Author DK1RI, Version V03.0, 20230421
+Author DK1RI, Version V03.1, 20230704
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
@@ -77,7 +77,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168.
 Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -175,7 +175,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V05.0
-Bascom Version V05.0
+Bascom Version V05.1
 
 Copyright
 
@@ -191,6 +191,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.12.zip
+[6]	https://dk1ri.de/dhw/common_1.13.zip
 [7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
 [8]	https://dk1ri.de/w_dat.htm
