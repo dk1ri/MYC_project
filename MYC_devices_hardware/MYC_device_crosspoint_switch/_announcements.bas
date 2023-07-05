@@ -1,11 +1,11 @@
 ' annoucements
-' 202305015
+' 20230705
 '
 Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;crosspoint;V02.0;1;180;1;21"
+Data "0;m;DK1RI;crosspoint;V02.0;1;180;1;22"
 '
 'Announce1:
 'Befehl &H01
@@ -59,7 +59,7 @@ Data "8;os,out8;1;0,GND;1,1;2,2;3,3;4,4;5,5;6,6;7,7;8,8"
 'Befehl  &H09
 'liest Status der Ausgänge
 'read status
-Data "9;aa,read status;8,{1_0to8}"
+Data "9;aa,status;8,{1_0to8}"
 '
 'Announce10:
 'Befehl  &H0A
@@ -77,13 +77,13 @@ Data "11;as,as10"
 'Befehl  &H0C
 'setzt Startbedingung
 'set default
-Data "12;ou,set default;0,idle;1,set"
+Data "12;ou,set default;1;0,idle;1,set"
 '
 'Announce13:
 'Befehl  &H0D
 'schreibt Startbedingung
 'write default
-Data "13;ou,define as default;0,idle;1,define"
+Data "13;ou,define as default;1;0,idle;1,define"
 '
 'Announce14:
 'Befehl  &H0E
@@ -95,13 +95,13 @@ Data "14;aa,default;8,GND,{1_1to8}"
 'Befehl  &H0F
 'reset
 'reset
-Data "15;ou,reset;0,idle;1,reset all"
+Data "15;ou,reset;1;0,idle;1,reset all"
 '
 'Announce16:
 'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;180;21;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;180;22,start at;22,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce17:                                                  '
 'Befehl &HFC
