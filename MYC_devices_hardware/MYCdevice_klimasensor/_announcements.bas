@@ -1,5 +1,5 @@
 ' annoucements
-' 20220415
+' 20220705
 '
 Announce:
 'Befehl &H00
@@ -11,19 +11,19 @@ Data "0;m;DK1RI;Klimasensor;V04.0;1;145;1;21;1-1"
 'Befehl &H01
 'liest Temperatur
 'read temperature
-Data "1;ap,read temperature;1;12500,{0.01_-40.00to84.99};lin;DegC"
+Data "1;ap,temperature;1;12500,{0.01_-40.00to84.99};lin;DegC"
 '
 'Announce2:
 'Befehl &H02
 'liest Feuchtigkeit
 'read humidity
-Data "2;ap,read humidity;1;100001,{0.001_0.000to100.000};lin;%"
+Data "2;ap,humidity;1;100001,{0.001_0.000to100.000};lin;%"
 '
 'Announce3:
 'Befehl &H03
 'liest Druck
 'read pressure
-Data "3;ap,read pressure;1;1100001,{0.001_0.000to1100.000};lin;hPa"
+Data "3;ap,pressure;1;1100001,{0.001_0.000to1100.000};lin;hPa"
 '
 'Announce4:
 'Befehl &H04 0 to 5
@@ -101,7 +101,7 @@ Data "15;ou,reset;0;1,reset"
 'Befehl &HF0<n><m>
 'liest announcements
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;145;21;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;21,start at;21,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce17:
 'Befehl &HFC
@@ -113,7 +113,7 @@ Data "252;aa,LAST ERROR;20,last_error"
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
-'Data "253;aa,MYC INFO;b,ACTIVE"
+Data "253;aa,MYC INFO;b,ACTIVE"
 '
 'Announce19:
 'Befehl &HFE <n><data>

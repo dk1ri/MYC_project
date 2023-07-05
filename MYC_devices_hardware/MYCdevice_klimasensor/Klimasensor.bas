@@ -1,15 +1,15 @@
 'name : Klimasensor_bascom.bas
-'Version V04.0 20230415
+'Version V04.1 20230705
 'purpose : Program for mesuring temperature, humidity and pressure with the BME280 sensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware Klimasensor Version V02.1 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.12 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.12\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -28,13 +28,13 @@ $include "common_1.12\_Introduction_master_copyright.bas"
 ' Detailed description
 '
 '----------------------------------------------------
-$regfile = "m168def.dat"
+'$regfile = "m168def.dat"
 'for ATMega168
-'$regfile = "m328pdef.dat"
+$regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 10000000
-$include "common_1.12\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -47,7 +47,7 @@ Const S_length = 32
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.12\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 'BM280:
 Const Reg_F2_default = &B00000101
@@ -142,32 +142,32 @@ Dim Z As Double
 Dim S1 As Single
 Dim L11 As Long
 '----------------------------------------------------
-$include "common_1.12\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.12\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 Write_config:
@@ -513,9 +513,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.12\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.12\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
