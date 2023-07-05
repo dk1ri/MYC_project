@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rtc_bascom.bas
-'Version V04.0 20230502
+'Version V04.1 20230705
 'purpose : Programm as realtime clock using the ELV RTC-DCF module
 'The interface communicates with the module via SPI
 'This Programm can be controlled via I2C or serial
@@ -12,7 +12,7 @@
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.12\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -34,7 +34,7 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.12\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -47,7 +47,7 @@ Const S_length = 35
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.12\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 Const Length_spi = 11
 Const Length_spi_1 = Length_spi - 1
@@ -96,20 +96,20 @@ Dim Spi_buffer1 As String * Length_spi_1 At Spi_buffer Overlay
 Dim Start_delay As Dword
 '
 '----------------------------------------------------
-$include "common_1.12\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
 Spiinit
 Start_delay = 1
 '
 '----------------------------------------------------
-$include "common_1.12\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 If Start_delay > 0 Then
@@ -122,20 +122,20 @@ If Start_delay > 0 Then
 End If
 '
 '----------------------------------------------------
-$include "common_1.12\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.12\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -289,9 +289,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.12\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.12\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End

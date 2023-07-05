@@ -1,5 +1,5 @@
 ' announcements
-' 20230502
+' 20230705
 '
 Announce:
 'Befehl &H00
@@ -11,37 +11,37 @@ Data "0;m;DK1RI;RTC;V04.0;1;145;1;14;1-1"
 'Befehl  &H01
 'liest UNIX Uhrzeit
 'read Unixtime
-Data "1;aa,read UNIX time;L,CODING,UNIXTIME4"
+Data "1;aa,UNIX time;L,CODING,UNIXTIME4"
 '
 'Announce2:
 'Befehl  &H02
 'liest Uhrzeit
 'read time
-Data "2;aa,read time;8"
+Data "2;aa,time;8"
 '
 'Announce3:
 'Befehl  &H03
 'liest Uhrzeit
 'read time
-Data "3;aa,read time;k,CODING,TIME"
+Data "3;aa,time;k,CODING,TIME"
 '
 'Announce4:
 'Befehl  &H04
 'liest Jahr
 'read year
-Data "4;aa,read year;w,CODING,YEAR0,year"
+Data "4;aa,year;w,CODING,YEAR0,year"
 
 'Announce5:
 'Befehl  &H05
 'liest Monat
 'read month
-Data "5;aa,read month;b,CODING,MON.month"
+Data "5;aa,month;b,CODING,MON.month"
 '
 'Announce6:
 'Befehl  &H06
 'liest Tag
 'read day
-Data "6;aa,read day;b,CODING,DAY,day"
+Data "6;aa,day;b,CODING,DAY,day"
 '
 'Announce7:
 'Befehl  &H07
@@ -59,7 +59,7 @@ Data "8;am,as7"
 'Befehl &HF0
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;145;9;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;9,start at;9,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce10:                                                  '
 'Befehl &HFC
