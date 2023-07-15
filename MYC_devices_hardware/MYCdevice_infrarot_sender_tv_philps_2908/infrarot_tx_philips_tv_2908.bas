@@ -1,5 +1,5 @@
 'name : infrarot_tx _philips_tv_2908.bas
-'Version V05.2, 20200614
+'Version V07.0, 20230701
 'purpose : Programm to send RC5 Codes to Philips TV 2908
 'This Programm workes as I2C slave or serial interface
 'Can be used with hardware rs232_i2c_interface Version V05.1 by DK1RI
@@ -8,11 +8,11 @@
 ' ---> Description / name of program
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,10 must be copied to the directory of this file!
+' To run the compiler the directory comon_1,13 must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -21,7 +21,6 @@ $include "common_1.10\_Introduction_master_copyright.bas"
 ' I2C
 '-----------------------------------------------------
 ' Inputs /Outputs : see file __config
-' For announcements and rules see Data section at the end
 '
 '------------------------------------------------------
 'Missing/errors:
@@ -32,7 +31,7 @@ $regfile = "m328pdef.dat"
 $crystal = 20000000
 '
 '-----------------------------------------------------
-$include "common_1.10\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -46,39 +45,39 @@ Const S_length = 32
 '----------------------------------------------------
 '
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 '----------------------------------------------------
 Dim Togglebit As Byte
 Dim Rc5_adress As Byte
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 Send_rc5:
@@ -90,9 +89,9 @@ Return
 '
 '-----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
