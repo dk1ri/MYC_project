@@ -2,29 +2,31 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Infrarot (RC5) Empfänger
 
-Author DK1RI, Version V04.1, 20200614
+Author DK1RI, Version V07.0, 20230712
 This project can be found in https://github.com/dk1ri also.
 
 Einleitung
 
 Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Zur Steuerung mit einem Browser: siehe [7].
 Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung
 
+Allgemeines:
+
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
-Die Befehle zur Steuerung müssen binär eingegeben werden; er erfolgt keine Wandlung.
 Dieses Interface ist eine Konverter von Infrarot (RC5) Signalen auf MYC Protokoll über I2C (Slave) / RS232 / USB
 
-Grundsätzliche Bedienung
+Details:
 
 Im MYC Mode erfolgt die Ausgabe der empfangenen RC5 Signale als Antwort auf den Befehl &H01:
-Die Ausgabe erfolgt im Hex Format:
-010401020304
-01 ist der Befehl; 04: 4 Bytes: 01, 02, 03 und 04 als ASCII String
+Die Ausgabe erfolgt als Komma getrennte Liste mit Dezimalzahlen
+010830312C30322C3033
+01 ist der Befehl; 04: 8 folgende Bytes: 0 1 ,0 2 , 0 3 (also 1 2 3) als ASCII String
 Es werden nur RC5 Daten an die eingestellte RC5 Adresse (Default 1, änderbar mir dem Befehl &H02xx) gespeichert.
 Mit dem Lesebefehl &H01 wird der Rc5buffer gelöscht. Wenn der Buffer voll ist, gehen weitere RC5 Signale verloren.
 Im nicht_MYC mode - einstellbar mit &HEE01 - werden RC5 Adresse und RC5 Befehl dezimal  (vier Ziffern) nur auf die serielle Schnittstelle sofort ausgegeben. Die weitere Steuerung  funktioniert unverändert. Der Befehl &H01 liefert &H0100 (keine Daten)
@@ -32,74 +34,7 @@ Im nicht_MYC mode - einstellbar mit &HEE01 - werden RC5 Adresse und RC5 Befehl d
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-Announce:
-'Befehl &H00
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;Infrared (RC5) receiver;V04.2;1;145;1;11;1-1"
-'
-'Announce1:
-'Befehl  &H01
-'kopiert RC5 Daten in den Ausgang
-'copies RC5 data to output
-Data "1;aa,RC5 buffer;252,{&H00 to &H3F}"
-'
-'Announce2:
-'Befehl &H02   0-31
-'RC5 Adresse schreiben
-'write RC5 adress
-Data "2;oa,rc5adress;b,{0 to 31}"
-'
-'Announce3:
-'Befehl &H03
-'RC5 Adresse lesen
-'read RC5 adress
-Data "3;aa,as2"
-'
-'Announce4:
-'Befehl  &H04
-'schaltet MYC / no_MYC mode
-'switches MYC / no_MYC mode
-Data "4;oa,no_myc;a"
-'
-'Announce5:
-'Befehl  &H05
-'liest MYC / no_MYC mode
-'read MYC / no_MYC mode
-Data "5;aa,as238"
-'
-'Announce6:
-'Befehl &HF0<n><m>
-'announcement aller Befehle lesen
-'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;11"
-'
-'Announce7:
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce8:
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce9:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,SERIAL,1"
-'
-'Announce10:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,6,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
-'
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -125,7 +60,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega8.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -154,6 +89,12 @@ Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und 
 SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 SMD
 
@@ -218,7 +159,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V05.1
-Bascom Version V04.3
+Bascom Version V07.0
 
 Copyright
 
@@ -234,4 +175,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.10.zip
+[6]	https://dk1ri.de/dhw/common_1.13.zip
+[7]	https://dk1ri.de/myc/webserver.pdf
+[8]	https://dk1ri.de/w_dat.htm

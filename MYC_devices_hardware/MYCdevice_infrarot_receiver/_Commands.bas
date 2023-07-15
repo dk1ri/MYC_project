@@ -2,17 +2,28 @@
 '
 01:
       Tx_b(1) = &H01
-      Tx_b(2) = Rc5_writepointer - 1
+      b_Temp2 = 3
       'length
       If Rc5_writepointer > 1 Then
+      b_Temp2 = 3
          For b_Temp1 = 1 To Rc5_writepointer - 1
-            b_Temp2 = b_Temp1 + 2
-            'Rc5buffer start with 1
-            Tx_b(b_Temp2) = Rc5buffer_b(b_Temp1)
+            b_Temp3 = Rc5buffer_b(b_Temp1)
+            b_Temp3 = b_Temp3 / 10
+            b_Temp3 = b_Temp3 + 48
+            Tx_b(b_Temp2) = b_Temp3
+            Incr b_Temp2
+            b_Temp3 = Rc5buffer_b(b_Temp1)
+            b_Temp3 = b_Temp3 Mod 10
+            b_Temp3 = b_Temp3 + 48
+            Tx_b(b_Temp2) = b_Temp3
+            Incr b_Temp2
+            Tx_b(b_Temp2) = ","
+            Incr b_Temp2
          Next b_Temp1
-         Tx_write_pointer = Rc5_writepointer + 2
+         Tx_b(2) = B_temp2 - 2
+         Tx_write_pointer = b_temp2 - 1
          Gosub Reset_rc5buffer
-      ELse
+      Else
          Tx_b(2) = 0
          Tx_write_pointer = 3
       End If

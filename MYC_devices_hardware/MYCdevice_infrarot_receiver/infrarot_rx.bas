@@ -1,17 +1,16 @@
 '-----------------------------------------------------------------------
 'name : infrarot_rx_bascom.bas
-'Version V04.3, 20200614
+'Version V07.0, 20230712
 'purpose : Programm for receiving infrared RC5 Signals
 'This Programm workes as I2C slave, or serial
 'Can be used with hardware i2c_rs232_interface Version V05.1 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,10 must be copied to the directory of this file!
+' To run the compiler the directory comon_1,13 must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
-' If the internal RC oscillator is used, Q1, C4, C5 can be omitted
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -34,7 +33,7 @@ $regfile = "m88pdef.dat"
 '$regfile = "m88def.dat"
 '$regfile = "m328pdef.dat"
 $crystal = 20000000
-$include "common_1.10\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -48,12 +47,12 @@ Const S_length = 32
 '----------------------------------------------------
 '
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 ' Specific Constants Variables
-Const Rc5_stringlength = Stringlength - 2
+' 1 rc5 byte cobverted to 2byte decimal + , 
+Const Rc5_stringlength = 81
 '
-Dim Daten as Byte
 Dim Valid_adress As Byte
 Dim Valid_adress_eeram As Eram Byte
 Dim Rc5buffer As String * Rc5_stringlength
@@ -63,20 +62,16 @@ Dim Rc5_writepointer As Byte
 'Rc5_bit, Rc5_adress and Rc5_command are predefines variables
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
-'
-' procedures at start
-'
-'----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 '
@@ -112,20 +107,20 @@ If _rc5_bits.4 = 1 Then
    End If
 End If
 '
-$include "common_1.10\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 Reset_rc5buffer:
 Rc5_writepointer = 1
@@ -134,9 +129,9 @@ Rc5buffer = String(Rc5_stringlength,255)
 Return
 '
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
