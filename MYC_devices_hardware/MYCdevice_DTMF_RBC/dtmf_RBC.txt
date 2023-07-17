@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 DTMF Sender für Remote Shack von MFJ (TM)
 
 Author: DK1RI
-Version V04.1 20200517
+Version V07.0 20230716
 
 This paper is published in https://github.com/dk1ri as well
 
@@ -16,7 +16,9 @@ Dieses Interface setzt MYC Befehle in DTMF Befehle für das MFJ Remote Shack (TM)
 So kann ein Remote Shack in ein MYC System eingebunden werden.
 Dies ist ein Beispiel für die Verwendung des DTMF Senders als Template durch einfache Ergänzungen.
 
-Beschreibung
+Beschreibung und Bedienung
+
+Allgemeines:
 
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20 max.
@@ -24,20 +26,21 @@ Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Die Daten müssen binär eingegeben werden; er erfolgt keine Wandlung, 
 Für das Programm stand die Befehlsliste, die mit dem RBC212-IC2 geliefert wurde, zur Verfügung.
 Ich konnte nicht die Bedeutung aller Befehle herausfinden; einige sind offenbar für andere Zusatzgeräte gedacht.
+Zur Steuerung mit einem Browser: siehe [7]
 
-Grundsätzliche Bedienung
+Details:
 
 Die Kenntnis der Funktion des RBC wird vorausgesetzt.
 Die Befehle wurden zwar mit einem DTMF Empfänger getestet, aber nicht mit einem realen RBC.
 Das Remote Shack liefert keine Daten zurück. Bei Eingabe von Daten, die das Funkgerät nicht versteht, sind die Anzeigen an der Benutzerschnittstelle möglicherweise falsch.
-Die mesten Befehle haben nur ein oder 2 Byte:
+Die meisten Befehle haben nur ein oder 2 Byte:
 &H04		Sprachausgabe  der VFOA Frequenz
 &H2301	Ausgangsleistung 50%
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Alle  Befehle stehen in der Datei _announcements.bas im Bascom Programm [1]
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -58,13 +61,12 @@ Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werde
 Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
 Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
-
 Software
 
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -93,6 +95,12 @@ Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und 
 SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 DTMF Ausgang 
 
@@ -153,12 +161,14 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V05.1
-Bascom Version V04.1
+Bascom Version V07.0
+
+
 
 Copyright
 
 Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
-Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
@@ -170,4 +180,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.10.zip
+[6]	https://dk1ri.de/dhw/common_1.13.zip
+[7]	https://dk1ri.de/myc/webserver.pdf
+[8]	https://dk1ri.de/w_dat.htm

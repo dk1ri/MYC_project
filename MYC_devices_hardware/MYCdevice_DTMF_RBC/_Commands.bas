@@ -2,7 +2,7 @@
 ' 20200516
 '
 01:
-   If Commandpointer >= 5 Then
+   If Commandpointer >= 4 Then
       Vfo_a_b = 10
       Gosub Frequency
    Else
@@ -91,14 +91,14 @@ Return
 Return
 '
 07:
-   If Commandpointer >= 5 Then
+   If Commandpointer >= 3 Then
       Memory_set_recall = 7
       Gosub Memory
    End If
 Return
 '
 08:
-   If Commandpointer >= 5 Then
+   If Commandpointer >= 3 Then
       Memory_set_recall = 9
       Gosub Memory
    End If

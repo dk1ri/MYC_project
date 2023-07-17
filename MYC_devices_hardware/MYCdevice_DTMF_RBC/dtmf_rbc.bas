@@ -1,14 +1,16 @@
 '-----------------------------------------------------------------------
 'name : dtmf_rbc_bascom.bas
-'Version V04.1, 20200518
+'Version V07,0 20230715
 'purpose : Programm for sending MYC protocol as DTMF Signals for remote Shack of MFJ (TM)
+'This Programm workes as I2C slave, or serial
+'Can be used with hardware dtmf_receiver Version V05.1 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,10 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1,13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -33,7 +35,7 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 10000000
-$include "common_1.10\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -46,7 +48,7 @@ Const S_length = 32
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 Dim Templ As Dword
 Dim Templl As Dword
@@ -72,38 +74,38 @@ Dim Te As Byte
 Dim Tf As Byte
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
 ' procedures at start
 '
 '----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 '
 ' ---> Specific actions
 '
-$include "common_1.10\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -272,13 +274,13 @@ Return
 '
 '
 '----------------------------------------------------
-   $include "common_1.10\_Commandparser.bas"
+   $include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
