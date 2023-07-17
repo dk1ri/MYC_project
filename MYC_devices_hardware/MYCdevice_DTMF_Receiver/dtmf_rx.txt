@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 DTMF Empfänger
 
 Author: DK1RI
-Version V03.0 20190806
+Version V07.0 20230716
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -12,80 +12,31 @@ Da das IC MT8870 kaum noch lieferbar ist, wird dieses Board nicht weiterentwicke
 Der Empfänger mit Software Decoder ist in Planung.
 
 Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Zur Steuerung mit einem Browser: siehe [7]
 Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Dieses Interface ist eine Konverter von DTMF Signalen auf MYC Protokoll über I2C (Slave) / RS232 / USB
 Im „Nicht-MYC“ Mode arbeitet das Interface als einfacher DTMF - ASCII Wandler.
 
-Beschreibung
+Beschreibung und Bedienung
+
+Allgemeines:
 
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20 max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Die Befehle zur Steuerung müssen binär eingegeben werden; er erfolgt keine Wandlung.
+Details:
+
 Die DTMF-Daten werden als normale Zeichen ausgegeben.
-Im MYC Mode werden die  DTMF Codes als String ausgegeben, der mit der Länge des Strings beginnt.
+Im MYC Mode werden die  DTMF Codes dzimal , Komma gegtrennt, als String ausgegeben, der mit der Länge des Strings beginnt.
 In den Nicht–MYC Mode kommt man mit dem Befehl &HEE01. Dann werden die DTMF Codes als ASCII Zeichen auf der seriellen Schnittstelle ausgegeben.
 Zur Rückkehr vom Nicht-MYC Mode in den MYC mode muss an der seriellen Schnittstelle &H20 oder an der I2C Schnittstelle &HEE00 eingegeben werden.
 
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-nnounce0:
-'Befehl &H00
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;DTMF receiver;V04.0;1;145;1;9;1-1"
-'
-Announce1:
-'Befehl  &H01
-'liest den DTMF-Speicher
-'read DTMF buffer
-Data "1;aa,DTMF buffer;252,{0 to 9,*,#,A to D}"
-'
-Announce2:
-'Befehl  &HEE
-'schaltet MYC / no_MYC mode
-'switches MYC / no_MYC mode
-Data "238;ka,no_myc;a"
-'
-Announce3:
-'Befehl  &HEF
-'liest MYC / no_MYC mode
-'read MYC / no_MYC mode
-Data "239;la,as238"
-'
-Announce4:
-'Befehl &HF0<n><m>
-'liest announcements
-'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;9"
-'
-Announce5:
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-Announce6:
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-Announce7:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,16,{0 to 127};a,SERIAL,1"
-'
-Announce8:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,16,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -111,7 +62,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega8.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -140,6 +91,12 @@ Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und 
 SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 SMD
 
@@ -202,12 +159,12 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V04.1
-Bascom Version V04.0
+Bascom Version V07.0
 
 Copyright
 
 Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
-Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
@@ -220,3 +177,5 @@ Referenzen
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
 [6]	https://dk1ri.de/myc/common_1.7.zip
+[7]	https://dk1ri.de/myc/webserver.pdf
+[8]	https://dk1ri.de/w_dat.htm
