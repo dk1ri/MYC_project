@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 DTMF Sende - Empfänger
 
 Author: DK1RI
-Version V03.0  20190802
+Version V07.0  20230716
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -15,13 +15,16 @@ Dieses Interface ist eine Konverter von DTMF Signalen auf MYC Protokoll über I2C
 Das Interface kann DTMF Signale senden und empfangen.
 Im „no_myc“ Mode arbeitet das Interface als einfacher DTMF - ASCII – DTMF Wandler.
 
-Beschreibung
+Beschreibung und Bedienung
+
+Allgemeines:
 
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20 max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
-
 Die Befehle zur Steuerung müssen binär eingegeben werden; er erfolgt keine Wandlung; die DTMF Werte aber als ASCII Werte
+Details:
+
 Die ausgegebenen DTMF Signale sind 50ms lang mit ca 100ms Pause (Burst Mode)
 Im MYC Mode sind die eingegebenen DTMF Daten ein String, beginnend mit der (binären) Stringlänge. Die Stringlänge ist maximal 251.
 &H02&H04ABCD		DTMF Ausgabe: &H04; 4 Bytes: ABCD
@@ -37,67 +40,7 @@ Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl könn
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-Announce0:
-'Befehl &H00 1 Byte / -
-'eigenes basic announcement lesen
-'basic announcement is read to I2C or output
-Data "0;m;DK1RI;DTMF_transceiver;V03.1;1;110;1;10;1-1"
-'
-Announce1:
-'Befehl  &H01 1 Byte + <s> / -
-'liest den DTMF-Lesespeicher
-'read the read DTMF buffer
-Data "1;aa,DTMF buffer;251,{0 to 9,*,#,A to D}"
-'
-Announce2:
-'Befehl  &H02 1 Byte / 1 Byte + <s>
-'gibt DTMF Signal aus
-'send DTMF tones
-Data "2;oa,send dtmf;252,{0 to 9,*,#,A to D"
-'
-Announce3:
-'Befehl  &HEE 0|1 2 Byte / -
-'schaltet MYC / no_MYC mode
-'switches MYC / no_MYC mode
-Data "238;ka,no_myc;a"
-'
-Announce4:
-'Befehl  &HEF 1 Byte / 2 Byte
-'liest MYC / no_MYC mode
-'read MYC / no_MYC mode
-Data "239;la,as238"
-':
-Announce5:
-'Befehl &HF0<n><m>3 Byte / 3 Byte + n * <s>
-'liest announcements
-'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;110;10"
-'
-Announce6:
-'Befehl &HFC 1 Byte / 1 Byte +<s>
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-Announce7:
-'Befehl &HFD 1 Byte / 2 Byte
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-Announce8:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,17,{0 to 127};a,SERIAL,1"
-'
-Announce9:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,17,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -123,7 +66,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega328 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.7 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -152,6 +95,12 @@ SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+
 SMD
 
 Die Leiterplatte ist teilweise mit SMD bestückt. Bei den nötigen Bauteilen sind das aber nur relativ große Bauteile.
@@ -160,6 +109,7 @@ DTMF
 
 Die DTMF Signale entsprechen der Norm.
 Der DTMF Ausgang ist nicht gleichspannungsfrei und nicht kapazitiv entkoppelt, der Eingang ist entkoppelt.
+
 
 
 Stromversorgung
@@ -213,12 +163,12 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V04.1
-Bascom Version V04.0
+Bascom Version V07.0
 
 Copyright
 
 Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
-Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
@@ -230,3 +180,5 @@ Referenzen
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
 [6]	https://dk1ri.de/myc/common_1.7.zip
+[7]	https://dk1ri.de/myc/webserver.pdf
+[8]	https://dk1ri.de/w_dat.htm
