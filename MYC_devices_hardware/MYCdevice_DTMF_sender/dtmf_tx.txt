@@ -2,12 +2,13 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 DTMF Sender
 
-Author DK1RI, Version V05.1, 20200517
+Author DK1RI, Version V07.0, 20200517
 This paper is published in https://github.com/dk1ri  as well.
 
 Einleitung
 
 Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Zur Steuerung mit einem Browser: siehe [7].
 Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Dieses Interface ist eine Vorlage für ein Interface, das ein Gerät, das sich mit DTMF Signalen steuern lässt, in ein MYC System einbindet.
@@ -15,7 +16,9 @@ Das Interface kann Eingaben an der RS232 oder USB Schnittstelle in DTMF Signale 
 Im„no_myc“ Mode arbeitet das Interface als einfacher ASCII - DTMF Wandler.
 
 
-Beschreibung
+Beschreibung und Bedienung
+
+Allgemeines:
 
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max.
@@ -23,7 +26,7 @@ Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Es wird die gleiche Leiterplatte wie für das I2C_RS232_Interface verwendet.
 Das Programm ist nur das Framework, weitere MYC Befehle des Gerätes müssen nach Bedarf eingefügt werden. Man kann aber DTMF Codes direkt entsprechend den MYC Regeln eingeben.
 
-Grundsätzliche Bedienung
+Details:
 
 Die Daten müssen binär eingegeben werden; er erfolgt keine Wandlung, hier im HEX Format:
 010448495051
@@ -41,86 +44,7 @@ Mit der Eingabe eines MYC Befehls (&H00 - &H07 , &HF0 - &HFF) kommt man in den n
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
-
-Announce:
-'Befehl &H00
-'basic annoumement wird gelesen
-'basic announcement is read
-Data "0;m;DK1RI;DTMF_sender;V05.1;1;145;1;13;1-1"
-'
-'Announce1:
-'Befehl &H01
-'liest string von I2C oder serial und sendet als DTMF
-'read string from I2C or serial and send as DTMF
-Data "1;oa,send dtmf;250,{0 to 9,*,#,A to D}"
-'
-'Announce2:
-'Befehl &H02
-'DTMF Laenge schreiben
-'write DTMF length
-Data "2;ka,DTMF Duration;b"
-'
-'Announce3:
-'Befehl &H03
-'DTMF Laenge lesen
-'read DTMF length
-Data "3;la,as234"
-'
-'Announce4:
-'Befehl &H04
-'Dtmf Pause schreiben
-'write DTMF pause
-Data "4;ka,DTMF Pause;b"
-'
-'Announce5:
-'Befehl &H05
-'Dtmf Pause lesen
-'read DTMF pause
-Data "5;la,as236"
-'
-'Announce6:
-'Befehl &H06
-'nomyc schreiben
-'write nomyc
-Data "6;ka,no_myc;a"
-'
-'Announce7:
-'Befehl &H07
-'nomyc lesen
-'read nomyc
-Data "7;la,as238"
-'
-'Announce8:
-'Befehl &HF0<n><m>
-'announcement aller Befehle lesen
-'read m announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;13"
-'
-'Announce9:                                                  '
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce10:                                                  '
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce11:
-'Befehl &HFE <n> <n>
-'Individualisierung schreiben
-'write indivdualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,SERIAL,1"
-'
-'Announce12:
-'Befehl &HFF
-'Individualisierung lesen
-'read indivdualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,7,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
-'
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
 
@@ -148,7 +72,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega8 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega8.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -178,6 +102,12 @@ Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und 
 SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 SMD
 
@@ -239,12 +169,12 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V05.1
-Bascom Version V05.1
+Bascom Version V07.0
 
 Copyright
 
 Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
-Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
@@ -256,3 +186,5 @@ Referenzen
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
 [6]	https://dk1ri.de/dhw/common_1.10.zip
+[7]	https://dk1ri.de/myc/webserver.pdf
+[8]	https://dk1ri.de/w_dat.htm

@@ -1,16 +1,16 @@
 '-----------------------------------------------------------------------
 'name : dtmf_sender.bas
-'Version V05.1, 20191018
+'Version V07.0, 20230716
 'purpose : Programm for sending MYC protocol as DTMF Signals
 'This Programm workes as I2C slave or serial protocoll
 'Can be used with hardware rs232_i2c_interface Version V05.1 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,10 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1,13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -33,7 +33,7 @@ $regfile = "m88pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 10000000
-$include "common_1.10\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
@@ -46,96 +46,44 @@ Const S_length = 32
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 Dim Dtmf_duration As Byte
 Dim Dtmf_duration_eeram As Eram Byte
 Dim Dtmf_pause As Byte
 Dim Dtmf_pause_eeram As Eram Byte
 Dim Dtmf_char As Byte
-Dim Dtmf_string As String * Stringlength
-Dim Dtmf_string_b(Stringlength) As Byte At Dtmf_string Overlay
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
-'RS232 got data?
-If New_data = 1 Then
-   New_data = 0
-   If no_myc = 1 Then
-      Commandpointer = Command_pointer
-      If Command_b(Command_pointer) > 7 And Command_b(Command_pointer) < 240 Then
-         If Command_b(Command_pointer) = Lf Then
-            ' LF found
-            Stop Watchdog
-            For B_temp1 = 1 To Command_pointer
-               Dtmf_char = Command_b(B_temp1)
-               Gosub Send_dtmf
-            Next B_temp1
-            Start Watchdog
-            Gosub Command_received
-         End If
-      Else
-         'switch to myc mode again
-         no_myc = 0
-         no_myc_eeram = no_myc
-         Gosub Check_command
-      End If
-   Else
-      Gosub Check_command
-   End If
-End If
 '
-Stop Watchdog                                               '
-Goto Loop_
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
-Check_command:
-      If Command_b(1) = 0 Then
-         Gosub Commandparser
-      Else
-            If Command_b(1) = &HFF And Command_b(2) = 254 Then
-               Commandpointer = Command_pointer
-               Gosub Commandparser
-            Else
-               If Serial_active = 1 And Command_mode = 1 Then
-                  Commandpointer = Command_pointer
-                  Gosub Commandparser
-               Else
-                  If I2c_active = 1 And Command_mode = 2 Then
-                     Commandpointer = Command_pointer
-                     Gosub Commandparser
-                  Else
-                     Command_pointer = 0
-                     Not_valid_at_this_time
-                  End If
-               End If
-            End If
-      End If
-Return
-'
+
 Send_dtmf:
    B_temp3 = 255
    Select Case Dtmf_char
@@ -153,17 +101,19 @@ Send_dtmf:
         Parameter_error
    End Select
    If B_temp3 <> 255 Then
-     Printbin Dtmf_char
-     Dtmfout B_temp3, Dtmf_duration
-     Waitms dtmf_pause
+      If No_myc = 1 Then
+         Printbin Dtmf_char
+      End If
+      Dtmfout B_temp3, Dtmf_duration
+      Waitms dtmf_pause
    End If
 Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
