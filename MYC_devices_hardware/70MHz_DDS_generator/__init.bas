@@ -8,6 +8,8 @@ Tk = Tk_eeram
 Tk_measure = 0
 Sensor = Sensor_eeram
 Temperature = 250
+Tmin = 250
+Tmax = 250
 ' first measurement not accurate
 W_temp1 = Getadc(0)
 Gosub Calc_temperature
@@ -32,20 +34,20 @@ Rc5_code(17) = Rc5_code_eeram(17)
 Rc5_code(18) = Rc5_code_eeram(18)
 Rc5_code(19) = Rc5_code_eeram(19)
 Rc5_code(20) = Rc5_code_eeram(10)
-Freq_in = F1
+Correct = Correct_default
+Freq_in = F2
 Freq_in_old = F1
-Dds_cmd = DDS_command_on
+Rc5_adress_soll= Rc5_adress_soll_eeram
 Rcc = 0
 Rc_command = 0
 Rc_address = 0
 IR_Myc_old = IR_Myc
+' Myc mode
+Ir_mode = 0
 Gosub Init_dds
 Waitms 100
+F_out = 1
 Gosub Dds_output
-If Ir_Myc = 1 Then
-   Set Relais
-Else
-   Reset Relais
-End If
+Reset Relais
 '
 Enable Interrupts
