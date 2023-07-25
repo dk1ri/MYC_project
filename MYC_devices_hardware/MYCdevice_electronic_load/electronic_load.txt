@@ -2,13 +2,14 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Elektronische Last
 
-Author DK1RI, Version V04.1 20200630
+Author DK1RI, Version V05.0 20230725
 This paper is published in https://github.com/dk1ri  as well.
 
 Einleitung
 
 Dies Gerät ist eine elektronischen Last für Gleichspannungen / -ströme mit langsamer Änderung .
-Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: siehe [10]
 Es gibt zwei Versionen der Hardware: eine verwendet Adafuit (TM) AD Wandler Module. Die vorliegende Beschreibung verwendet diese Leiterplatte. Eine zweite Leiterplatte verwendet die ADS1115 ICs direkt. Diese Version wurde aber nicht getestet.
 Das Gerät arbeitet als Slave am I2C Bus oder kann über RS232 / USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
@@ -20,6 +21,8 @@ Due to possible high voltages and high temperature the usage of this device is a
 
 Beschreibung
 
+Allgemeines:
+
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 12V +-10%, Stromaufnahme ca. 20 max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
@@ -28,15 +31,16 @@ https://www.dk1ri.de/dhw/electronic_load_pic.jpg
 Dieser Testaufbau ist für hohe Spannungen in dieser Form nicht geeignet!
 Die elektrischen Daten der elektronischen Last hängen von der äußeren Beschaltung ab. Die Leiterplatte kann maximal sieben FETs getrennt steuern und maximal 7 Shuntwiderstände zur Messung des Stroms verwenden. Eine Teilbestückung ist möglich.
 Für andere Shuntwiderstände und Strombereiche muss die Firmware geändert werden. Bei einer Verwendung im MYC System müssen dann auch die Befehlsbeschreibungen (announcements) geändert werden, wenn sich die Wertebereiche ändern.
-Die vorliegende  Beschreibung und Schaltung bezieht sich auf eine Version mit IRFP150 FETs (100V, 30A und ca. 200W maximale Verlustleistung (Ptot) pro FET) mit 10mOhm Shunt.
+Die vorliegende  Beschreibung und Schaltung bezieht sich auf eine Version mit IRFP150 FETs (100V, 30A und ca. 200W maximale Verlustleistung (Ptot) pro FET mit 10mOhm Shunt.
 Die aufgebaute Schaltung ist bis 80V, 154A und 300W mit dem verwendeten Kühlkörper einsetzbar. Um die 154A zu erreichen ist eine Spannung des Messobjekts von 1,8V minimal notwendig.
 Die Auflösung bei der Spannungsmessung beträgt nominal circa 3mV, die der Strommessung 700uA für jeden Messwiderstand / FETs.
 Man kann die gewünschten Spannung , Strom, Leistung oder Widerstand für die Last vorgeben.
 Bei Überlast schaltet die gesamte Last sofort hochohmig.
 Beim Wechsellastbetrieb wird die Last aus und eingeschaltet.
 Das Gerät versteht das MYC Protokoll; die Befehle und Parameter müssen binär eingegeben werden. Für Details zum MYC Protokoll siehe [3] und [4] (aktuell)
+Zur Steuerung mit einem Browser: siehe [10] Die Bedienung ist weitestgehend selbsterklärend.
 
-Grundsätzliche Funktion
+Details:
 
 Die elektronische Last arbeitet als Zweipunktregler. 
 Nach dem Einschalten sind die FETs ausgeschaltet. Nachdem die Messspannung 400mV überschritten hat, kann eine Spannung, Strom, Leistung oder Widerstand (normale Betriebsarten) eingegeben werden, 
@@ -46,8 +50,6 @@ Bei einer Messspannung kleiner als 400mV (10mV bei gewünschter Spannung) werden 
 In einem normalen MYC System werden die Befehle &H1D - &H27 nicht verwendet: sie werden vom Commandrouter nicht weitergegeben.
 Sie dienen zur Einstellung der maximalen FET Verlustleistung und zur Eichung.
 Um den Test nach dem Aufbau zu erleichtern, gibt es den Befehl &H1E<n><m>; siehe unter Test und Eichung.
-
-Grundsätzliche Bedienung
 
 Vor dem normalen Betrieb kann die Einstellung einiger Parameter und eine Eichung vorgenommen werden; siehe unter Test und Eichung.
 Es ist möglich, dass die elektronische Last beim Einschalten kurze Zeit  (< 1ms) niederohmig ist. Es wird daher empfohlen, das zu messende Gerät erst anzuschließen, wenn die 5V Spannung an der Steuerung anliegt.
@@ -83,6 +85,8 @@ Einbindung in das MYC System
 Details zum MYC System stehen in [3].
 Die komplette Liste der Befehle steht in der Datei _announcements.bas im Bascom Programm 
 
+
+
 Fehlermeldungen
 
 Der Befehl &HFC liefert den letzten Fehler im Format:
@@ -107,7 +111,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega328.
 Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [8] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [8] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -275,7 +279,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V04.1
-Bascom Version 04.2 (ältere Versionen als V04.0 können nicht verwendet werden)
+Bascom Version V05.0 (ältere Versionen als V04.0 können nicht verwendet werden)
 
 Copyright
 
@@ -294,5 +298,7 @@ Referenzen
 [5]	https://dk1ri.de/myc/Definitions.txt oder https://dk1ri.de/myc/Description.pdf (englisch)
 [6]	https://www.dk1ri.de/dhw/electronic_load_external_ciruit.png
 [7]	https://dk1ri.de/myc/Definitions.pdf (englisch)
-[8]	https://dk1ri.de/dhw/common_1.10.zip
+[8]	https://dk1ri.de/dhw/common_1.13.zip
 [9]	https://www.dk1ri.de/dhw/electronic_load_chip_eagle.zip
+[10]	https://dk1ri.de/myc/webserver.pdf oder https://dk1ri.de/myc/webserver.txt 
+[11]	https://dk1ri.de/w_dat.htm

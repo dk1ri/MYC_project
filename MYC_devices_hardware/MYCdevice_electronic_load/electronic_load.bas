@@ -1,17 +1,17 @@
 '-----------------------------------------------------------------------
 'name : electronic_load.bas
-'Version V04.2, 20200630
+'Version V05.0, 20230723
 'purpose : This is a electronic load for 7 fets IRFP150
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware electronic_load V04.1 by DK1RI
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory common_1,10 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory common_1,13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -29,9 +29,10 @@ $include "common_1.10\_Introduction_master_copyright.bas"
 '
 'Something about the programm design:
 'This programm workes with 1 to 7 FETs IRFP150:
+'The program uses these limits (contants Component_u ...)
 'Vmax = 90V (100V)
-'Imax = 25.6A   (30A at 100 degC)
-'Ptot = 200W
+'Imax = 26A   (30A at 100 degC)
+'Ptot = 200W -> 150W
 'Ron = 50mOhm
 'so the minimum voltage to be applied and will work under all conditions is
 ' (10mOhm resistor for measuring)
@@ -54,7 +55,7 @@ $include "common_1.10\_Introduction_master_copyright.bas"
 '
 'The maximum of the required resistor is given by the max voltage and the minimum current:
 ' 90V / 0.7mA ~ 120kOhm
-'The required resistor has a range from 1 to 120.000.00 mOhm
+'The required resistor has a range from 1 to 120.000.000 mOhm
 '
 'The usable maximum power depends on cooling and may be modified.
 'default power is V = 350W
@@ -69,15 +70,15 @@ $include "common_1.10\_Introduction_master_copyright.bas"
 'requiredI, requiredR and requiredP requiredU are valid values all the time and vary with change of voltage/current
 '
 'There are two phases: startup and regulation.
-'During startup the FET voltage is increased by a specific value for all FETs in turn.
-' After the first overshot the Gate voltage is increased /decreased for the FET with the current most away from the
+'During startup the FET voltage is increased by a specific value for all available FETs in turn.
+'After the first overshot the gate voltage is increased / decreased for the FET with the current most away from the
 'required value as required.
 'The check of current / power for overload is done on a per FET base after each measurement.
 '
 'Each ADC handles two chanals. The input of the ADC must be configured for each chanal, and after a wait time
 'the data can be read.
 'All active Fets are measured always in two loops: adc_chanal1: U, Fetno 2,4,6 than adc_chanal0:  Fetno 1,3,5,7,
-' check and modfication is made after the secont loop:
+'check and modfication is made after the second loop:
 '
 '- configure ADCs (MUX) for chanal 0, start timer1
 '- after Timer1 = 32 (860SPS, start), 350 (128SPS, regulation):
@@ -122,14 +123,14 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.10\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 $initmicro
 '----------------------------------------------------
 '
 '1...127:
 Const I2c_address = 21
-Const No_of_announcelines = 52
+Const No_of_announcelines = 50
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
@@ -138,6 +139,12 @@ Const S_length = 32
 'Modification of announcements may be necessary as well.
 '
 'el load specific Constants:
+Const Max_number_of_fets = 7
+Const Component_u = 90
+Const Component_i = 26 * Max_number_of_fets
+' by cooling:
+Const Component_p = 150
+Const Component_pp = 150
 Const Max_power_default = 50.0
 '50W per fet, this must be a save value
 Const Max_cooling = 300.0
@@ -182,9 +189,8 @@ Const Fet_voltage_sub = 10
 'change of AD output per step at startup
 Const Active_fets_default = &B01111111
 'Fet1 is LSB, all Fets available
-Const Hyst_default = 0.001
+Const Hyst_default = 0.0
 ' 1%
-Const Hyst_on_default = 0
 '
 ' connected to SDA
 Const Adc_adress_F1_U  = &B10010100
@@ -216,7 +222,7 @@ Const Timer1_128 = 350    ' > 15,6ms
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 ' Electronic load specific variables
 Dim Active_fets As Byte
@@ -288,14 +294,11 @@ Dim Current_min As Word
 Dim Current_max As Word
 '
 Dim El_mode as Byte
-'default: 0: off, 1: V, 2:I, 3: P, 4: R, 5: Testmode for command 227, 6: calibrate V, 8: calibrate I
+'default: 0: off, 1: V, 2:I, 3: P, 4: R, 5: Testmode, 6: calibrate V, 7: calibrate I
 ' 6: Voltage calibration, 7: current calibration
-'Dim El_load_sequence As Byte
 Dim Timer1_value As Word
 '
 Dim Error_req As Byte
-Dim Hyst_on As Byte
-Dim Hyst_on_eeram As  Eram Byte
 Dim Hyst As Single
 Dim Hyst_eeram As Eram Single
 Dim Spi_buffer(3) As Byte
@@ -324,20 +327,22 @@ Dim Temp_dw_b3 As Byte At Temp_dw + 2 Overlay
 Dim Temp_dw_b4 As Byte At Temp_dw + 3 Overlay
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 '
+If TCNT1 = 0 Then Start Timer1
 If Tcnt1 >= Timer1_value Then
+   ' waittime ealpsed -> measure
    Stop Timer1
    If Adc_chanal = 1 Then
       Current_min = &H7FFF
@@ -389,6 +394,7 @@ If Tcnt1 >= Timer1_value Then
       End If
       Adc_chanal = 1
       Gosub Send_i2c_config
+      ' all data availanble:
       Gosub Calculate
       Gosub Modify_if_necessary
    End If
@@ -396,21 +402,22 @@ If Tcnt1 >= Timer1_value Then
    Tcnt1 = 0
    Start Timer1
 End If
+'
 If On_off_mode > 0 Then Gosub Operate_On_off_mode
 '
 '----------------------------------------------------
-$include "common_1.10\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -465,6 +472,7 @@ Dac_startup:
 For B_temp1 = 0 To 6
    If Active_fets.B_temp1 = 1 Then
       Dac_out_voltage (B_temp1) = Dac_start
+      Gosub Send_to_fet
    End If
 Next B_temp1
 Reset Led
@@ -520,6 +528,7 @@ Stop Timer1
 Adc_chanal = 0
 Tcnt1 = 0
 Start Timer1
+Gosub Info_at_reset
 Return
 '
 Modify_if_necessary:
@@ -538,7 +547,7 @@ Select Case El_mode
    Case 0
       Return
    Case 1
-      If Hyst_on = 0 Then
+      If Hyst = 0 Then
          If Voltage > Required_v Then
             ' lower resistance
             Gosub Lower_dac_out_voltage
@@ -556,7 +565,7 @@ Select Case El_mode
          End If
       End If
    Case 2
-      If Hyst_on = 0 Then
+      If Hyst = 0 Then
          If All_current < Required_i Then
             Gosub Lower_dac_out_voltage
          Else
@@ -570,7 +579,7 @@ Select Case El_mode
          End If
       End If
    Case 3
-      If Hyst_on = 0 Then
+      If Hyst = 0 Then
          If All_power < Required_p Then
             Gosub Lower_dac_out_voltage
          Else
@@ -585,7 +594,7 @@ Select Case El_mode
          End If
       End If
    Case 4
-      If Hyst_on = 0 Then
+      If Hyst = 0 Then
          If Resistance > Required_r Then
             Gosub Lower_dac_out_voltage
          Else
@@ -596,7 +605,7 @@ Select Case El_mode
          If Resistance < Required_r_m Then
             Gosub Lower_dac_out_voltage
          Else
-            If All_power > Required_r_p Then Gosub Increase_dac_out_voltage
+            If Resistance > Required_r_p Then Gosub Increase_dac_out_voltage
          End If
       End If
    Case Else
@@ -605,12 +614,12 @@ End Select
 Return
 '
 Lower_dac_out_voltage:
-' complete I too low -> lower resistance -> raise fetvoltage
+' increase I -> lower resistance -> raise fetvoltage
 ' lower Dac_out_voltage due to inverting LM324
 '
    If Adc_speed = 3 Then
       ' final approach
-      ' use Fet with min current
+      ' use Fet with lowest current
       Fet_number = Min_fet
       If Dac_out_voltage(Fet_number) > 0 Then Decr Dac_out_voltage(Fet_number)
    Else
@@ -622,9 +631,10 @@ Lower_dac_out_voltage:
 Return
 '
 Increase_dac_out_voltage:
-   ' increase resistance,
+   ' decrease I -> increase resistance -> lower fetvoltage
    ' Increase ADC accuracy after 1st overshot
    Adc_speed = 3
+   ' use fet with highest current
    Fet_number = Max_fet
    If Dac_out_voltage(Fet_number) < Da_resolution Then
       Incr Dac_out_voltage(Fet_number)
@@ -673,7 +683,8 @@ Select Case Fet_number
 End Select
 Reset Ldac
 'transfer to Output
-Reset Ldac
+NOP
+NOP
 'min time is 100ns
 Set Ldac
 Return
@@ -880,11 +891,34 @@ End If
 Measure_v = 0
 Return
 '
+Info_at_reset:
+   Tx_b(1) = &H02
+   Tx_b(2) = 0
+   Tx_b(3) = 0
+   Tx_b(4) = 0
+   Tx_write_pointer = 5
+   If Command_mode = 1 Then Gosub Print_tx
+   Gosub Command_received
+   Tx_b(1) = &H04
+   Tx_b(2) = 0
+   Tx_b(3) = 0
+   Tx_b(4) = 0
+   Tx_write_pointer = 5
+   If Command_mode = 1 Then Gosub Print_tx
+    Gosub Command_received
+   Tx_b(1) = &H04
+   Tx_b(2) = 0
+   Tx_b(3) = 0
+   Tx_b(4) = 0
+   Tx_b(5) = 0
+   Tx_write_pointer = 6
+   If Command_mode = 1 Then Gosub Print_tx
+Return
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
