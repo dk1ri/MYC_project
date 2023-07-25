@@ -27,10 +27,8 @@ function create_os($basic_tok) {
         $i += 1;
     }
     echo "</select>";
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok){
-        if (strstr($tok, "a")) {
-            display_as($tok, 0);
-        }
+    if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+        display_as($_SESSION["o_to_a"][$device][$basic_tok]);
     }
     echo "</h3></div>";
 }
@@ -114,6 +112,7 @@ function receive_s($basic_tok, $stacks, $from_device){
     if (array_key_exists($basic_tok,$_SESSION["as_token"][$device])){
         $org_token = $_SESSION["as_token"][$device][$basic_tok];
         $_SESSION["actual_data"][$device][$org_token. "d0"] = $data;
+        update_corresponding_opererating($basic_tok, "d0", $data);
     }
     # 2 byte to delete
     return 2;

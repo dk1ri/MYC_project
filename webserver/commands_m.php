@@ -19,7 +19,9 @@ function create_om($basic_tok) {
             stack_memory_selector($token);
         }
     }
-    display_as($token, 0);
+    if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+        display_as($_SESSION["o_to_a"][$device][$basic_tok]);
+    }
     echo "</h3></div>";
 }
 
@@ -38,7 +40,7 @@ function create_am($basic_tok){
         echo $dat;
         echo " ";
     }
-    display_as($token, 1);
+    display_as($token);
     echo "</h3></div>";
 }
 
@@ -85,12 +87,11 @@ function send_am($basic_tok, $send, $senda){
 function receive_m($basic_tok, $from_device){
     $device = $_SESSION["device"];
     # multiple dimensions not yet supported
-    $position_length = $_SESSION["property_len_byte"][$device][$basic_tok][1];
+    $position_length = $_SESSION["property_len"][$device][$basic_tok][1];
     $position = hexdec(substr($from_device,0, $position_length));
-    $data_length = $_SESSION["property_len_byte"][$device][$basic_tok][2];
+    $data_length = $_SESSION["property_len"][$device][$basic_tok][2];
     $from_device = substr($from_device,$position_length, null);
-    $data = array_splice($from_device,0, $data_length);
-    list($data, $delete_bytes) = update_memory_data($basic_tok."d0", $data, 0, 3);
+    list($data, $delete_bytes) = update_memory_data($basic_tok."d0", $from_device, 0, 3);
     $_SESSION["actual_data"][$device][$basic_tok."d0"] = $data;
     update_corresponding_opererating($basic_tok, "x1", $data);
     # to delete

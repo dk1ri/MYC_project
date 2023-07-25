@@ -37,7 +37,9 @@ function send_u($basic_tok, $send, $senda){
         # $actual_data is 0 always
         # send, if corrected_POST is not idle (no send with change of stack only)
         if ($_SESSION["corrected_POST"][$device][$tok] != 0) {
-            $send .= dec_hex($_SESSION["corrected_POST"][$device][$tok], 2);
+            if (count($_SESSION["original_announce"][$device][$basic_tok]) > 4){
+                $send .= dec_hex($_SESSION["corrected_POST"][$device][$tok], 2);
+                }
             $change_found = 1;
         }
     }

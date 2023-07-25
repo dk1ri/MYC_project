@@ -35,29 +35,51 @@ function correct_POST($device){
             }
         }
         # no futher correction, if value was beyond limit
+        # also for big "non memory" values
         if (!$limit) {
+            # ignore if string
+            if (!is_numeric($value)) {
+                continue;
+            }
             # hex values not supported
-            $des= explode(",", $_SESSION["des"][$device][$token]);
+            $des = explode(",", $_SESSION["des"][$device][$token]);
+            # drop max value
+            array_splice($des, 0, 1);
             $i = 0;
             $found = 0;
             $result = 0;
-            while ($i < count($des)and $found == 0) {
-                if (strstr($des[$i],"_")) {
+            while ($i < count($des) and $found == 0) {
+                if (strstr($des[$i], "_")) {
                     list($separator, $from, $to) = split_range($des[$i]);
-                    while ($from < $to and $found == 0) {
-                        if ($value <= $from) {
+                    # if value < $from with first loop
+                    if ($value < $from){
+                        $result = 0;
+                        $found = 1;
+                    }
+                    else {
+                        $counts = ($to - $from + 1) / $separator;
+                        if ($value >= $to) {
+                            # -1: $result is at the position of $from already
+                            $result += $counts - 1;
+                        } else {
+                            # is within
+                            $temp = $value / ($to - $from);
+                            $result = (int)($temp * $counts);
                             $found = 1;
                         }
-                        else{
+                    }
+                } else {
+                    # if value < $from with first loop
+                    if ($value < $from){
+                        $result = 0;
+                        $found = 1;
+                    }
+                    else {
+                        if ($result = $des[$i]) {
+                            $found = 1;
+                        } else {
                             $result += 1;
                         }
-                        $from += $separator;
-                    }
-                }
-                else{
-                    if ($result = $des[$i]){$found = 1;}
-                    else{
-                        $result += 1;
                     }
                 }
                 $i += 1;

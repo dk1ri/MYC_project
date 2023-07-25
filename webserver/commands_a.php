@@ -22,7 +22,9 @@ function create_oa($basic_tok){
     $tok = $basic_tok. "d" . $position;
     echo "<input type=text name=" . $tok . " size = 20  placeholder =" . $_SESSION["actual_data"][$device][$tok] . "><br>";
     echo "<br>";
-    display_as($basic_tok."a", 0);
+    if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+        display_as($_SESSION["o_to_a"][$device][$basic_tok]);
+    }
     echo "</h3></div>";
 }
 
@@ -48,14 +50,14 @@ function create_aa($basic_tok) {
     # actual_data[$basic_tok."m0"] hold the position
     $dat = translate_received_data_type($tok, $_SESSION["actual_data"][$device][$tok]);
     echo " " . $dat . "<br>";
-    display_as($basic_tok."a", 1);
+    display_as($basic_tok."a");
     echo "</h3></div>";
 }
 function send_oa($basic_tok, $send){
     $device = $_SESSION["device"];
     $send_ok = 0;
     $pos = 0;
-    $send_ok_= 0;
+    $send_ok__= 0;
     $tok = $basic_tok. "a";
     if (array_key_exists($tok, $_SESSION["corrected_POST"][$device]) and $_SESSION["corrected_POST"][$device][$tok] == 1) {
         # if answer set-> ignore change of data

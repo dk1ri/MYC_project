@@ -13,6 +13,7 @@ function send_and_update(){
     $already_done = [];
     $_SESSION["read"] = 0;
     foreach ($_SESSION["corrected_POST"][$device] as $tok => $value) {
+        if ($value ==""){continue;}
         # interface.. name .... device is updated in correct_POST
         # values of ($_SESSION["corrected_POST"][$device] are correct (updated by correct_POST before)
         if (!array_key_exists($tok, $_SESSION["special_token"][$device])){
@@ -23,13 +24,7 @@ function send_and_update(){
                 # every $basic_tok is handled once only
                 # different $tok with same $basic_tok in $_SESSION["corrected_POST"] are handled with the first $tok found
                 # update and generate $send for basic_tok
-                if (array_key_exists($basic_tok, $_SESSION["ct_of_as"][$device])){
-                    # for "as"token the ct of the o token must be used
-                    $ct = $_SESSION["ct_of_as"][$device][$basic_tok];
-                }
-                else {
-                    $ct = $_SESSION["announce_all"][$device][$tok][0];
-                }
+                $ct = $_SESSION["announce_all"][$device][$tok][0];
                 $send = dec_hex($basic_tok, $_SESSION["command_len"][$device]);
                 # $senda is used, if as answer token is activ
                 if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {

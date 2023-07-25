@@ -55,10 +55,8 @@ function  create_op_oo($basic_tok){
             }
         }
     }
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok){
-        if (strstr($tok, "a")) {
-            display_as($tok, 0);
-        }
+    if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+        display_as($_SESSION["o_to_a"][$device][$basic_tok]);
     }
     echo "</h3></div>";
 }
@@ -179,23 +177,22 @@ function send_oo($basic_tok, $send, $senda){
  function receive_p($basic_tok, $stacks, $from_device){
      $device = $_SESSION["device"];
      $to_delete = 0;
-    if ($stacks == 1){
-        $i = 0;
-        while (array_key_exists($basic_tok."d".$i, $_SESSION["announce_all"][$device])) {
-            # for all dimensions
-            # datalenth is the number of chars to delete
-            $to_delete = $_SESSION["property_len"][$device][$basic_tok][$i + 2];
-            $data = hexdec(substr($from_device, 0, $to_delete));
-            $_SESSION["actual_data"][$device][$basic_tok . "d".$i] = $data;
-            if (array_key_exists($basic_tok, $_SESSION["as_token"][$device])) {
-                $org_token = $_SESSION["as_token"][$device][$basic_tok];
-                $_SESSION["actual_data"][$device][$org_token . "x".$i] = $data;
-            }
-            $i += 1;
-        }
+    if ($stacks > 1){
+        # up to 256 stacks only -> not fully supported
+        # the values for the actual stack is received (and displayed)
+        $from_device = substr($from_device,2);
     }
-    else{
-        read_to_stacks();
+    $i = 0;
+    while (array_key_exists($basic_tok."d".$i, $_SESSION["announce_all"][$device])) {
+        # for all dimensions
+        # datalenth is the number of chars to delete
+        $to_delete = $_SESSION["property_len"][$device][$basic_tok][$i + 2];
+        print substr($from_device, 0, $to_delete) . "su ";
+        $data = hexdec(substr($from_device, 0, $to_delete));
+        print $to_delete. " ". $data." e ";
+        $_SESSION["actual_data"][$device][$basic_tok . "d".$i] = $data;
+        update_corresponding_opererating($basic_tok, "d".$i, $data);
+        $i += 1;
     }
     return $to_delete;
 }

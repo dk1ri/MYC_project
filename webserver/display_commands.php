@@ -100,14 +100,12 @@ function create_basic_command($basic_tok){
     echo "</div>";
 }
 
-function display_as($tok, $display){
+function display_as($tok){
     # for "as"token
     $device = $_SESSION["device"];
     $tok = basic_tok($tok)."a";
-    if (array_key_exists(basic_tok($tok), $_SESSION["ct_of_as"][$device]) or $display) {
-        echo $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["read_data"] . ": ";
-        echo "<input type='checkbox' id=" . $tok . " name=" . $tok . " value=1>";
-    }
+    echo $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["read_data"] . ": ";
+    echo "<input type='checkbox' id=" . $tok . " name=" . $tok . " value=1>";
     # reset
     $_SESSION["actual_data"][$device][$tok] = 0;
 }

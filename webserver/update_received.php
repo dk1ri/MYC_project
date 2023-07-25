@@ -14,12 +14,8 @@ function update_received(){
         $basic_tok = hexdec($from_device[0] * 256 + $from_device[1]);
         $from_device = substr($from_device,4, null);
     }
-    if(!array_key_exists($basic_tok, $_SESSION["original_announce"][$device])){
-        # error
-        return [];
-    }
     $announce = $_SESSION["original_announce"][$device][$basic_tok];
-    $ct = explode(",",$announce[0])[0];
+    $ct = explode(",", $announce[0])[0];
     # characters to delete after handling
     $to_delete = 0;
     switch ($ct) {
@@ -77,7 +73,7 @@ function update_received(){
     }
     # for one command $from_device should be empty
     $from_device = substr($from_device, $to_delete, null );
-  #  print "Restlaenge ".  strlen($from_device)." ";
+    print "Restlaenge ".  strlen($from_device)." ";
 }
 
 function read_to_stacks(){

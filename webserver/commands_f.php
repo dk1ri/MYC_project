@@ -14,7 +14,9 @@ function create_of($basic_tok){
     echo " " . find_name_of_type($type) . ": ";
     echo "<input type=text name=" . $basic_tok."d0" . " size = 10 placeholder =" . $_SESSION["actual_data"][$device][$basic_tok."d0"] . ">";
     echo "<br>";
-    display_as($basic_tok. "a", 0);
+    if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+        display_as($_SESSION["o_to_a"][$device][$basic_tok]);
+    }
     echo "</h3></div>";
 }
 
@@ -31,7 +33,7 @@ function create_af($basic_tok){
     }
     echo "</marquee><br>";
     stack_memory_selector($basic_tok. "m0");
-    display_as($basic_tok. "a", 1);
+    display_as($basic_tok. "a");
     echo "</h3></div>";
 }
 
@@ -71,7 +73,6 @@ function send_af($basic_tok, $send){
         if ($_SESSION["actual_data"][$device][$basic_tok . "m0"] != 0) {
             # only if number of elements > 0
             $length = $_SESSION["property_len"][$device][$basic_tok][2];
-            print $length;
             $send .= translate_dec_to_hex("n", $_SESSION["actual_data"][$device][$basic_tok . "m0"], $length);
             $send_ok = 1;
             $_SESSION["read"] = 1;

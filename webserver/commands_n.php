@@ -23,7 +23,9 @@ function create_on($basic_tok) {
             echo "<br>";
         }
     }
-    display_as($basic_tok . "a", 0);
+    if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+        display_as($_SESSION["o_to_a"][$device][$basic_tok]);
+    }
     echo "</h3></div>";
 }
 
@@ -47,7 +49,7 @@ function create_an($basic_tok){
     }
     echo " <marquee width='200' scrollamount='2'>" . $dat . "</marquee>" . " ";
     echo "<br>";
-    display_as($basic_tok, 1);
+    display_as($basic_tok);
     echo "</h3></div>";
 }
 
@@ -132,6 +134,7 @@ function receive_n($basic_tok, $from_device){
     for ($i=0; $i < $no_of_elements; $i ++){
         if ($i != 0){$data .=",";}
         list($data_, $delete_bytes) = update_memory_data($basic_tok."d0", $from_device, 0, 3);
+        update_corresponding_opererating($basic_tok,"d0", $data);
         $from_device = substr($from_device, $delete_bytes, null);
         $data .= $data_;
         $all_to_delete += $delete_bytes;

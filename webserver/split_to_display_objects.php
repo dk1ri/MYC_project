@@ -1,6 +1,6 @@
 <?php
 # split_to_display_objects.php
-# DK1RI 20230618
+# DK1RI 20230724
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function split_to_display_objects(){
     # create $_SESSION["original_announce"][$device] from announcefile
@@ -53,18 +53,17 @@ function split_to_display_objects(){
                     $last_is_op = 0;
                 }
             }
-            if (!array_key_exists($token, $_SESSION["a_to_o"][$device])) {
-                $_SESSION["original_announce"][$device][$token] = $lda;
-                if (!strpos($line, "14,CHAPTER,ADMINISTRATION")) {
-                    $_SESSION["chapter_token"][$device]["all_basic"][$token] = 1;
-                }
-                if (strpos($line, "CHAPTER,")) {
-                    $ar = explode("CHAPTER", "$line");
-                    $chap = explode(",", $ar[1])[1];
-                    $_SESSION["chapter_token"][$device][$chap][$token] = 1;
-                    $_SESSION["chapter_names"][$device][$chap] = $chap;
-                    $_SESSION["activ_chapters"][$device][$chap] = $chap;
-                }
+            $_SESSION["original_announce"][$device][$token] = $lda;
+            if (!strpos($line, "CHAPTER")) {
+                # only those without CHAPTER
+                $_SESSION["chapter_token"][$device]["all_basic"][$token] = 1;
+            }
+            if (strpos($line, "CHAPTER,")) {
+                $ar = explode("CHAPTER", "$line");
+                $chap = explode(",", $ar[1])[1];
+                $_SESSION["chapter_token"][$device][$chap][$token] = 1;
+                $_SESSION["chapter_names"][$device][$chap] = $chap;
+                $_SESSION["activ_chapters"][$device][$chap] = $chap;
             }
         }
         fclose($file);
@@ -147,7 +146,7 @@ function expand_s($basic_tok, $announce, $ct, $ctm){
         $_SESSION["des"][$device][$basic_tok . "d0"] = $result;
         $_SESSION["announce_all"][$device][$basic_tok . "d0"][0] = $ct;
     }
-    if($ct == "as" or $ct == "at") {
+    if($ct == "as" or $ct == "at" or $ct == "ar") {
         $_SESSION["announce_all"][$device][$basic_tok . "a"][0] = $ct;
     }
     if ($ctm == "s"){$_SESSION["includes"][$device]["s"] = "s";}
@@ -383,7 +382,7 @@ function check_max_for_memory_data($announce){
 
 function range_a_b_type($basic_tok, $announce, $ct){
     # for special selector for a / b type: display the type or label
-    # also create "announce_all and "type_for_memory" for $basictol."dx" for each data element
+    # also create "announce_all and "type_for_memory" for $basictok."dx" for each data element
     #
     $device = $_SESSION["device"];
     $tok = $basic_tok. "m0";
@@ -395,6 +394,7 @@ function range_a_b_type($basic_tok, $announce, $ct){
     $max_for_send = "";
     $subtoken = 0;
     while ($i < count($announce)){
+        $des_ = "";
         if ($i != 1) {
             $des .= ",";
             $type_for_memories .= ",";
@@ -411,15 +411,20 @@ function range_a_b_type($basic_tok, $announce, $ct){
         if (count($ann) > 0){
             if (!strstr($ann[0], "{")){
                 $name = $ann[0];
+                array_splice($ann, 0, 1);
             }
-            $ann = array_splice($ann, 0, 1);
+        }
+        if (count($ann) > 0){
+            # rest is <des>
+            $des_ = str_replace(["{","}"],"", $ann[0]);
         }
         $des .= $name;
         $type_for_memories .= $type;
         list( $min, $max) = find_allowed($type);
         $_SESSION["announce_all"][$device][$basic_tok. "d" . $subtoken][0] = $ct;
+        $_SESSION["des"][$device][$basic_tok. "d" . $subtoken] = $type;
         $_SESSION["type_for_memories"][$device][$basic_tok. "d" . $subtoken] = $type;
-        $_SESSION["des_name"][$device][$basic_tok. "d" . $subtoken] = $name;
+        $_SESSION["des_name"][$device][$basic_tok. "d" . $subtoken] = $name . ".".$des_;
         $j += 1;
         $i += 1;
         $subtoken += 1;

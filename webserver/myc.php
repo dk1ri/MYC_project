@@ -13,6 +13,7 @@
     This version should work basically, but there are some errors
 
     found errors:
+    ct_of_as correctly used? -> ct_of_as_ ?
 
      not implemented / missing:
      ext

@@ -47,7 +47,7 @@ function read_new_device($device){
     $_SESSION["chapter_array"][$device] = [];
     # actual tokens, depend on selected chapters
     $_SESSION["tok_list"][$device] = [];
-    # commandtype of "as" commands
+    # commandtype of "os" commands used but may be error -> to check
     $_SESSION["ct_of_as"][$device] = [];
     # token for as commands: as-token array data master-token (num)
     $_SESSION["as_token"][$device] = [];
@@ -57,7 +57,7 @@ function read_new_device($device){
     $_SESSION["type_for_memories"][$device] = [];
     # token of oo commands
     $_SESSION["oo_tok"][$device] = [];
-    # per dispytoken:
+    # per displaytoken:
     # for memory data :
     #       string: "alpha" (restriction not supported)
     #       small numeric: max,0,0,1,1,2,4....
@@ -88,10 +88,10 @@ function read_new_device($device){
     $_SESSION["chapter"] = "all";
     # as answer token <-> operate token:
     read_a_o($device);
-    # like interface ... :
-    read_special_token();
     # for details see there:
     split_to_display_objects();
+    # like interface ... : after split_to_display_objects (some updates there)
+    read_special_token();
     # ct for "as" commands (ct of corresponding "o" command)
     ct_of_as();
     # length of properties
@@ -134,14 +134,18 @@ function read_special_token(){
     $_SESSION["special_token"][$device]["user"] = 1;
     $_SESSION["special_token"][$device]["languages"] = 1;
     $_SESSION["special_token"][$device]["device"] = 1;
+    foreach ($_SESSION["chapter_names"][$device] as $value){
+        $_SESSION["special_token"][$device]["chapter_".$value] = 1;
+    }
 }
 
 function ct_of_as(){
-    # token for as commands are set to "o" token but have no announce_all entry
+    # token for as commands are set to "a". <command_type_of_o_command>
     $device =$_SESSION["device"];
     foreach ($_SESSION["o_to_a"][$device] as $key => $value) {
         # there is a "d0" token always
-        $_SESSION["ct_of_as"][$device][$key] = $_SESSION["announce_all"][$device][$key . "d0"][0];
+        $new_ct = "a" . explode(",",$_SESSION["announce_all"][$device][$key . "d0"][0])[0][1];
+        $_SESSION["ct_of_as"][$device][$value] = $new_ct;
     }
 }
 
@@ -282,7 +286,7 @@ function calculate_cor_token($device){
     # add as commands
     # as command get the tok of the corresponding op tok!
     foreach ($_SESSION["o_to_a"][$device] as $key => $value) {
-        $_SESSION["cor_token"][$device][basic_tok($key)][] = $key. "a";
+        $_SESSION["cor_token"][$device][basic_tok($key)][] = $value. "a";
     }
 }
 

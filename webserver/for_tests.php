@@ -6,6 +6,8 @@ function for_tests($device){
     create_session_data_file_array($device, "original_announce", $_SESSION["original_announce"][$device]);
     create_session_data_file_array($device, "announce_all", $_SESSION["announce_all"][$device]);
     create_session_data_file_array($device, "chapter_token", $_SESSION["chapter_token"][$device]);
+    create_session_data_file($device, "chapter_names", $_SESSION["chapter_names"][$device]);
+    create_session_data_file($device, "special_token", $_SESSION["special_token"][$device]);
     create_session_data_file_array($device, "property_len", $_SESSION["property_len"][$device]);
     create_session_data_file_array($device, "cor_token", $_SESSION["cor_token"][$device]);
     create_session_data_file($device, "oo_tok", $_SESSION["oo_tok"][$device]);
