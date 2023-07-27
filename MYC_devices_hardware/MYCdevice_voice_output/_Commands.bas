@@ -48,7 +48,6 @@ If Commandpointer >= 2 Then
          If Command_b(2) > 0 Then
             ' > 10s, see Table2
             Time_ = T_10s
-            Time2 = 5
             Select Case Command_b(2)
                Case 1 to 8
                   Voicea = Command_b(2) + 2
@@ -72,3 +71,15 @@ If Commandpointer >= 2 Then
 End If
 Return
 '
+04:
+Tx_time = 1
+Tx_b(1) = &H04
+If Config_at_start = 0 Then
+   Tx_b(2) = 1
+Else
+   Tx_b(2) = 0
+End If
+Tx_write_pointer = 3
+If Command_mode = 1 Then  Gosub Print_tx
+Gosub Command_received
+Return
