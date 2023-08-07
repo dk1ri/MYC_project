@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
  
 MYC Interface für RC5A3 Rotorsteuerung von Create
 
-Author DK1RI, Version V05.1 20200501
+Author DK1RI, Version V07.0 20230807
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
@@ -12,6 +12,7 @@ Der Einbau des Interfaces und der Umbau der Originalschaltung erfordert das Vers
 Es gibt unterschiedliche Varianten der Elektronik der Originalsteuerung. Das vorliegende Interface gilt nur für eine Version aus den 90er Jahren. Weitere Details im Text.
 
 Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
+Zur Steuerung mit einem Browser: siehe [10].
 Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 Der Änderungsaufwand an der Originalschaltung sollte so gering als möglich sein; allerdings sind doch einige Eingriffe in die Originalschaltung nötig.
@@ -19,33 +20,28 @@ Das Interface soll in das Originalgehäuse passen.
 
 Beschreibung und Bedienungshinweise
 
+Allgemeines:
+
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung (12V) liefert das Steuergerät. Benötigt werden maximal 80mA zusätzlich.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
+Die numerische ID des Interfaces ist auf 1 gesetzt; der Name auf „Device 1“.
+Diese Werte können verändert werden.
+
+Details:
 
 Wenn die Motorsteuerung des Interfaces aktiv ist, schaltet ein Relais um von Durchleitung von Originalsteuerung zum Motor auf die Interfacesteuerung zum Motor.
 Dazu  muss nach dem Einschalten ein Aktivierungsbefehl (&H0101) gegeben werden. Dann funktionieren die CW/CCW und Preseteinstellung der Originalsteuerung nicht mehr. 
 Die Werte des Interface können aber immer abgefragt werden, Die Kompassanzeige funktioniert auch unverändert immer.
-
 Die Geschwindigkeitssteuerung kann das Interface nicht machen: das Potentiometer zur Einstellung liegt in einem galvanisch getrennten Zweig der Stromversorgung.
-
 Das Signal der Anschlag-LED, die ebenfalls galvanisch getrennt ist, wird durch einen in Reihe zur Anzeige LED geschalteten Optokoppler übertragen und verwendet.
-
 Alle Richtungseinstellungen erfolgen relativ zu Nord; 0 bzw. 360 Grad im Norden. Werte von 0 bis 359  sind erlaubt. Ohne weitere Einstellungen (Defaultwert) sind die angezeigten Werte der Antennenrichtung dann richtig, wenn die Antenne beim Rotoranschlag nach Süden zeigt. Dies entspricht der Kompassanzeige, wenn keine Änderungen vorgenommen wurden. Andere Richtungen sind möglich. Mit dem Befehl &H08 wird die Richtung eingegeben, in die die Antenne bei Rotoranschlag (nicht die Richtung des Rotoranschlags!!) steht (default: 180 Grad).
-
-Die numerische ID des Interfaces ist auf 1 gesetzt; der Name auf „Device 1“.
-Diese Werte können verändert werden.
 Im EEPROM sind folgende Werte gespeichert und bleiben auch nach dem Abschalten erhalten:
 Presetrichtung, die Kalibrierungswerte, Antennenrichtung am Anschlag, Device ID, Device Name,  aktive Interfaces und I2C Adresse
-
 Das Interface ist fest mit  der Stromversorgung des Rotors verbunden.
-
 Die Relais sind hardwaremäßig so verschaltet, dass beide Motorwicklungen des Rotors nie gleichzeitig Spannung bekommen.
-
 Der Rotor kann nur um 360 Grad gedreht werden. Ohne Eichung kann dieser Wert etwas größer oder kleiner sein. 
-
 Wird dabei der Endschalter ausgelöst, schaltet der Motor sofort ab.
-
 Ist die Preset-Antennenrichtung bei Presetbetrieb 5 Grad oder weniger am Rotoranschlags, wird eine  Preset-Antennenrichtung  in 5 Grad Abstand verwendet. Falls der Rotor trotzdem über die Grenze hinausfährt, wird der Rotor dann sofort abgeschaltet und der Presetbetrieb wird  beendet.
 
 Die Stromversorgung des Originalgeräts
@@ -60,8 +56,6 @@ Zu den Kondensatoren der Gleichrichter wurden je 220uF parallel geschaltet.  Die
 Die Spannung am Rotorpotentiometer wurde mit VR1 und VR2 auf dem Interface auf +-2,5V stabilisiert. Diese Begrenzung wirkt auch auf die Originalschaltung, hat aber keinen Einfluss.
 Bei Verwendung des Interfaces sollte die Rotorsteuerung mit „MAN“ eingeschaltet werden. Das verringert den Stromverbrauch.
 Nochmal der Hinweis: Es kann auch Varianten der Original-Steuerung geben. Der Umbau und Einbau des Interfaces muss dann anders erfolgen.
-
-
 
 Potentiometerspannung
 
@@ -90,144 +84,8 @@ Der größte Fehler dürfte aber durch die Nichtlinearität des Potentiometers entst
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
-Folgende Befehle werden akzeptiert:
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
-Announce:
-'Befehl &H00
-'basic annoumement wird gelesen
-'basic announcement is read
-Data "0;m;DK1RI;RC5 rotator control;V06.0;1;145;1;24:1-1"
-'
-'Announce1:
-'Befehl &H01 0|1
-'Motorsteuerung aus /an schalten
-'control off / on
-Data "1;os,Device off on;1;0,off;1,on"
-'
-'Announce2:
-'Befehl &H02
-'liest Antennenposition 0... 359
-'read antenna position
-Data "2;ap,antenna position;1;360;lin:degree"
-'
-'Announce3:
-'Befehl &H03 0|1
-'Manual / Preset switch
-Data "3;os;1;0,manual;1,preset"
-'
-'Announce4:
-'Befehl &H04 0 to 359
-'preset Antennerichtung; kann motor im preset mode starten
-'preset, real antenna direction may starts motor if preset mode
-Data "4;op,Preset Position;1;360;lin;degree"
-'
-'Announce5:
-'Befehl &H05
-'manuell startet den Motor ccw
-'manual start motor ccw
-Data "5;ou,Motor ccw;1;0,idle;1,ccw"
-'
-#Announce6:
-'Befehl &H06
-'manuell stoppt den Motor
-'manual stops motor
-'Data "6;ou,Motor stop;1;0;idle;1,stop"
-'
-#Announce7:
-'Befehl &H07
-'manuell startet den Motor cw
-'manual start motor cw
-Data "7;ou,Motor cw;1;0,idle;1,cw"
-'
-'Announce8:
-'Befehl &H08 0 to 359
-'schreibt Antenna_limit_direction 0 ... 359
-'write Antenna_limit_direction
-Data "8;op,Antenna_limit_direction;1;360;lin;degree"
-'
-'Announce9:
-'Befehl &H09
-'liest Antenna_limit_direction
-'read Antenna_limit_direction
-Data "9;as8"
-'
-'Announce10:
-'Befehl &H0A
-'liest Werte
-'read values
-Data "10;aa,Values 1;b,controlon;b,Preset;b,Motor_cw;b,Motor_ccw;b,not_Limit;b,preset_limits"
-'
-#Announce11:
-'Befehl &H0B
-'liest Werte
-'read values
-Data "11;aa,values 2;w,preset value;w,Ccw_correction;w.Cw_correction,w,dir_rotor;w,preset_rotor"
-'
-'Announce12:
-'Befehl &H0C
-'liest die Spannung an der ccw Grenze, Eichung (noch vor hardware Limit)
-'read voltage for ccw limit, calibration (before hardware limit)
-Data "12;ou;1;0,idle;1,CCW calibration"
-'
-'Announce13:
-'Befehl &H0D
-'liest die Spannung an der cw Grenze, Eichung (noch vor hardware Limit)
-'read voltage for cw limit, calibration (before hardware limit)
-Data "13;ou;1;0,idle;1,CW calibration"
-'
-'Announce14:
-'Befehl &H0E
-'liest limit
-'read limit
-Data "14;aa,limit value;a,Limit"
-'
-'Announce15:
-'Befehl &H0F
-'Motorsteuerung aus /an status lesen
-'read on / off control
-'Data "1;as,as1"
-'
-'Announce16:
-'Befehl &HF0<n><m>
-'liest announcements
-'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;145;24"
-'
-'Announce17:                                                  '
-'Befehl &HFC
-'Liest letzten Fehler
-'read last error
-Data "252;aa,LAST ERROR;20,last_error"
-'
-'Announce18:                                                  '
-'Befehl &HFD
-'Geraet aktiv Antwort
-'Life signal
-Data "253;aa,MYC INFO;b,ACTIVE"
-'
-'Announce19:
-'Befehl &HFE :
-'eigene Individualisierung schreiben
-'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,SERIAL,1"
-'
-'Announce20:
-'Befehl &HFF :
-'eigene Individualisierung lesen
-'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8N1"
-'
-'Announce21:
-' - no operate command is done before Control_on is set
-Data "R !$3 !$5 !$7 IF $15=0"
-'
-'Announce22:
-' - motor at limit will switch off , no need for logic device to send switch off command
-Data "R $6 IF $14=1"
-'
-'Announce23:
-'No Preset If hardwarelimit
-Data "R !$3 IF $14=1"
 
 Fehlermeldungen
 
@@ -253,7 +111,7 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.10 [6] in das Verzeichnis mit dem Programm kopiert werden
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
@@ -264,8 +122,8 @@ Der Jumper J1 sollte während der Programmierung entfernt werden.
 Serielle (RS232 / USB) Schnittstelle
 
 Schnittstellenparameter: 19k2 8N1
-Die Signale stehen mit TTL Pegel an JP7 zur Verfügung.
-Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird mit einem Zwischenstecker verlötet (siehe Bild).
+Statt des MAX3232 kann auch MAX232 verwendet werden. Dann müssen die 220nF Kondensatoren durch 22uF ersetzt werden.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
 Die Stromversorgung erfolgt dann über USB.
 
 I2C Schnittstelle 
@@ -283,10 +141,15 @@ Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 Bei Bestückung mit der USB Schnittstelle muss die 5V Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
 
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [10].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [11]
+
 SMD
 
 Die Leiterplatte ist teilweise mit SMD bestückt.
-
 
 Stromversorgung
 
@@ -296,19 +159,14 @@ Leiterplattenbestückung, Gehäuseeinbau
 
 Offenbar gibt es mehrere Varianten der Elektronik der Originalsteuerung. Weitere Details siehe oben „Die Stromversorgung des Originalgeräts“.
 Das folgende gilt für meine Version:
-
 Die Dioden und Transistoren sind unkritisch. 
 Der Widerstände Ry muss 145kOhm betragen und kann aus bis zu 3 Widerständen zusammengesetzt werden: zum Beispiel 143kOhm und 2.2kOhm oder 1.8kOhm in Reihe. Das ist ausreichend genau.
-
 Die Interfaceplatine wird in das Gehäuse der Rotorsteuerung eingebaut. Dazu ist das Gerät vom Stromnetz zu trennen !! Es sind unbedingt entsprechende VDE Sicherheitsrichtlinien zu beachten (die ein Funkamateur kennen sollte).
-
 Die Platine wird in der Schale des Deckels mit drei Schrauben befestigt. Da das Interface dann sehr dicht an der nicht isolierten Netzsicherung liegt, ist diese unbedingt zu isolieren !!!
 Der Umbau der Spannungsversorgung ist oben beschrieben. Die beiden Kondensatoren sind „fliegend“ an der äußeren Lampenfassung angelötet. Dort ist auch der Anschluss der Stromversorgung des Interfaces. 
 Der I2C / USB Anschluss wird als Kabelanschluss durch die Öffnung unterhalb der Sicherung geführt. 
 Bei Verwendung des USB Moduls wird IC4 nicht bestückt.
 2 Bilder des Aufbaus: siehe [8], [9]-
-
-
 
 Anschlüsse
 
@@ -349,7 +207,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 4.0
-Bascom Version V06.1  
+Bascom Version V07.0 
 
 Copyright
 
@@ -364,8 +222,10 @@ Referenzen
 [2]	dk1ri.de/dhw/rotorsteuerung_create_bascom.zip
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
-[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	dk1ri.de/myc/common_1.10.zip
+[5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
+[6]	https://dk1ri.de/myc/common_1.13.zip
 [7]	dk1ri.de/dhw/rotorsteuerung_widerstandsberechnung.zip
 [8]	dk1ri.de/dhw/rotor1.jpg
 [9]	dk1ri.de/dhw/rotor2.jpg
+[10]	https://dk1ri.de/myc/webserver.pdf
+[11]	https://dk1ri.de/w_dat.htm

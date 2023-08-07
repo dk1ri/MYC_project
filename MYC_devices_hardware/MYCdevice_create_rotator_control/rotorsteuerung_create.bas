@@ -1,15 +1,17 @@
 '-----------------------------------------------------------------------
 'name : rotorsteuerung_create_bascom.bas
-'Version V06.1, 201200430
+'Version V07.0, 20230806
 'purpose : Programm for control a Create RC5 Rotator
 'Can be used with hardware rotorsteuerung_create V04.0 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1,10 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory common_1.13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
+' By default the rotator (and the positionvoltage) is from 180 deg -> 360 deg -> 0 deg - 179 deg
+' the antennadirection is from 0 deg (North to 359 deg (north)
 '----------------------------------------------------
-$include "common_1.10\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -28,20 +30,20 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.10\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
 '1...127:
 Const I2c_address = 2
-Const No_of_announcelines = 24
+Const No_of_announcelines = 26
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.10\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 Const Ccw_limit_default = 1008
 '25 deg (out of400) before end -> 6,25% -> 6,25 % * 1024 = 64
@@ -92,16 +94,16 @@ Dim Temp_w As Word
 Dim Temp_single As Single
 '
 '----------------------------------------------------
-$include "common_1.10\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 Pos_rotator_voltage = Getadc(1)
@@ -125,83 +127,86 @@ If Controlon = 1 Then
    End If
 End If
 '
-$include "common_1.10\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.10\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.10\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 Correct_:
 'This correct the systematic error due to the circuit
 'For details see the LTspice simulation and the corresponding Calc sheet
 'The full range is splitted into 20 Segments (49 steps each)
-'detail see excel sheet
+'details see excel sheet
    Temp_single = Pos_rotator_voltage
    Select Case Pos_rotator_voltage
    'use word values
-      Case 0 to 13
-      Case 14 to 38
+      Case 0 to 13:
+         Temp_single = Temp_single * 0.988
+      Case 14 to 38:
           Temp_single = Temp_single * 0.9894
-      Case 39 to  64
+      Case 39 to  64:
          Temp_single = Temp_single * 0.99
-      Case 65 to  90
+      Case 65 to  90:
          Temp_single = Temp_single * 0.9906
-      Case 91 to 115
+      Case 91 to 115:
          Temp_single = Temp_single * 0.9912
-      Case 116 to 141
+      Case 116 to 141:
          Temp_single = Temp_single * 0.9918
-      Case 142 to  166
+      Case 142 to  166:
          Temp_single = Temp_single * 0.9923
-      Case 167 to  192
+      Case 167 to  192:
          Temp_single = Temp_single * 0.9929
-      Case 193 to 218
+      Case 193 to 218:
          Temp_single = Temp_single * 0.9934
-      Case 219 to 243
+      Case 219 to 243:
          Temp_single = Temp_single * 0.9939
-      Case 244 to  282
+      Case 244 to  282:
          Temp_single = Temp_single * 0.9944
-      Case 283 to 333
+      Case 283 to 333:
          Temp_single = Temp_single * 0.9953
-      Case 334 to 384
+      Case 334 to 384:
          Temp_single = Temp_single * 0.9961
-      Case 385 to 435
+      Case 385 to 435:
          Temp_single = Temp_single * 0.9968
       Case 436 to  486
          Temp_single = Temp_single * 0.9975
-      Case 487 to  538
+      Case 487 to  538:
          Temp_single = Temp_single * 0.9981
-      Case 539 to 589
+      Case 539 to 589:
          Temp_single = Temp_single * 0.9986
-      Case 590 to 640
+      Case 590 to 640:
          Temp_single = Temp_single * 0.9991
-      Case 641 to 691
+      Case 641 to 691:
          Temp_single = Temp_single * 0.9995
-      Case 692 to 742
+      Case 692 to 742:
          Temp_single = Temp_single * 0.9998
-      Case 743 to 794
-      Case 795 to 845
+      Case 743 to 794:
+         Temp_single = Temp_single * 0.9999
+      Case 795 to 845:
          Temp_single = Temp_single * 1.0001
-      Case 846 to 896
+      Case 846 to 896:
          Temp_single = Temp_single * 1.0002
-      Case 897 to 934
+      Case 897 to 934:
          Temp_single = Temp_single * 1.0002
-      Case 935 to 960
+      Case 935 to 960:
          Temp_single = Temp_single * 1.0001
-      Case 961 to 986
+      Case 961 to 986:
          Temp_single = Temp_single * 1.0024
-      Case 987 to 1011
-      Case 1012 to 1024
-      Case Else
+      Case 987 to 1011:
+         Temp_single = Temp_single * 1.0025
+      Case 1012 to 1024:
+         Temp_single = Temp_single * 1.0026
    End Select
    Pos_rotator_voltage = Temp_single
 Return
@@ -278,7 +283,7 @@ Ckeck_hw_limit:
    Else
    'Hw_limit_detected 0: no limit. 1: detected, stop motor, 2: move out of limit
       Select Case Hw_limit_detected
-         Case 2
+         Case 2:
             Stop Watchdog
             'move  rotator started
             I = 1
@@ -298,7 +303,7 @@ Ckeck_hw_limit:
                End If
             Wend
             Start Watchdog
-         Case 0
+         Case 0:
          'limit detected first time: stop immediate
             Hw_limit_detected = 1
             Gosub Stop_all
@@ -306,7 +311,7 @@ Ckeck_hw_limit:
             'should nor happen
                Preset_active = 0
             End If
-         Case 1
+         Case 1:
          'stop, if other than move command started rotator
             Gosub Stop_all
       End Select
@@ -320,7 +325,7 @@ Check_preset:
 '2: move direct to position cw
 '3: move direct to position ccw
       Select Case Preset_out_limits
-         Case 0
+         Case 0:
          'still within limits?
          'Calculate the limits:
             Pos_temp = Preset_rotor + Antenna_deviation
@@ -333,7 +338,7 @@ Check_preset:
             Else
                Gosub Stop_all
             End If
-         Case 1
+         Case 1:
          'find move direction, start moving
             If Dir_rotor < Preset_rotor Then
                Gosub Motor_cw_on
@@ -342,13 +347,13 @@ Check_preset:
                Gosub Motor_ccw_on
                Preset_out_limits = 3
             End If
-         Case 2
+         Case 2:
          'move cw
             If Dir_rotor > Preset_rotor Then
                Gosub Stop_all
                Preset_out_limits = 0
             End If
-         Case 3
+         Case 3:
          'moving ccw
             If Dir_rotor < Preset_rotor Then
                Gosub Stop_all
@@ -358,9 +363,9 @@ Check_preset:
 Return
 '
 $include "_Commands.bas"
-$include "common_1.10\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.10\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
