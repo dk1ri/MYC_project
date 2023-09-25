@@ -1,47 +1,52 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/atchbox_FA_BX1000.pdf
+
 MYC Interface für die Funkamateur BX-1000 1 kW Matchbox / Antennentuner
 
-Author DK1RI, Version V01.1, 20200802
-This project can be found in https://www.github.com/dk1ri also  (later on).
+Author DK1RI, Version V02.0, 20230923
+This project can be found in https://www.github.com/dk1ri also
 
 Einleitung
 
 Dies ist die Beschreibung  einer geänderte Firmware für die Matchbox, die das MYC Protokoll versteht.
 Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
 Die Hardware der Matchbox wird nicht verändert. Die Steuerung erfolgt über die originale Steuerbox mit USB.
-Das Protokoll der Originalsoftware wurde an keiner Stelle verwendet; die originale Bediensoftware  funktioniert daher natürlich nicht. 
+Das Protokoll der Originalsoftware wurde an keiner Stelle verwendet; die originale Bediensoftware  funktioniert daher natürlich nicht.
+Zur Steuerung mit einem Browser: siehe [7].
 
 Beschreibung
 
-Die interne Funktion weicht etwas vom Original ab, die Prinzipien der Bedienung sind aber weitestgehend identisch und können in der originalen Bedienungsanleitung nachgelesen werden.
+Die Funktion weicht etwas vom Original ab, die Prinzipien der Bedienung sind aber weitestgehend identisch und können in der originalen Bedienungsanleitung nachgelesen werden.
 Das Programm verwendet einen Prozessor mit 4KByte EEPROM und verwendet das externe EEPROM nicht.
-Zur Speicherung der Relaisstellungen stehen 760 Speicherplätze (Kanäle) für die Frequenzen von 1.8MHz bis 29,7MHz zur Verfügungen. Jeder Kanal in den Amateurfunkbändern deckt circa 15kHz ab, jeder Kanal außerhalb circa  52kHz und verwendet jeweils 4 Byte.
-Der Konfigurationstyp (CL, LC, CLC, durchgehend) wird pro Band gespeichert. So ergeben sich bei der Interpolation der L / C Werte für nicht belegte Kanäle keine zusätzlichen Sprünge der Anpassung.
-Die Frequenz wird alle 16ms gemessen und daraus der aktuelle Kanal und das Band bestimmt.
+Zur Speicherung der Relaisstellungen stehen 737 Speicherplätze (Kanäle) für die Frequenzen von 1.8MHz bis 29,7MHz zur Verfügungen. Jeder Kanal in den Amateurfunkbändern deckt circa 15kHz ab, jeder Kanal außerhalb circa  52kHz und verwendet jeweils 4 Byte.
+Die Frequenz wird alle 270ms gemessen und daraus der aktuelle Kanal und das Band bestimmt.
 Die Frequenzautomatik der Originalsoftware fehlt.
 
 Grundsätzliche Bedienung
 
-Mir den Befehlen &H01xx01, &H01xx00 kann ein L Wert ein oder ausgeschaltet werden Der folgende Befehl liest die aktuelle Einstellung.
-Sinngemäß das gleiche gilt für die folgenden Befehle für die C Werte, die Konfiguration und die weiteren Relais.
-Mit &H0F bis &H13 erhöhen oder verringern sich die L und C Werte alle circa 0,3s. Dies sind Start / Stop Befehle. Nach jeder Schritt wird das aktuelle SWR als Info gesendet. Wenn ein Minimum gefunden wird, kann man den Up /Down Mode stoppen und bei Bedarf den L und  C Wert mit  &H15 für diie aktuelle Frequenz speichern. Diese Funktion wird in einem MYC System eher nicht benötigt werden. Das wird die Bediensoftware anders lösen, wie zum Beispiel die Originalsoftware.
-Die Frequenz wird gemessen, sobald ein Sendesignal vorhanden ist und daraus der Kanal und das Band bestimmt.
-Für die Frequenzmessung werden alle 300ms 10 Messungen gemacht. Die Messung ist gültig, wenn bei 6 Messungen ein ausreichender Pegel zur Verfügung stand. Die Messauflösung beträgt 230Hz, die Auflösung 1kHz, die Genauigkeit ist +- 1kHz.
-Ohne Sendesignal bleibt die letzte gemessene Frequenz, der letzte Kanal und das Band gültig.
-Die Frequenz (in kHz) kann mit &H12, der Kanal mit &H13, das Band mit &H14 gelesen werden.
-Innerhalb der Amateurfunkbänder ist jeder Kanal 15kHz breit, außerhalb 50kHz.
-Wird die gerade aktuelle L / C Kombination mit &H15 gespeichert, erfolgt das im gerade aktuellen Kanal. An den Bandgrenzen sollte man die Frequenz mit &H12 kontrollieren, wenn die Frequenz nicht mit &H11xxxx manuell eingegeben wurde.
-Defaultmäßig oder nach dem Befehl &H17 sind alle L und C Werte auf den halben Maximalwert eingestellt. Konfigurationstyp ist CL für alle Bänder.
-Es wird empfohlen, einige Werte durch echte zu ersetzen.
-Dazu sollte bei den Amateurfunkbändern eine Frequenz in der Nähe der Bandenden gewählt werden. Dabei sollte auch der passende Konfigurationstyp eingestellt werden. Durch Einstellung von L und C wird das optimale SWR eingestellt. Die L/C Werte werden mit &H15 für den aktuellen Kanal (Frequenz) gespeichert. Liegt der aktuelle Kanal bis zu 3 Kanälen vom Bandende entfernt, werden die Kanäle bis zum Bandende mit dem gleichen Wert gefüllt. Gibt es in dem Band eine Resonanzfrequenz der Antenne, sollte auch dafür eine L / C Kombination gefunden und gespeichert werden. 
-Für die anderen Bänder sollte die Frequenz 20kHz vom Bandende gewählt werden.
-Ohne Sendesignal gibt es auch den Befehl zu Festlegung der Frequenz (in kHz): &H111111 entspricht 4,369MHz. Sobald ein Sendesignal auftritt, wird der Wert überschrieben.
-So können auch ohne Sendesignal danach mit &H15 die gespeicherten L / C Werte übernommen und gespeichert werden. Außerhalb der Amateurfunkbänder kann man die L / C Kombination nach bestem Empfangssignal optimieren und die Werte zu den Frequenzen speichern.  
-Mit &H16 können die gespeicherten Werte für L und C für die aktuelle Frequenz (Kanal) abgerufen werden und damit die Relais gesetzt werden. Wenn für den aktuellen Kanal kein Wert gespeichert wurde, wird ein Wert interpoliert. Dazu wird oberhalb und unterhalb der aktuellen Frequenz der nächste gespeicherte Kanal im  gleichen Band gesucht und aus den beiden Werten der Mittelwert gebildet. Daher sollten möglichst die Kanäle an den Bandenden und der Resonanzpunkt mit echten Werten gesetzt werden.
-
-Die angezeigte Leistung bezieht sich auf 50Ohm (U * U / 50); die verwendete LC Kombination wird nicht berücksichtigt.
-Eine Umschaltung der Relais ist nur bei Leistungen < 12W (an 50Ohm oder entsprechende Spannung) möglich.
+Nach Befehlen mit Datenausgabe muss circa ½ Sekunde mit dem nächsten Befehl gewartet werden.
+Die Zeit ist so lange gewählt, um auch lange announcement Befehle lesen zu können.
+Ein automatisches (kontinuierliches) Auslesen von Messwerten ist mit der derzeitigen Browserversion nicht möglich. 
+Eine Änderung der Schaltstellungen ist nur möglich, wenn die Eingangsleistung < 12W ist.
 Im Durchgangsbetrieb (mit &H0503) lassen sich die Relais auch nicht schalten.
-Mit dem Einschalten des Interfaces wird die Frequenz 14275kHz mit halbem L und C Maximalwert eingestellt.
+Beim Einschalten ist eine Frequenz von 14,275MHz eingestellt.
+Wegen der vielen Kondensatoren ist die Matchbox noch bis zu 10 Sekunden nach dem Entfernen der Versorgungsspannung aktiv. Mit dem Wieder-Einschalten sollte man so lange warten!
+Die Temperaturmessung ist nicht sehr genau. Sie dient im wesentlichen dazu, bei zu hoher Temperatur die Lüfter einzuschalten.
+
+Bevor eine vorhandene Anpassung eingestellt (gelesen) werden kann, muss man einige Sekunden Senden (am besten in AM oder FM), damit die Matchbox de Frequenz kennt. Danach lädt man mit „load L/C values for actual frequency (&H16) die Einstellung für die aktuelle Frequenz. Außerhalb der erlaubten Sendefrequenzen kann die Frequenz mit „set frequency“ (&H11) manuell eingestellt werden..
+Wenn für den aktuellen Kanal kein Wert gespeichert wurde, wird ein Wert interpoliert. Dazu wird oberhalb und unterhalb der aktuellen Frequenz der nächste gespeicherte Kanal im  gleichen Band gesucht und aus den beiden Werten der Mittelwert gebildet. Daher sollten möglichst die Kanäle an den Bandenden und der Resonanzpunkt mit echten Werten gesetzt werden.
+
+Defaultmäßig oder nach dem Befehl &H17 sind alle L und C Werte auf „0“ eingestellt (resonante Antenne). Konfigurationstyp ist CL für alle Bänder.
+Es wird empfohlen, bei Inbetriebnahme der Matchbox einige Werte durch echte zu ersetzen.
+Für die Festlegung  der besten Anpassung sollte in der Betriebsart AM oder FM gewählt werden.
+Mir denmBefehl „Inductance (&H01xx01, &H01xx00) kann ein L Wert ein oder ausgeschaltet werden Der folgende Befehl liest die aktuelle Einstellung.
+Sinngemäß das gleiche gilt für „ Capacitance“ für die C Werte, „Configuration“für die Konfiguration und „set additional relais“für die weiteren Relais.
+Mit „start L / C upwards / downwards“ (&H09 bis &H0C) erhöhen oder verringern sich die L und C Werte alle circa 1s automatisch. Mit &H0900 wird der Vorgang gestoppt. Dabei kann der SWR Wert ausgelesen werden. Die Zeit von 1s wurde gewählt, da die derzeitige Browser-Software die SWR Werte nicht automatisch liest; Wenn ein Minimum gefunden wird, kann man bei Bedarf den L und  C Wert mit „store L/C to actual frequency“ (&H15) für die aktuelle Frequenz speichern.
+Die Frequenz wird gemessen, sobald ein Sendesignal vorhanden ist und daraus der Kanal und das Band und damit der Speicherort bestimmt.
+Außerhalb der Amateurfunkbänder (Ohne Sendesignal) gibt es auch den Befehl zu Festlegung der Frequenz (in kHz). Die Anpassung wird nach bestem Empfangssignal vorgenommen und gespeichert.
+Die Frequenzmessung dauert 270ms. Dabei werden 10 Messungen gemacht. Die Messung ist gültig, wenn bei 3 Messungen ein ausreichender Pegel zur Verfügung stand. Die Auflösung ist 1kHz, die Genauigkeit ist +- 1kHz.
+Ohne Sendesignal bleibt die letzte gemessene Frequenz, der letzte Kanal und das Band gültig.
+Die Frequenz (in kHz) (&H12), der Kanal  (&H13), das Band(&H14) kann gelesen werden.
+Wird die gerade aktuelle L / C Kombination mit &H15 gespeichert, erfolgt das im gerade aktuellen Kanal. An den Bandgrenzen sollte man die Frequenz kontrollieren (&H15), wenn die Frequenz nicht manuell eingegeben wurde.
 
 Einbindung in das MYC System
 
@@ -61,12 +66,12 @@ Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sek
 Zusätzlich gibt es weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
 Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
 
-Software
+Firmware
 
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
 Das aktuelle Bascom Programm verwendet einen Atmega1284P.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.11 [5] in das Verzeichnis mit dem Programm kopiert werden.
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden.
 
 Programmierung des Prozessors
 
@@ -75,18 +80,23 @@ Es funktionieren nicht alle Programmiergeräte. Bei mir hat mySmartUSB light mit 
 
 USB Schnittstelle 
 
-Die Steuerbox hat eine USB Schnittstelle, Die Steuerung kann mit einem Terminalprogramm mit den MYC Befehlen erfolgen. Die Baudrate ist 115200 Baud
+Die Steuerbox hat eine USB Schnittstelle, Die Steuerung kann mit einem Terminalprogramm mit den MYC Befehlen erfolgen. Die Baudrate ist 19200 Baud
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an den das Device über USB angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift. Die Bedienung ist weitestgehend selbsterklaerend. Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 Die Hardware
 
 Zu den weiteren Details der Hardware wird auf die Dokumentation der Matchbox verwiesen. [1]
-Im Schaltplan ist die Beschriftung der Schaltsignale für die Relais (on / off) vertauscht. Das wurde bei der Firmware berücksichtigt. Da die externen Relais nicht vorhanden sind, wurde die Umschaltung dafür nicht geändert.
-Falls bei der Hardware Fwd und Rev Signal vertauscht wurde, ist das im Programm leichet zu ändern (siehe dort)
+Im Schaltplan ist die Beschriftung der Schaltsignale für die Relais (on / off) teilweise vertauscht.
+Falls bei der Hardware Fwd und Rev Signal vertauscht wurde, ist das im Programm leicht zu ändern (siehe dort)
 
 Versionen
 
 Diese Beschreibung gilt für die
-Bascom Version V01.1
+Bascom Version V02.0
 
 Copyright
 
@@ -100,6 +110,10 @@ Referenzen
 [1]	Funkamateur 2011 Heft 1 – 4 bzw die Baumappe des Bausatzes
 [2]	http://www.dk1ri.de/dhw/matchbox_FA_BX1000_bascom.zip
 [3]	dk1ri.de/myc/MYC.pdf 
-[4]	dk1ri.de/myc/Description.pdf (englisch)
-[5]	https://www.dk1ri.de/dhw/common1.11.zip 
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	https://dk1ri.de/dhw/common_1.13.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm
 
