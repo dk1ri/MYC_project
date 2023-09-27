@@ -1,9 +1,9 @@
 ' select commands
-' 20200422
+' 20230925
 '
    If Command_b(1) < &HF0 Then
-      If Command_b(1) < &H05 Then
-         On Command_b(1) Gosub 00,01,02,03,04
+      If Command_b(1) < &H07 Then
+         On Command_b(1) Gosub 00,01,02,03,04,05,06
       Else
          Command_not_found
          Gosub Command_received
