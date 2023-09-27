@@ -2,8 +2,8 @@
 ' 20200422
 '
    If Command_b(1) < &HEF Then
-      If Command_b(1) < &H15 Then
-         On Command_b(1) Gosub 00,01,02,03,04,05,06,07,08,09,0A,0B,0C,0D,0E,0F,10,11,12,13,14
+      If Command_b(1) < &H0E Then
+         On Command_b(1) Gosub 00,01,02,03,04,05,06,07,08,09,10,11,12,13
       Else
          Command_not_found
          Gosub Command_received
