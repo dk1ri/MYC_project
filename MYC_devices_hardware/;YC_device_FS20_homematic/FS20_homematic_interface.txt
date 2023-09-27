@@ -2,68 +2,67 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC FS20 / homematic Sender und Empfänger
 
-Author DK1RI, Version V04.2 20200904
+Author DK1RI, Version V07.0 20230927
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
-Diese acht Interfaces können ein MYC System mit einem FS20 oder Homematic System zur Haussteuerung verbinden; die Sender steuern das MYC System; die Empfänger werden gesteuert.
-Die Leiterplatte kann den FS20 8 Kanal Empfänger FS20 SM8 –, den FS20 8 Kanal Sender  FS20 S8M ,  die Homematic 8 Kanal Sender HM-MOD-EM8 HM-MOD.EM8Bit, HMIP-MOD-RC8 oder die Homematic 8 Kanal Empfänger HM-MOD-RE8 und HM-MOD-OC8 aufnehmen.
-Weiterhin ist der Anschluss vom HMIP-MIO16 über 4 analoge Ausgänge, 4 digitale  Ausgänge, 8 Eingänge des Interfaces möglich.
-Die Beschreibung der FS20 / Homematic Funktionen steht in der Bedienungsanleitung der Module. Das Verständnis der Systeme wird vorausgesetzt.
+Diese Interfaces können ein MYC System mit einem FS20 oder Homematic System zur Haussteuerung verbinden; die Sender steuern das FS20 / Homematic System; die Empfänger können das MYC System steuern.
+Die FS20 / Homematic Leiterplatte kann den FS20 8 Kanal Empfänger FS20 SM8 und den FS20 8 Kanal Sender  FS20 S8M aufnehmen. Mit Kabelverbindung  (und geringen Änderungen der Firmware ist auch der Anschluss der Modul SM4 und S4M möglich. Auf dieser Leiterplatte kann man auch die Homematic Module installieren, aber die aktuelle Firmware gilt für die Homematic Leiterplatte.
+Die Homematic  Leiterplatte kann  die Homematic / Homematic/IP  8 Kanal Sender HM-MOD-EM8 HM-MOD.EM8Bit, HMIP-MOD-RC8 oder die 8 Kanal Empfänger HM-MOD-RE8 und HM-MOD-OC8 aufnehmen.
+Weiterhin ist der Anschluss der 4 analogen Ausgänge, 4 digitalen  Ausgänge, 8 Eingänge des HMIP-MIO16 möglich.
+Die Beschreibung der Funktionen steht in der Bedienungsanleitung der Module. Das Verständnis der Systeme wird vorausgesetzt.
 Diese Interfaces können in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind im Kapitel „Einbindung in das MYC System“ beschrieben.
-Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 /USB gesteuert werden.
+Zur Steuerung mit einem Browser: siehe [7]
+Das Interface arbeitet als Slave am I2C Bus  oder kann über RS232 / USB gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung
 
-Die Eagle Daten für die Leiterplatte stehen unter  [1].
-Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20 max.
+Die Eagle Daten für die Leiterplatten stehen unter [1]  und [9].
+Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20 max oder über USB
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 
 Grundsätzliche Bedienung
 
 FS20
-Das FS20 System selbst liefert keine Rückmeldung, ob ein Befehl ausgeführt wurde. Deshalb gibt es beim Sender auch keine Abfrage des Status. Die Dimmbefehle dauern bis zu 1,5 Sekunden Konfigurationsbefehle ca 6 Sekunden. In dieser Zeit werden andere Befehle ignoriert. 
-Es gibt auch keine Möglichkeit, abzufragen, auf welche FS20 Adressen ein Sendebefehl wirkt.
-Wenn die Konfiguration nicht mit den Tasten sondern mit den Konfigurationsbefehlen durchgeführt wird. Diese Konfiguration wird im EEPROM gespeichert.
-(sh Test und Konfiguration am Ende)
-
+Das FS20 System selbst liefert keine Rückmeldung, ob ein Befehl ausgeführt wurde. Deshalb gibt es beim Sender auch keine Abfrage des Status der Ausgänge. Die Dimmbefehle des Senders dauern bis zu 1,5 Sekunden Konfigurationsbefehle circca 6 bis 50 Sekunden. In dieser Zeit werden andere Befehle ignoriert. 
+Es gibt auch keine Möglichkeit, abzufragen, auf welche FS20 Adressen ein Empfänger reagiert.
+Die Konfiguration des Senders wird im EEPROM gespeichert.
 
 FS20  Empfänger 
-Das Empfängerinterface kann verwendet werden, um bis zu acht (Schalt)funktionen im MYC System durchzuführen.
-Das Empfängerinterface erhält die Befehle von einem FS20 Sender.
-Bei normalem Betrieb liefert das Interface eine Info mit dem Befehl &H01 über den Status der Ausgänge bei Änderung.
-Jede Änderung der Schaltausgänge (auch wenn die über die Tasten erfolgen) wird über die RS232 / USB Schnittstelle als Antwort &H01xx sofort ausgegeben . Im I2C Puffer steht der Status der letzten Änderung. Der CR muss die Daten abrufen. Wenn keine gültigen Daten gelesen werden, werden ungültige Commandtoken (&HEF) ausgegeben . Da schon alles Daten ausgegeben wurden liefert der Befehl &H01 als Antwort &H0100 also „not valid“. Falls noch Daten im I2C Buffer vorhanden sind, werden diese gelöscht. Auch alle anderen Befehle löschen noch vorhandene I2C Daten.
-In einem MYC System erfolgt die Abfrage des Status (&H02) nur durch das Logikdevice. In der normalen Announcements Liste sind die Befehle von SS Devices nicht enthalten.
-Eine Steuerung der Ausgänge in einem MYC System ist möglich, um einige der Timerfunktionen zu ermöglichen: &H03 und &H04
-
+Das Empfängerinterface kann verwendet werden, um als normales MYC Device bis zu acht (Schalt)funktionen durchzuführen, wenn der FS20 Empfang nicht verwendet wird. 
+Der aktuelle Status der Ausgänge des FS20 Empfängers kann immer abgefragt werden.
+Das Empfängerinterface erhält auch Befehle über den FS20 Empfänger von einem FS20 Sender. Dabei arbeitet es wie ein „simple SK“ und gibt diese als „r“ Befehle als info an das  MYC System weiter. Allerdings nur, wenn sich der Status des betroffenen Ausganges ändert. Das LD weiß durch entsprechende Regeln,  welche Aktionen daraus resultieren.
+Jede Änderung der Schaltausgänge des FS20 Empfängers (auch wenn die über die Tasten erfolgen, oder mit „normalem“ MYC Befehl) wird über die RS232 / USB Schnittstelle als Antwort &H06xxxx sofort ausgegeben . Der Status der letzten Änderung mit zugehörigem Schalter wird gespeichert. CR oder SK kann die Daten abrufen mit dem Befehl &H06 abfragen.
+Mit MYC Befehlen oder der „learn“ Funktion kann jeder Kanal in den Anlernmodus gebracht werden. Am Sender wird dann eine Taste gedrückt. Das macht man für alle Kanäle. Details dazu stehen in der Bedienungsanleitung.
+Da diese Konfigurationsfunktion länger dauert, kann mit dem Befehl &H05 (busy) geprüft werden, ob der nächste Befehl gesendet werden kann.
+Die  Programmiersperre und der Sofort-Senden Mode dürfen nicht aktiviert sein, der Sendeabstand muss beim Defaultwert (0) stehen.
+Der Einzelmode des Empfängers wird nicht unterstützt.
 
 FS20  Sender
-Die Funktion des Sendeinterfaces ist einfach: Über die I2C / serielle Schnittstelle erhält das Interface Befehle zur Steuerung. 
-Es sind 4 Ein / Aus Befehle im 4 Kanal Mode und 8 Togglebefehle im 8 Kanalmode innerhalb eines „Set“ möglich. Der 4 Kanalmode ist der default Wert, änderbar mit &H0A01. Man kann zwischen 10 Set umschalten, das dauert allerdings 25 Sekunden für den 4 Kanal Mode und 50 Sekunden für den 8 Kanal Mode, da der Sender umprogrammiert werden muss.
-Der gewählte 4 Kanal / 8 Kanal Mode bleibt auch nach dem Abschalten erhalten und wird beim Einschalten initialisiert. Der Default Mode ist 4 Kanal.
+Die Funktion des Sendeinterfaces ist einfach: Über die I2C / serielle Schnittstelle erhält das Interface Befehle zum Ein / Aus Schalten, Dimmen, die Timerfunktion und und die Konfiguration. Es kann zwischen 4 Kanal und 8 Kanal Mode umgeschaltet werden.
+Die Bearbeitung der Befehle dauert teilweise länger. In der Zeit werden weitere Befehle ignoriert.
+Der gewählte 4 Kanal / 8 Kanal Mode bleibt auch nach dem Abschalten erhalten und wird beim Einschalten initialisiert.
 Nicht alle Empfänger verstehen alle Befehle; zum Beispiel den Dimmbefehl.
-Während des Dimmens eines Kanals kann nur das Dimmen wieder abgeschaltet werden. Andere Schaltbefehle sind funktionsbedingt nicht möglich.
+Weitere Datails zu Konfiguration stehen im Datenblatt der Senders.
 
-Homematic
+Homematic Update nicht fertig)
 
-Das Anlernen kann nur mit den Tasten erfolgen
+Die Konfiguration der Homematic Module erfolgt an der Zentrale. Es ist zwar möglich, die Module mit dem Interface in den Anlernmode zu versetzen. Darauf wurde aber verzichtet; das muss mit Hilfe der Tasten passieren. 
 
 Homematic Empfänger 
 
-HM-MOD-Re8 (Homematic) und HM-MOD-OC8 (Homematic-IP) haben die gleichen Funktionen. 
-Es gibt neben den MYC Systembefehlen 3 Befehle für die Funktion: 
-Änderungen an der 8 Ausgängen des Moduls als Info: &H01xx00 oder &H01xx01
-Lesen der 8 IO Ausgänge: &H02xx,
+HM-MOD-RE8 (Homematic) und HM-MOD-OC8 (Homematic-IP) haben die gleichen Funktionen.
+Das Interface funktioniert wie ein normales Device: ohne Funksteuerung können die Ausgänge geschaltet werden und der aktuelle Status der Ausgänge immer abgefragt werden.  
+Werden die Ausgänge über Funk verändert, verhält sich das Interface wie ein „simple device“: es sendet den Status des geäderten Ausgangs als Info an den CR und das LD weiß dann durch Regeln, was dieser Befehl bedeutet.
+Die letzte Änderung kann auch vom „normalen device“ abgefragt werden.
+Beide Empfänger verwenden Interfaces mit gleicher Firmware.
 
 Homematic Sender
 
-HM-MOD-EM8 (Homematic) und HM-MOD-RC8 (Homematic-IP) haben weitestgehend die gleichen Funktionen. HM-MOD-RC8 hat keine Fensterfunktion; die Anlernfunktion mit dem Interface wird nicht unterstützt und muss mit dem Taster TA1  erfolgen.
-Mit &H01xxxx - &H03xx (&H02xx) werden abhängig vom Mode die Ausgange geschaltet.
-Mit  &H060x (&H040x) wird der Mode eingestellt; lesbar mit &H07 (H05)
-&H04 wird der Status währed des Fesnsterkontakt – Modes gelesen.
-&H05 (&H03) zeigt an, ob ein Fehler bei der letzten Uebertragung vorlag.
+HM-MOD-EM8 (Homematic) und HM-MOD-RC8 (Homematic-IP) haben weitestgehend die gleichen Funktionen. HM-MOD-RC8 hat keine Fensterfunktion.
+Die Sender kennen den Mode (4 Kanal / 8 Kanal / Fenstermode) nicht. Das Inerface muss unbedingt auf den konfigurierten Mode eingestellt werden, da andernfalls Fehler möglich sind.
 
 Homematic HM-MOD-IO
 
@@ -78,6 +77,12 @@ Homematic HM_MOD-EM8Bit
 
 Die Bedienung der 2 Tasten erfolgt wie bei HM_MOD-EM
 Mit dem Befehl &H03xx kann ein Byte gesendet werden. Wie diese Daten behandelt werden, muss wie in Handbuch beschrieben, festgelegt werden.
+
+Der Sender muss mit Hilfe der Tasten angelernt werden.
+Entsprechend der Einstellung der Zentrale muss der 4-Kanal (&H0401) oder 8- Kanalmodemode (Togglemode) mit &H0401  eingestellt werden. Beim Fensterkontakt Mode muss der Togglemode gewählt werden: eine echte Realisierung dieses Modes ist nicht möglich.
+
+HomematicIO:
+Die Konfiguration erfolgt ohne Interface nach Handbuch.
 
 Einbindung in das MYC System
 
@@ -107,8 +112,8 @@ Software
 
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
 Das aktuelle Bascom Programm verwendet einen Atmega1284P.
-Die Software wurde in BASCOM geschrieben [2]. Die Software ist nur mi Leiterpalten ab Version V032 verwendbar.
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.11 [6] in das Verzeichnis mit dem Programm kopiert werden.
+Die Software wurde in BASCOM geschrieben [2] [11].
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden.
 
 Programmierung des Prozessors
 
@@ -136,6 +141,13 @@ SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
+Mit der derzeitigen Leiterplatte für Homematic (V01.0) funktioniert der 3V Mode  für I2C nicht.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 SMD
 
@@ -148,19 +160,6 @@ Alternativ erfolgt die Stromversorgung über USB
 
 Bestückung der Leiterplatte 
 
-Bei Verwendung der FS20 Module läuft die Schaltung mit 5V (JP1: pin1 und 2 verbinden) und 20MHz Quarz. Mit Homematic Modulen wird 3V verwendet (JP1: pin2 und 3 verbinden) und ein 10MHz Quarz.
-
-Bestückung der Stecker für die Module:
-			BU1	BU2	BU3	SL4	SL5	SL6	SL7
-FS20TX			x
-FS20RX		x	x	x
-HM_MOD-EM8						x	x
-HM-MOD-EM8Bit						x	x
-HM_MOD-RE8						x	x
-HMIP_MODEC8						x	x
-MIP-MOD-OC8		x		x	x
-Pin 1 der Homematic  Module sind an Pin 1 von SL6
-
 Verwendung von ISP:
 JP6
 
@@ -168,22 +167,27 @@ Mit I2C:
 Siehe I2C oben.
 
 Bestückung von IC3, IC4 (Spannungsregler) und zugehörige Bauteile:
-				IC3	IC4	X1, SL3, D1 , IC2 und C1, C6 – C9
-mit UM2102			nein	nein	nein
-mit RS232			ja	ja	ja
+FS20/homematic LP		IC3,IC4, X1, SL3, D1 , IC2 und C1, C6 – C9
+Homematic LP		IC2, IC3, X1, SL3, D1 , IC2 und C1, C6 – C9
+mit UM2102			nein
+mit RS232			ja
 
-IC4 (7803) ist eine TO220 Version, da die TO92 Version schwer zu beschaffen ist.
+IC4 (7803) ist eine TO220 (linear Regler oder DC / DC Wandler) Version, da die TO92 Version schwer zu beschaffen ist.
 
-FS20 Empfänger:
+FS20 Empfänger (FS20 / Homematic Leiterplatte) [1]
+Modul wird an BU1 – 3 angeschlossen
 JP8 (pin 1 - 2 verbinden)
 Bu2. und Bu3 kann auch als 24 polige Buchsenleiste ausgeführt sein.
 
-FS20 Sender:
+FS20 Sender (FS20 / Homematic Leiterplatte)
+Modul wird an BU2 angeschlossen
 JP8 (pin 2 - 3 verbinden)
 Der FS20-Sender benötigt keine Batterie; die Stromversorgung kann dann über das Interface erfolgen.
 
-Homematic IO
-Von BU2 werden nur pin 6, 8, 10,… 20 verwendet
+Homematic (Homematic Leiterplatte [10])
+Die Module können direkt an SL4 / SL5 über Steckerleisten angeschlossen werden.
+Bei HMIP-MOD_IO werden nur die pins 2-9 und 24-31 verwendet.
+Die Widerstände R7 - R10 sind niederohmig (0 Ohm) C10 – C13 kann entfallen. Ausnahme:   HMIP-MOD_IO. Der Wert ist anwendungsabhängig.
 
 Anschlüsse
 
@@ -201,28 +205,6 @@ I2C (SL1, SL2)
 2	SCL
 3	SDA
 
-nur Homematic IO:
-Drahtverbindungen:
-Homematic IO	Interface
-A			IO1/1		analog
-B			IO1/2		analog
-C			IO1/3		analog
-D			IO1/4		analog
-E			IO2/1		digital
-F			IO2/2		digital
-G			IO2/3		digital
-H			IO2/4		digital
-Rel1NO		Bu1/6		Relais1
-Rel2NO		Bu1/8		Relais2
-Rel3NO		Bu1/10		Relais3
-Rel4NO		Bu1/12		Relais4
-Out1			Bu1/14	
-Out2			Bu1/16
-Out3			Bu1/18
-Out4			Bu1/20
-GND 			IO1/5, IO2/5
-COM  Rel1 - Rel4	Bu1/7 , 9, ...
-
 Jumper
 
 JP1 		Power
@@ -233,50 +215,12 @@ JP6		ISP
 JP3, JP		Anschluss für USB Modul
 JP8		5V / EN für FS20 
 
-Test und Konfiguration
-
-Die Konfiguration kann direkt mit den eingebauten Tasten vorgenommen werden oder mit MYC Befehlen.
-Die Konfigurationsbefehle sind in einem MYC System nicht sichtbar, da der CR diese nicht weitergibt.
-Das Folgende beschreibt die Konfiguration mit Befehlen.
-
-FS20
-Proggrammiersperre und Sofort-Sende-Mode dürfen nicht aktiviert sein!
-Die Konfigaration dauert ja ca mindestens 6 Sekunden für jede Übertragung. Wenn der „Busy“ Befehl &H0C =H0c00 ergibt, kann ein weiterer Befehl eingegeben werden.
-
-Zunächst werden beim Sender Hauscode und Adressen für mindestens einen Sets eingegeben.
-Default ist 1111 bis 1114 im 4 Kanal mode und 1111 bis 1124 für den 8 Kanal mode.
-Diese Daten werden dauerhaft im EEPROM gespeichert.
-Der Default Hauscode ist 0, änderbar mit &H0Dxx (8 ASCII Ziffern von 1...4); lesbar mit &H0E
-Der Hauscode wird bei der Eingabe direkt auf den Modul übertragen.
-Die Sets werden mit den Befehlen &H0F bis &H13 eingegeben und gelesen. Beispiel:
-&H0F0000049494949 : Speichert für Set 1 und Kanal1 (4 Kanalmode)  die Adresse (ASCII) 1111
-Die Übertragung auf den Modul erfolgt mit der Auswahl des Sets:
-&H0A00 für Set1 (4 Kanalmode)
-&H0B00 für Set1 (8 Kanalmode)
-Dabei wird gleichzeitig der zugehörige Kanalmode eingestellt
-
-
-Zu Programmierung des Empfängers wird ein Kanal in den Anlernmodus gebracht und am Sender eine Taste gedrückt. Das macht man für alle Kanäle. Details dazu stehen in der Bedienungsanleitung.
-Da einige der Konfigurationsfunktionen länger dauern, kann am Sender mit dem Befehl &H05 geprüft werden, ob der nächste Befehl gesendet werden kann.
-Die  Programmiersperre und der Sofort-Senden Mode dürfen nicht aktiviert sein, der Sendeabstand muss beim Defaultwert (0) stehen.
-Der Einzelmode des Empfängers wird nicht unterstützt.
-
-Homematic Empfänger 
-Die 8 Kanäle müssen entsprechend der Anleitung an die Zentrale oder einen Sender angelernt werden..
-Konfiguration und Test können mit den Tasten oder mit MYC Befehlen &H0501 - &H0508  und &H0601 - &H0608 durchgeführt werden.
-
-Homematic Sender
-Der Sender muss mit Hilfe der Tasten angelernt werden.
-Entsprechend der Einstellung der Zentrale muss der 4-Kanal (&H0401) oder 8- Kanalmodemode (Togglemode) mit &H0401  eingestellt werden. Beim Fensterkontakt Mode muss der Togglemode gewählt werden: eine echte Realisierung dieses Modes ist nicht möglich.
-
-HomematicIO:
-Die Konfiguration erfolgt ohne Interface nach Handbuch.
-
 Versionen
 
-Diese Beschreibung gilt für die
-Leiterplattenversion V03.4
-Bascom Versionen V06.2 für alle Interfaces
+Diese Beschreibung gilt für die Leiterplattenversion 
+FS20_Homematic V03.4
+Homematic V01.0
+Bascom Versionen V07.0 für alle Interfaces
 
 Copyright
 
@@ -285,11 +229,18 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
+
+
 Referenzen
 
 [1]	https://www.dk1ri.de/dhw/FS20_homematic_interface_eagle.zip
-[2]	https://www.dk1ri.de/dhw/FS20_homematic_interface_bascom.zip
+[2]	https://www.dk1ri.de/dhw/FS20_interface_bascom.zip
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://www.dk1ri.de/dhw/common_1.11.zip
+[6]	https://www.dk1ri.de/dhw/common_1.13.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm
+[9]	https://www.dk1ri.de/dhw/Homematic_interface_eagle.zip
+[10]	https://www.dk1ri.de/dhw/homematic_interface_eagle.zip
+[11]	https://www.dk1ri.de/dhw/homematic_interface_bascom.zip
