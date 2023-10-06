@@ -2,57 +2,11 @@
 ' 20200521
 '
 01:
-   If Commandpointer >= 3 Then
-      If Kanal_mode = 0 Then
-         If Command_b(2) < 4 And Command_b(3) < 2 Then
-            Switch = Command_b(2) * 2
-            ' 0 2 4 6 (off)
-            If Command_b(3) = 1  Then Incr Switch
-            ' 1 3 5 7 -> on
-            Incr Switch
-            K = T_short
-            Gosub Switch_on
-         Else
-            Parameter_error
-         End If
-      Else
-         Command_not_found
-      End If
-      Gosub Command_received
-   End If
-Return
-'
-02:
    If Commandpointer >= 2 Then
-      If Kanal_mode = 1 Then
-         If Command_b(2) < 9 Then
-            Switch = Command_b(2)
-            K = T_short
-            Gosub Switch_on
-         Else
-            Parameter_error
-         End If
-      Else
-         Command_not_found
-      End If
-      Gosub Command_received
-   End If
-Return
-'
-03:
-   Tx_time = 1
-   Tx_b(1) = &H05
-   Tx_b(2) = Transmit_error
-   Tx_write_pointer = 3
-   If Command_mode = 1 Then Gosub Print_tx
-   Gosub Command_received
-Return
-'
-04:
-   If Commandpointer = 2 Then
-      If Command_b(2) < 2  Then
-         Kanal_mode = Command_b(2)
-         Kanal_mode_eeram = Kanal_mode
+      If Command_b(2) < 9 Then
+         Switch = Command_b(2)
+         K = T_short
+         Gosub Switch_on
       Else
          Parameter_error
       End If
@@ -60,10 +14,10 @@ Return
    End If
 Return
 '
-05:
+02:
    Tx_time = 1
-   Tx_b(1) = &H07
-   Tx_b(2) = Kanal_mode
+   Tx_b(1) = &H02
+   Tx_b(2) = Transmit_error
    Tx_write_pointer = 3
    If Command_mode = 1 Then Gosub Print_tx
    Gosub Command_received

@@ -1,16 +1,16 @@
 '-----------------------------------------------------------------------
 'name : homematic_RC8.bas
-'Version V06.2, 202008013
-'purpose : Programm for sending Homematic_IP signals with HMIP-MOD-RC8
-'Can be used with hardware FS20_interface V03.3 by DK1RI (not with earlier versions)
+'Version V07.0, 202300929
+'purpose : Programm for sending Homematic signals with HMIP-MOD-RC8
+'Can be used with hardware FS20_interface V01.1 by DK1RI
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory common_1.11 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory common_1.13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.11\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -31,54 +31,47 @@ $regfile = "m1284pdef.dat"
 'for ATMega1284
 '
 '-----------------------------------------------------
-$crystal = 10000000
-$include "common_1.11\_Processor.bas"
+$crystal = 20000000
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
 '1..127:
 Const I2c_address = 34
-Const No_of_announcelines = 14
+Const No_of_announcelines = 8
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 -> 0,56s
 Const S_length = 32
 '
-'10MHz / 1024 / 977 = 10  Hz -> 100ms
 'stop for Timer1
-Const T_factor = 977
-Const T_Short = 1
-'0,1 s
-Const T_long = 6
-'0.6 s
+Const T_factor = 1953
+Const T_Short = 2
+'0,2s
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.11\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 Dim K as Word
 Dim Kk As Byte
 Dim Switch As Byte
 Dim Busy As Byte
-Dim Kanal_mode As Byte
-Dim Kanal_mode_eeram As Eram Byte
-'0: 4 Kanal, 1: 8 Kanal
-Dim Check_success As Byte
 Dim Transmit_error As Byte
 '
 $initmicro
 '----------------------------------------------------
-$include "common_1.11\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
 ' procedures at start
 '
 '----------------------------------------------------
-$include "common_1.11\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 'check timer
@@ -89,80 +82,84 @@ If Timer1 > T_factor Then
 End If
 '
 ' check success
-If Sts_ = 1 Then
-   ' command started, wait for ok/nok
-   Check_success = 1
-Else
-   If Check_success = 1 Then
-      ' check ok/nok
-      If Str_ = 1 Then Transmit_error = 1
-      If Str_ = 0 And Stg_ = 1 Then Transmit_error = 0
-         Check_success = 0
-   ' else
-      ' do nothing
-   End If
-End If
+If Stg_ = 1 Then Transmit_error = 1
+If Str_ = 1 Then Transmit_error = 2
 '
-'
-$include "common_1.11\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.11\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 '
 _init_micro:
-' Circuit diagram: INA - INH
-' isolation required
+' Circuit diagram: Out1 - Out8, V
+' voltage input, must be set to 0
 Config PortA = Output
+Porta = 0
+Config PortB.7 = Output
+PortB.7 = 0
 '
-Config Sp_ = Input
-Config Tp_ = Input
-Config Up_ = Input
-Config Vp_ = Input
-Config Wp_ = Input
-Config Xp_ = Input
-Config Yp_ = Input
-Config Zp_ = Input
+Config Ta1 = Output
+Set TA1
+Config Ta2 = Output
+Set TA2
+Config Ta3 = Output
+Set TA3
+Config Ta4 = Output
+Set TA4
+Config TA5= Output
+Set TA5
+Config Ta6 = Output
+Set TA6
+Set PortD.7
+Config Ta8 = Output
+Set TA8
+'others as input ok
 Return
 '
 Switch_on:
    Select Case Switch
-      Case 1
-         Set Porta.0
-      Case 2
-         Set Porta.1
-      Case 3
-         Set Porta.2
-      Case 4
-         Set Porta.3
-      Case 5
-         Set Porta.4
-      Case 6
-         Set Porta.5
-      Case 7
-         Set Porta.6
-      Case 8
-         Set Porta.7
+      Case 0:
+         Reset Ta1
+      Case 1:
+         Reset Ta2
+      Case 2:
+         Reset Ta3
+      Case 3:
+         Reset Ta4
+      Case 4:
+         Reset Ta5
+      Case 5:
+         Reset Ta6
+      Case 6:
+         Reset Ta7
+      Case 7:
+         Reset Ta8
    End Select
-   If Kanal_mode < 2 Then
-      Start Timer1
-      Busy = 1
-   End If
+   Start Timer1
+   Busy = 1
 Return
 '
 Switch_off:
-   PortA = 0
+   Set Ta1
+   Set Ta2
+   Set Ta3
+   Set Ta4
+   Set Ta5
+   Set Ta6
+   Set Ta7
+   Set Ta8
    Stop Timer1
    Timer1 = 0
    Kk = 0
@@ -172,9 +169,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.11\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.11\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End
