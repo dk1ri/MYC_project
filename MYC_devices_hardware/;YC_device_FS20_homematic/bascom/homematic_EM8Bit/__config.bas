@@ -1,32 +1,28 @@
 ' additional configs
-' 20200811
+' 20230929
 
-' Circuit diagram: INA - INH
-Config PortA = Output
+Str_ Alias Pinb.3
+Config Str_ = Input
+Set Portb.3
+Stg_ Alias PinB.4
+Config Stg_ = Input
+Set PortB.4
+Sts_ Alias PinD.2
+Config Sts_ = Input
+Set PortD.2
 '
-Config PinD.2 = Input
-Str_ Alias PinD.2
-Config PinD.3 = Input
-Stg_ Alias PinD.3
-Config PinD.4 = Input
-Sts_ Alias PinD.4
-'
-S_ Alias PortB.7
-Sp_ Alias PinB.7
-T_ Alias PortB.6
-Tp_ Alias PinB.6
-U_ Alias PortB.5
-Up_ Alias PinB.5
-V_ Alias PortB.3
-Vp_ Alias PinB.3
-W_ Alias PortB.2
-Wp_ Alias PinB.2
-X_ Alias PortB.1
-Xp_ Alias PinB.1
-Y_ Alias PortB.0
-Yp_ Alias PinB.0
-Z_ Alias PortD.5
-Zp_ Alias PinD.5
+TA1 Alias PortC.6   'TA1
+TA2 Alias PortC.5   'TA2
+TA3 Alias PortC.4   'TA3
+TA4 Alias PortC.3   'TA4
+TA5 Alias PortC.2   'TA5
+TA6 Alias PortD.7   'TA6
+TA7 Alias PortD.6   'TA7
+TA8 Alias PortD.5   'TA8
+TA00 ALias PortC.7   'S
+DU3 Alias Portd.4   'T
+TA10 Alias PortD.3   'U
+TA20 Alias PortB.6   'Z
 '
 Config Timer1 = Timer, Prescale = 1024
 Stop Timer1
