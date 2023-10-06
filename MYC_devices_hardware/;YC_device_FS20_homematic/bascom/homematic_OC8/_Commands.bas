@@ -3,19 +3,59 @@
 '
 01:
    Tx_time = 1
+   Tx = "_ _ _ _ _ _ _ _ _"
    Tx_b(1) = &H01
-   Tx_b(2) = &H00
-   Tx_b(3) = &H00
-   Tx_write_pointer = 4
+   Tx_b(2) = 15
+   Tx_write_pointer = 18
+   If Out1 = 0 Then Tx_b(3) = 124
+   If Out2 = 0 Then Tx_b(5) = 124
+   If Out3 = 0 Then Tx_b(7) = 124
+   If Out4 = 0 Then Tx_b(9) = 124
+   If Out5 = 0 Then Tx_b(11) = 124
+   If Out6 = 0 Then Tx_b(13) = 124
+   If Out7 = 0 Then Tx_b(15) = 124
+   If Out8 = 0 Then Tx_b(17) = 124
    If Command_mode = 1 Then Gosub Print_tx
    Gosub Command_received
 Return
 '
 02:
+   If Commandpointer >= 2 Then
+      If Command_b(2) < 9 Then
+         If Busy = 0 Then
+            Switch = Command_b(2)
+            K = T_short
+            Gosub Switch_on
+         Else
+            Not_valid_at_this_time
+         End If
+      Else
+         Parameter_error
+      End If
+   Gosub Command_received
+   End If
+Return
+'
+03:
    Tx_time = 1
-   Tx_b(1) = &H02
-   Tx_b(2) = Switch_status
+   Tx_b(1) = &H03
+   Tx_b(2) = Busy
    Tx_write_pointer = 3
+   If Command_mode = 1 Then Gosub Print_tx
+   Gosub Command_received
+Return
+'
+04:
+Gosub Command_received
+Return
+'
+05:
+   Tx_time = 1
+   Tx_b(1) = &H05
+   Tx_b(2) = &H02
+   Tx_b(3) = Last_switch + &H30
+   Tx_b(4) = Last_status + &H30
+   Tx_write_pointer = 5
    If Command_mode = 1 Then Gosub Print_tx
    Gosub Command_received
 Return
