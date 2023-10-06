@@ -1,6 +1,7 @@
 ' additional init
-' 200204
+' 202309
 '
+Busy = 0
 Switch = 0
 K = T_short
 Switch_status_old1 = Not Out1
