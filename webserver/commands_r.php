@@ -116,7 +116,7 @@ function send_ar($basic_tok, $send, $senda){
                 if ($_SESSION["corrected_POST"][$device][$c_token] == "on") {
                     $sub_token = explode("d", $c_token)[1];
                     if (count($_SESSION["original_announce"][$device][$basic_tok]) > 3) {
-                        $send = $send . dec_hex($sub_token, 1);
+                        $send = $send . dec_hex($sub_token, 2);
                     }
                     $_SESSION["read"] = 1;
                     send_to_device($send);
@@ -136,8 +136,9 @@ function receive_r($basic_tok, $stacks, $from_device){
     }
     # 256 switch positions supported
     $position = hexdec(substr($from_device, 0, 2));
+    var_dump($position);
     $value = hexdec(substr($from_device, 2, 2));
-    $_SESSION["actual_data"][$device][$basic_tok. "d".$position[0]] = $value;
+    $_SESSION["actual_data"][$device][$basic_tok. "d".$position] = $value;
     if (array_key_exists($basic_tok,$_SESSION["as_token"][$device])){
         $org_token = $_SESSION["as_token"][$device][$basic_tok];
         $_SESSION["actual_data"][$device][$org_token. "d".$position[0]] = $value;

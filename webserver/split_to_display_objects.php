@@ -263,7 +263,7 @@ function expand_m_n($basic_tok, $announce, $ct, $ctm){
 }
 
 function expand_a_b($basic_tok, $announce, $ct){
-    # one tok basictokdx per type element
+    # one tok (basictokdx) per type element; x start with 0
     $device = $_SESSION["device"];
     $ann = explode(",",$announce[1]);
     count(explode(",",$announce[0])) > 1 ? $name = explode(",",$announce[0])[1] : $name = "array elements";

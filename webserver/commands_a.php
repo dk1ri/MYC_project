@@ -108,6 +108,7 @@ function send_aa($basic_tok, $send){
 }
 
 function  receive_a($basic_tok, $from_device){
+    print "<br>".$from_device;
     $device = $_SESSION["device"];
     $element_number = 0;
     if(count($_SESSION["original_announce"][$device][$basic_tok]) < 3){
@@ -118,11 +119,15 @@ function  receive_a($basic_tok, $from_device){
     else {
         # max 256 elements only
         $element_number = hexdec(substr($from_device,0, 2));
-        # < 256 elemen allowed only -> length: 1 byte
+        print $element_number;
+        # < 256 elements allowed only -> length: 1 byte
         $from_device = substr($from_device, 2, null);
         list($data, $delete_bytes) = update_memory_data($basic_tok . "d" . ($element_number), $from_device, 0, $element_number);
         # due to position
         $delete_bytes += 2;
+        # update position
+        update_corresponding_opererating($basic_tok, "m0", $element_number);
+        # update $data
         update_corresponding_opererating($basic_tok, "d" . ($element_number), $data);
     }
     $_SESSION["actual_data"][$device][$basic_tok."d".($element_number)] = $data;

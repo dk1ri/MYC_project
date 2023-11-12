@@ -322,23 +322,32 @@ function init_data($device){
     # actual_data contain transmitted data!
     # set data  for all numeric token to "0", strings to "input test"
     foreach ($_SESSION["announce_all"][$device] as $key => $value) {
-        $ct = explode(",", $value[0])[0];
-            if ($ct == "m") {
-                $field = $_SESSION["original_announce"][$device][basic_tok($key)];
-                $_SESSION["actual_data"][$device][$key] = $field[2] . "," . $field[3] . "," . $field[1];
-            }
-           else{
-            if (count($value) > 1) {
-                if (is_numeric($value[1])) {
-                    # for string data
-                    $_SESSION["actual_data"][$device][$key] = "input text";
-                } else {
-                    $_SESSION["actual_data"][$device][$key] = "0";
-                }
-            }
-            else{
-                $_SESSION["actual_data"][$device][$key] = "0";
-            }
+        if ($key == "0a") {
+            # basic command
+            $field = $_SESSION["original_announce"][$device][basic_tok($key)];
+            $_SESSION["actual_data"][$device][$key] = $field[2] . "," . $field[3] . "," . $field[1];
+        }
+       else{
+           if (strstr($key,"d")){
+               # only "d" toks can have types
+               $ct = $value[0][1];
+                  if ($ct == "m" or $ct == "n" or $ct == "a" or $ct == "b" or $ct == "f") {
+                   $type =  $_SESSION["des"][$device][$key][0];
+                   if (is_numeric($type)) {
+                       # for string data
+                       $_SESSION["actual_data"][$device][$key] = "text";
+                   } else {
+                       $_SESSION["actual_data"][$device][$key] = "0";
+                   }
+               } else {
+                   # switches and range commands
+                   $_SESSION["actual_data"][$device][$key] = "0";
+               }
+           }
+           else {
+               # others
+               $_SESSION["actual_data"][$device][$key] = "0";
+           }
         }
     }
 }

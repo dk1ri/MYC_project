@@ -14,8 +14,11 @@
 
     found errors:
     ct_of_as correctly used? -> ct_of_as_ ?
+    command a with 1 parameter: "0" not omitted
 
      not implemented / missing:
+     FIFO missing?
+     hex input for strings
      ext
      range commands: sequence like log, date.. (lin only)
      CONVERT

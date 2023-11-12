@@ -364,9 +364,14 @@ function numeric_range($range_pure, $data)
     if ($data == "") {
         return $data;
     }
+    # $range_pure[0] is type
     $real_value_number = 0;
     $nummber_range_elements = count($range_pure);
-    $i = 0;
+    if ($nummber_range_elements < 2) {
+        # no restriction
+        return $data;
+    }
+    $i = 1;
     $found = 0;
     while ($i < $nummber_range_elements and $found == 0) {
         $range_to = explode("_", $range_pure[$i]);
