@@ -3,7 +3,7 @@ Hint for the text-format-version: to read this version as PDF please load https:
 MYC Definitions, Abbreviations and Formats
 
 Author: DK1RI
-Version V01.03.05 20230407
+Version V01.03.06 20231227
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -55,13 +55,15 @@ RU			rules device, device-type r
 			– The length of the transmitted number of numeric memory-contents is defined by <ty> 
 <s>			string, all characters. The string is preceded by the length as unsigned number. The length is of type <n> and can 1, 2, 3..byte; 
 			depend on maximum length of the string given in the announcement. This type exists in commands, answers and infos.
+			When using strings the application shoould be observed. The HI may display some odd symbols, if binary data are sent. The HI
+			can allow inputs as &Hxx, &Bxxxx as binary input.
 <sm>			string (all characters except , ;{}\) Used in announcements; forbidden characters must be escaped (preceded) by \
 <l>			maximum length of a string <s> in announcements
 <ty>			type of memory cells in announcements,
 			type t is replaced by the use of CODING
-			0 byte: z: no data transfer / use internal data;
-			1 byte: a: bit 0|1, b: byte, 0to255; c: signed short, -128to127
-			2 bytes: w: unsigned integer, 0to65535; i: signed integer,-32768to327687;
+			0 byte: z: no data transfer / use for internal data;
+			1 byte: a: bit 0|1; b: byte, 0to255 (one byte string); n: unsigned short 0to255; c: signed short, -128to127
+			2 bytes: w: unsigned word, 0to65535; i: signed integer,-32768to327687;
 			3 bytes: k: unsigned. 0to16777215; l: signed: -8388608 to 8388607
 			4 bytes: L: unsigned long, 0to4294967295; e: signed long, -2147483648to2147483647; s: single;
 			8 bytes: t: unsigned, u: signed; d: double, 
@@ -69,11 +71,15 @@ RU			rules device, device-type r
  			<l>: maximum length of a string.
 			A bit is transferred as a byte with the value of 0x00 or 0x01.
 			The 0 byte type z is used when internal data are used.
-			Coding for signed numbers ans single and double is not standard!!!!
+			Coding for signed numbers and single and double is not standard!!!!
 			Coding of signed numbers: 0x00 is transferred for the most negative (2exp(n-1)) number; 0xff the most positive (2exp(n-1) – 1). 
-			Coding of single and double:
-			1 byte signed exponent of 10 (-50 to 49); others are mantissa
-			transferred 0x320x000x000x02	means 2 * 10exp0 = 2
+			Coding of single:
+			1st byte: MSB: 0: + 1: -; and 7bit bit: signed exponent of 10 (-68 to 60); others are 3 byte mantissa (1 to 16777215
+			Range: 1*10e-68 to 16777215 * 10e60 (1.6777215 * 10e67
+			transferred are: 0x400x000x000x02	means 2 * 10exp0 = 2
+			Coding of double:
+			1st and 2nd byte: MSB: 0: + 1: -; and 15 bit: signed exponent of 10 (-3274 to 32759); others are 7 byte  mantissa 
+				(1 to 72057594037927935
 			for more details see [4]
 <default>		a default value in an announcement (not mandatory)
 <fixed>		a fixed informative value in an announcement
@@ -87,6 +93,8 @@ separators		For the announcement parser (CR, SK or LD eg):  , ; (comma, semicolo
 [ ]			optional properties
 
 All numbers in announcements are numeric; hex format 0xnn is allowed but not yet supported by the CR.
+
+
 
 Non valid data
 
