@@ -1,0 +1,134 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/Lichtsensor.pdf
+
+MYC Lichtsensor
+
+Author DK1RI, Version V01.0, 20231023
+This paper is published in https://github.com/dk1ri  as well
+
+Einleitung
+
+Dies ist die Beschreibung eines Lichtsensors ADAFRUIT TM SEN14347 (mit AS7262 chip)
+Diese Steuerung kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Das Interface kann über RS232 / USB gesteuert werden.
+Zur Steuerung mit einem Browser: siehe [7].
+ 
+Beschreibung
+
+Es kann die (große) Leiterplatte des Klimasensors verwendet werden.
+Es gib eine wesentlich kleinere Leiterplatte ohne RS232 Treiber, die aber nicht getestet wurde.
+Die Eagle Daten für die Leiterplatte stehen unter  [1] und [9].
+Die Stromversorgung erfolgt über USB.
+Es wird empfohlen, bei Änderung der Konfigurationsdaten das Datenblatt des Sensors zu lesen.
+
+Einbindung in das MYC System
+
+Details zum MYC System stehen in [3].
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
+
+Reset
+
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen.
+
+Watchdog
+
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
+Das aktuelle Bascom Programm verwendet einen Atmega328P.
+Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 und der Sensor muss während der Programmierung entfernt werden. Andernfalls wird der angeschlossene Sensor zerstört!!
+
+Serielle (RS232 / USB) Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. USB Platine und Interface müssen voneinander isoliert werden.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt.
+
+Stromversorgung
+
+Die Stromversorgung erfolgt über USB oder ohne den USB Modul ueber 12V.
+
+Bestückung der Leiterplatte
+
+Es wird nur bestückt (große Leiterplatte des Klimasensors und mit ELV USB Modul)
+IC1, Q1, C3, C4, C5, JP1, JP5, JP6
+Da Der Prozessor nur 3.3V verwendet, muss ein 10MHz Quarz verwendet werden.
+Verbinden: IC3: Pin 3 und 6 und pin4 und 7. Dies geht mechanisch einfacher, wenn man R1 – R4 und R2 - R3 verbindet.
+
+SEN14347:
+Die Verbindung erfolgt über Drähte
+Pin1	RST	offen
+Pin2	INT	offen
+Pin3	SCL	Pin2 von SL1 oder SL2
+Pin4	SDA	Pin3 von SL1 oder SL2
+Pin5	3V3	Pin4 des DC/DC Wandlers
+Pin6	GND	Pin1 von SL1 oder SL2
+
+Airsensor Leiterplatte:
+Leiterplatte		SEN14347
+Pin1			-
+pin2		RST	pin 1 nicht anschliessen
+pin3		INT	pin2 nicht anschliessen
+pin4		SCL	pin3
+pin5		SDA	pin4
+pin6		3V2	pin5
+pin7		GND	pin6
+pin8			-
+
+Verwendung von ISP:
+JP6
+
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9, DC1, X1, D1, C1, C2, C11, R8, R9 bestückt. 
+
+Jumper
+
+JP1 		Power
+JP5		Reset
+JP6		ISP 
+JP7/JP8	Anschluss für USB Modul
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion V02.1 (1.0)
+Bascom Version V01.0
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie / Gewährleistung / Produkthaftung  übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Referenzen
+
+[1]	dk1ri.de/dhw/Klimasensor_eagle.zip
+[2]	dk1ri.de/dhw/Lichtsensor_bascom.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	https://dk1ri.de/dhw/common_1.13.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm
+[9]	dk1ri.de/dhw/Airsensor_eagle.zip
