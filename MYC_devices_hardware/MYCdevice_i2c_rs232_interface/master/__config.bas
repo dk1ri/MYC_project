@@ -1,11 +1,8 @@
 ' additional configs
-' 20200424
+' 20231006
 '
-' not used as slave
-Disable TWI
-'
-Config Twi = 100000
 Config Sda = Portc.4
 'must for master
 Config Scl = Portc.5
 '
+Config Twi = 100000

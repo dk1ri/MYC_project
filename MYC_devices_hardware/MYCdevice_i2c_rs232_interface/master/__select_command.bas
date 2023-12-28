@@ -1,10 +1,11 @@
 ' select commands
-' 20200422
+' 20230728
 '
    If Command_b(1) < &HEF Then
-      If Command_b(1) < &H0C Then
-         On Command_b(1) Gosub 00,01,02,03,04,05,06,07,08,09,10,11
+      If Command_b(1) < &H06 Then
+         On Command_b(1) Gosub 00,01,02,03,04,05
       Else
+         Command_not_found
          Gosub Command_received
       End If
    Else
