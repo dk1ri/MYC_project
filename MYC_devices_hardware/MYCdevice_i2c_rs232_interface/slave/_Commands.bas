@@ -1,5 +1,5 @@
 ' Commands
-' 20200423
+' 20231127
 '
 01:
 If Commandpointer > 1 Then
@@ -28,11 +28,13 @@ Return
 Tx_b(1) = &H02
 Tx_b(2) = Rs232_pointer
 Tx_write_pointer = 3
-For B_temp2 = 1 To Rs232_pointer
-   Tx_b(Tx_write_pointer) = Rs232_in_b(B_temp2)
-   Incr Tx_write_pointer
-Next B_temp2
-Rs232_pointer = 0
+If Rs232_pointer > 0 Then
+   For B_temp2 = 1 To Rs232_pointer
+      Tx_b(Tx_write_pointer) = Rs232_in_b(B_temp2)
+      Incr Tx_write_pointer
+   Next B_temp2
+   Rs232_pointer = 0
+End If
 'all bytes transfered
 Gosub Command_received
 Return

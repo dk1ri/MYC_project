@@ -5,6 +5,7 @@
       If Command_b(1) < &H03 Then
          On Command_b(1) Gosub 00,01,02
       Else
+         Command_not_found
          Gosub Command_received
       End If
    Else
