@@ -1,27 +1,16 @@
 <html lang = "de">
 <!--
-    werbserver for MYC system
+    Webserver for MYC system
     myc.php
-   Version 1.1 20230621
+    Version 1.2 20240123
+    Description: V01.01.06
     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
-    To understand the program, you should be familiar with the announcements and commands of the MYC system (at least)
-    please read https://dk1ri.de/myc/commands.pdf or https://dk1ri.de/myc/commands.txt
-
-    To understand the program flow see action.php
-
-    This version should work basically, but there are some errors
-
-    found errors:
-    ct_of_as correctly used? -> ct_of_as_ ?
-    command a with 1 parameter: "0" not omitted
-
-     not implemented / missing:
-     FIFO missing?
-     hex input for strings
-     ext
-     range commands: sequence like log, date.. (lin only)
-     CONVERT
+    For description see detailed_description.php
+    ================================================================
+    This version is under development
+    only commandstypes f and a are tested (but may have errors !
+    ================================================================
 -->
     <head>
         <title>MYC Apache Server</title>

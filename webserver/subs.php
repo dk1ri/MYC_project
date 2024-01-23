@@ -1,31 +1,25 @@
 <?php
 # subs.php
-# DK1RI 20230702
+# DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+
 function basic_tok($o_tok){
     # return basic_token
-    if (strstr($o_tok, "a")) {
-        # for answer commands
-        $tok = explode("a", $o_tok)[0];
-    } elseif (strstr($o_tok, "d")) {
-        # for data
-        $tok = explode("d", $o_tok)[0];
-    } elseif (strstr($o_tok, "m")) {
-        # for stack and memorypositions
-        $tok = explode("m", $o_tok)[0];
-    } elseif (strstr($o_tok, "n")) {
-        # for ADD
-        $tok = explode("n", $o_tok)[0];
-    } elseif (strstr($o_tok, "o")) {
-        # for on elements
-        $tok = explode("o", $o_tok)[0];
-    } else {
-        $tok = $o_tok;
-    }
+    # for answer commands
+    $tok = explode("a", $o_tok)[0];
+    # for data
+    $tok = explode("d", $tok)[0];
+    # for stack and memorypositions
+    $tok = explode("m", $tok)[0];
+    # for ADD
+    $tok = explode("n", $tok)[0];
+    # for on elements
+    $tok = explode("o", $tok)[0];
     return $tok;
 }
 
 function dec_hex($key, $len){
+    # for numeric values: fill leading "0"
     $val = dechex((int)$key);
     $i = strlen($val);
     while ($i < $len){
@@ -33,15 +27,6 @@ function dec_hex($key, $len){
         $i += 1;
     }
     return $val;
-}
-
-function convert($num){
-    if (strstr($num, ".")){
-        return floatval($num);
-    }
-    else {
-        return intval($num);
-    }
 }
 
 function length_of_number($data){
@@ -77,6 +62,7 @@ function length_of_type($data){
             case "a":
             case "b":
             case "c":
+            case "n":
                 return 2;
             case "i":
             case "w":
@@ -134,25 +120,74 @@ function display_length($type){
 }
 
 function find_allowed($type){
+    # displayed data (check b!! -> not numeric
     switch ($type){
         case "a":
             return [0, 1];
         case "b":
-        case "s":
-        case "d":
+            # should not be used for numbers; for backward compatibility
             return [0, 255];
         case "c":
             return [-128, 127];
+        case "n":
+            return [0, 255];
         case "i":
             return [-32768, 32767];
         case "w":
             return [0 , 65535];
+        case "l":
+            return [-8388608, 8388607];
+        case "k":
+            return [0, 16777215];
         case "e":
             return [-2147483648, 2147483647];
         case "L":
             return [0, 4294967295];
+        case "s":
+            return [-3.4e38,3.4e38];
+        case "d":
+            return[-9.9e96, 9.9e96];
         default:
             return ["",""];
+    }
+}
+function find_length_of_displayed_vars($type){
+    # displayed data (real max length + 1)
+    switch ($type){
+        case is_numeric($type);
+            if ($type > 20){
+                return 21;
+            }
+            else{
+                return $type +1;
+            }
+        case "a":
+            return 2;
+        case "b":
+            # should not be used for numbers; for backward compatibility
+            return 11;
+        case "c":
+            return 5;
+        case "n":
+            return 4;
+        case "i":
+            return 7;
+        case "w":
+            return 6;
+        case "l":
+            return 8;
+        case "k":
+            return 9;
+        case "e":
+            return 10;
+        case "L":
+            return 11;
+        case "s":
+            return 14;
+        case "d":
+            return 20;
+        default:
+            return 1;
     }
 }
 
@@ -162,80 +197,31 @@ function find_name_of_type($type){
             return "bit";
         case "b":
             return "byte";
-        case "s":
-            return "single";
-        case "d":
-            return "double";
         case "c":
-            return "signed int";
+            return "signed short";
+        case "n":
+            return "short";
         case "i":
             return "signed word";
         case "w":
             return "word";
+        case "l":
+            return "signed 3byte";
+        case "k":
+            return "3byte";
         case "e":
             return "signed long";
         case "L":
             return "long";
+        case "s":
+            return "single";
+        case "d":
+            return "double";
         case is_numeric(($type)):
             return "string";
         default:
             return "";
     }
-}
-
-function real_to_transmit_simple($data, $type){
-    # numeric values are shifted if necessary
-    # convert to integer
-    if (is_numeric($data)) {
-        list($min,$max) = find_allowed($type);
-        switch ($type) {
-            case "c":
-                $data += 128;
-                break;
-            case "i":
-                $data += 32768;
-                break;
-            case "e":
-                $data += 2147483648;
-                break;
-        }
-        $data = intval($data);
-        if ($data < 0){$data = 0;}
-        if ($data < $max){$data = $max;}
-    }
-    return $data;
-}
-
-function adapt_len($token, $actual){
-    # trim $actual to a length of property_len (or 20)
-    $device =$_SESSION["device"];
-    $result = "";
-    $length = $_SESSION["property_len"][$device][basic_tok($token)][2];
-    $i = strlen(strval($actual));
-    if ($length > 20){
-        $length = 20;
-    }
-    while ($i < $length){
-        $result .= " ";
-        $i += 1;
-    }
-    return $result.$actual;
-}
-
-function no_lower_case($data){
-    # return 1 if string not contain any lower case characters
-    $i = 0;
-    $ret = 1;
-    while ($i < strlen($data)){
-        $asci = $data[$i];
-        if ($asci >  96 and $asci < 123){
-            $ret = 0;
-            continue;
-        }
-        $i += 1;
-    }
-
-    return$ret;
 }
 
 function create_tok_list($device){
@@ -253,11 +239,12 @@ function create_tok_list($device){
 
 function translate_dec_to_hex($type, $data, $length){
     # $type is a MYC datatype
-    # $type == n is unsigned number with $length
-    # $data is already corrected
+    # $type == m is unsigned number with $length (if $lenth > 0)
     switch ($type) {
+        case "m":
+            return dec_hex(intval($data), $length);
         case "n":
-            return dec_hex((int)$data, $length);
+            return dec_hex(intval($data), 2);
         case "a":
         case "b":
             # 0 or 1
@@ -265,7 +252,7 @@ function translate_dec_to_hex($type, $data, $length){
             return dec_hex((int)$data,2);
         case "c":
             # 1 byte signed short
-            return dec_hex($data + 128, 2) ;
+            return dec_hex($data + 128, 2);
         case "i":
             # 2 byte signed integer
             return dec_hex($data + 32768, 4);
@@ -292,115 +279,6 @@ function translate_dec_to_hex($type, $data, $length){
     return "";
 }
 
-function fillup($data, $length){
-    if(strlen($data) > $length){
-        # drop leading chars
-        $length *= -1;
-        $data = substr($data, $length);
-    }
-    else{
-        # fill up with leading "0" (characters!!!)
-        $dat = "";
-        $i = strlen(strval($data));
-        while ($i < $length) {
-            $dat .= "0";
-            $i += 1;
-        }
-        $data = $dat . $data;
-    }
-    return $data;
-}
-
-function retranslate_simple_range($range, $actual, $add ){
-    # this is the inverse of translate_simple_range
-    # range is comma separated list 1,a,2,b,3,1,4,2,5,4...
-    # without max!!!
-    # return is position of actual in range
-    # actual is found always
-    # for stacks: $add = 2
-    # for memory-positions $add =
-    $i = 0;
-    $found = 0;
-    $value = 0;
-    while ($i <  count($range) and $found == 0) {
-        if ($actual == $range[$i + 1]) {
-            $found = 1;
-        }
-        else {
-            $value += 1;
-        }
-        $i += $add;
-    }
-    return $value;
-}
-
-function translate_received_data_type($tok, $data){
-    # transmitted (actual) -> real
-    # data returned from device (in actual_data) will be translated to real values, if necessary
-    $device = $_SESSION["device"];
-    $des_type = $_SESSION["des"][$device];
-    if (array_key_exists($tok, $des_type) and $des_type[$tok][0] != "alpha") {
-        $range1 = explode(",", explode(";", $des_type[$tok])[0]);
-        # $range : maxnumber, range
-        $range_pure = explode(",",$range1[0]);
-        if (!is_numeric($range_pure[0])) {
-            # numeric type
-            if ($des_type[$tok][0] > $_SESSION["conf"]["selector_limit"]){
-                $data = numeric_range($range_pure, $data);
-            }
-            else{
-                $data = retranslate_simple_range($range_pure, $_SESSION["actual_data"][$device][$tok], 2 );
-            }
-        }
-    }
-    #else: string; all data from device are valid
-    return $data;
-}
-
-function numeric_range($range_pure, $data)
-{
-# range_pure (array): n1 n2 n3_n4ton5 ...
-# if $real_value_number == $data -> realvalue is found
-    if ($data == "") {
-        return $data;
-    }
-    # $range_pure[0] is type
-    $real_value_number = 0;
-    $nummber_range_elements = count($range_pure);
-    if ($nummber_range_elements < 2) {
-        # no restriction
-        return $data;
-    }
-    $i = 1;
-    $found = 0;
-    while ($i < $nummber_range_elements and $found == 0) {
-        $range_to = explode("_", $range_pure[$i]);
-        if (count($range_to) > 1) {
-            # n3_n4ton5,
-            $separator = $range_to[0];
-            $exp2 = explode("to", $range_to[1]);
-            $from = $exp2[0];
-            $to = $exp2[1];
-            $max_counts = ($to - $from) / $separator;
-            if ($real_value_number + $max_counts > $data) {
-                $data = ($data - $real_value_number) * $separator + $from;
-                $found = 1;
-            } else {
-                $real_value_number += $max_counts;
-            }
-        } else {
-            # one value element
-            if ($real_value_number == $data) {
-                $data = $range_pure[$i];
-                $found = 1;
-            }
-            $real_value_number += 1;
-        }
-        $i += 1;
-    }
-    return $data;
-}
-
 function split_range($data){
     $range = explode("_", $data);
     $range2 = explode("to", $range[1]);
@@ -419,8 +297,7 @@ function string_to_num($dat){
 
 function delete_bracket($data){
     $replace = array("{","}");
-   $data = str_replace($replace,"",$data);
-    return $data;
+    return str_replace($replace,"",$data);
 }
 
 function type_data($typ){
@@ -465,5 +342,170 @@ function type_data($typ){
     }
     return ["", 0, 0];
 }
-?>
 
+function stuff_bin($data){
+    # expand (binary) string to multiple of 8 bytes
+    $result = "";
+    $mod_len = strlen($data) % 8 ;
+    if ($mod_len != 0){
+        $i = 0;
+        while ($i < 8 - $mod_len){
+            $result .= "0";
+            $i++;
+        }
+        $result.= $data;
+    }
+    else {$result = $data;}
+    return $result;
+}
+
+function convert_bin_hex($value, $type){
+    # $type is myc type
+    # strings:
+    # convert ascii hex and binary string $value to chars ( not hex !!!)
+    # hex values must start with $H, binary with &B
+    # stringlength is not !!! added
+    # numbers: for hex or bin: must start with &H or &B; comomplete string must be hex or bin
+    # minus numbers start with "-"; one . or e or e- is allowed
+    # non valid numbers will set $_SESSION["send_ok] = 0
+    $result = "";
+    if (is_numeric($type) or $type == "b"){
+        $char_type = "T";
+        $last_char = "";
+        $string_to_convert = "";
+        for ($i = 0; $i < strlen($value); $i++){
+            if ($char_type == "T") {
+                # character_type == "T"
+                if ($value[$i] == "&") {
+                    $last_char = "&";
+                } elseif ($value[$i] == "H" or $value[$i] == "B" or $value[$i] == "T") {
+                    if ($last_char == "&") {
+                        $char_type = $value[$i];
+                    } else {
+                        $result .= $last_char;
+                        $result .= $value[$i];
+                        $last_char = "";
+                    }
+                }
+                else {
+                    # other chars
+                    if ($last_char != "&") {
+                        $result .= $last_char;
+                    }
+                    $result .= $value[$i];
+                }
+            }
+            elseif ($char_type == "B"){
+                if ($value[$i] == "0" or $value[$i] == "1"){
+                    $string_to_convert .= $value[$i];
+                    if (strlen($string_to_convert) == 8){
+                        # one byte found
+                        $result .= chr(dechex(bindec($string_to_convert)));
+                        $string_to_convert = "";
+                    }
+                }
+                else{
+                    # other character -> end
+                    if (strlen($string_to_convert) > 0) {
+                        $result .= chr(dechex(bindec(stuff_bin($string_to_convert))));
+                    }
+                    $string_to_convert = "";
+                    if ($value[$i] != "&") {
+                        $result .= $value[$i];
+                        $char_type = "T";
+                        $last_char = "";
+                    }
+                    else{
+                        $last_char = "&";
+                    }
+                }
+            }
+            elseif($char_type == "H"){
+                if (trim($value[$i], '0..9A..Fa..f') == ''){
+                    $string_to_convert .= $value[$i];
+                    if (strlen($string_to_convert) == 2){
+                        $result .=  hex2bin($string_to_convert);
+                        $string_to_convert = "";
+                    }
+                }
+                else{
+                    # other character -> end
+                    if (strlen($string_to_convert) > 0) {
+                        if (strlen($string_to_convert) == 1){$string_to_convert = "0".$string_to_convert;}
+                        $result .= hex2bin($string_to_convert);
+                        $string_to_convert = "";
+                    }
+                    if ($value[$i] != "&") {
+                        $result .= $value[$i];
+                        $string_to_convert = "";
+                        $char_type = "T";
+                        $last_char = "";
+                        $bin_hex_started = 0;
+                    }
+                    else{
+                        $last_char = "&";
+                        $bin_hex_started = 1;
+                    }
+                }
+            }
+        }
+        if (strlen($string_to_convert) > 0) {
+            if($char_type == "H") {
+                if (strlen($string_to_convert) == 1) {
+                    $string_to_convert = "0" . $string_to_convert;
+                }
+                $result .= hex2bin($string_to_convert);
+            }
+            elseif ($char_type == "B"){
+                $result .= chr(dechex(bindec(stuff_bin($string_to_convert))));
+            }
+        }
+    }
+    else{
+        # number
+        $n_b = substr($value,0, 2);
+        if ($n_b == "&H"){
+            if (strlen($value) % 2 != 0){
+                $value = "0". $value;
+            }
+            $result = hexdec(substr($value,3));
+        }
+        elseif ($n_b == "&B"){
+            $result .= bindec(stuff_bin($value));
+        }
+        else{
+            $minus = 0;
+            If (substr($value,0, 1) == "-"){
+                $minus = 1;
+                $value = substr($value,1);
+            }
+            if (is_numeric($value)){
+                # one "." only
+                $n1to9 = array("1","2","3","4","5","6","7","8","9","0","e");
+                $dot_e = str_replace($n1to9, "", $value);
+                if (strlen($dot_e) > 1){$_SESSION["send_ok"]= 0;}
+                # one "e" only
+                $n1to9 = array("1","2","3","4","5","6","7","8","9","0",".");
+                $dot_e = str_replace($n1to9, "",$value);
+                if (strlen($dot_e) > 1){$_SESSION["send_ok"]= 0;}
+                # no single "-"
+                if (strstr($value,"-") and !strstr($value,"e-")) {$_SESSION["send_ok"]= 0;}
+                $result = 0;
+                if ($_SESSION["send_ok"] == 1){
+                    if (strstr($value, ".") or strstr($value,"e-")){
+                        $result = (float)$value;
+                        }
+                   else {
+                       $result = (int)$value;
+                    }
+                   if ($minus){$result = $result * -1;}
+                }
+            }
+            else{
+                $_SESSION["send_ok"] = 0;
+            }
+        }
+    }
+    return $result;
+}
+?>

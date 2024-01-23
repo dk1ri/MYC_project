@@ -1,6 +1,8 @@
 <?php
 # display_commands.php
-# DK1RI 20230615
+# DK1RI 20240124
+# The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+#
 # display one element for each tok (with some exceptions)
 function display_commands(){
     $device = $_SESSION["device"];
@@ -9,6 +11,13 @@ function display_commands(){
     $already_done = "";
     foreach ($announcelines as $tok => $value) {
         $basic_tok = basic_tok($tok);
+        if (array_key_exists($basic_tok,$_SESSION["meter"][$device])){
+            $field = $_SESSION["original_announce"][$device][basic_tok($tok)];
+            if (strstr(explode(",",$field[0])[1],"ext")){
+                # no display, if this is ext command
+                continue;
+            }
+        }
         if (array_key_exists($basic_tok, $_SESSION["tok_list"][$device])){
             if ($already_done == $basic_tok) {
                 # for same basic_tok
@@ -108,51 +117,5 @@ function display_as($tok){
     echo "<input type='checkbox' id=" . $tok . " name=" . $tok . " value=1>";
     # reset
     $_SESSION["actual_data"][$device][$tok] = 0;
-}
-
-function actual_data_to_real($tok){
-    # $_SESSION["to_correct"][$device][$tok] must exist
-    $device = $_SESSION["device"];
-    $data = $_SESSION["actual_data"][$device][$tok];
-    if (!array_key_exists($tok, $_SESSION["to_correct"][$device])){return $data;}
-    $range_elements = explode(",", $_SESSION["to_correct"][$device][$tok]);
-    if ($range_elements[0] == 1){
-        # big value, use des
-        $range_elements = explode(",", $_SESSION["des"][$device][$tok]);
-        # drop max value
-        array_splice($range_elements,0,1);
-    }
-    $act_value = 0;
-    $i = 0;
-    $found = 0;
-    $result = "";
-    while ($i < count($range_elements) and $found == 0){
-        if (strstr($range_elements[$i], "_")){
-            list ($separator, $from, $to) = split_range($range_elements[$i]);
-            if ($separator <= 0){$separator = 1;}
-            $maxcount = ($to - $from)/ $separator;
-            if ($maxcount < $data){
-                # next
-                $act_value += $maxcount;
-                # should not be used
-                $result = $to;
-            }
-            else {
-                # will be found here
-                # number of counts to find the real value
-                $counts = $data - $act_value;
-                $result = $from + $counts * $separator;
-            }
-        }
-        else{
-            if ($i >= $data){
-                $found = 1;
-                $result = $range_elements[$i];
-            }
-            $act_value += 1;
-        }
-        $i += 1;
-    }
-    return $result;
 }
 ?>

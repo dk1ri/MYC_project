@@ -1,40 +1,36 @@
 <?php
 # commands_b.php
-# DK1RI 20230615
+# DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_ob($basic_tok){
     $device = $_SESSION["device"];
     echo "<div><h3 class='ob'>";
     echo $_SESSION["des_name"][$device][$basic_tok] . ":<br>";
-    $tok = $basic_tok. "m0";
-    $range = explode(",", $_SESSION["des"][$device][$tok]);
-    array_splice($range, 0, 1);
-    if (count($range) > 2) {
-        foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
-            if (strstr($token, "m") or strstr($token, "o")) {
-                if (strstr($token, "m")) {
-                    echo "number of elements: ";
-                } elseif (strstr($token, "o")) {
-                    echo "start at: ";
-                }
-                simple_selector($token, $range, $_SESSION["actual_data"][$device][$token]);
-                echo "<br>";
+    # data
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
+        if (strstr($token, "d")) {
+            if (!strstr($token, "dx")) {
+                $type = $_SESSION["type_for_memories"][$device][$token];
+                echo find_name_of_type($type). " ";
+                echo "<input type=text name=" . $token . " size =". find_length_of_displayed_vars($type)."  placeholder =" . str_replace(" ","&nbsp;",$_SESSION["actual_data"][$device][$token]) . "><br>";
             }
         }
     }
-    else {
-        # one type of data
-        echo find_name_of_type($_SESSION["type_for_memories"][$device][$basic_tok. "d0"]);
-    }
-    echo " ";
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
-        if (strstr($token, "d")) {
-            # data
-            echo "<input type=text name=" . $token . " size = 20  placeholder =" . $_SESSION["actual_data"][$device][$token] . "><br>";
-        }
-    }
     if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+        $token = $_SESSION["o_to_a"][$device][$basic_tok];
+        $range_m0 = explode(",", $_SESSION["des"][$device][$token. "m0"]);
+        $range_o0 = explode(",", $_SESSION["des"][$device][$token. "o0"]);
+        $number_of_elements = $range_m0[0];
+        array_splice($range_m0, 0, 1);
+        array_splice($range_o0, 0, 1);
+        if ($number_of_elements > 1) {
+            echo "start at: ";
+            simple_selector($token."m0", $range_m0, $_SESSION["actual_data"][$device][$token."m0"]);
+            echo "number of elements: ";
+            simple_selector($token."o0", $range_o0, $_SESSION["actual_data"][$device][$token."o0"]);
+        }
         display_as($_SESSION["o_to_a"][$device][$basic_tok]);
+        echo "<br>";
     }
     echo "</h3></div>";
 }
@@ -42,35 +38,42 @@ function create_ob($basic_tok){
 function create_ab($basic_tok) {
     $device = $_SESSION["device"];
     echo "<div><h3 class='ab'>";
-    echo $_SESSION["des_name"][$device][$basic_tok] . ": ";
-    # number of elements
+    echo $_SESSION["des_name"][$device][$basic_tok] . ":<br>";
+    # start at
     $tok = $basic_tok. "m0";
     $range = explode(",", $_SESSION["des"][$device][$tok]);
+    $number_of_elements = $range[0];
     array_splice($range, 0, 1);
-    if (count($range) > 2) {
+    if ($number_of_elements > 1) {
+        echo "start at ";
         simple_selector($tok, $range, $_SESSION["actual_data"][$device][$tok]);
     }
     else {
         # one type of data
         echo find_name_of_type($_SESSION["type_for_memories"][$device][$basic_tok. "d0"]);
     }
-    # start at
+    # number of elements
     $tok = $basic_tok. "o0";
     $range = explode(",", $_SESSION["des"][$device][$tok]);
     array_splice($range, 0, 1);
-    if (count($range) > 2) {
-        simple_selector($tok, $range, $_SESSION["actual_data"][$device][$tok]);
-    }
-    else {
-        # one type of data
-        echo find_name_of_type($_SESSION["type_for_memories"][$device][$basic_tok. "d0"]);
-    }
+    echo " elements: ";
+    simple_selector($tok, $range, $_SESSION["actual_data"][$device][$tok]);
     echo " ";
     # data
-    $data = "";
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
-        if (strstr($token, "d")) {
-            $data = $_SESSION["actual_data"][$device][$token] . ",";
+    if ($number_of_elements == 1){
+        $data = str_replace(" ", "&nbsp;", $_SESSION["actual_data"][$device][$basic_tok . "d0"]);
+    }
+    else {
+        $data = "";
+        $i = 0;
+        $j = $_SESSION["actual_data"][$device][$basic_tok . "m0"];
+        while ($i < $_SESSION["actual_data"][$device][$tok]) {
+            if ($j >= explode(",", $_SESSION["des"][$device][$basic_tok . "m0"])[0]) {
+                $j = 0;
+            }
+            $data .= str_replace(" ", "&nbsp;", $_SESSION["actual_data"][$device][$basic_tok . "d" . $j]) . "&nbsp;.&nbsp;";
+            $i++;
+            $j++;
         }
     }
     echo " <marquee>" . $data. "</marquee>";
@@ -79,99 +82,140 @@ function create_ab($basic_tok) {
     echo "</h3></div>";
 }
 
-function send_ob($basic_tok, $send){
+function correct_for_send_ob($basic_tok){
+    # actual data is not updated
+    # transmitted are tok until the first empty tok
     $device = $_SESSION["device"];
-    $send_ok = update($device, $basic_tok, 0);
-    $tok = $basic_tok . "a";
-    if (array_key_exists($tok, $_SESSION["corrected_POST"][$device]) and $_SESSION["corrected_POST"][$device][$tok] == 1) {
-        # if answer set-> ignore change of data
-        # position
-        $send .= calculate_pos_from_actual_to_hex($basic_tok);
-        $send_ok = 1;
-        $_SESSION["read"] = 1;
-    } else {
-        $send_ok = update($device, $basic_tok, 1);
-
-        if (!array_key_exists($basic_tok . "b0", $_SESSION["actual_data"][$device])) {
-            # one element only
-            $des_type = explode(";", $_SESSION["des_type"][$device][$basic_tok . "x1"][0])[0];
-            $length = length_of_type($des_type);
-            $send .= "0100" . translate_dec_to_hex($des_type, $_SESSION["actual_data"][$device][$basic_tok . "x1"], $length);
-        } else {
-            $number = $_SESSION["actual_data"][$device][$basic_tok . "b0"];
-            if ($number > 0) {
-                $send .= translate_dec_to_hex("n", $number, 2);
-                $start = retranslate_simple_range(explode(",", $_SESSION["des_range"][$device][$basic_tok . "b1"]), $_SESSION["actual_data"][$device][$basic_tok . "b1"], 2);
-                $send .= translate_dec_to_hex("n", $start, 2);
-                $i = 0;
-                $j = $start + 1;
-                while ($i < $number) {
-                    $tok = $basic_tok . "d" . $j;
-                    if (!array_key_exists($tok, $_SESSION["actual_data"][$device])) {
-                        # continue at first element
-                        $j = 1;
-                        $tok = $basic_tok . "x1";
+    check_send_if_a_exists($basic_tok);
+    if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
+    if ($_SESSION["send_ok"]) {
+        # create data to send
+        $data = "";
+        $stop = 0;
+        $start = 0;
+        $number_of_elements = 0;
+        $start_pos = 0;
+        foreach ($_SESSION["cor_token"][$device][$basic_tok] as $value) {
+            if ($_SESSION["send_ok"] and $stop == 0) {
+                if (strstr($value, "d")) {
+                    if (!strstr($value, "dx")) {
+                        if ($start == 0) {
+                            $start_pos++;
+                        }
+                        if (array_key_exists($value, $_POST) and $_POST[$value] != "") {
+                            # type_for_memories is one char only for $tok.d..
+                            $type = $_SESSION["type_for_memories"][$device][$value];
+                            $data .= check_memory_data($value, $device, $type, 0);
+                            $start = 1;
+                            $number_of_elements++;
+                        } else {
+                            if ($start == 1) {
+                                $stop = 1;
+                            }
+                        }
                     }
-                    $des_type = explode(";", $_SESSION["des_type"][$device][$tok][0])[0];
-                    $length = length_of_type($des_type);
-                    $send .= translate_dec_to_hex($des_type, $_SESSION["actual_data"][$device][$tok], $length);
-                    $i += 1;
                 }
-                # reset to 0 again
-                $_SESSION["actual_data"][$device][$basic_tok . "b0"] = 0;
-                $send_ok = 1;
-            } else {
-                $send_ok = 0;
             }
         }
     }
-    return [$send, $send_ok];
+    if ($_SESSION["send_ok"] == 1) {
+        # update data (only if no error before!!)
+        $stop = 0;
+        $start = 0;
+        $start_pos = 0;
+        foreach ($_SESSION["cor_token"][$device][$basic_tok] as $value) {
+            if ($stop == 0) {
+                if (strstr($value, "d")) {
+                    if (!strstr($value, "dx")) {
+                        if ($start == 0) {
+                            $start_pos++;
+                        }
+                        if (array_key_exists($value, $_POST) and $_POST[$value] != "") {
+                            $_SESSION["actual_data"][$device][$value] = $_POST[$value];
+                            $start = 1;
+                        } else {
+                            if ($start == 1) {
+                                $stop = 1;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if ($_SESSION["send_ok"]) {
+        if ($number_of_elements > 0) {
+            # basic_tok
+            $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+            # number of element if more than 1 possible
+            if (count(explode(",", $_SESSION["type_for_memories"][$device][$basic_tok . "m0"])) > 2) {
+                $send .= translate_dec_to_hex("n", $start_pos - 1, 2);
+                $send .= translate_dec_to_hex("n", $number_of_elements, 2);
+            }
+            $send .= $data;
+            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+        }
+    }
 }
 
-function send_ab($basic_tok, $send){
+function correct_for_send_ab($basic_tok){
     $device = $_SESSION["device"];
-    $send_ok = update($device, $basic_tok, 1);
-    $m0 = $basic_tok . "m0";
-    $o0 = $basic_tok . "o0";
-    if (array_key_exists($basic_tok . "a0", $_POST)) {
-        if ($_POST[$basic_tok . "a0"] == "1") {
-            if (!array_key_exists($m0, $_SESSION["actual_data"][$device])) {
-                # one element only
-                send_to_device($send . "0100");
-            } else {
-                $number = $_SESSION["actual_data"][$device][$m0];
-                if ($number > 0) {
-                    $send .= translate_dec_to_hex("n", $number, 2);
-                    # pos of elements
-                    if (array_key_exists($o0, $_SESSION["actual_data"][$device])) {
-                        $pos = $_SESSION["actual_data"][$device][$o0];
-                        $send .= translate_dec_to_hex("n", $pos, 2);
-                    }
-                    $send_ok = 1;
-                    $_SESSION["read"] = 1;
-                    send_to_device($send);
-                }
+    $dat = "";
+    if (array_key_exists($basic_tok . "a", $_POST) and $_POST[$basic_tok . "a"] == "1") {
+        $m0 = $basic_tok . "m0";
+        $o0 = $basic_tok . "o0";
+        if (count(explode(",", $_SESSION["des"][$device][$basic_tok . "m0"])) > 3) {
+            # more than 1 element
+            $number = $_POST[$o0];
+            if ($number > 0) {
+                $dat .= translate_dec_to_hex("n", $_POST[$m0], 2);
+                $dat .= translate_dec_to_hex("n", $number, 2);
             }
+            $_SESSION["actual_data"][$device][$m0] = $_POST[$m0];
+            $_SESSION["actual_data"][$device][$o0] = $_POST[$o0];
+        }
+        if ($_POST[$o0] > 0) {
+            # basic_tok
+            $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+            $send .= $dat;
+            $_SESSION["read"] = 1;
+            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
         }
     }
-    return [$send, $send_ok];
 }
 
 function receive_b($basic_tok, $from_device){
+    # $fromdevice: without basic_tok !!
     $device = $_SESSION["device"];
-    # 256 elemnets supported only
-    $start = one_numeric_element ($basic_tok, $from_device,2);
-    $element_number = one_numeric_element ($basic_tok, $from_device,4);
+    $max_element_number = count($_SESSION["original_announce"][$device][$basic_tok]) - 2;
+    if ($max_element_number > 0){
+        # 256 elemnets supported only
+        $start = hexdec(substr($from_device,0,2));
+        $element_number = hexdec(substr($from_device,2,2));
+        $from_device = substr($from_device,4, null);
+        $del_adder= 4;
+    }
+    else{
+        # one element
+        $start = 0;
+        $element_number = 1;
+        $del_adder = 0;
+    }
     $i = $start;
+    $j = 0;
     $all_to_delete = 0;
-    while ($i < $element_number){
-        list($data, $delete_bytes) = update_memory_data($basic_tok . "d" . ($element_number + 1), $from_device, $i + 2, $element_number);
+    while ($j < $element_number){
+        list($data, $delete_bytes) = update_memory_data($basic_tok . "d" . $i, $from_device,$_SESSION["property_len"][$device][$basic_tok][$element_number + 1]);
         $from_device = substr($from_device,$delete_bytes, null);
-        $_SESSION["actual_data"][$device][$basic_tok . "d" . ($element_number + 1)] = $data;
-        update_corresponding_opererating($basic_tok, $d.$element_number, $data);
+        update_corresponding_opererating($basic_tok, "d".$i, $data);
         $all_to_delete += $delete_bytes;
+        $i ++;
+        if ($i > $max_element_number){$i = 0;}
+        $j++;
     }
     # to delete
-    return 4 + $all_to_delete;
+    return $del_adder + $all_to_delete;
 }
 ?>

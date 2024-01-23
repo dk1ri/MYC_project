@@ -1,6 +1,6 @@
 <?php
 # commands_s.php
-# DK1RI 20230621
+# DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_os($basic_tok) {
     $device = $_SESSION["device"];
@@ -58,63 +58,61 @@ function create_as_at($basic_tok){
     echo "<input type='checkbox' id=".$basic_tok."a" . " name=".$basic_tok."a value=1>";
 }
 
-function send_os($basic_tok, $send, $senda){
-    $send_ok = 0;
+function correct_for_send_os($basic_tok){
     $device = $_SESSION["device"];
-    list($send, $senda, $change_found) = handle_stacks($basic_tok, $send, $senda);
-    # $send has stacks now, if necessary
-    $tok = $basic_tok. "a";
-    if (array_key_exists($tok, $_SESSION["corrected_POST"][$device]) and $_SESSION["corrected_POST"][$device][$tok] == 1) {
-        # if answer set-> ignore change of data
-        $send = $senda;
-        $send_ok = 1;
-        $_SESSION["read"] = 1;
-    }
-    else {
-        list($send, $change_found_) = update_one($basic_tok . "d0", $send, 2);
-        if ($change_found_) {
-            $change_found = 1;
-            change_as_data($basic_tok . "d0");
+    check_send_if_a_exists($basic_tok);
+    if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
+    if ($_SESSION["send_ok"]) {
+        $d0 = $basic_tok."d0";
+        $sw_pos_changed = 0;
+        $max_switches = count(explode(",", $_SESSION["des"][$device][$d0])) / 2;
+        if ($_POST[$d0] > $max_switches) {
+            $_SESSION["send_ok"] = 0;
         }
-        if ($change_found) {
-            $send_ok = 1;
+        else{
+            if ($_POST[$d0] != $_SESSION["actual_data"][$device][$d0]){
+                $_SESSION["actual_data"][$device][$d0] = $_POST[$d0];
+                $sw_pos_changed = 1;
+            }
         }
     }
-    return [$send, $send_ok];
+    if ($_SESSION["send_ok"]) {
+        list($stack, $stack_changed) = handle_stacks($basic_tok);
+        if ($stack_changed or $sw_pos_changed) {
+            $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+            $send .= $stack;
+            $send .= translate_dec_to_hex("n", $_POST[$basic_tok."d0"], $_SESSION["property_len"][$device][$basic_tok][3]);
+            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+        }
+    }
 }
 
-function send_asat($basic_tok, $send, $senda){
-    $send_ok = 0;
+function correct_for_send_asat($basic_tok){
     $device = $_SESSION["device"];
-    list($send, $senda, $change_found) = handle_stacks($basic_tok, $send, $senda);
     $tok = $basic_tok . "a";
-    if (array_key_exists($tok, $_SESSION["corrected_POST"][$device])) {
-        if ($_SESSION["corrected_POST"][$device][$tok] == 1) {
-            $change_found = 1;
-        }
-        $_SESSION["actual_data"][$device][$tok] = 0;
-    }
-    if ($change_found) {
-        $send_ok = 1;
+    if (array_key_exists($tok, $_POST) and  $_POST[$tok] == 1){
+        list($stack, $stack_changed) = handle_stacks($basic_tok);
         $_SESSION["read"] = 1;
+        $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+        $send .= $stack;
+        $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+        $_SESSION["send_string_by_tok"][$basic_tok]= $send;
     }
-    return [$send, $send_ok];
 }
 
-function receive_s($basic_tok, $stacks, $from_device){
+function receive_st($basic_tok, $from_device){
     $device = $_SESSION["device"];
-    if ($stacks != 1) {
-        read_to_stacks();
+    $stacklen = $_SESSION["property_len"][$device][$basic_tok][1];
+    $switchlen = $_SESSION["property_len"][$device][$basic_tok][2];
+    if ($stacklen > 0) {
+        update_memory_position($basic_tok, $from_device);
+        $from_device = substr($from_device,$stacklen);
     }
-    # 256 switches max supported
-    $data = substr($from_device, 0, 2);
-    $_SESSION["actual_data"][$device][$basic_tok. "d0"] = $data;
-    if (array_key_exists($basic_tok,$_SESSION["as_token"][$device])){
-        $org_token = $_SESSION["as_token"][$device][$basic_tok];
-        $_SESSION["actual_data"][$device][$org_token. "d0"] = $data;
-        update_corresponding_opererating($basic_tok, "d0", $data);
-    }
-    # 2 byte to delete
-    return 2;
+    $switchlen == 0 ? $switchlen = 2: $switchlen = $switchlen;
+    $data = substr($from_device, 0, $switchlen);
+    $_SESSION["actual_data"][$device][$basic_tok. "d0"] = (int)$data;
+    update_corresponding_opererating($basic_tok, "d0", $data);
+    return $stacklen + $switchlen;
 }
 ?>

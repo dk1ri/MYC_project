@@ -1,92 +1,112 @@
 <?php
 # translate.php
-# DK1RI 20230615
+# DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function correct_POST($device){
-    # real (displayed) values are converted to nearest valid MYC data (as stored as actual data)
-    # only those with manual data entry must be checked
-    # -> only those, where $_SESSION["to_correct"][$device][$basictok].*) exists (-> string data are not checked)
-    $_SESSION["corrected_POST"][$device] = [];
+    # $_POST values are stored in $_SESSION["actual_data"], even if they are wrong (for manual entries)
+    # for sending:
+    # only those $POST commands with manual data entry must be checked
+    # -> only those, where $_SESSION["to_correct"][$device][$basictok].*) exists
+    # for invalid data (for manual entries) $_SESSION["send_ok is set to 0
+    # &B and &H values are checked and converted
+    # positive result is in $_SESSION["tok_to_send"]  and $_SESSION["send_string_by_tok"]
+    # send of data with no change is decided by commandtype
+    $_SESSION["tok_to_send"] = [];
+    $_SESSION["send_string_by_tok"] = [];
     foreach ($_POST as $token => $value) {
-        # string limitations are not supported
-        # check for absolute max values (given by type)
-        if (!array_key_exists($token, $_SESSION["to_correct"][$device])) {
-            $_SESSION["corrected_POST"][$device][$token] = $value;
+        $_SESSION["send_ok"] = 1;
+        # $_POST copied to $_SESSION["actual_data"] without modifications (if copied, see correct_xx)
+        # someting like interface ..:
+        if (!array_key_exists(basic_tok($token), $_SESSION["original_announce"][$device])) {
+            # not transmitted
             continue;
         }
-        # remaining; numeric values only
-        # they have "des", 1,2,1_2to3... only
-        # This should not happen:
-        if ($value == "") {
+        if (array_key_exists($token, $_SESSION["to_correct"][$device]) and $value == "") {
+            # manual entry without entry in _POST (no new entry)
             continue;
         }
-        $limit = 0;
-        if (array_key_exists($token, $_SESSION["type_for_memories"][$device])) {
-            list ($min, $max) = find_allowed($_SESSION["type_for_memories"][$device][$token]);
-            if ($value > $max) {
-                # max for transmit
-                $value = $_SESSION["max_for_send"][$device][$token];
-                $limit = 1;
-            }
-            if ($value < $min) {
-                # min for transmit
-                $value = 0;
-                $limit = 1;
-            }
-        }
-        # no futher correction, if value was beyond limit
-        # also for big "non memory" values
-        if (!$limit) {
-            # ignore if string
-            if (!is_numeric($value)) {
-                continue;
-            }
-            # hex values not supported
-            $des = explode(",", $_SESSION["des"][$device][$token]);
-            # drop max value
-            array_splice($des, 0, 1);
-            $i = 0;
-            $found = 0;
-            $result = 0;
-            while ($i < count($des) and $found == 0) {
-                if (strstr($des[$i], "_")) {
-                    list($separator, $from, $to) = split_range($des[$i]);
-                    # if value < $from with first loop
-                    if ($value < $from){
-                        $result = 0;
-                        $found = 1;
-                    }
-                    else {
-                        $counts = ($to - $from + 1) / $separator;
-                        if ($value >= $to) {
-                            # -1: $result is at the position of $from already
-                            $result += $counts - 1;
-                        } else {
-                            # is within
-                            $temp = $value / ($to - $from);
-                            $result = (int)($temp * $counts);
-                            $found = 1;
-                        }
-                    }
-                } else {
-                    # if value < $from with first loop
-                    if ($value < $from){
-                        $result = 0;
-                        $found = 1;
-                    }
-                    else {
-                        if ($result = $des[$i]) {
-                            $found = 1;
-                        } else {
-                            $result += 1;
-                        }
-                    }
+        $basic_tok = basic_tok($token);
+        # not again for token with same basic_tok:
+        # check, if answer for operate exists in $_POST - > ignore operate
+        if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])){
+            if (array_key_exists($_SESSION["o_to_a"][$device][$basic_tok] . "a", $_POST)) {
+                if ($_POST[$_SESSION["o_to_a"][$device][$basic_tok] . "a"] == 0) {
+                    $_SESSION["send_ok"] = 0;
+                    continue;
                 }
-                $i += 1;
             }
-            $value = $result;
         }
-        $_SESSION["corrected_POST"][$device][$token] = $value;
+        if (!array_key_exists($basic_tok, $_SESSION["tok_to_send"])) {
+            $_SESSION["tok_to_send"][$basic_tok] = 1;
+            $ct = $_SESSION["announce_all"][$device][$token][0];
+            switch ($ct) {
+                case "os":
+                    correct_for_send_os($basic_tok);
+                    break;
+                case "as":
+                case "at":
+                    correct_for_send_asat($basic_tok);
+                    break;
+                case "or":
+                    correct_for_send_or($basic_tok);
+                    break;
+                case "ar":
+                    correct_for_send_ar($basic_tok);
+                    break;
+                case "ou":
+                    correct_for_send_ou($basic_tok);
+                    break;
+                case "op":
+                case "oo":
+                    correct_for_send_op($basic_tok);
+                    break;
+                case "ap":
+                    correct_for_send_ap($basic_tok);
+                    break;
+                case "oa":
+                    correct_for_send_oa($basic_tok);
+                    break;
+                case "aa":
+                    correct_for_send_aa($basic_tok);
+                    break;
+                case "ob":
+                    correct_for_send_ob($basic_tok);
+                    break;
+                case "ab":
+                    correct_for_send_ab($basic_tok);
+                    break;
+                case "om":
+                    correct_for_send_om($basic_tok);
+                    break;
+                case "am":
+                    correct_for_send_am($basic_tok);
+                    break;
+                case "on":
+                    correct_for_send_on($basic_tok);
+                    break;
+                case "an":
+                    correct_for_send_an($basic_tok);
+                    break;
+                case "of":
+                    correct_for_send_of($basic_tok);
+                    break;
+                case "af":
+                    correct_for_send_af($basic_tok);
+                    break;
+            }
+        }
+    }
+}
+
+function check_send_if_a_exists($basic_tok){
+    # for "o" command: do not send, if POST of corresponding "a" command was set
+    $device = $_SESSION["device"];
+    if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+        $a_tok = $_SESSION["o_to_a"][$device][$basic_tok]."a";
+        # do not send if answer is set
+        if (array_key_exists($a_tok, $_POST) and $_POST[$a_tok] == 1) {
+            $_SESSION["send_ok"] = 0;
+        }
     }
 }
 ?>

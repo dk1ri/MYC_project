@@ -1,83 +1,37 @@
 <?php
 # read_new_device.php
-# DK1RI 20230613
+# DK1RI 20240124
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function read_new_device($device){
-    #create additional device (old ones not deleted)
-    # split anouncelist to display objects and get chapter_names
-    # define device dependent data
-    # basic_tok is the token given in the original annoucelist
-    #
-    # for including necessary code only
     $_SESSION["includes"][$device] = [];
     $_SESSION["chapter_index"][$device] = [];
     $_SESSION["chapter_token"][$device] = [];
-    # _POST is crrected / translated to data  for transmit
-    # contain transmitted data (not the displayed ones)
-    $_SESSION["corrected_POST"][$device] = [];
-    # original_announce: spltted original announcefile token; array data: array: line split by ";"
     $_SESSION["original_announce"][$device] = [];
-    # announce_all: commandtype only for all displayed elements by token
-    # but: "as" commands have no entry (but a display element). They are handled with the corresponding operate command
-    # and get the basic_tok of the operating command
-    # token : basic_tok"identifier"
-    # identifiers:
-    # m selectors for stack, memoryposition
-    # n selector for ADD
-    # o selector for number of data to send for an /on commands
-    # d data
-    # a answer element
     $_SESSION["announce_all"][$device] = [];
-    # token of "as" command -> corresponding token
     $_SESSION["a_to_o"][$device] = [];
-    # reverse
     $_SESSION["o_to_a"][$device] = [];
-    # list of _POST indices, which are not tokens
     $_SESSION["special_token"][$device] = [];
-    # length of property (for send data) for each property
-    # for memorypositions the property may have more than one display elements _ stored in the first element only
     $_SESSION["property_len"][$device] = [];
     $_SESSION["property_len_byte"][$device] = [];
-    # all token (of displayed elements for a basic_tok
     $_SESSION["cor_token"][$device] = [];
-    # actual data for each display element
-    # valid data; decimal not hex (or alpha), values to transmit (not displayed values)
     $_SESSION["actual_data"][$device] = [];
-    # not used ?
     $_SESSION["chapter_array"][$device] = [];
-    # actual tokens, depend on selected chapters
     $_SESSION["tok_list"][$device] = [];
-    # commandtype of "os" commands used but may be error -> to check
     $_SESSION["ct_of_as"][$device] = [];
-    # token for as commands: as-token array data master-token (num)
     $_SESSION["as_token"][$device] = [];
-    # token for as commands: master-token array data as-token (num)
     $_SESSION["as_token_as_to_basic"][$device] = [];
-    # type for memoried per display tok
     $_SESSION["type_for_memories"][$device] = [];
-    # token of oo commands
     $_SESSION["oo_tok"][$device] = [];
-    # per displaytoken:
-    # for memory data :
-    #       string: "alpha" (restriction not supported)
-    #       small numeric: max,0,0,1,1,2,4....
-    #       big numeric: max,<des-range>    (token is in "to_correct")
-    # others (all numeric)
-    #       small numeric: max,0,0,1,1,2,4....
-    #       big numeric: max,<des-range>     (token is in "to_correct")
     $_SESSION["des"][$device] = [];
-    # names for display elements
     $_SESSION["des_name"][$device] = [];
-    # contain "1"" used if values are "big"
-    $_SESSION["to_correct"][$device] = [];
-    # to calculate stacks / memoryposition max values are required
+    $_SESSION["des_range"][$device] = [];
     $_SESSION["max_for_send"][$device] = [];
-    # for ADD token ("n"):
-    # product of MULS
     $_SESSION["max_for_ADD"][$device] = [];
-    # for p / o commands: unit
+    $_SESSION["string_commands"][$device] =[];
     $_SESSION["unit"][$device] = [];
-    # chapter_names: array
+    $_SESSION["meter"][$device] = [];
+    $_SESSION["meter_announce_line"][$device] = [];
+    $_SESSION["meter_min_time"][$device] = 0;
     $_SESSION["chapter_names"][$device] = [];
     $_SESSION["chapter_names"][$device]["all_basic"] = "all_basic";
     $_SESSION["activ_chapters"][$device]["all_basic"] = "all_basic";
@@ -86,10 +40,14 @@ function read_new_device($device){
     $_SESSION["chapter_token"][$device]["all_basic"] = [];
     $_SESSION["chapter_token"][$device]["ADMINISTRATION"] = [];
     $_SESSION["chapter"] = "all";
+    $_SESSION["update"] = 0;
+    $_SESSION["send_ok"] = 0;
+    $_SESSION["tok_to_send"] = [];
+    $_SESSION["send_string_by_tok"] = [];
+    #
+    split_to_display_objects();
     # as answer token <-> operate token:
     read_a_o($device);
-    # for details see there:
-    split_to_display_objects();
     # like interface ... : after split_to_display_objects (some updates there)
     read_special_token();
     # ct for "as" commands (ct of corresponding "o" command)
@@ -104,26 +62,43 @@ function read_new_device($device){
     max_for_send();
     # calculate max values for ADD
     max_for_ADD();
+    # commands with type "string) (m, n, f possible)
+    string_command();
     # actual data for all displaed elements
     init_data($device);
+    # start time events
+    # create $_SESSION["to_cerrect"]
+    create_to_correct($device);
+    start_time_events($device);
 }
 
 function read_a_o($device){
-    # list of token with same $basic_tok; exception : oo commands and y,asx commands
-    $asfile = "devices/" . $device . "/as_commands";
-    if (file_exists($asfile)) {
-        $file = fopen($asfile, "r");
-        while (!(feof($file))) {
-            $line = fgets($file);
-            $line = str_replace("\r", "", $line);
-            $line = str_replace("\n", "", $line);
-            if ($line != "") {
-                $li = explode(" ", $line);
-                $_SESSION["a_to_o"][$device][$li[0]] = $li[1];
-                $_SESSION["o_to_a"][$device][$li[1]] = $li[0];
+    # original_announce contain expanded as commands
+    $last_tok = 0;
+    foreach ($_SESSION["original_announce"][$device] as $tok => $line) {
+        $ct = explode(",", $line[0]);
+        if (count($ct) > 1) {
+            if (substr($ct[1], 0, 2) == "as") {
+                $a_e_tok = str_replace("as", "", $ct[1]);
+                if ($a_e_tok == $last_tok) {
+                    $_SESSION["a_to_o"][$device][$tok] = $last_tok;
+                    $_SESSION["o_to_a"][$device][$last_tok] = $tok;
+                }
+            }
+            elseif (substr($ct[1], 0, 3) == "ext") {
+                $a_e_tok = str_replace("ext", "", $ct[1]);
+                if ($a_e_tok == $last_tok) {
+                    $_SESSION["a_to_o"][$device][$tok] = $last_tok;
+                    $_SESSION["o_to_a"][$device][$last_tok] = $tok;
+                }
+            }
+            else{
+                $last_tok = $tok;
             }
         }
-        fclose($file);
+        else{
+            $last_tok = $tok;
+        }
     }
 }
 
@@ -172,17 +147,41 @@ function calculate_property_len(){
             case "ar":
             case "at":
                 # token + stacks + no_of switches
+                # for update_memory_position pos 1: stacks and memorytype for memories
                 stack_len($key, $value[1]);
-                $_SESSION["property_len"][$device][$key][] = length_of_number(key($value) -2);
-                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(key($value) -2))/ 2;
+                if (count($value) > 4) {
+                    $_SESSION["property_len"][$device][$key][] = length_of_number(count($value) - 2);
+                    $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(count($value) - 2)) / 2;
+                }
+                else{
+                    $_SESSION["property_len"][$device][$key][] = 0;
+                    $_SESSION["property_len_byte"][$device][$key][] = 0;
+                }
                 break;
             case "op":
             case "ap":
-            case "oo":
                 # token + stacks + no_of_range
                 stack_len($key, $value[1]);
-                $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",",$value[2])[0]);
-                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",",$value[2])[0])) / 2;
+                $i = 2;
+                while ($i < count($value)) {
+                    $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",", $value[$i])[0]);
+                    $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",", $value[$i])[0])) / 2;
+                    $i += 3;
+                }
+                break;
+            case "oo":
+                $i = 2;
+                while ($i < count($value)) {
+                    if (count($value) - $i > 2) {
+                        $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",", $value[$i])[0]);
+                        $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",", $value[$i])[0])) / 2;
+                        $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",", $value[$i + 1])[0]);
+                        $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",", $value[$i + 1])[0])) / 2;
+                        $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",", $value[$i + 2])[0]);
+                        $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",", $value[$i + 2])[0])) / 2;
+                    }
+                    $i += 4;
+                }
                 break;
             case "om":
             case "am":
@@ -229,8 +228,11 @@ function calculate_property_len(){
                 $_SESSION["property_len_byte"][$device][$key][] = (length_of_type(explode(",",$value[1])[0])) / 2;
                 $_SESSION["property_len"][$device][$key][] = length_of_number(explode(",",$value[2])[0]);
                 $_SESSION["property_len_byte"][$device][$key][] = (length_of_number(explode(",",$value[2])[0])) / 2;
+                break;
             case "oa":
             case "aa":
+            case "ob":
+            case "ab":
                 $number_of_elements = count($value);
                 # data: token + type + type
                 $i = 1;
@@ -243,15 +245,43 @@ function calculate_property_len(){
                     }
                     $i += 1;
                 }
-            if ($number_of_elements > 3){
-                $_SESSION["property_len"][$device][$key][] = length_of_number($number_of_elements);
-                $_SESSION["property_len_byte"][$device][$key][] = (length_of_number($number_of_elements)) / 2;
-            }
-            else{
-                $_SESSION["property_len"][$device][$key][] = 2;
-                $_SESSION["property_len_byte"][$device][$key][] = 1;
-            }
+                if ($number_of_elements > 3){
+                    $_SESSION["property_len"][$device][$key][] = length_of_number($number_of_elements);
+                    $_SESSION["property_len_byte"][$device][$key][] = (length_of_number($number_of_elements)) / 2;
+                }
+                else{
+                    $_SESSION["property_len"][$device][$key][] = 2;
+                    $_SESSION["property_len_byte"][$device][$key][] = 1;
+                }
                 break;
+        }
+
+    }
+}
+
+function calculate_des_range($basic_tok, $data, $ct, $s_number){
+    # extract ranges for some commands
+    # simple ranges with no MUL or ADD one "{" and one "}"
+    $device = $_SESSION["device"];
+    if (is_numeric($data)){
+        $_SESSION["des_range"][$device][$basic_tok.$s_number] = "1_0to".$data;
+    }
+    else{
+        $range = explode(",", $data);
+        if (count($range) > 1) {
+            array_splice($range, 0, 1);
+            if (!strstr($range[0], "{")) {
+                # delete label
+                array_splice($range, 0, 1);
+            }
+        }
+        if (count($range) == 0) {
+            $_SESSION["des_range"][$device][$basic_tok . $s_number] = "1_0to" . explode(",", $data)[0];
+        }
+        else{
+            $range = str_replace("{","",$range);
+            $range = str_replace("}","",$range);
+            $_SESSION["des_range"][$device][$basic_tok . $s_number] = implode(",",$range);
         }
     }
 }
@@ -301,26 +331,46 @@ function max_for_send(){
 function max_for_ADD(){
     $device = $_SESSION["device"];
     foreach ($_SESSION["original_announce"][$device] as $basic_tok => $value){
-        foreach ($value as $data){
-            if (strstr($data, "ADD")){
-                $bn = $basic_tok . "m";
-                $max = 1;
-                foreach ($_SESSION["max_for_send"][$device] as $ctoken => $cdat) {
-                    if (strstr($ctoken, $bn)) {
-                        $max *= explode(",", $_SESSION["des"][$device][$ctoken])[0];
-                    }
+        if (strstr(implode(";", $value), "ADD")){
+            $max = 1;
+            $i = 0;
+            $found = 0;
+            while (!$found){
+                $tok = $basic_tok."m".$i;
+                if(array_key_exists($tok, $_SESSION["des"][$device])) {
+                    $max *= (int)explode(",", $_SESSION["des"][$device][$tok])[0];
                 }
-                $_SESSION["max_for_ADD"][$device][$basic_tok . "n0"] = $max;
+                else{$found = 1;}
+                $i++;
             }
+            $_SESSION["max_for_ADD"][$device][$basic_tok . "n0"] = $max;
         }
     }
 
 }
 
+function string_command(){
+    # m, n, f commands with one string as data -> <c>d0 only
+    $device = $_SESSION["device"];
+    foreach ($_SESSION["original_announce"][$device] as $basic_tok => $value) {
+        if (strlen($value[0]) > 1) {
+            $ct = $value[0][1];
+            if ($ct == "m" or $ct == "n" or $ct == "f") {
+                # string ?:
+                if (is_numeric(explode(",", $_SESSION["original_announce"][$device][$basic_tok][2])[0])) {
+                    $_SESSION["string_commands"][$device][$basic_tok] = 1;
+                }
+            }
+        }
+    }
+}
+
 function init_data($device){
     # create $_SESSION[actual_data][$device]
-    # actual_data contain transmitted data!
+    # actual_data contain real data!
     # set data  for all numeric token to "0", strings to "input test"
+    # except "big" values for positions stacks (not supported now
+    # ranges for memory data not supported
     foreach ($_SESSION["announce_all"][$device] as $key => $value) {
         if ($key == "0a") {
             # basic command
@@ -332,10 +382,10 @@ function init_data($device){
                # only "d" toks can have types
                $ct = $value[0][1];
                   if ($ct == "m" or $ct == "n" or $ct == "a" or $ct == "b" or $ct == "f") {
-                   $type =  $_SESSION["des"][$device][$key][0];
+                   $type =  $_SESSION["type_for_memories"][$device][$key][0];
                    if (is_numeric($type)) {
                        # for string data
-                       $_SESSION["actual_data"][$device][$key] = "text";
+                       $_SESSION["actual_data"][$device][$key] = "";
                    } else {
                        $_SESSION["actual_data"][$device][$key] = "0";
                    }
@@ -349,6 +399,31 @@ function init_data($device){
                $_SESSION["actual_data"][$device][$key] = "0";
            }
         }
+    }
+}
+
+function create_to_correct($device){
+    # all token with manual inputs
+    # stack and memoryposition with big nuimber of entries should be avoided
+    foreach ($_SESSION["announce_all"][$device] as $key => $value){
+        if ($value[0] == "m"){continue;}
+        $of = $value[0][1];
+        if ($of == "m" or $of == "n" or $of == "a" or $of == "b" or $of == "f"){
+            if (strstr($key, "d")){
+                # all data for all memories
+                $_SESSION["to_correct"][$device][$key] = 1;
+            }
+        }
+    }
+}
+
+function start_time_events($device){
+    if ($_SESSION["meter_min_time"][$device] > 0){
+        #for later use
+  #     <script>
+   #         let conter = 0
+    #        setInterval(update_window, 1000);
+     #   </script>
     }
 }
 ?>

@@ -1,17 +1,8 @@
 <?php
 # action.php
-# DK1RI 20230615
+# DK1RI 20241223
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
-# action.php is the basic page and call all other functions
-# to store data the SESSION mechanism is used, which stores data for the next call of the page.
-# data are stored in $_SESSION["dataname"][$device] independent for each device
-# To reduce computing power most of these data are generated with the first call of the page for a device. So this will
-# take some more time with the first call.
-# Most of these data are stored in files "session"dataname" in the devices/"devicename" folder. This may help debugging.
-# testmode must be set to 1 in _config
-# The initialisation and description of these data can be found in read_new_device.php
-# all other data (independent of a device) are initialized and described in read_config.php (called with myc.php)
 
 ?>
 <html lang = "de">
@@ -21,6 +12,10 @@
 <script>
     function do_action() {
         document.getElementById("action").submit();
+    }
+    function update_window() {
+        counter ++;
+        window.write ("test");
     }
 </script>
 
@@ -70,6 +65,7 @@
         </style>
     </head>
     <body>
+    <p id="myc"></p>
         <?php
         include "subs.php";
         include "serial.php";
@@ -136,49 +132,67 @@
                 create_tok_list($device);
             }
         }
+        # preparation done
+        # the following are the basic functions used
+        # see in translate.php
         correct_POST($device);
-        send_and_update();
+        # send date, wait 2sec and read return data
+        send();
         If ($_SESSION["received_data"] != ""){
-            # data from device
+            # update actual_data by data from device
             update_received();
         }
         $actual_chapter = $_SESSION["chapter"];
         # $_SESSION ready, create new page
-        ?>
-        <div class = "flex-container"><div>
-        <form id = "action" action="action.php" method="post">
+    # automatic update tested, but not ok
+    #     while (1){
+    #       stop php
+    #
+    #       <script>
+    #           console.clear();
+    #            document.body.innerHTML = "";
+    #        </script>
+    # <?php
+    # ob_start();
+    ?>
+            <div class = "flex-container"><div>
+            <form id = "action" action="action.php" method="post">
 
-        <input type="button" onclick="do_action()" value="abschicken">
-        </div><div>
-        Interface: <input type="text" name = "interface" size = 14 value = <?php echo $_SESSION["interface"] ?>>
-        <br>
-        <?php
-        if ($_SESSION["last_command_status"]){
-            echo "<strong class = 'red'>last command not ok</strong>";
-        }
-        else{
-            echo "<strong class = 'green'>last command ok</strong>";
-        }
-        ?>
-        </div><div>
-        <?php
-        simple_selector("device",  explode(",", $_SESSION["device_list"]), $_SESSION["actual_data"]["_device_"]);
-        echo ("<br>");
-        $i = 0;
-        foreach ($_SESSION["chapter_names"][$_SESSION["device"]] as $tok) {
-            echo "<input type='checkbox' name=" . "chapter_".$tok . " id=" . "chapter_".$tok . ">";
-            if (array_key_exists($tok, $_SESSION["activ_chapters"][$device])) {
-                echo "<strong class = 'green'>";
-            } else {
-                echo "<strong class = 'red'>";
+            <input type="button" onclick="do_action()" value="abschicken">
+            </div><div>
+            Interface: <input type="text" name = "interface" size = 14 value = <?php echo $_SESSION["interface"] ?>>
+            <br>
+            <?php
+            if ($_SESSION["last_command_status"]){
+                echo "<strong class = 'red'>last command not ok</strong>";
             }
-            echo "<label for " .$tok . ">" . $tok . "</label></strong><br>";
-            $i += 2;
-        }
-        echo "</div>";
-        display_commands();
-        echo "</form>";
-        echo"</div>";
+            else{
+                echo "<strong class = 'green'>last command ok</strong>";
+            }
+            ?>
+            </div><div>
+            <?php
+            simple_selector("device",  explode(",", $_SESSION["device_list"]), $_SESSION["actual_data"]["_device_"]);
+            echo ("<br>");
+            $i = 0;
+            foreach ($_SESSION["chapter_names"][$_SESSION["device"]] as $tok) {
+                echo "<input type='checkbox' name=" . "chapter_".$tok . " id=" . "chapter_".$tok . ">";
+                if (array_key_exists($tok, $_SESSION["activ_chapters"][$device])) {
+                    echo "<strong class = 'green'>";
+                } else {
+                    echo "<strong class = 'red'>";
+                }
+                echo "<label for " .$tok . ">" . $tok . "</label></strong><br>";
+                $i += 2;
+            }
+            echo "</div>";
+            display_commands();
+            echo "</form>";
+            echo"</div>";
+    # automatic update tested, but not o
+    #         sleep(5);
+    #        ob_flush();
+    #    }
         ?>
     </body>
 </html>

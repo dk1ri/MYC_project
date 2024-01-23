@@ -1,7 +1,8 @@
 <?php
 # read_config.php
+# DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
-# DK1RI 20220614
+# called at start only
 function read_config(){
     $_SESSION = [];
     # user data

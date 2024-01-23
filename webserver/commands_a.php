@@ -1,6 +1,6 @@
 <?php
 # commands_a.php
-# DK1RI 20230615
+# DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_oa($basic_tok){
     $device = $_SESSION["device"];
@@ -20,9 +20,12 @@ function create_oa($basic_tok){
     # data
     $position = $_SESSION["actual_data"][$device][$tok];
     $tok = $basic_tok. "d" . $position;
-    echo "<input type=text name=" . $tok . " size = 20  placeholder =" . $_SESSION["actual_data"][$device][$tok] . "><br>";
+    # the input field is empty always
+    $type = $_SESSION["type_for_memories"][$device][$tok];
+    echo "<input type=text name=" . $basic_tok."dx" . " size = ". find_length_of_displayed_vars($type)."  placeholder =" . $_SESSION["actual_data"][$device][$tok] . "><br>";
     echo "<br>";
     if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
+     #   echo "<marquee>" . $_SESSION["actual_data"][$device][$tok] . "</marquee><br>";
         display_as($_SESSION["o_to_a"][$device][$basic_tok]);
     }
     echo "</h3></div>";
@@ -48,90 +51,71 @@ function create_aa($basic_tok) {
     $tok = $basic_tok. "d" . $position;
     # data
     # actual_data[$basic_tok."m0"] hold the position
-    $dat = translate_received_data_type($tok, $_SESSION["actual_data"][$device][$tok]);
-    echo " " . $dat . "<br>";
+    echo "<marquee>" . $_SESSION["actual_data"][$device][$tok] . "</marquee><br>";
+    echo "<br>";
     display_as($basic_tok."a");
     echo "</h3></div>";
 }
-function send_oa($basic_tok, $send){
+function correct_for_send_oa($basic_tok){
     $device = $_SESSION["device"];
-    $send_ok = 0;
-    $pos = 0;
-    $send_ok__= 0;
-    $tok = $basic_tok. "a";
-    if (array_key_exists($tok, $_SESSION["corrected_POST"][$device]) and $_SESSION["corrected_POST"][$device][$tok] == 1) {
-        # if answer set-> ignore change of data
-        $send_ok = 1;
-        $_SESSION["read"] = 1;
-    }
-    else {
-        # one element may have changed
-        if (explode(",",$_SESSION["des"][$device][$basic_tok. "m0"])[0] > 1) {
-            # if more than one element
-            $send_ok_ = update($device, $basic_tok, 0);
-            # position: mx exists
-            $pos = calculate_pos_from_actual_to_hex($basic_tok);
-            $send .= translate_dec_to_hex("n", $pos, 2);
+    check_send_if_a_exists($basic_tok);
+    if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
+    if ($_SESSION["send_ok"] == 1) {
+        array_key_exists($basic_tok . "m0", $_POST) ? $pos = $_POST[$basic_tok . "m0"] : $pos = 0;
+        $data = "";
+        if (array_key_exists($basic_tok . "dx", $_POST) and $_POST[$basic_tok . "dx"] != "") {
+            # send with no changes as well:
+            # one element of type of $pos have changed
+            $type = explode(",", $_SESSION["type_for_memories"][$device][$basic_tok . "m0"])[2 * $pos + 1];
+            $data = check_memory_data($basic_tok."dx", $device, $type, 0);
         }
-        $send_ok__ = update($device, $basic_tok, 0);
+        else {
+            $_SESSION["send_ok"] = 0;
+        }
+        if ($_SESSION["send_ok"] == 1) {
+            # update correct only
+            $_SESSION["actual_data"][$device][$basic_tok . "d" . $pos] = $_POST[$basic_tok . "dx"];
+            $_SESSION["actual_data"][$device][$basic_tok ."m0"] = $pos;
+            # basic_tok
+            $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+            # number of element if more than possible
+            if (count(explode(",", $_SESSION["type_for_memories"][$device][$basic_tok . "m0"])) > 2) {
+                $send .= translate_dec_to_hex("n", $pos, 2);
+            }
+            $send .= $data;
+            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+        }
     }
-    # data
-    $send_ok_ = update($device, $basic_tok, 1);
-    if ($send_ok_ or $send_ok__){
-        $tok = $basic_tok."d". hexdec($pos);
-        $data = translate_dec_to_hex($_SESSION["type_for_memories"][$device][$tok], $_SESSION["actual_data"][$device][$tok], 0);
-        $send .= $data;
-        $send_ok = 1;}
-    return [$send, $send_ok];
 }
 
-function send_aa($basic_tok, $send){
-    $send_ok = 0;
+function correct_for_send_aa($basic_tok){
     $device = $_SESSION["device"];
-    $send_ok_ = update($device, $basic_tok, 0);
-    # position: mx exists
-    if (count($_SESSION["original_announce"][$device][$basic_tok]) > 2) {
-        $pos = calculate_pos_from_actual_to_hex($basic_tok);
-        # < 255
-        $send .= translate_dec_to_hex("n", $pos, 2);
-    }
-    $tok = $basic_tok . "a";
-    if (array_key_exists($tok, $_SESSION["corrected_POST"][$device]) and $_SESSION["corrected_POST"][$device][$tok] == 1) {
-        $send_ok_ = 1;
-    }
-    if ($send_ok_){
-        # send read, if position is changed , as well
-        $send_ok = 1;
+    if (array_key_exists($basic_tok . "a", $_POST) and $_POST[$basic_tok . "a"] == 1) {
+        array_key_exists($basic_tok,$_SESSION["a_to_o"][$device]) ? $basic_tok_ = $_SESSION["a_to_o"][$device][$basic_tok]: $basic_tok_ = $basic_tok;
+        update_actual_data_from_POST($basic_tok_);
+        $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+        if (count($_SESSION["original_announce"][$device][$basic_tok_]) > 2) {
+            $send .= translate_dec_to_hex("n",  $_POST[$basic_tok_ . "m0"], 2);
+        }
         $_SESSION["read"] = 1;
+        $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+        $_SESSION["send_string_by_tok"][$basic_tok]= $send;
     }
-    return [$send, $send_ok];
 }
 
 function  receive_a($basic_tok, $from_device){
-    print "<br>".$from_device;
     $device = $_SESSION["device"];
     $element_number = 0;
-    if(count($_SESSION["original_announce"][$device][$basic_tok]) < 3){
-        # one element, no position
-        list($data, $delete_bytes) = update_memory_data($basic_tok . "d0" , $from_device, 0, 1);
-        update_corresponding_opererating($basic_tok, "d0", $data);
-    }
-    else {
+    if(count($_SESSION["original_announce"][$device][$basic_tok]) > 2) {
         # max 256 elements only
-        $element_number = hexdec(substr($from_device,0, 2));
-        print $element_number;
+        $element_number = hexdec(substr($from_device, 0, 2));
         # < 256 elements allowed only -> length: 1 byte
-        $from_device = substr($from_device, 2, null);
-        list($data, $delete_bytes) = update_memory_data($basic_tok . "d" . ($element_number), $from_device, 0, $element_number);
-        # due to position
-        $delete_bytes += 2;
-        # update position
         update_corresponding_opererating($basic_tok, "m0", $element_number);
-        # update $data
-        update_corresponding_opererating($basic_tok, "d" . ($element_number), $data);
+        $from_device = substr($from_device, 2, null);
     }
-    $_SESSION["actual_data"][$device][$basic_tok."d".($element_number)] = $data;
-    $_SESSION["actual_data"][$device][$basic_tok."m0"] = $element_number;
-    return $delete_bytes;
+    list($data, $delete_bytes) = update_memory_data($basic_tok . "d" . $element_number, $from_device,$_SESSION["property_len"][$device][$basic_tok][$element_number]);
+    update_corresponding_opererating($basic_tok, "d" . $element_number, $data);
+    return $delete_bytes + 2;
 }
 ?>

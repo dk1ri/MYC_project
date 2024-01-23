@@ -12,6 +12,9 @@ function serial_write($data){
         sleep(2);
         serial_read();
     }
+    else {
+        $_SESSION["received_data"] = "";
+    }
 }
 
 function serial_read(){
@@ -29,6 +32,7 @@ function serial_read(){
         }
         $i += 1;
     }
+
     if ($data == ""){
         # error
         $_SESSION["last_command_status"] = 1;

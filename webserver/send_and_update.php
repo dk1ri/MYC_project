@@ -1,289 +1,242 @@
 <?php
 # send_and_update.php
-# DK1RI 20230621
+# DK1RI 20240122
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
-function send_and_update(){
-    # input:  $_SESSION["corrected_POST"]
-    # output:  $_SESSION["actual_data"][$device]
+function send()
+{
+    # input:  $_SESSION["tok_to_send"]
     # output: $send  (hex string -> to device)
-    # $_SESSION["corrected_POST"]:
-    # for or : array with numbers of changed fields (only, if changed)
-    #
-    $device = $_SESSION["device"];
-    $already_done = [];
-    $_SESSION["read"] = 0;
-    foreach ($_SESSION["corrected_POST"][$device] as $tok => $value) {
-        if ($value ==""){continue;}
-        # interface.. name .... device is updated in correct_POST
-        # values of ($_SESSION["corrected_POST"][$device] are correct (updated by correct_POST before)
-        if (!array_key_exists($tok, $_SESSION["special_token"][$device])){
-            $send = "";
-            $send_ok = 0;
-            $basic_tok = basic_tok($tok);
-            if (!array_key_exists($basic_tok, $already_done)) {
-                # every $basic_tok is handled once only
-                # different $tok with same $basic_tok in $_SESSION["corrected_POST"] are handled with the first $tok found
-                # update and generate $send for basic_tok
-                $ct = $_SESSION["announce_all"][$device][$tok][0];
-                $send = dec_hex($basic_tok, $_SESSION["command_len"][$device]);
-                # $senda is used, if as answer token is activ
-                if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
-                    $tok2 = $_SESSION["o_to_a"][$device][$basic_tok];
-                    $senda = dec_hex($tok2, $_SESSION["command_len"][$device]);
-                }
-                else {$senda = $send;}
-                switch ($ct) {
-                    case "m":
-                        if (array_key_exists($basic_tok . "a", $_POST)) {
-                            if ($_POST[$basic_tok . "a"] == "1") {
-                                $send_ok = 1;
-                                $_SESSION["read"] = 1;
-                            }
-                        }
-                        break;
-                    case "os":
-                        list($send, $send_ok) = send_os($basic_tok, $send, $senda);
-                        break;
-                    case "as":
-                    case "at":
-                        list($send, $send_ok) = send_asat($basic_tok, $send, $senda);
-                        break;
-                    case "or":
-                        list($send, $send_ok) = send_or($basic_tok, $send, $senda);
-                        # no further send:
-                        break;
-                    case "ar":
-                        list($send, $send_ok) = send_ar($basic_tok, $send, $senda);
-                        break;
-                    case "ou":
-                        list($send, $send_ok) = send_u($basic_tok, $send, $senda);
-                        break;
-                    case "op":
-                        list($send, $send_ok) = send_op($basic_tok, $send, $senda);
-                        break;
-                    case "oo":
-                        list($send, $send_ok) = send_oo($basic_tok, $send, $senda);
-                        break;
-                    case "ap":
-                        list($send, $send_ok) = send_ap($basic_tok, $send, $senda);
-                        break;
-                    case "om":
-                        list($send, $send_ok) = send_om($basic_tok, $send, $senda);
-                        break;
-                    case "am":
-                        list($send, $send_ok) = send_am($basic_tok, $send, $senda);
-                        break;
-                    case "on":
-                        list($send, $send_ok) = send_on($basic_tok, $send, $senda);
-                        break;
-                    case "an":
-                        list($send, $send_ok) = send_an($basic_tok, $send);
-                        break;
-                    case "of":
-                        list($send, $send_ok) = send_of($basic_tok, $send, $senda);
-                        break;
-                    case "af":
-                        list($send, $send_ok) = send_af($basic_tok, $send);
-                        break;
-                    case "oa":
-                        list($send, $send_ok) = send_oa($basic_tok, $send);
-                        break;
-                    case "aa":
-                        list($send, $send_ok) = send_aa($basic_tok, $send);
-                        break;
-                    case "ob":
-                        list($send, $send_ok) = send_ob($basic_tok, $send);
-                        break;
-                    case "ab":
-                        list($send, $send_ok) = send_ab($basic_tok, $send);
-                        break;
-                }
+    foreach ($_SESSION["tok_to_send"] as $key => $value_f) {
+        if ($value_f == 1) {
+            if (array_key_exists($key, $_SESSION["send_string_by_tok"])) {
+                print "send: ".$_SESSION["send_string_by_tok"][$key];
+                serial_write($_SESSION["send_string_by_tok"][$key]);
             }
-            if ($send_ok){send_to_device($send);}
-            $already_done[$basic_tok] = 1;
+            $_SESSION["tok_to_send"][$key] = 0;
         }
     }
 }
 
-function change_as_data($tok){
-    # change answer data as well
-    if (array_key_exists($tok, $_SESSION["o_to_a"])) {
-        $_SESSION["actual_data"][$_SESSION["device"][$_SESSION["o_to_a"]][$tok]] = $_SESSION["actual_data"][$_SESSION["device"]][$tok];
-    }
-}
-
-function update_one($token, $send, $property_len_pos){
-    # update one and add to send
-    # return $send, $change_found
-    $device = $_SESSION["device"];
-    $change_found = 0;
-    if (array_key_exists($token, $_SESSION["corrected_POST"][$device])) {
-        $change_found = update_one_only($token);
-        $send .= dec_hex($_SESSION["actual_data"][$device][$token], $_SESSION["property_len"][$device][basic_tok($token)][$property_len_pos]);
-    }
-    return [$send, $change_found];
-}
-
-function update_one_only($token){
-    # update one
-    # return $change_found
-    $device = $_SESSION["device"];
-    $change_found = 0;
-    if (array_key_exists($token, $_SESSION["corrected_POST"][$device])) {
-        $data = $_SESSION["corrected_POST"][$device][$token];
-        if ($_SESSION["actual_data"][$device][$token] != $data) {
-            $_SESSION["actual_data"][$device][$token] = $data;
-            $change_found = 1;
-        }
-    }
-    return $change_found;
-}
-
-function update($device, $basic_tok, $data_only){
-    # for memories only for d and m and n token
-    # $data_only = 0 : position...
-    # $data_only = 1 : data
-    # (position is necessary for read commands as well)
-    $change_found_ = 0;
-    $change_found = 0;
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $c_token){
-        if (!strstr($c_token, "a")) {
-            if ($data_only == 0) {
-                # position...
-                if (!strstr($c_token, "d")) {
-                    $change_found_ = update_one_only($c_token);
-                }
-            }
-            elseif ($data_only == 1) {
-                # data
-                if (strstr($c_token, "d")) {
-                    $change_found_ = update_one_only($c_token);
-                }
-            }
-            elseif ($data_only == 2) {
-                # position + data
-                $change_found_ = update_one_only($c_token);
-            }
-            if ($change_found_) {
-                $change_found = 1;
-            }
-        }
-    }
-    return $change_found;
-}
-
-function calculate_pos_from_actual_to_hex($basic_tok){
+# The following are subs used by command send
+function calculate_memory_pos_from_POST($basic_tok){
+    # no check of $_POST necessary, (manual entry is not supported)
     $device = $_SESSION["device"];
     # ADD token ?
-    $n_tok = "";
-    if (array_key_exists($basic_tok. "n0", $_SESSION["actual_data"][$device])){
-        $n_tok = $basic_tok. "n0";
+    if (array_key_exists($basic_tok. "n0", $_POST)){
+        $Add_data = $_POST[$basic_tok."n0"];
         }
-    elseif (array_key_exists($basic_tok. "n0", $_SESSION["actual_data"][$device])){
-        # o /p commands
-        $n_tok = $basic_tok. "d0";
+    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"])){
+        $Add_data = $_SESSION["actual_data"][$basic_tok."n0"];
     }
-    if ($n_tok != ""){
-        if (array_key_exists($n_tok, $_SESSION["max_for_ADD"])){
-            if ($_SESSION["actual_data"][$device][$n_tok] != 0){
-               $result = $_SESSION["max_for_ADD"][$n_tok] + $_SESSION["actual_data"][$device][$n_tok];
-               return $result;
+    else {$Add_data = 0;}
+    # with ADDer
+    if ($Add_data != 0){
+        $pos = $_SESSION["max_for_ADD"][$device][$basic_tok."n0"];
+    }
+    else {
+        # no ADDer
+        $i = 0;
+        $found = 0;
+        $pos = 0;
+        while (!$found) {
+            $tok = $basic_tok . "m" . $i;
+            if (!array_key_exists($tok, $_SESSION["des"][$device])) {
+                $found = 1;
+            } else {
+                array_key_exists($tok, $_POST) ? $value = $_POST[$tok] : $value = $_SESSION["actual_data"][$device][$tok];
+                $pos += $value;
+                if (array_key_exists($basic_tok."m".($i+1), $_SESSION["des"][$device])){
+                   $pos *= (int)explode(",",$_SESSION["des"][$device][$basic_tok."m".($i+1)])[0];
+                }
+            }
+            $i++;
+        }
+    }
+    return $pos + $Add_data;
+}
+
+function check_send_if_change_of_actual_data($basic_tok){
+    # $_POST != $_SESSION{"actual_data"]
+    $device = $_SESSION["device"];
+    $change_found = 0;
+    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok){
+        if (!$change_found) {
+            if (array_key_exists($tok, $_POST) and array_key_exists($tok, $_SESSION["actual_data"][$device])) {
+                if ($_POST[$tok] != $_SESSION["actual_data"][$device][$tok]) {
+                    $change_found = 1;
+                }
             }
         }
     }
-    # other positions:
-    $pos = 0;
-    $multiplier = 1;
-
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $token) {
-        if (strstr($token, "m")) {
-            $actual = $_SESSION["actual_data"][$device][$token];
-            $pos *= $multiplier;
-            $pos += $actual;
-            $multiplier = $_SESSION["max_for_send"][$device][$token];
-        }
-    }
-    # max length of pos:
-    $length = $_SESSION["property_len"][$device][$basic_tok][2];
-    $result = translate_dec_to_hex("n", $pos, $length);
-    return $result;
+    return $change_found;
 }
 
-function handle_stacks($basic_tok, $send, $senda){
-    # if stack is modified: update actual_data for stacks
-    # add stack to send
-    # return: send, change_found
-    $change_found = 0;
+function update_actual_data_from_POST($basic_tok){
+    $i = 0;
+    $found = 1;
+    while ($found == 1){
+        $tok = $basic_tok."m".$i;
+        $found = u_a_d_f_($tok);
+        $i++;
+    }
+    $i = 0;
+    $found = 1;
+    while ($found == 1){
+        $tok = $basic_tok."d".$i;
+        $found = u_a_d_f_($tok);
+        $i++;
+    }
+    $found = u_a_d_f_($basic_tok."n0");
+    $found = u_a_d_f_($basic_tok."o0");
+}
+
+function u_a_d_f_($tok){
+    $found = 1;
     $device = $_SESSION["device"];
+    if (array_key_exists($tok, $_SESSION["actual_data"][$device])) {
+        if (array_key_exists($tok, $_POST)){$_SESSION["actual_data"][$device][$tok] = $_POST[$tok];}
+    }
+    else{$found = 0;}
+    return  $found;
+}
+
+function handle_stacks($basic_tok){
+    # create stack (for send) if necessary
+    # return: $stack
+    $device = $_SESSION["device"];
+    $stack = "";
     # do nothing, if stacks == 1
     if (explode(",", $_SESSION["original_announce"][$device][$basic_tok][1])[0] == 1){
-        return [$send, $senda, $change_found];
+        return $stack;
     }
-    $stack = 0;
     if (array_key_exists($basic_tok, $_SESSION["a_to_o"][$device])) {
         # use all (identical) data of corresponding o token
         $basic_tok = $_SESSION["a_to_o"][$device][$basic_tok];
     }
+    # update $_SESSION["actual_data"][$device]
     # the key of the number_of_selects array is 0, 1, ... (as tokenbx)
-    # the transmitted values count over the different (MUL/ADD) display stack-parts:
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $c_token) {
-        # all m and n token only
-        if (strstr($c_token, "m") or strstr($c_token, "n")) {
-            if (array_key_exists($c_token, $_SESSION["corrected_POST"][$device])) {
-                if ($_SESSION["corrected_POST"][$device][$c_token] != $_SESSION["actual_data"][$device][$c_token]) {
-                    $_SESSION["actual_data"][$device][$c_token] = $_SESSION["corrected_POST"][$device][$c_token];
-                    $change_found = 1;
-                    # change answer / operate as well
-                    $other_tok = 0;
-                    if (strstr($c_token, "m")) {
-                        $subtoken = explode("m", $c_token)[1];
-                    }
-                    else{
-                        $subtoken = explode("n", $c_token)[1];
-                    }
-                    # if a anwer -tok is avalable , one will work:
-                    if (array_key_exists($basic_tok, $_SESSION["a_to_o"][$device])) {
-                        $other_tok = $_SESSION["a_to_o"][$device][$basic_tok];
-                    }
-                    if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
-                        $other_tok = $_SESSION["o_to_a"][$device][$basic_tok];
-                    }
-                    if ($other_tok != 0) {
-                        $tok = $other_tok . "m" . $subtoken;
-                        $_SESSION["actual_data"][$device][$tok] = $_SESSION["actual_data"][$device][$c_token];
-                    }
-                }
-            }
-        }
-    }
-    # actual stack:
     $i = 0;
-    $max_for_add = 1;
-    $lastmulti = 0;
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $c_token) {
-        # all m and n token only
-        if (strstr($c_token, "m") or strstr($c_token, "n")) {
-            if (strstr($c_token, "m")) {
-                $stack *= $lastmulti;
-                $stack += (int)$_SESSION["actual_data"][$device][$c_token];
-                $lastmulti = (int)$_SESSION["max_for_send"][$device][$c_token];
-                $max_for_add *= $lastmulti;
-            }
-            else {
-                # ADD available
-                if ($_SESSION["actual_data"][$device][$c_token] != 0) {
-                    $stack = $max_for_add + $_SESSION["actual_data"][$device][$c_token];
-                }
+    $found = 1;
+    $stack_changed = 0;
+    while ($found){
+        # all m token only
+        $c_token = $basic_tok."m".$i;
+        if (array_key_exists($c_token, $_POST)) {
+            if ($_POST[$c_token] != $_SESSION["actual_data"][$device][$c_token]) {
+                $stack_changed = 1;
+                $_SESSION["actual_data"][$device][$c_token] = $_POST[$c_token];
             }
         }
-        $i += 1;
+        else{$found = 0;}
+        $i++;
     }
-    $send .= dec_hex($stack, $_SESSION["property_len"][$device][$basic_tok][1]);
-    $senda .= dec_hex($stack, $_SESSION["property_len"][$device][$basic_tok][1]);
-    return [$send, $senda, $change_found];
+    $i = 0;
+    $found = 1;
+    while ($found){
+        # all n token only
+        $c_token = $basic_tok."n".$i;
+        if (array_key_exists($c_token, $_POST)) {
+            if ($_POST[$c_token] != $_SESSION["actual_data"][$device][$c_token]) {
+                $stack_changed = 1;
+                $_SESSION["actual_data"][$device][$c_token] = $_POST[$c_token];
+            }
+        }
+        else{$found = 0;}
+        $i++;
+    }
+    # create stack for transmit rom actual data:
+    # ADD token ?
+    if (array_key_exists($basic_tok. "n0", $_POST)){
+        $Add_data = $_POST[$basic_tok."n0"];
+    }
+    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"])){
+        $Add_data = $_SESSION["actual_data"][$basic_tok."n0"];
+    }
+    else {$Add_data = 0;}
+    # with ADDer
+    if ($Add_data != 0){
+        $stack = $_SESSION["max_for_ADD"][$device][$basic_tok."n0"];
+    }
+    else {
+        # no ADDer
+        $stack = 0;
+        $i = 0;
+        while (!$found) {
+            $tok = $basic_tok . "m" . $i;
+            if (!array_key_exists($tok, $_SESSION["des"][$device])) {
+                $found = 1;
+            } else {
+                array_key_exists($tok, $_POST) ? $value = $_POST[$tok] : $value = $_SESSION["actual_data"][$device][$tok];
+                $stack += $value;
+                if (array_key_exists($basic_tok . "m" . ($i + 1), $_SESSION["des"][$device])) {
+                    $stack *= (int)explode(",", $_SESSION["des"][$device][$basic_tok . "m" . ($i + 1)])[0];
+                }
+            }
+            $i++;
+        }
+    }
+    $stack_len = $_SESSION["property_len"][$device][$basic_tok][1];
+    $stack = dec_hex($stack,$stack_len);
+    return [$stack, $stack_changed];
 }
 
-function send_to_device($send){
-    print (" send: ". $send);
-    serial_write($send);
+function check_memory_data($tok, $device, $type, $mode){
+    # mode == 0: use $_POST[$tok] to check
+    # mode == 1: $tok is part of $_POST[$tok]
+    !$mode ? $input_value = $_POST[$tok] : $input_value = $tok;
+    $dat = convert_bin_hex($input_value, $type);
+    $basic_tok = basic_tok($tok);
+    $data = "";
+    switch ($type) {
+        case "b":
+            if (strlen($dat) > 1) {
+                $_SESSION["send_ok"] = 0;
+            } else {
+                $data .= bin2hex($dat);
+            }
+            break;
+        case is_numeric($type):
+            if (strlen($dat) > $type) {
+                $_SESSION["send_ok"] = 0;
+            } else {
+                $data .= dec_hex(strlen($dat), $_SESSION["property_len"][$device][$basic_tok][1]);
+                $data .= bin2hex($dat);
+            }
+            break;
+        default:
+            # numbers
+            $data = check_if_number_is_correct(intval($input_value), $type);
+            if ($_SESSION["send_ok"]) {
+                # parameter length used for strings only -> 0
+                $data = translate_dec_to_hex($type, $data, 0);
+            }
+            break;
+    }
+    return $data;
+}
+function split_and_correct_multiple($value, $type){
+    # for manual entries (of memory) (send)
+    # split by " ", spaces of text are entered as &H20
+    $splitted = explode(" ", $value);
+    $result = [];
+    $i = 0;
+    $j = 0;
+    while ($i < count($splitted)) {
+        if ($splitted[$i] != "") {
+            $result[$j] = convert_bin_hex($splitted[$i], $type);
+            $j ++;
+        }
+        $i++;
+    }
+    # return array
+    return $result;
+}
+function check_if_number_is_correct($data, $type){
+    # check range by $type; correct by type (for entered data)
+    # for data to send
+    list($min, $max) = find_allowed($type);
+    if ($data < $min or $data > $max){
+        $_SESSION["send_ok"] = 0;
+    }
+    return $data;
 }

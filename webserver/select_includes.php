@@ -1,6 +1,6 @@
 <?php
-# select_any.php
-# DK1RI 20230615
+# select_includes.php
+# DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function select_includes(){
 # intention is to load necessary code only

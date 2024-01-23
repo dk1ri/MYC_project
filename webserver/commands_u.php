@@ -1,6 +1,6 @@
 <?php
 # commands_u.php
-# DK1RI 20230621
+# DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_ou($basic_tok) {
     $device = $_SESSION["device"];
@@ -28,22 +28,26 @@ function create_ou($basic_tok) {
     echo "</h3></div>";
 }
 
-function send_u($basic_tok, $send, $senda){
-    $send_ok = 0;
+function correct_for_send_ou($basic_tok){
     $device = $_SESSION["device"];
-    list($send, $senda, $change_found) = handle_stacks($basic_tok, $send, $senda);
-    if (array_key_exists($basic_tok."d0", $_SESSION["corrected_POST"][$device])){
-        $tok = $basic_tok."d0";
+    $sw_pos_changed = 0;
+    if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
+    if ($_SESSION["send_ok"]) {
         # $actual_data is 0 always
         # send, if corrected_POST is not idle (no send with change of stack only)
-        if ($_SESSION["corrected_POST"][$device][$tok] != 0) {
-            if (count($_SESSION["original_announce"][$device][$basic_tok]) > 4){
-                $send .= dec_hex($_SESSION["corrected_POST"][$device][$tok], 2);
-                }
-            $change_found = 1;
+        if ($_POST[$basic_tok."d0"] != 0) {$sw_pos_changed = 1;}
+    }
+    if ($_SESSION["send_ok"]) {
+        list($stack, $stack_changed) = handle_stacks($basic_tok);
+        if ($stack_changed or $sw_pos_changed) {
+            $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+            $send .= $stack;
+            if (count(explode(",", $_SESSION["des"][$device][$basic_tok."d0"])) > 4) {
+                $send .= translate_dec_to_hex("n", $_POST[$basic_tok . "d0"], $_SESSION["property_len"][$device][$basic_tok][2]);
+            }
+            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
         }
     }
-    if ($change_found){$send_ok= 1;}
-    return [$send, $send_ok];
 }
 ?>

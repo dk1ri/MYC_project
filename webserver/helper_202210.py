@@ -1,7 +1,7 @@
 """
 name : helper_2022.py
 Author: DK1RI
-Version 01.0, 20230214
+Version 01.0, 20231130
 call with: helper_202210.py <device>
 Purpose :
 make some modifications on announcement file
@@ -87,7 +87,7 @@ def replace_cr():
     while i < len(ann):
         # expand as commands
         if (len(ann[i].split(";")[1].split(",")) > 1):
-            if ann[i].split(";")[1].split(",")[1][0:2] != "as" and ann[i].split(";")[1].split(",")[1][0:3] != "ext":
+            if ann[i].split(";")[1].split(",")[1][0:2] != "as":
                 last_tok = ann[i].split(";")[0]
                 last_ann = ann[i]
                 ank.append(ann[i])
@@ -96,7 +96,6 @@ def replace_cr():
                 if last_ann != "":
                     act_tok = ann[i].split(";")[0]
                     act_ct = ann[i].split(";")[1]
-                    answer_commands.append(act_tok + " " + last_tok)
                     ann[i] = last_ann
                     a = ann[i].split(";")
                     a[0] = act_tok
@@ -110,31 +109,9 @@ def replace_cr():
         i += 1
     i = 0
     while i < len(ank):
-        ot = ank[i].split(";")[1].split(",")[0][0]
-        if ot != "o" and ot != "a" and ot != "m":
-            # change k / l to o / a and add CHAPTER
-            a = ank[i].split(";")
-            cm = a[1].split(",")
-            if cm[0][0] == "k":
-                cm[0] ="o" + cm[0][1:]
-            if cm[0][0] == "l":
-                cm[0] = "a" + cm[0][1:]
-            a[1]= ",".join(cm)
-            ank[i] = ";".join(a)
-            ank[i] += ";14,CHAPTER,ADMINISTRATION"
-        # delete METER
-        field = ank[i].split(";")
-        if ank[i].find("METER") != -1:
-            j = 0
-            while j < len(field):
-                if field[j].find("METER") != -1:
-                    break
-                j += 1
-            field = field[:j]
-            ank[i] = ";".join(field)
         an.append(ank[i])
         i += 1
-    return answer_commands, an
+    return an
 
 
 device = "commandrouter"
@@ -148,7 +125,7 @@ if len(sys.argv) != 1:
 else:
     sys.exit("call with: helper2022.py <device>")
 #
-answer_commands, cr_ann = replace_cr()
+cr_ann = replace_cr()
 #
 filename = "./devices/" + device + "/" + "announcements"
 if os.path.exists(filename):
@@ -156,17 +133,6 @@ if os.path.exists(filename):
 file = open(filename, "a")
 i = 0
 for lines in cr_ann:
-    if i > 0:
-        file.write(chr(10))
-    file.write(lines)
-    i += 1
-
-filename = "./devices/" + device + "/" + "as_commands"
-if os.path.exists(filename):
-    os.remove(filename)
-file = open(filename, "a")
-i = 0
-for lines in answer_commands:
     if i > 0:
         file.write(chr(10))
     file.write(lines)
