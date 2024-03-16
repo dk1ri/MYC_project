@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Reserved Commands
 
 Author: DK1RI
-Version V01.20.06 20201028
+Version V01.20.08 20240416
 This paper is published in https://github.com/dk1ri as well
 
 Introduction
@@ -22,13 +22,14 @@ The set of announcements of a MYC device should be in numerical sequence, start 
 
 Nine of the reserved tokens are used and defined now: 0x00, 0xxxf0, 0xxxf1 and 0xxxf9 – 0xxxff.
 It is noted, that the commands below are shown as operate / answer (o / a)  commands, but may be used in a real announcement as k / l commands, which will not be included to the full list by the CR.
+Some reserved word are used. They should use uppercase characters. Other characters can be used as well but no lower case characters.
 
 Basic Command 0x00
 
 The one byte 0x00 basic command is mandatory for all MYC devices.
 
 The basic announcement is called with the one byte command 0x00.
-announce:	0;<dt>;MANUFACTURER;DEVICEDESCRIPTION;VERSION;NUMBER_OF_DEVICES;LINELENGTH; COMMAND_BYTES;NUMBER_OF_ANNOUNCELINES;SPEC_VERSION
+announce:	0;<dt>;MANUFACTURER;DEVICEDESCRIPTION;VERSION;NUMBER_OF_DEVICES;LINELENGTH; COMMAND_BYTES;NUMBER_OF_ANNOUNCEMENTS;SPEC_VERSION
 
 command:	0x00
 answer / info:	0x00<basic announcement line>	<basic announcement line> as string <s> (with one byte length)	
@@ -41,7 +42,8 @@ These devicegroupnames are unique to a device and its firmware. A (published) de
 For a normal device  NUMBER_OF_DEVICES is 1, For CR it is CR + all FU + CR + RU + number given by lower level CR. This value is important for the command-router as info for a higher level CR.
 LINELENGTH is the maximum line-length of the announcement lines.
 COMMAND_BYTES  is the number of bytes used for commands. Allowed values are 1 to 8. Higher numbers are handled as one byte.
-NUMBER_OF_ANNOUNCELINES includes “R” and “I” lines. This is the size of the announcement memory. A different transmission length of this number result in a CR startup procedure: see http://dk1ri.de/myc/Description.pdf.
+NUMBER_OF_ANNOUNCEMENTS includes “R” and “I” lines. This is the number of different announcements. An announcement can have more than one line.
+ A different transmission length of this number result in a CR startup procedure: see http://dk1ri.de/myc/Description.pdf.
 A (translated) 0x00 command of a device is answered by the CR itself and not send to the device for answer.
 SPEC_VERSION is the version of specification, the device is designed for: <branch>-<version>. <version> is a set of specification defined in [13]. Within a branch the CR must be compatible to a specific <version> and all lower  <versions>.
 
@@ -56,7 +58,7 @@ command:	0xxxf0<n><m>											ask for m announcement lines starting at
 answer / info:	0xxxf0<n><m><data>
 
 <n> is a positional parameter of the memory. The number of bytes for <m> and <n> must not exceed <NUMBER_OF_ANNOUNCELINES>.
-< NUMBER_OF_ANNOUNCELINES> is the number of the announcement lines including those for the reserved commands, rules and for the  CR the I-lines. (Same as in the 0x00 command).
+< NUMBER_OF_ANNOUNCELINES> is the number of the announcement lines including those for the reserved commands, rules and for the  CR the I-lines. It may be differen from the NUMBER_OF_ANNOUCEMENTS.
 
 The CR will ask for the announce-lists of all devices using the 0xxxf0 command, if it do not have other sources. It will drop the 0xxxf0 command of other devices when building the complete list. The command-router answers all announcement commands by itself using the full list with translated command-token. The CR will  not forward 0xxxf0 infos.
 The CR will not include “r” and “s” commands in the full list but skip these numbers instead. The command-token are reserved for the delivering devices. Exception: the LD will get the list with the complete “r” and “s” commands.
@@ -115,7 +117,7 @@ w,COMMANDDELAY<DEFAULT>	in ms, DEFAULT is 100. The CR will wait for this time, b
 			 
 Log on Command 0xxxfb
 
-This command is used by the RU only. Used, if the system requires a log on for users to allow all or a subset of commands. The RU will then send a string with “Q” rules to the CR. From this the CR will use a individual list of commands for this user and block all other commands.
+This command is used by the RU only. Used, if the system requires a log on for users to allow all or a subset of commands. The RU will then send a string with “Q” rules to the CR. From this the CR will use an individual list of commands for this user and block all other commands.
 For more details see 	http://dk1ri.de/myc/Rules_device.pdf
 The command announcement has the first command-type description  "LOGON". Only the given properties are allowed in this sequence:
 NAME and PASSWORD is limited to 255 characters (1 byte length of string).
@@ -127,6 +129,10 @@ MODE:	1	log out
 		4	switch off user management (admin only)
 command:	0xxxfb0x000x03<mode><name><password>
 answer	/ info	-
+
+If the login is granted the RU send a info to the CR:
+xx: on,LOGIN_DATA;1,<length>,<s>
+where <s> is a “Q” rule
 
 
 
@@ -165,7 +171,6 @@ B, CHANNELNUMBER	<n>		used by CR multi-channel interfaces only default is 0: pub
 	
 more  to be defined.
 
-
 Individualization Commands 0xxxfe and 0xxxff
 
 The individualization commands are mandatory for all devices except some SK.
@@ -202,9 +207,9 @@ OPTION>							comment:
 <n>,NUMBER,<DEFAULT>				actual number, mandatory write/read
 <n>,DISPLAYSIZE,<DEFAULT>,{<size1>,..}		<DEFAULT> is positional parameter of sizex
 								<sizex> something like 16x2, 1024p
-<a>,I2C|RS232|CAN|RC5|RC6|SPI				
-USB|TELNET|HTTP|HTTPS|TERMINAL|			Interfaces a device can have, followed by the other parameters.
-SSH|RADIO							0: not active; 1:  active
+a,I2C|RS232|CAN|RC5|RC6|SPI				
+USB|TELNET|HTTP|HTTPS|TERMINAL|			
+SSH|RADIO|FILE;						Interfaces a device can have for control: 0: not active; 1:  active
 								The CR may add a “M” to the label if it supports multiuser access.
 
 Defined Interfaces:
@@ -220,26 +225,27 @@ a,POLARITY,>DEFAULT>	;				when idle: 0:clock low, 1: clock high,  mandatory
 a,PHASE,<DEFAULT>					 mandatory
 
 a,RS23,<DEFAULT>;					default: auto, 8N1
-b.BAUDRATE,<DEFAULT>,{0,19200,...};		Baudrate, optional. 0 is auto
+b.BAUDRATE,<DEFAULT>,{0,19200,...};			Baudrate, optional. 0 is auto
 3,NUMBER_OF_BITS,{8N1};				something like this, optional
 b.COMPORT							COM Port number, mandatory
 
-a,TELNET|TELNETM,<DEFAULT>			server !!
-
-a,SSH,<DEFAULT>;						server !!
+a,TELNET|TELNETM,<DEFAULT>;			
+a,SSH,<DEFAULT>;	
+a,HTTP|,<DEFAULT>;								
 w,PORT,<DEFAULT>;					portnumber, optional
 s,ADRESS,<DEFAULT>;					IP address or DNS Name, mandatory						
 b,TIMEOUT,<DEFAULT>					Timeout, optional				
 
-a,HTTP|,<DEFAULT>;					server !!
-s,ADRESS,<DEFAULT>;					mandatory
-b,TIMEOUT,<DEFAULT>					Timeout,optional
+a,FILE;
+n.FILEIN,<DEFAULT>;					server interface via datafiles, to device,  mandatory; 0 if not used
+n.FILEOUT,<DEFAULT>;					server interface via datafiles, from device,  mandatory, o if not used
 
-a,TERMINAL|,<DEFAULT>				usually for CR only, interface, from where the program is called, no other options.
+a,TERMINAL|,<DEFAULT>				server; usually for CR only, interface, from where the program is called, no other options.
 
-a,USB,<DEFAULT>;						slave
+a,USB,<DEFAULT>;
+n,PORT<DEFAULT>;					(Com)Port number, optional
 
-a,RC5,<DEFAULT>;
+a,RC5,<DEFAULT>;	
 b,ADRESS,<DEFAULT>,{1 to 32}				mandatory
 
 a,RC6,<DEFAULT>;
@@ -249,6 +255,11 @@ a,CAN,<DEFAULT>;
 b,ADRESS,<DEFAULT>					 mandatory
 
 a,RADIO,<DEFAULT>					Wireless interface
+
+a,I2Csl|RS232SL|CANSL|RC5SL|RC6SL|SPISL				
+USBSL|TELNETSL|HTTPSL|HTTPSSL|			
+SSHSL|RADIOSL|FILESL;					Interfaces to a device, if the device control another hardware (software-device)
+								0: not active; 1:  active
 
 I-announcements
 

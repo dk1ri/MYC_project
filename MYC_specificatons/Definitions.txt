@@ -3,7 +3,7 @@ Hint for the text-format-version: to read this version as PDF please load https:
 MYC Definitions, Abbreviations and Formats
 
 Author: DK1RI
-Version V01.03.06 20231227
+Version V01.03.07 20240416
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -11,11 +11,11 @@ Introduction
 This paper describes the definitions and abbreviations and formats used in the MYC documentation.
 For more details of the MYC system please check the reference.
 
-Definitions, abbreviations  and formats
+Definitions, abbreviations and formats
 
 
 FU			func, function, normal device or controlled program, device-type m
-SK			skin, human Interface or controlling program, device-type h
+SK			skin, human Interface or controlling program, device-type 
 SS			simple skin as switches, send r / s commands only, device-type s, o / a commands are used during configuration; not for new 
 			designs
 CR			command-router, device-type c
@@ -55,7 +55,7 @@ RU			rules device, device-type r
 			– The length of the transmitted number of numeric memory-contents is defined by <ty> 
 <s>			string, all characters. The string is preceded by the length as unsigned number. The length is of type <n> and can 1, 2, 3..byte; 
 			depend on maximum length of the string given in the announcement. This type exists in commands, answers and infos.
-			When using strings the application shoould be observed. The HI may display some odd symbols, if binary data are sent. The HI
+			When using strings the application shoould be observed. The SK may display some odd symbols, if binary data are sent. The HI
 			can allow inputs as &Hxx, &Bxxxx as binary input.
 <sm>			string (all characters except , ;{}\) Used in announcements; forbidden characters must be escaped (preceded) by \
 <l>			maximum length of a string <s> in announcements
@@ -100,8 +100,6 @@ Non valid data
 
 There is no character reserved for non valid data.
 Any device must answer with valid data. In some cases a device is polled for data, but data may be not valid at that time. The default polling wait time for the caller is 100ms. If a device do not have valid data, it will send a not valid command-token.
-
-
 
 Copyright
 

@@ -3,12 +3,12 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Rules
 
 Author: DK1RI
-Version V01.11.02 20201028
+Version V01.02.03 20240416
 This project can be found in https://github.com/dk1ri  also.
 
 Introduction
 
-This paper describes the the syntax of rules of the MYC system.
+This paper describes the syntax of rules of the MYC system.
 For more details of the MYC system please check the reference.
 
 Definitions and formats
@@ -17,123 +17,124 @@ see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 Some explanation
 
-“R” , “S”-rules
-
 Rules announcements start with “R” or “S” or “Q”
-“R” rules are valid always, “S” rules are used during configuration only and are not forwarded by the CR.
+“R” rules are valid always, “S” rules are used during configuration only and are not forwarded by the CR. “Q” rules are used for login.
 Rules are defined by FU and RU.
 A “R” / “S” rule may have one of these functions:
-A rule may restrict a combination of parameters of a command. This cannot be defined by a announcement.
-By default all commands are working. A rules will show, when  a command is not working, if other commands created a specific status.
-By default commands are not executed by change of an status of another command. A rule can initiate this: eg the device can be switched off under special conditions.
+        ? A rule may restrict a combination of parameters of a command. This cannot be defined by an announcement.
+        ? By default all commands are working always. A rule will show, when a command is not working, if other commands had created a specific status. Some commands are working under special conditions only (not always)
+        ? By default commands are not executed by change of a status of another command. A rule can initiate this: eg the device can be switched off under special conditions.
 	      It is not the intention to show all conditions. If a device is switched off, some values may be 
 	      set to “0”. Such a behavior is obvious and a rule may be used in specific cases only.
+	-     A rule can modify the semantic of a command ie the real values of a command under given                	       conditions.
+	
  
-These Rules are used by the LD, which have the complete status of the system at any time and all rules and modify / initiate commands accordingly.
+These rules are used by the LD, which have the status of the system at any time and know all rules and modify / initiate commands accordingly.
+
+The SK should observe rules given for a device. This avoids sending not valid commands.
 
 Some limitation within a command should be described within the announcement of that command by <des>.
 
 A FU will have rule announcements to inform about dependencies, which exist between the commands and status within the FU.
 
-If there are dependencies between different devices,  a special rules-device RU will provide the rules.
+If there are dependencies between different devices,  a special rules-device RU will provide these rules.
 The rule will define, whether one or more commands are active or not, or that another command is executed.
-The syntax of the rules should be very simple, Most probably the rules will be generated automatic, so the focus should be the effectiveness of handling the rules by a computer. Up to now rules lines are readable, because they must be easily programmed as a part of the announcements of FUs.
+The syntax of the rules should be very simple. Up to now rules lines are readable, because they must be easily programmed as a part of the announcements of FUs.
 
 All “R” rules are always handled by the LD in the sequence it get the rules, starting with rules of FU.
 
-The SK should understand the rules as well. This avoids sending not valid commands.
-
-"Q"-Rules
-
-“Q” rules are produced by the RU only and sent to the CR only and are not forwarded. They are used for user management. The CR block commands, if necessary, for a specific user who logged in.
-"Q"-rules are handled by the CR.
-"Q"-rules are the answer of a login request and describe the command-token to be used and not used.
-The basic command-token means all token of the device.
-A * means all commands are allowed.
-A empty string means all commands are forbidden.
-TO notation is possible
-Commands are separated by space.
-Syntax is similar to "R" rules.
-
 General Rules behavior
 
+“R” , “S” rules
 Each rule is one announcement line (for FU) or an (MYC string) answer or info of a “an” command (for RU).
 By default all commands are working. If a command should be disabled, there must be a rule. The rule  is R !<c> …
 Enabling is done by R !!<c> …
-If a command should be executed under some conditions: use R ?<c> …
-If a command should be be executed after another use ?<c> AFTER <c>. Example is a Webserver, where a command to read page is necessary after the loading command.
-If a command is executed if a condition occur use ?<c> IF … . Example is a reset under some conditions.
+If a command should be executed under some conditions only (not always): use R ?<c> … Example is a reset under some conditions.
+If a command should be executed after another use ?<c> AFTER <c>. Example is a webserver, where a loading command is necessary to read a page.
+These rules use transmitted values (not real values). Exception, when MIN MAX is used.
 
-Special rules 
+"Q"-rules
+“Q” rules are produced by the RU only and sent to the CR only and are not forwarded. They are used by the CR, because the CR knows the interface of the user. They are used for user management.
+As default the command-router allow all commands on all interfaces. The CR can block or allow commands, if necessary, for a specific user who logged in.
+"Q"-rules are the answer of a login request and describe the command-token to be used and not used.
+Format:
+Q;<username>;[!]<c>[ TO <c>] [<c>….]
+A basic command-token only means all token of the device.
+One Q rule per user; but * as username means all users.
+A !* as commandtoken means all commands are forbidden (default is: all allowed) 
+Syntax is similar to "R" rules.
 
-These rules are send as info of memory element 0. The answer when reading this element will show a empty element always.
-
-type is <s>
-R <d<n> <n>..>	delete rules, sent by RU; * for all. This is an abbreviation, if many empty rules 
+special rules:
+Q d <n> <n>..		delete rules, sent by RU; * for all. This is an abbreviation, if many empty rules 
 			must be sent. The memory elements must be empty.
-R * !*			send at startup, if required; login required for all. 
+Q * !*			send at startup as first rule: login required for all. 
 			Default is, that all commands are allowed for all
-R <* *>		allow all users all commands (default) 
+Q * *			allow all users all commands (default) 
 
 Simplification methods
 
 These methods are not essential, but may be used to reduce code 
 
-[$<n> TO $<n>, $<n>]<rule>	identical rule for multiple commands. For <rule> one of the affected command must be used, Variation is on the left side of the rule only.
+[$<c>TO$<c>, $<c>] IF|UNLESS	..		identical rule for multiple commands.
 
 Rules syntax
 
-<left side> IF|UNLESS <right side>
-<left side>					 “Q” rules only
+<left side> IF|UNLESS <right side>		“R” “S” rules
+<left side>					 “Q” rules
 
 left side:
-[![!]$<c>][ ?<c>[&<p>=<n>|<s>]] ...
+[![!]$<c>[ &<p>=<n|s]][  ?<c>[&<p>=<n>|<s>]] …	specific parameters are affected only
+[![!]$<c>][ ?<c>] …						all parameters
 Bracketing like: !($<c>...<c>) allowed
 
 right side:
 This describes the status which a answer commands would get.
 
-[!]$<c>[&<p> <compare operator> <n>|<s>] ... |
-[!]$<c>[&<p> <compare operator> <n> [TO <n>] ...
+[!]$<c>[&<p>] [<compare operator> <n>|<s>] ... 
+[!]$<c>[&<p>] [<compare operator> <n> TO <n>] ...
 
 All words / tokens separated by a separator
 
 Reserved characters / words
 
+space			separator
 ( )			bracketing
-[]			left sine: groups of commands
-!			right side:negation, left side: not active
-&
-?
-IF
-UNLESS
-AND
-OR
-<
->
+[]			left side: groups of commands
+!			right side: negation, left side: not active
+$			command following
+&			Parameter following
+%”...”			new real value  (override description)
+?			left side, followed by a command token: active only if / unless ..
+*			one or more characters
+IF UNLESS
+AND OR		logic operator
+<  >			relational operator
 =			left side: operator, right side: equal
 TO
 .			delimiter for parameter 
 AFTER
 NECESSARY_FOR
++ - * /			arithmetic operator		
+MIN MAX		min / max value of a parameter; right side parameter. All parameters are real				values
 
 Examples
 
-R !$2 IF $5 = 0			means: Command 2 will not work if status of command 5 is 0
-				command 5 may be a power switch
+R !$2 IF $5 = 0		means: Command 2 will not work if status of command 5 is 0
 
-R !$4 UNLESS $7 = 3500000 TO 3799999 OR 7000000 TO 7199999
-				means: Command 4 will work only if state 7 is in the range of .............
+R !$4 UNLESS $7 = 3500000 TO 3799999 OR $7 = 7000000 TO 7199999
+				means: Command 4 will work only unless state 7 is in the range 						of .............
 				This would be used if the transceiver will transmit in amateur radio band 					only
-				The values are transmitted values, not values of the description
+				The values are transmitted values, not values of <des>
 
-R 2 $252 &"wrong address" IF $8 &3 < 16	
-				rule 2 of RU
+R $252&0  = "wrong address" IF $8&3 < 16	
 				$252 is an answer command and handled as info:
 				error-message if fourth parameter (3) of command 8 is < 16
+R !$2 IF $2&1 + $2&2 > $2&1MAX
+				The sum of (real) parameter 1 and 2 must not exceed the real maximum
+				value of parameter 1. real value as given by <des>!!
 
-Q !* 1 30 TO 50		all commands forbidden except 1 and 30 to 50 allowed
-Q 0 TO 100 !*			0 to 100 allowed others forbidden.
+Q !* 1 30TO50		commands 1 and 30 to 50 forbidden for all
+Q * 0TO100 !500TO550	0 to 100 allowed, 500 to 550 forbidden for all
 
 Copyright
 

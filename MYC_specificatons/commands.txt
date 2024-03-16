@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V03.00.01 202312
+Version V03.00.02 20240416
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -21,17 +21,17 @@ An announcement line uses a readable string using all characters except “. Some 
 A complete announcement of a device consist of one line with the basic announcement, lines of command announcements, lines for the reserved tokens,  lines of rules and a one line I-announcement; in this sequence.
 The command announcements describe the commands the device will understand.
 Lines with the basic announcement, lines of command announcements and lines for the reserved tokens contain:
-<command_token>;<commandtype>;<parameter>
+<command_token>;<commandtype>;<parameter>;<OPTION>
 Two of the reserved tokens are used by the CR to identify a device, also, if more than one of the same device-group (same hardware and firmware) exist. (command_token 0x00, 0xxxff)
 The basic announcement (command_token 0x00,) contains the description of the device. For details see [5]
 The rules describe the restrictive conditions, when and how commands will not work for a device. By default any command is working at any time.
 The CR concatenate the announcements of the devices to a full announce-list.
 The I-announcement is inserted by the CR to the full announce-list for each device. It shows some individual parameters of the device, so that RU and SK can identify the device in all cases.
 Some operating commands may have an influence on the status of other commands. This can be handled by rules as well.
-Rules lines start with R”, “S”.  “Q” or “T”. “R” rules of devices are included in the full announcment list; others not.
+Rules lines start with R”, “S”, “Q” or “T”. “R” rules of devices are included in the full announcment list; others not.
 “Q” rules are sent by the RU to the command-router. They are used for user management.
 “S” rules are used by devices during configuration and are not included in the full announcement list. They are used during configuration.
-“T” rules are ent by the RU to the command-router. These are optional translations of the descriptions within announcements. They can be used to handle other languages or modify the semantic function of a device. For details see [8].
+“T” rules are sent by the RU to the command-router. These are optional translations of the descriptions within announcements. They can be used to handle other languages or modify the semantic function of a device. For details see [8].
 
 Each command announcement line contain the unique command-number, the command-type and properties as necessary; in this sequence. A special type of properties are optional <OPTION>. Some <OPTION> will not result in transmitted data and will be at the end of a line. The first <des> of
  these properties is the uppercase name for the <OPTION>, followed by other parameters.
@@ -75,12 +75,11 @@ General syntax for a command-announcement
 
 <c>;<ct>[,<des>][<;pa>[,<des>]]...[;<pa>[,<des>]]...
 
-
 Commands and properties
 
 The command tokens use numeric n byte big-endian format.  The shortest format possible is always used.
 For properties the same rule apply. For memory content a string is allowed as property as well.
-If a device has less than 239 (0, 240- 255 are reserved,) commands, the communication with the CR should use one byte format for the command token. The number of bytes used is given in the basic announcement-line and may be higher but not lower.
+If a device has less than 239 (0, 240- 255 are reserved,) commands, the communication with the CR should use one byte format for the command token. The number of bytes used is given in the basic announcement-line.
 If the CR has more than 223 commands (0, 240 - 255 is reserved, 16 for SK communication), it will communicate SK with 2 or more bytes. In this case, the first byte of translated command-tokens must not be 0 (but can be 1), because one byte 0x00 is reserved for the basic announcement.
 Shortest possible format must be used for properties in any case. So the CR, LD, RU and SK know the format by the announcements.
 A command consist of a command-token and properties (parameters) depending on the command-type.
@@ -169,23 +168,27 @@ Some functions can be accessed with different methods. An oscillator can be cont
 
 number of stacks
 If a function with the same effect appears multiple for a FU, announcements can be simplified using the stack feature. The command works on one function at a time. This may simplify the SK. If you have a lot of switches selecting 4 values eg, the SK may provide an additional selector for the number of the switch.
-Usually this function can be realized by a memory function as well, but the display on the SK may be different. 
+Sometimes this function can be realized by a memory function as well, but the display on the SK may be different. 
 The number_of_stack parameter is not transmitted if there is one stack only.
 The number_of_stack parameter can be used for switch and range commands only and the parameter is mandatory in the announcements.
-It is recommended to limit the number of stack to < 100 to keep a SK user friendly. For higher numbers the selector should be split: <des_memory> with MUL: see below.
+It is recommended to limit the number of stack to < 100 to keep a SK user friendly. For higher numbers the selector should be split: <des_stack> with MUL: see below.
 announcement example:	2;os;2,stack;0,off;1,on
-command example:		0x020x010x01
-This will switch the 2nd switch.
+command example:		0x020x010x01	this will switch the 2nd switch.
 More complex examples are shown in descriptions below.
 
-avoid doubling of descriptions
-The following can be used (example):
+avoid doubling of descriptions (ALPHA)
+The following can be used for defining allowed characters of a string (example):
 Definition:
-200:id;DEF,alpha,{aa,1_0x21to0x24}
-alpha is unique label
+200;id,DEF;alpha,0x22,(, ,a,,,aa,AA,11,1_0x3to0x20
+( ? “, (, space, a, colon, a to z  AtoZ, 0 to 9, 0x3 to 0x20)
+AA ? 1_1_AtoZ; aa ? 1_atoz; 11 ? 1_0to9
+hex and binary notation allowed
+“ is used in the announcement as delimiter ? 0x22 must be used
+alpha is unique label (without colon)
+CODING is a special predefined form of ALPHA There is no definition necessary.
+
 usage: 
 100;om;5,{alpha};10
-The CR will replace alpha by the content.
 
 List of Standardized Command-types
 
@@ -194,12 +197,17 @@ These command-type templates contain a description and format of the properties,
 Some commands, which have the operating type “o” and “a” for the operating function, the announcement template is identical. The transmitted format
 of the operating command and the answer of the answer command is identical as well. In these cases the operating type is as “x” in the template, which
 must be replaced by “o”, “r” / ”a”, “s” as appropriate in the real announce-list.
-“y” must be replaced by “o”, “r” if there is an operating commands only “z” by ”a”, “s” for answer commands only.
+“y” must be replaced by “o” or “r”, if there is an operating commands only; “z” by ”a” or “s” for answer commands only.
 
 There are <OPTION>s for all commands. These are given at the end of an announcement.
 Following is defined (to be defined in this sequence):
 
-…;<other_OPTION>...
+…;<other_OPTION>…					not yet defined
+…;0,ALL							for command with operating object  r, o,  a commands with more than one element: 
+								the SK must send a full (operating) command for each positions / dimension and send the 
+								command without parameter for an answer command.
+								The device send a full answer for each positions / dimension.
+								This can simplify storage of bits by using the r command.
 
 …;<ty>,METER,<pa>...					<pa> is a mandatory value in ms. Valid for answer commands am, an, aa and ab with one 								element only. <ty> depends on <pa>.
 								The SK should update value with this time interval. Used for metering e.g., if the device 
@@ -208,8 +216,7 @@ Following is defined (to be defined in this sequence):
 								specific parameter can be used.
 								If the time is very short and time to get the data is long, the SK must be able to handle this. 								This may be critical, if a device has more than one METER commands.
 
-…;<ty>,CHAPTER,<sm>;....					<sm> is a readable string; <ty> is the stringlength
-								Submenus are separated by a “_”. <ty> must be the stringlength (without usage)
+…;<ty>,CHAPTER,<sm>;....					<sm> is a readable string; <ty> is the stringlength. Submenus are separated by a “_”.
 
 Some notes about CHAPTER
 CHAPTER is an info for SK only, for sorting the commands to menus; there are no transmitted data.
@@ -227,15 +234,16 @@ announce:	<c>;ixx;...		ix commands have the same syntax as xx commands. They are
 command:	-
 answer / info:	-
 
-announce:	<c>;id;1;DEF,xx,{<s>}				definition of a string. xx is a name; unique within the announce-list.
+announce:	<c>;id;DEF;xx,{<s>}					definition of a string. xx is a name; unique within the announce-list.
+									The CR may rename the definition in case of conflict eith different devices.
 									The CR may insert the definition into the commands before distributing.
 
-example:	200;id;1;DEF,alpha,{11,1_0x20to0x24,),0x19}	Definition of an alphabet for restriction of allowed characters, 
+example:	200;id;DEF;alpha,{11,1_0x20to0x24,),0x19}	Definition of an alphabet for restriction of allowed characters, 
 									reserved values are	AA for upper case letters
 												aa for lower case letters
 												11 for figures
 
-announce:	<c>;iz<,des>		no command 
+announce:	<c>;iz<,label>		no command 
 This command can be used as a placeholder or when an announcement is needed only (as for the reserved  0xxxfa command)
 
 Switches:
@@ -245,7 +253,7 @@ two dimensional for crosspoint or similar
 OPTION for  all switches:
 ...;<ty>,DIMENSION,<number_of_row>,<des>;DIMENSION,<number_of_cols>,<des>;..	not supported anymore; use stacks instead
 
-announce:	<c>;xr[,<label>];number_of_stacks[,<des_memory>];0[,< label>]...;n[,< label>][;<OPTION>...]
+announce:	<c>;xr[,<des_c>];number_of_stacks[,<des_stacks>];0[,< label>]...;n[,< label>][;<OPTION>...]
 												reset (0) or set (1)  position (number from 0 to n)
 
 Operate command or answer / info: 	<c>0|1							simple switch (pos0 in announcement only) 0 must be 													omitted, 1 stack
@@ -254,14 +262,15 @@ Operate command or answer / info: 	<c>0|1							simple switch (pos0 in announcem
 answer command:			<c>							simple switch  (one position in announcement only)
 					<c><n>						read reset or set of position <n> 1 stack
 					<c><m><n>						read reset or set of position <n> more stacks
+												with the ALL OPTION <n> must be omitted
 
-announce:	<c>;xs[,<label>];number_of_stacks[,<des_memory>];0[,<label>]…;n[,< label>][;<OPTION>...]
+announce:	<c>;xs[,<des_c>];number_of_stacks[,<des_stacks>];0[,<label>]…;n[,< label>][;<OPTION>...]
 												set one out of n positions active,  reset others; 2 or more 													positions required.
 Operate command or answer / info: 	<c><n>						set position <n>, reset the others, <n> needed always, 1 stack
 answer command:			<c><m>						with more than one stack
 
 
-announce:	<c>;zt[,<label>];number_of_stacks[,<des_memory>];0[,<label>];..n[< label>][;<OPTION>…]
+announce:	<c>;zt[,<des_c>];number_of_stacks[,<des_stacks>];0[,<label>];..n[< label>][;<OPTION>…]
 												answer command; the device toggles to the next position
 												and answer the new position
 												one active at a time, can be an extension of an os command.
@@ -271,7 +280,7 @@ Operate/answer command 	:	<c>							toggling for one stack
 answer / info:				<c><n>						position <n> is active now
 					
 
-announce:	<c>;yu[,<label>];number_of_stacks[,<des_memory>];0[,<label>];...;n[,<label>]<;OPTION>...]
+announce:	<c>;yu[,<des_c>];number_of_stacks[,<des_stacks>];0[,<label>];...;n[,<label>]<;OPTION>...]
 												set one of n positions momentary active, position 0 is idle 
 												always
 												position 0 and position 1 required as minimum.
@@ -292,7 +301,7 @@ For a range of speed a stop means a velocity of 0 and a step-wise change is an a
 There may be more than one announce line working on the same real object. Eg, with one line you change the location, with the next line the speed. When you set a moving object to a location in regular time intervals you will have a loop (after passing the end: start at beginning again).
 Sequence of parameters must not be changed.
 
-announce:	<c>;xp[,<label>];number_of_stacks[,<des_memory];number_of_valuesx[,<des_range>];<sequence>[,<label>];unitx,[<label>][;number_of_valuesy,..]
+announce:	<c>;xp[,<des_c>];number_of_stacks[,<des_stacks];number_of_valuesx[,<des_op_ap_oo>];<sequence>[,<label>];unitx,[<label>][;number_of_valuesy,..]
 											go to value (“0” based). number_of_values is of type <n>
 											Example (User display is in steps of 10):
 											2;op;1;50001,{10_3500000to3800000,10_7000000to7200000};lin;Hz
@@ -304,44 +313,41 @@ Operate command or answer / info:	<c><m><n>					go to / read (1 dimensional) n o
 answer command:			<c><m>					mth stack
 					<c>						one stack
 
-The number_of_stacks > 1 is used if more one identical range controls are available and should be addressed individually. number_of_stacks is “0-based, and not transmitted if number_of_stacks = 1.
 number_of_valuesx..is the maximum of the transmitted value!
-More details about  <des_range> see below shown in: More about Descriptions <des>
+More details about  <ddes_op_ap_oo > see below shown in: More about Descriptions
 Real values the valuex.. must match the highest possible value to be transmitted
 For <sequence> the following is defined:
 lin				linear numbering
-all parameters of CODING	see below in: More about Descriptions
 
-announce:	<c>;yo,[ext<c>],[<des>];number_of_stacks[,<des_memory>];number_of_steps,<label>;step_size[,<label>][,<des_range>];step_time[,<label>][,<des_range>];step_time-unit,<label>[;a,xx],[4,LOOP|6,LIMIT]
+announce:	<c>;yo,[ext<c>],[<des>];number_of_stacks[,<des_stacks>];number_of_steps,<label>;step_size[,<des_op_ap_oo>][;step_time[,<des_op_ap_oo>][;step_time-unit,<label>[;a,<label>],[4,LOOP|6,LIMIT]
 												move position stepwise;  works only as extension of an op
 												command
 Some explanation:
 Multiple oo lines for the same op command are allowed.
-if ext<c> is used:
-Oo announcements should directly follow the op (or ap) announcements,
+oo announcements should directly follow the op (or ap) announcements,
 The optional CHAPTER should be omitted for the oo announcements: the chapter is identical with the op command.
 number_of_stacks[,<des_stack>] and number of dimensions must be identical to the op command;  number_of_steps and stepsize in announcement must match (not exceed) the op command.
 CR do not check, whether oo and op matches.
 
-A “0” in the step_size announcement will not allow movement in this dimension.
-Real range for step_time are given in <des_range>. The unit of step_time is for information of the SK and not transmitted
+Real range for step_time are given in <des_op_ap_oo>. The unit of step_time is for information of the SK and not transmitted
 With the optional (one byte) field something like a,0,down is possible. This is information for the SK. Use two commands, if up and down is required.
 The last part is optional information of SK only: 4,LOOP means, that the device will loop the values; with 6,LIMIT it will stop at limits. Default is LOOP.
-The command is: <c><number_of_steps><step_size><steptime> or <c><number_of_stacks><number_of_steps><step_size><step_time>
-A number_of_steps = 0 in the announcement for a dimensions mean fixed value as given by number_of_steps. In fact, this mean: move to a default value. Any command <c>xxxxxx has the same result.
-A <c>0x000x000x00” at transmission for all values in a dimension will stop this dimension (no movement).
-When the “oo” command is used with more than one dimension, the command must have have values for all dimensions.
+Values of number, step_size and step_time set to “0” in the announcement  for a dimension mean, that there is no function with this dimenension.
+A number_of_steps = 0 in the announcement and step_size and or step_time != 0 for a dimensions mean fixed value. In fact, this mean: move to a default value. The default values can be described by <label>. Any (allowed) command <c>xxxxxx has the same result. By this, one of many dimensions can be set to default.
+When the “oo” command is used with more than one dimension, the command must have have values for all dimensions always.
 
 Example:
 1;op,range;1;10;lin;-;5,CHAPTER,range							1 stacks, 1 dimension
-2;oo,range;1;10;10;sec;a,down;5,CHAPTER,range
+2;oo,range;1;10;3;1;10;sec;a,down;5,CHAPTER,range
 3;oo,range;1;1;1;10;sec;5,CHAPTER,range
-4;op,range;2;10;lin;-;20;lin;-;									10 stacks, 2 dimensions
+4;op,range;2;10;lin;-;20;lin;-;									2 stacks, 2 dimensions
 5;oo,range;2;10;2;3;sec;12;2;4;sec;6,LIMIT
 
 command:	0x020x000x000x00								stops (1 dimension ranges < 256) immediately
 		0x030x000x000x00								goto default (3), all parameters in the announcement are 0
 		0x050x000x000x000x000x020x010x02					stops  1st dimension; start 2nd dimension
+
+
 
 
 Command has a data destination like memory, data channel or text field
@@ -350,51 +356,56 @@ The description of memory was changed in 202305 to be in line with stacks.
 It is not intended to replace data streams with these commands, but it is not defined clearly, where simple data transmission ends and streaming is starting. So some of these commands can be used for simple data streams as well.
 There is no “undefined” value, when reading a memory. For details see [11].
 The data content of the memory has the full range of the defined properties, if not restricted by <des_range> The position of the memory cell is “0” based.
-The number of elements of a memory are defined in the announcement. Any number is allowed.
-If a coomand has one elemet only, position (and number of elements is not ransmitted.
+The number of elements of a memory are defined in the announcement. Any number is allowed, but there are some recommendation for restriction.
 
 A device may have some internal memory, which stores the state of another command or memory and is not readable directly. In case of changes the device must send appropriate infos.
 
 When reading / writing a memory with the type string, the access is done with the complete string with stringlength. There is no access to positions within the string.
 
-announce:	<c>;xm[<,label>]; <ty>[,<des_range>];m_positions[,<des_memory>	write a memory element of type <ty> with optional restrictions 
+announce:	<c>;xm[<,des_c>]; <ty>[,<des_type>];m_positions[,<des_memory>	write a memory element of type <ty> with optional restrictions 
 												as given in <des_range> of <ty>
 												dimensions of the memory are given by <des_memory>
 												for <des_memory>  see below
-operate command or answer / info:	<c><n><data>					write to / answer for position n
-answer command:			<c><n>						read position <n> (“0” based)
+												m must be transmitted always.
+operate command or answer / info:	<c><m><data>					write to / answer for position n
+answer command:			<c><m>						read position <n> (“0” based)
 
-announce:	<c>;xn,[,ext<c>]...[,<label>]; <ty>[,<des_range>];n_positions[,<des_memory>;m_elements[,<label>]
-												sequential access of i (i <= n)elements for memory starting
-												with position j. (j < = m_positions)
+announce:	<c>;xn,[,des_c]...[,<label>]; <ty>[,<des_type>];m_positions[,<des_memory>;n_elements[,<label>]
+												sequential access of i (i <= m)elements for memory starting
+												with position j. (j < = n_positions)
 												may can work as extension to a xm command 
-												If end of memory is reached next element is written to n=0
+												If end of memory is reached next element is written to m=0
 												There is no <des_range> for n !!!
-operate command or answer / info:	<c><n><m><data>					write m elements to memory, starting at position n (“0” based)
+												m and n must be transmitted always.
+												For use by humans a small figure of n_elements is 
+												recommended
+operate command or answer / info:	<c><m><n><data>					write n elements to memory, starting at position m (“0” based)
 
-answer command:			<c><n><m>						read n elements from memory, start at position m (“0” based)
+answer command:			<c><m><n>						read n elements from memory, start at position m (“0” based)
 
-announce:	<c>;xf[,<label>];<ty>[,<des_range>];<m>[,<label>]			FIFO, stack, stream or similar functions, not more than m 
+announce:	<c>;xf[,<des_c>];<ty>[,<des_type>];<m>[,<label>]			FIFO, stack, stream or similar functions, not more than m 
 												elements should be sent / read. There is no <des_range> for m!
+												For usage for humans it is recommended to limit m to 100!
 operate command or answer / info:	<c>2<data><data>					2 elements are sent / read
-answer command:	<c><n>								n elements are exspected
+answer command:	<c><n>								n elements are expected
 
-announce:	<c>;xa[,<label>];<ty>[,<des_range>][<ty>[,<des_range>]…		array of different elements of type <ty>
+announce:	<c>;xa[,<des_c>];<ty>[,<label>][,<des_range>][<ty>[,<label>][,<des_range>]…		
+												array of different elements of type <ty>
 												For more than 255 elements use additional command.
 												for one element only n is not transmitted
-operate command or answer / info:	<c><n><data>					write one element to (read from) array, nth position
+operate command or answer / info:	<c><m><data>					write one element to (read from) array, mth position
  												(“0” based)
-answer command:	<c><n>								n is the nth element (“0” based)
+answer command:	<c><m>								m is the mth element (“0” based)
 
-announce:	<c>;xb[,<label>];<ty>[,<des_range>][;<ty>[,<des_range>]...	
+announce:	<c>;xb[,<des_c>];<ty>[,<des_type>][;<ty>[,<label>][,<des_range>]...	
 												sequential access mode for array 
 												can work as extension to a oa command 
 												for one element only n and m is not transmitted
-operate command or answer / info:	<c><n><m><data>					write m elements to memory, starting at position n (“0” based)
+operate command or answer / info:	<c><m><n><data>					write n elements to memory, starting at position m (“0” based)
 												m and <n> must not exceed the number of elements
-												m = 0 means no data transfer
+												n = 0 means no data transfer
 												If end of memory is reached next element is written to n=0.
-answer command:			<c><n><m>						read m elements from memory, start at position n (“0” based)
+answer command:			<c><m><n>						read n elements from memory, start at position m (“0” based)
 
 Hint for xa and xb command:
 These are very powerful commands and the number of memory elements is not restricted by the protocol.
@@ -402,66 +413,83 @@ A high number of elements may result in a SK, which is difficult to handle. With
 Depending on the (Web) SK the handling of oa / aa and ob /ab command may be very similar.
 Take into account, that input of non valid data may result in no data sent. So manual input of many different datatypes may be not easy.
 
-More about Descriptions <des> (<label>, <des_range>, <des_memory>)
+More about Descriptions
 
-General format: [label[default]][<,des_range>|<des_memory>][,additional]
+General format: [label][<,des_range>|<des_memory>|...][,additional]
 The description should help the SK to display the real parameters and to provide the correct user readable labeling. If there is no description the SK will use the full range as defined by the property type and use this as labeling.
 It is used as well for restriction of characters / values for data of memory.
 
 Description of OPTIONs:
 [additional] only; used for comments
 
-Description of command-type:
+Description of command-type  <des_c>:
 [as|ext]|[,label]
 
-Descriptions for stacks:
-max<,des>
-max[,label][,<des_memory>]
+Descriptions for stacks and memory positions <des_stacks>, <des_memory_position>:
+with one selector / dimension:
+[,<label>][,<des_range>]
+
+with with more than one selector / dimension::
+{n1,[,[label][,<des_range>][MULn2[,<label>][,<des_range>]… [ADDn_add,[,label][,<des_range>]}
+number_of_positions is the possible number of combinations of n1, n2….
+If the stack / memory element number is high, it is recommended that the SK arrange this in rows and columns (and more).
+The SK can use separate selectors as defined by <des_memory>  fields separated by MULs and ADD.
+The number of MULs (selectors) is not limited, but MULs within the MULs are not supported.
+Only one ADD should be at the end (if any). ADD requires MUL.
+ADD can be used if the row and cols are used, and there is a limited number of additional positions. If the selected value is “0”, rows and cols are used only. Otherwise the maxrow * maxcol * ...+ ADD is transmitted independent of the selected row and col values. 
+The  <des_range> for ADD should start with a meaningful name as label. It should denote, that the value is calculated using the other values.
+Resulting values must be unique.
+Note, that there is  no “,” around MUL and ADD. A “,”before MUL or ADD means an empy label
+Examples:
+2;op;100,test;255;lin;-					simple stack selector with name test for values from 0 to 99
+2:op;4,{t1,t2,t3,t4};255;lin;-					simple stack selector without name for values t1, t2, t3, t4
+2:op;4,{4,test,{t1,t2,t3,t4}};lin;-				simple stack selector with name test for values t1, t2, t3, t4
+2;op;10004,{100,colMUL100,rowADD5,tx,{use_row_col,t1,t2,t3,t4}};255;lin;-
+           is a matix (stackselector from 0 to 99 (named col), a stackselector  from 0 to 99 (named row)) and an additional stacksselector  t1 – t4, named tx.
+	The transmitted value is col * max_row + row for tx = 0 and max_col * max_row + tx for tx > 0.
+2;op;15,{5,{a,b,c,d,e}MUL3,test,{1,2,3}};255;lin;-		is matix (stackselector a to e (no name), a stackselector 0 to 2 (named test)
+2;op;15,{5,{1_2_to 4,a,b}}MUL3,test,{1,2,3}};255;lin;-	is matix (stackselector 2,3,4,a,b (no name), a stackselector 0 to 2 (named test)
+
+Descriptions for range commands <des_op_ap_oo>:
+same as  <des_stacks> for one selector, but for each dimension (non MUL or ADD)
+<number_of_positions>[,<label>][,<des_range>]
+Examples:
+1;op;1;8,{1_1to5,10_20to40};lin;-			will result in 8 values: 1 2 3 4 5 10 30 40 transmitted by 0 to 7.
+1;op;1;4,name	;lin;-					transmitted as 0 to 3, display spacing is 1, displayed as 0 1 2 3, name is the label
+1;op;1;999,name1,{1_1to999};lin;-			transmitted as 0 to 998, displayed as 1 to 999;  name1 is the label, additional: something else
 
 Descriptions for switches (os, as, or, ar, ou, at):
 Usually any button of switches has one label. {des_range} is not allowed.
 
-
-Descriptions for range commands (op, ap, oo):
-max1,<des>;max2,<des>...
-max[,label][,<des_range>][,additional]... (for each dimension)
-The count within <des_range> must match the max:
-
-8,{1_1to5,10_20to40} 		will result in 8 values: 1 2 3 4 5 10 30 40 transmitted by 0 to 7.
-4,name					transmitted as 0 to 3, display spacing is 1, displayed as 0 1 2 3, name is the label
-999,name1,{1_1to999},additional	transmitted as 0 to 998, displayed as 1 to 999;  name1 is the label, additional: something else
-
-Descriptions for memory type commands (om, am, om, an, of, af, oa, aa, ob, ab):
-- For all memory data:
- <ty>[,label][,<des_range>]
-- For the memory positions of om, on, am, an commands:
-n[,label][,<des_memory>][,additional] 
-<des_memory> should match n.
+Descriptions for type of memory commands (om, am, om, an, of, af, oa, aa, ob, ab) <des_type>:
+For all memory data:
+ [<label>][,<des_range>]
 
 Details for <label>:
 Uppercase names should be used for reserved words (as labels) only.
 Labels must not contain the characters “.”  “,”  “;”  “{  “}”  ”_”, and “to”; lowercase preferred
 For labeling english is preferred. If other languages are required, the translation can be done by the SK..
 
-Details of <des_range>
-Format: {[fixed_value],[“step-distance“_“from“to“to“]…}
-Mixed combinations of ranges and fixed values are allowed, but values must be unique.
-Fixed values may be nuemric and alpha, ranges may be numkeric or alpha. Alpha may be something like 1_atoz, 2BtoY but not 1_atoZ or 1_ato9.
-Use more than one range instead or hex values (may be not supported)
 
-- For <ty> of data of memory commands:
-<des_range> is used for restriction of characters / values to be used. Other characters / values are ignored. There is no translation for strings.
-Numeric types are transmitted by 0… number_of_allowed_figures
+Details of <des_range>
+Format: {[fixed_value][,“step-distance“_“from“to“to“]…}
+Mixed combinations of ranges and fixed values are allowed, but values must be unique.
+Fixed values may be nuemric and alpha, ranges may be numeric or alpha. Alpha may be something like 1_atoz, 2BtoY but not 1_atoZ or 1_ato9.
+Use more than one range instead or hex values.
+
+- For <des_type> of data of memory commands:
+<des_type> is used for restriction of characters / values to be used only. Other characters / values are ignored. There is no translation for strings.
+Not valid numbers of numeric types or characters of strings are not modified but ignored.
+There is no translation of displayed values to transmitted values.
 Examples:
 1;om;2,{a,c,d};10		string of 2 characters (max); this limits the allowed characters to a, c, d.
 1;om;2,{1_atoz,1_AtoZ};10	string of 2 characters (max); letters only allowed
 1;om;3,{alpha};10		similar as above, use the predefined alphabet alpha; see meta-commands above.
-1;om;b,{0,1,3};10		byte; displayed and transmitted as 0,1,3 Other numbers will be ignored or the nearest number is useed.
-1;om;w,{1,0_0to100.0};10	word (2 bytes); 1 to 100.0 allowed only
-1;om;b,{0.5_0to100},%;10	will allow percent values with 0,5% steps from 0 to 100%
+1;om;b,{0,1,3};10		byte; displayed as ASCII character of 0, 1, 3 and transmitted as 0,1,3 Other characters will be ignored.
+1;om;w,{1_0to100};10	word (2 bytes); 1 to 100 allowed only
+1;om;n, %,{5_0to100};10	will allow percent values with 5% steps from 0 to 100%
 
-
-- For range commands or within <des> of stacks and position of memory commands:
+- For others (range commands,  stacks, position of memory commands):
  <des_range> is used, if real values and transmitted values are different, and / or the range of transmitted values is limited.
 The transmitted values have the range 0 to x (inclusive)
 The transmitted value is the sequence-number of the real value (number or alphanumeric). Other real values are ignored.
@@ -472,61 +500,25 @@ The ranges in the description are non-overlapping values usually in ascending or
 1;om;a;999,name,{1_1to990,2_1000to1008,a,b}	position transmitted as 0 to 998, displayed as 1 to 990, 1000 to 1006 (step 2), a, b
 1;om;b{2_atoe};10					data for input restricted to a, c, e
 
-Details for <des_memory>
-Format for <des_memory>:
-Memory with one dimension:
-<number_of_positions>[,<label>][,<des_range>]
-
-Memory with with more than one dimension:
-<number_of_positions>[,<label>][,{n1,[,[label][,<des_range>][MULn2[,<label>][,<des_range>]… [ADDn_ADD[,label][,<des_range]]}
-If the stack / memory element number is high, it is recommended that the SK arrange this in rows and columns (and more).
-The SK can use separate selectors as defined by <des_memory>  fields separated by MULs and ADD.
-The number of MULs (selectors) is not limited, but MULs within the MULs are not supported.
-Only one ADD should be at the end (if any).
-ADD can be used if the row and cols are used, and there is a limited number of additional positions. If the selected value is “0”, rows and cols are used only. Otherwise the maxrow * maxcol * ...+ ADD is transmitted independent of the selected row and col values.
-The  <des_range> for ADD should start with a meaningful name as label. It should denote, that the value is calculated using the other values.
-Resulting values must be unique.
-Note, that there is  no “,” around MUL and ADD
-
-Examples:
-2;op;100,test;255;lin;-					simple stack selector with name test for values from 0 to 99
-2:op;4,{t1,t2,t3,t4};255;lin;-					simple stack selector without name for values t1, t2, t3, t4
-2:op;4,{4,test,{t1,t2,t3,t4}};lin;-				simple stack selector with name test for values t1, t2, t3, t4
-2;op;10004,{100,colMUL100,rowADD5,tx,{use_row_col,t1,t2,t3,t4}};255;lin;-
-	is a matix (stackselector from 0 to 99 (named col), a stackselector  from 0 to 99 (named row)) and 4 additional stacksselector  t1 – t4, named tx.
-	The transmitted value is col * max_row + row for tx = 0 and max_col * max_row + tx for tx > 0.
-2;op;15,{5,{a,b,c,d,e}MUL3,test,{1,2,3}};255;lin;-		is matix (stackselector a to e (no name), a stackselector 0 to 2 (named test)
-2;op;15,{5,{1_2_to 4,a,b}}MUL3,test,{1,2,3}};255;lin;-	is matix (stackselector 2,3,4,a,b (no name), a stackselector 0 to 2 (named test)
-
-<des>  as CODING:
-If for memory data the translation of transmitted values to displayed values cannot be described by <des> in a simple way, CODING can be used. The device must not send values out of range.
-CODING is an information for the SK, if complex translation is necessary (as for time).the SK decides about the displayed format.
+CODING:
+If for memory data the translation of transmitted values to displayed values cannot be described in a simple way, CODING can be used. The device must not send values out of range.
+CODING is an information for the SK, if complex translation from display data to transmitted data is necessary (as for time).the SK decides about the displayed format, and do the translation.
 Transmitted values are numeric always.
-This CODING and the <codingname>s are (uppercase) reserved names.
+CODING (as ALPHA) is a special form of <des_range>, but the definition is fixed.
 Format:
-<ty>;CODING,<codingname>][,label][,{… allowed for bit definition only}]
-The following reserved names for <codingname>
- are defined now (more may follow):
-UNIXTIME8:	t,CODING,UNIXTIME8	8byte UNIX-time
-UNIXTIME4:	w,CODING,UNIXTIME4	4byte UNIX-time
-HOURSEC	k,CODING,HOURSEC	0 to 3600
-HOURMIN	k,CODING,HOURMIN	0 to 60
-DAYSEC	b,CODING,DAYSEC		0 to 86400
-DAYMIN	b,CODING,DAYMIN	0 to 1440
-DAYHOUR	b,CODING,DAYHOUR	0 to 24
-DAY		b,CODING,DAY		0 to 31
-YEARDAY	w,CODING,YEARDAY	0 to 365
-YEARDAY0	L,CODING,YEARDAY0	0 to 4294967295 day from 1.1.00;
-MON		b,CODING,MON		0 to 12
-YEAR0	w,CODING,YEAR0		0 to 65535 year from year “00”
-YEARNA	e,CODING,YEARNA	-2147483648to2147483647; nearly all years before and after year “00” 
+<ty>[,label][,{<codingname>}]
+The following reserved names for <codingname> are defined now (more may follow):
+UNIXTIME8:	t[,label],{UNIXTIME8}	8byte UNIX-time
+UNIXTIME4:	w[,label],{UNIXTIME4}	4byte UNIX-time
+DAYSEC	k[,label],{DAYSEC}		0 to 86400
+DAYMON	n[,labe].{DAYMON}		0 to 28|29|30|31
+YEARDAY	w[,label],{YEARDAY}	0 to 364|365
+YEARDAY0	L[,label],{YEARDAY0}	0 to 4294967295 day from 1.1.00;
+YEARNA	e[,label],{YEARNA}		-2147483648to2147483647; nearly all years before and after year “00” 
+LOG		<ty>[,label],{LOG,…}	logarithmic display, <ty> depend on {...}	
+The status of bits of a byte can be described by the r command.
 
-BIT		b,CODING,BIT
-LOG		<ty>,CODING,LOG,{…}	logarithmic display, <ty> depend on {...}	
-describe the individual bits,. Labels for all 8 bits must be given for low and high value starting with MSB_low, MSB_high.…
-Example:
-32;oa;b,CODING.BIT,name,{off,on,1,start,off,2,3,on,4,on,5,on,6,test,7.on}
-CODINGNAME is used for <squence> of op /ap commands as well. The number of the maximum transmitted value must match the CODINGNAME.
+<codingname> is used for <sequence> of op /ap commands as well. The number of the maximum transmitted value must match the <codingname>.
 
 Errors and Error Handling
 
