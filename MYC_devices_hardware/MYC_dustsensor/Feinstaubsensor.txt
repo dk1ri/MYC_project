@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 Feinstaub Messung für das MYC Protokoll
 					
 
-Author DK1RI, Version V01.4, 20230316
+Author DK1RI, Version V02.2, 20240417
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
@@ -18,7 +18,7 @@ Beschreibung und Bedienung
 
 Allgemeines:
 Als Leiterplatte wird die für das ICOM Interface verwendet
-Die Stromversorgung ist 7- 9V, Stromaufnahme ca. 100 max.
+Die Stromversorgung ist 7- 9V, Stromaufnahme ca. 100mA max.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
 Es wird der gleiche Sensor wie in dem ELV Artikel (ELV Journal 2019 Heft 6) verwendet: Sensirion SPS30 ab Firmware 2.1.
 Der Sensor ist aber anders als da nicht auf der gleichen Leiterplatte montiert, und es gibt auch kein Display.
@@ -28,17 +28,16 @@ Der Prozessor ATMEGA1284 wird verwendet, da er 2 serielle Hardware Schnittstelle
 Das Messintervall beträgt 3s, 10s, 1min, 10min, 30min und 60min.
 Jeder Messwert benötigt 20 Byte, es können also nur 770 Messwerte gespeichert werden (Das ELV Original hat einen zusätzlichen 4MBit Speicher und kann daher mehr Messwerte speichern). 
 Ist der Speicher voll, werden alte Daten überschrieben.
-Beim Auslesen des Speichers kommt der neueste Messwert zuerst.
+Memory_pointer zeigt die Schreibposition des aktuellen Wertes; zum Beispiel 111. Will man die letzten 10 Werte auslesen, gibt man bei „start at“ 101 ein und bei „to send: 10
 Da das Interface auch keine Uhr hat, muss die Messzeit an Hand der auslesbaren Intervallzeit berechnet werden. Beim Ändern der Messintervallzeit , Start, Stop, Reset und Abschalten gehen die gespeicherten Daten verloren.
 Der Messvorgang muss nach dem Einschalten des Interfaces gestartet werden
 
 Details:
-Die Bedienung mit dem Browser ist weitestgehend selbsterklärend. Das Das folgende erläutert
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
 Im folgenden werden auch Befehlsfolgen beschrieben, wie sie über die Schnittstellen direkt eingegeben werden. Alle Befehlsfolgen stehen auch mit dem Browser zur Verfügung. Details zur Bedienung über die I2C / serielle Schnittstelle:
 Start der Messung: &H1d01
-Das Auslesen erfolgt in Blöcken von maximal 124 Werten, beginnend mit den neuesten Daten.
-Bei einem Messintervall von einer Minute gibt der Befehl „read mass concentration“ mit „to send“: 5 und „start at“: 255 (&H0100FF05 
-5 Werte der Massekonzentration von vor 255 – 259 Minuten aus.
+Das Auslesen erfolgt in Blöcken von maximal 124 Werten
+Bei einem Messintervall von einer Minute gibt der Befehl „read mass concentration“ mit „to send“: 5 und „start at“: 255 (&H0100FF05 ) 5 Werte der Massekonzentration.
 Entsprechend  dem MYC Protokoll muss der Startmesswert als 2 Byte Wert eingegeben werden (00FF). Die Zahl der übertragenen Bytes ist auf 124 Byte begrenzt.
 Der Grund für die Limitierung ist der begrenzte Speicher bei der I2C Übertragung.
 Der Sleep mode des Sensors wird nicht unterstützt
@@ -73,14 +72,13 @@ Software
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
 Das aktuelle Bascom Programm verwendet einen Atmega1284.
 Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.12[6] in das Verzeichnis mit dem Programm kopiert werden
-
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13[6] in das Verzeichnis mit dem Programm kopiert werden
 
 Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
 Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
-Der Jumper J1 und sollte während der Programmierung entfernt werden.
+Der Sensor sollte während der Programmierung entfernt werden.
 
 Serielle (RS232 / USB) Schnittstelle
 
@@ -106,15 +104,13 @@ Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angesc
 
 Browser Schnittstelle
 
-Es gibt einen (Windows) Webserver, an den der Feinstaubsensor über die USB Schnittstelle  anschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
 Details dazu stehen in [7].
 Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
 
 SMD
 
-Die Leiterplatte ist teilweise mit SMD bestückt.
-
-
+Die Leiterplatte ist teilweise mit SMD bestückt
 
 Stromversorgung
 
@@ -180,7 +176,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion ICOM_Interface V03.2
-Bascom Version V01.02
+Bascom Version V03.3
 
 Copyright
 
@@ -196,6 +192,6 @@ Referenzen
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
 [4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
 [5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.12.zip
+[6]	https://dk1ri.de/dhw/common_1.13.zip
 [7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
 [8]	https://dk1ri.de/w_dat.htm

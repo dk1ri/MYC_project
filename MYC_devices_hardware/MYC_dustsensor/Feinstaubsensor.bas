@@ -1,12 +1,13 @@
 'name : Feinstaubsensor.bas
-'Version V03.1, 20230702
+'Version V03.3, 20240314
+
 'purpose : Program for Sensitron SPS30 Feinstaubsensor
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware ICOM_Interface_eagle Version V03.2 by DK1RI
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.12 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
@@ -40,7 +41,7 @@ $Baud1 = 115200
 '
 '1...127:
 Const I2c_address = 28
-Const No_of_announcelines = 25
+Const No_of_announcelines = 37
 'announcements start with 0 -> minus 1
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
@@ -54,7 +55,7 @@ Const Rx_data_length = 100
 $include "__use.bas"
 $include "common_1.13\_Constants_and_variables.bas"
 '
-DIm Sum As Word
+Dim Sum As Word
 Dim MC10(Memory_size) As Word
 Dim MC25(Memory_size) As Word
 Dim MC40(Memory_size) As Word
@@ -65,6 +66,16 @@ Dim NC25(Memory_size) As Word
 Dim NC40(Memory_size) As Word
 Dim NC100(Memory_size) As Word
 Dim Ty(Memory_size) As Word
+Dim MC10_last As Word
+Dim MC25_last As Word
+Dim MC40_last As Word
+Dim MC100_last As Word
+Dim NC05_last As Word
+Dim NC10_last As Word
+Dim NC25_last As Word
+Dim NC40_last As Word
+Dim NC100_last As Word
+Dim Ty_last As Word
 Dim Measure_time As Byte
 Dim M_time As Dword
 Dim Measure_time_eeram As Eram Byte
@@ -99,6 +110,7 @@ $include "common_1.13\_Main.bas"
 $include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
+' commands are send to sensor; returned data are analyzed:
 Gosub Ananlyze_in
 '
 $include "common_1.13\_Main_end.bas"
@@ -119,7 +131,7 @@ $include "common_1.13\_Subs.bas"
 '----------------------------------------------------
 '
 Timer_interrupt:
-' for read data
+' for read data every 3,36s
    If M_timer >= M_time Then
       If Rx_started = 1 Then
          ' read measured values
@@ -157,7 +169,18 @@ For Memory_pointer = 1 To Memory_size
    Nc25(Memory_pointer) = 0
    Nc40(Memory_pointer) = 0
    Nc100(Memory_pointer) = 0
+   Ty(Memory_pointer) = 0
 Next Memory_pointer
+Mc10(Memory_pointer) = 0
+   Mc25_last = 0
+   Mc40_last = 0
+   Mc100_last = 0
+   Nc05_last = 0
+   Nc10_last = 0
+   Nc25_last = 0
+   Nc40_last = 0
+   Nc100_last = 0
+   Ty_last = 0
 Memory_pointer = 1
 Rx_pointer = 1
 Return
@@ -235,33 +258,43 @@ Else
        W_temp1_h = Rx_data_b(6)
        W_temp1_l = Rx_data_b(7)
        Mc10(Memory_pointer)= W_temp1
+       Mc10_last= W_temp1
        W_temp1_h = Rx_data_b(8)
        W_temp1_l = Rx_data_b(9)
        Mc25(Memory_pointer) = W_temp1
+       Mc25_last= W_temp1
        W_temp1_h = Rx_data_b(10)
        W_temp1_l = Rx_data_b(11)
        Mc40(Memory_pointer) = W_temp1
+       Mc40_last= W_temp1
        W_temp1_h = Rx_data_b(12)
        W_temp1_l = Rx_data_b(13)
        Mc100(Memory_pointer) = W_temp1
+       Mc100_last= W_temp1
        W_temp1_h = Rx_data_b(14)
        W_temp1_l = Rx_data_b(15)
        Nc05(Memory_pointer) = W_temp1
+       Nc05_last = W_temp1
        W_temp1_h = Rx_data_b(16)
        W_temp1_l = Rx_data_b(17)
        Nc10(Memory_pointer) = W_temp1
+       Nc10_last = W_temp1
        W_temp1_h = Rx_data_b(18)
        W_temp1_l = Rx_data_b(19)
        Nc25(Memory_pointer) = W_temp1
+       Nc25_last = W_temp1
        W_temp1_h = Rx_data_b(20)
        W_temp1_l = Rx_data_b(21)
        Nc40(Memory_pointer) = W_temp1
+       Nc40_last = W_temp1
        W_temp1_h = Rx_data_b(22)
        W_temp1_l = Rx_data_b(23)
        Nc100(Memory_pointer) = W_temp1
+       Nc100_last = W_temp1
        W_temp1_h = Rx_data_b(24)
        W_temp1_l = Rx_data_b(25)
        Ty(Memory_pointer) = W_temp1
+       Ty_last = W_temp1
    End If
 End If
    Incr Memory_pointer
@@ -270,7 +303,7 @@ Return
 '
 Read_cleaning_intervall:
    Gosub Byte_stuffing
-   Tx_b(1) = &H0F
+   Tx_b(1) = &H1A
    Tx_b(2) = Rx_data_b(7)
    Tx_b(3) = Rx_data_b(8)
    Tx_b(4) = Rx_data_b(9)
@@ -379,14 +412,7 @@ Send_memory_content:
       ' number
       B_temp1 = Command_b(4)
       If W_temp1 < Memory_size And B_temp1 < 127 Then
-         If W_temp1 < Memory_pointer Then
-            W_temp1 = Memory_pointer - W_temp1
-            Check_overflow = 0
-         Else
-            W_Temp1 = W_temp1 - Memory_pointer
-            W_temp1 = Memory_size - W_temp1
-            Check_overflow = 1
-         End If
+         ' will deliver the content indedependent of memorypointer
          Tx_time = 1
          Tx_b(1) = Command_b(1)
          Tx_b(2) = Command_b(2)
@@ -395,48 +421,34 @@ Send_memory_content:
          Tx_write_pointer = 5
          For B_temp2 = 1 To B_temp1
             Select Case Command_b(1)
-               Case &H01
-                  W_temp3 = Mc10(W_Temp1)
                Case &H02
-                  W_temp3 = Mc25(W_Temp1)
-               Case &H03
-                  W_temp3 = Mc40(W_Temp1)
+                  W_temp3 = Mc10(W_Temp1)
                Case &H04
-                  W_temp3 = Mc100(W_Temp1)
-               Case &H05
-                  W_temp3 = Nc05(W_Temp1)
+                  W_temp3 = Mc25(W_Temp1)
                Case &H06
-                  W_temp3 = Nc10(W_Temp1)
-               Case &H07
-                  W_temp3 = Nc25(W_Temp1)
+                  W_temp3 = Mc40(W_Temp1)
                Case &H08
-                  W_temp3 = Nc40(W_Temp1)
-               Case &H09
-                  W_temp3 = Nc100(W_Temp1)
+                  W_temp3 = Mc100(W_Temp1)
                Case &H0A
+                  W_temp3 = Nc05(W_Temp1)
+               Case &H0C
+                  W_temp3 = Nc10(W_Temp1)
+               Case &H0E
+                  W_temp3 = Nc25(W_Temp1)
+               Case &H10
+                  W_temp3 = Nc40(W_Temp1)
+               Case &H12
+                  W_temp3 = Nc100(W_Temp1)
+               Case &H14
                   W_temp3 = Ty(W_Temp1)
             End Select
-            If Check_overflow = 0 Then
-               Tx_b(Tx_write_pointer) = High (W_temp3)
-               Incr Tx_write_pointer
-               Tx_b(Tx_write_pointer) = Low (W_temp3)
-            Else
-               If W_temp1 > Memory_pointer Then
-                  Tx_b(Tx_write_pointer) = High (W_temp3)
-                  Incr Tx_write_pointer
-                  Tx_b(Tx_write_pointer) = Low (W_temp3)
-               Else
-                  ' no valid (old data anymore
-                  Tx_b(Tx_write_pointer) = &H00
-                  Incr Tx_write_pointer
-                  Tx_b(Tx_write_pointer) = &H00
-               End If
-            End If
+            Tx_b(Tx_write_pointer) = High (W_temp3)
             Incr Tx_write_pointer
-            Decr W_temp1
-            If W_temp1 = 0 Then
-               W_temp1 = Memory_size
-               Check_overflow = 1
+            Tx_b(Tx_write_pointer) = Low (W_temp3)
+            Incr Tx_write_pointer
+            Incr W_temp1
+            If W_temp1 >= Memory_size Then
+               W_temp1 = 0
             End If
          Next B_temp2
          If Tx_write_pointer > 1 Then Gosub Print_tx
@@ -445,6 +457,37 @@ Send_memory_content:
       End If
       Gosub Command_received
    End If
+Return
+'
+Send_meter:
+   Tx_b(1) = Command_b(1)
+   Select Case Command_b(1)
+      Case &H01
+         W_temp3 = Mc10_last
+      Case &H03
+         W_temp3 = Mc25_last
+      Case &H05
+         W_temp3 = Mc40_last
+      Case &H07
+         W_temp3 = Mc100_last
+      Case &H09
+         W_temp3 = Nc05_last
+      Case &H0B
+         W_temp3 = Nc10_last
+      Case &H0D
+         W_temp3 = Nc25_last
+      Case &H0F
+         W_temp3 = Nc40_last
+      Case &H11
+         W_temp3 = Nc100_last
+      Case &H13
+         W_temp3 = Ty_last
+   End Select
+   Tx_b(2) =  High(W_temp3)
+   Tx_b(3) =  Low(W_temp3)
+   Tx_write_pointer = 4
+   If Tx_write_pointer > 1 Then Gosub Print_tx
+   Gosub Command_received
 Return
 '
 '----------------------------------------------------

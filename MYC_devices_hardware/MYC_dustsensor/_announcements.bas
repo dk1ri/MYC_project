@@ -1,161 +1,229 @@
 ' announcements
-' 20230412
+' 20240417
 '
 Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Feinstaubsensor;V01.1;1;145;1;27;1-1"
+Data "0;m;DK1RI;Feinstaubsensor;V01.1;1;145;1;38;1-1"
 '
 'Announce1:
 'Befehl &H01
 'liest Konzentration 1.0
 'read concentration 1.0
-Data "1;an,read mass concentration 1.0;w,ug/cbm;770,start at;124,to send"  
+Data "1;aa,mass concentration 1.0;w,ug/cbm;w,METER,5000"
 '
 'Announce2:
 'Befehl &H02
-'liest Konzentration 2.5
-'read concentration 2.5
-Data "2;an,read mass concentration 2.5;w,ug/cbm;770,start at;124,to send"
+'liest Konzentration 1.0
+'read concentration 1.0
+Data "2;an,mass concentration 1.0;w,ug/cbm;700,start at,{10,MUL100,};124,to send"
 '
 'Announce3:
-'Befehl &H02
-'liest Konzentration 4.0
-'read concentration 4.0
-Data "3;an,read mass concentration 4.0;w,ug/cbm;770,start at;124,to send"
+'Befehl &H03
+'liest Konzentration 2.5
+'read concentration 2.5
+Data "3;aa,mass concentration 2.5;w,ug/cbm;w,METER,5000"
 '
 'Announce4:
 'Befehl &H04
-'liest Konzentration 10
-'read concentration 10
-Data "4;an,read mass concentration 10;w,ug/cbm;770,start at;124,to send"
-'Announce5:
+'liest Konzentration 2.5
+'read concentration 2.5
+Data "4;an,mass concentration 2.5;w,ug/cbm;700,start at,{10,MUL100,};124,to send"
+'
+Announce5:
 'Befehl &H05
-'liest Konzentration 0.5
-'read concentration 0.5
-Data "5;an,read number concentration 0.5;w,/cbcm;770,start at;124,to send"
+'liest Konzentration 4.0
+'read concentration 4.0
+Data "5;aa,mass concentration 4.0;w,ug/cbm;w,METER,5000"
 '
 'Announce6:
 'Befehl &H06
-'liest Konzentration 1.0
-'read concentration 1.0
-Data "6;an,read number concentration 1.0;w,/cbcm;770,start at;124,to send"
+'liest Konzentration 4.0
+'read concentration 4.0
+Data "6;an,mass concentration 4.0;w,ug/cbm;700,start at,{10,MUL100,};124,to send"
+'
 'Announce7:
 'Befehl &H07
-'liest Konzentration 2.5
-'read concentration 2.5
-Data "7;an,read number concentration 2.5;w,/cbcm;770,start at;124,to send"
+'liest Konzentration 10
+'read concentration 10
+Data "7;aa,mass concentration 10;w,ug/cbm;w,METER,5000"
 '
 'Announce8:
 'Befehl &H08
-'liest Konzentration 4.0
-'reed concentration 4.0
-Data "8;an,read number concentration 4.0;w,/cbcm;770,start at;124,to send"
+'liest Konzentration 10
+'read concentration 10
+Data "8;an,mass concentration 10;w,ug/cbm;700,start at,{10,MUL100,};124,to send"
 '
 'Announce9:
 'Befehl &H09
-'liest Konzentration 10
-'read concentration 10
-Data "9;an,read number concentration 10;w,/cbcm;770,start at;124,to send"
+'liest Konzentration 0.5
+'read concentration 0.5
+Data "9;aa,number concentration 0.5;w,ug/cbm;w,METER,5000"
 '
 'Announce10:
 'Befehl &H0A
-'typische Groese
-'typical size
-Data "10;an,typical size;w,um;124,to sent;770,start at"
+'liest Konzentration 0.5
+'read concentration 0.5
+Data "10;an,number concentration 0.5;w,/cbm;700,start at,{10,MUL100,};124,to send"
 '
 'Announce11:
 'Befehl &H0B
-'Messintervall
-'measunring time
-Data "11;os,measuring time;1;0,3s;1,10s;2,30s;3,1min;4,10min;5,30min;6,60min"
+'liest Konzentration 1.0
+'read concentration 1.0
+Data "11;aa,number concentration 1.0;w,ug/cbm;w,METER,5000"
 '
 'Announce12:
 'Befehl &H0C
-'Messintervall
-'measunring time
-Data "12;as,as11"
-'
+'liest Konzentration 1.0
+'read concentration 1.0
+Data "12;an,number concentration 1.0;w,/cbm;700,start at,{10,MUL100,};124,to send"
+
 'Announce13:
 'Befehl &H0D
-'startet / beendet Messung
-'start /stop measurement
-Data "13;os,start/stop measurement;1;0,off;1,on"
+'liest Konzentration 2.5
+'read concentration 2.5
+Data "13;aa,number concentration 2.5;w,ug/cbm;w,METER,5000"
 '
 'Announce14:
 'Befehl &H0E
-'Reinigung Intervall
-'cleaning interval
-Data "14;op,cleaning interval;1;700000;lin;s"
+'liest Konzentration 2.5
+'read concentration 2.5
+Data "14;an,number concentration 2.5;w,/cbm;700,start at,{10,MUL100,};124,to send"
 '
 'Announce15:
 'Befehl &H0F
-'Reinigung Intervall
-'cleaning time
-Data "15;ap,as14"
+'liest Konzentration 4.0
+'read concentration 4.0
+Data "15;aa,number concentration 4.0;w,ug/cbm;w,METER,5000"
 '
 'Announce16:
 'Befehl &H10
-'startet Reinigung
-'start cleaning
-Data "16;ou,start cleaning;0,idle;1,start"
+'liest Konzentration 4.0
+'read concentration 4.0
+Data "16;an,number concentration 4.0;w,/cbm;700,start at,{10,MUL100,};124,to send"
 '
 'Announce17:
 'Befehl &H11
-'Product Name
-'Product Name
-Data "17;aa,Product Name;31"
+'liest Konzentration 10.0
+'read concentration 10.0
+Data "17;aa,number concentration 10.0;w,ug/cbm;w,METER,5000"
 '
 'Announce18:
 'Befehl &H12
-'Version
-'Version
-Data "18;aa,version;31"
+'liest Konzentration 10
+'read concentration 10
+Data "18;an,number concentration 10;w,/cbm;700,start at,{10,MUL100,};124,to send"
 '
 'Announce19:
 'Befehl &H13
-'Serial Number
-'Serial Number
-Data "19;aa,serial number;31"
+'typische Groese
+'typical size
+Data "19;aa,typical size;w,um;w,METER,5000"
 '
 'Announce20:
 'Befehl &H14
-'Reset
-'reset
-Data "20;ou,reset;1;0,idle;1,reset"
+'typische Groese
+'typical size
+Data "20;an,typical size;w,um;700,start at,{10,MUL100,};124,to send"
 '
 'Announce21:
 'Befehl &H15
-'Status Register
-'status register
-Data "21;aa,status register;1;10;14,CHAPTER,ADMINISTRATION"
+'memorypointer
+'memorypointer
+Data "21;aa,memorypointer;w"
 '
 'Announce22:
-'Befehl &HF0<n><m>
-'liest announcements
-'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;145;27,start at;27;14,CHAPTER,ADMINISTRATION"
+'Befehl &H16
+'startet / beendet Messung
+'start /stop measurement
+Data "22;os,stop/start measurement;1;0,off;1,on"
 '
 'Announce23:
+'Befehl &H17
+'Messintervall
+'measunring time
+Data "23;os,measuring time;1;0,3s;1,10s;2,30s;3,1min;4,10min;5,30min;6,60min"
+'
+'Announce24:
+'Befehl &H18
+'Messintervall
+'measunring time
+Data "24;as,as23"
+'
+'Announce25:
+'Befehl &H19
+'Reinigung Intervall
+'cleaning interval
+Data "25;op,cleaning interval;1;700000;lin;s"
+'
+'Announce26:
+'Befehl &H1A
+'Reinigung Intervall
+'cleaning time
+Data "26;ap,as25"
+'
+'Announce27:
+'Befehl &H1B
+'startet Reinigung
+'start cleaning
+Data "27;ou,start cleaning;1;0,idle;1,start"
+'
+'Announce28:
+'Befehl &H1C
+'Product Typ
+'Product type
+Data "28;aa,Product type;31"
+'
+'Announce29:
+'Befehl &H1D
+'Serial Number
+'Serial Number
+Data "29;aa,serial number;31"
+'
+'Announce30:
+'Befehl &H1E
+'Version
+'version
+Data "30;aa,version;31"
+'
+'Announce31:
+'Befehl &H1F
+'Reset
+'reset
+Data "31;ou,reset;1;0,idle;1,reset"
+'
+'Announce32:
+'Befehl &H20
+'Status Register
+'status register
+Data "32;aa,status register;20;14,CHAPTER,ADMINISTRATION"
+'
+'Announce33:
+'Befehl &HF0
+'liest announcements
+'read m announcement lines
+Data "240;an,ANNOUNCEMENTS;145;38,start at;38,elements;14,CHAPTER,ADMINISTRATION"
+'
+'Announce34:
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;60,last_error"
 '
-'Announce24:
+'Announce35:
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-'Announce25:
+'Announce36:
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
 Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{1_0to127};a,SERIAL,1;14,CHAPTER,ADMINISTRATION"
 '
-'Announce26:
+'Announce37:
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization

@@ -12,7 +12,7 @@
 Return
 '
 01:
-   Gosub Send_memory_content
+   Gosub Send_meter
 Return
 '
 02:
@@ -20,7 +20,7 @@ Return
 Return
 '
 03:
-   Gosub Send_memory_content
+   Gosub Send_meter
 Return
 '
 04:
@@ -28,7 +28,7 @@ Return
 Return
 '
 05:
-   Gosub Send_memory_content
+   Gosub Send_meter
 Return
 '
 06:
@@ -36,7 +36,7 @@ Return
 Return
 '
 07:
-   Gosub Send_memory_content
+   Gosub Send_meter
 Return
 '
 08:
@@ -44,7 +44,7 @@ Return
 Return
 '
 09:
-   Gosub Send_memory_content
+   Gosub Send_meter
 Return
 '
 0A:
@@ -52,6 +52,91 @@ Return
 Return
 '
 0B:
+   Gosub Send_meter
+Return
+'
+0C:
+   Gosub Send_memory_content
+Return
+'
+0D:
+   Gosub Send_meter
+Return
+'
+0E:
+   Gosub Send_memory_content
+Return
+'
+0F:
+   Gosub Send_meter
+Return
+'
+10:
+   Gosub Send_memory_content
+Return
+'
+11:
+   Gosub Send_meter
+Return
+'
+12:
+   Gosub Send_memory_content
+Return
+'
+13:
+   Gosub Send_meter
+Return
+'
+14:
+
+   Gosub Send_memory_content
+Return
+'
+15:
+   Tx_b(1) = &H15
+   Tx_b(2) = High(Memory_pointer)
+   Tx_b(3) = Low(Memory_pointer)
+   Tx_write_pointer = 4
+   If Command_mode = 1 Then Gosub Print_tx
+   Gosub Command_received
+Return
+'
+
+16:
+   ' 23 start stop
+   If Commandpointer >= 2 Then
+      If Command_b(3) < 2 Then
+         Temps_b(1) = &H7E
+         Temps_b(2) = &H00
+         If Command_b(2) = 1 Then
+            Temps_b(3) = &H00
+            Temps_b(4) = &H02
+            Temps_b(5) = &H01
+            ' 16 bit unsigned
+            Temps_b(6) = &H05
+            Temps_b(7) = &HF7
+            Temps_b(8) = &H7E
+            Send_len = 8
+            M_timer = 0
+            Rx_started = 1
+         Else
+            Temps_b(3) = &H01
+            Temps_b(4) = &H00
+            Temps_b(5) = &HFE
+            Temps_b(6) = &H7E
+            Send_len = 6
+            Rx_started = 0
+            Gosub Clear_memory
+         End If
+         Gosub Send_data
+      Else
+         Parameter_error
+         Gosub Command_received
+      End If
+   End If
+Return
+'
+17:
    If Commandpointer >= 2 Then
       If Command_b(2) < 7 Then
          Measure_time = Command_b(2)
@@ -78,6 +163,8 @@ Return
                ' 60 min
                M_time = 1080
          End select
+         Measure_time_eeram = Measure_time
+         M_time_eeram = M_time
          Gosub Clear_memory
       Else
          Parameter_error
@@ -86,47 +173,15 @@ Return
    End If
 Return
 '
-0C:
-   Tx_b(1) = &H0C
+18:
+   Tx_b(1) = &H18
    Tx_b(2) = Measure_time
    Tx_write_pointer = 3
    If Command_mode = 1 Then Gosub Print_tx
    Gosub Command_received
 Return
 '
-0D:
-   If Commandpointer >= 2 Then
-      If Command_b(3) < 2 Then
-         Temps_b(1) = &H7E
-         Temps_b(2) = &H00
-         If Command_b(2) = 1 Then
-            Temps_b(3) = &H00
-            Temps_b(4) = &H02
-            Temps_b(5) = &H01
-            Temps_b(6) = &H05
-            Temps_b(7) = &HF7
-            Temps_b(8) = &H7E
-            Send_len = 8
-            M_timer = 0
-            Rx_started = 1
-         Else
-            Temps_b(3) = &H01
-            Temps_b(4) = &H00
-            Temps_b(5) = &HFE
-            Temps_b(6) = &H7E
-            Send_len = 6
-            Rx_started = 0
-            Gosub Clear_memory
-         End If
-         Gosub Send_data
-      Else
-         Parameter_error
-         Gosub Command_received
-      End If
-   End If
-Return
-'
-0E:
+19:
    If Commandpointer >= 4 Then
       Cleaning_intervall_b(4) = 0
       Cleaning_intervall_b(3) = Command_b(2)
@@ -162,7 +217,7 @@ Return
    End If
 Return
 '
-0F:
+1A:
    Temps_b(1) = &H7E
    Temps_b(2) = &H00
    Temps_b(3) = &H80
@@ -176,7 +231,7 @@ Return
    Last_command = 4
 Return
 '
-10:
+1B:
    Temps_b(1) = &H7E
    Temps_b(2) = &H00
    Temps_b(3) = &H56
@@ -187,30 +242,19 @@ Return
    Gosub Send_data
 Return
 '
-11:
+1C:
    Temps_b(1) = &H7E
    Temps_b(2) = &H00
    Temps_b(3) = &HD0
    Temps_b(4) = &H01
-   Temps_b(5) = &H01
-   Temps_b(6) = &H2D
+   Temps_b(5) = &H00
+   Temps_b(6) = &H2E
    Temps_b(7) = &H7E
    Send_len = 7
    Gosub Send_data
 Return
 '
-12:
-   Temps_b(1) = &H7E
-   Temps_b(2) = &H00
-   Temps_b(3) = &HD1
-   Temps_b(4) = &H00
-   Temps_b(5) = &H2E
-   Temps_b(6) = &H7E
-   Send_len = 6
-   Gosub Send_data
-Return
-'
-13:
+1D:
    Temps_b(1) = &H7E
    Temps_b(2) = &H00
    Temps_b(3) = &HD0
@@ -222,7 +266,18 @@ Return
    Gosub Send_data
 Return
 '
-14:
+1E:
+   Temps_b(1) = &H7E
+   Temps_b(2) = &H00
+   Temps_b(3) = &HD1
+   Temps_b(4) = &H00
+   Temps_b(5) = &H2E
+   Temps_b(6) = &H7E
+   Send_len = 6
+   Gosub Send_data
+Return
+'
+1F:
    Temps_b(1) = &H7E
    Temps_b(2) = &H00
    Temps_b(3) = &HD3
@@ -234,7 +289,7 @@ Return
 Gosub Clear_memory
 Return
 '
-15:
+20:
    Temps_b(1) = &H7E
    Temps_b(2) = &H00
    Temps_b(3) = &HD2

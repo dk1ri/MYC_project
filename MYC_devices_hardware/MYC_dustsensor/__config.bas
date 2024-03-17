@@ -6,6 +6,7 @@ Config Com2 = 115200 , Synchrone = 0 , Parity = None , Stopbits = 1 , Databits =
 Open "Com2:" For Binary As #2
 
 Config Timer1 = Timer, Prescale = 1024
+' 20M /65535 / 1024
 '3,36s
 Enable Interrupts
 Enable Timer1
