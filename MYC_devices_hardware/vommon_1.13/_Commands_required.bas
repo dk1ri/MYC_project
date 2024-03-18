@@ -1,5 +1,5 @@
 ' Command_required
-' 20200730
+' 202240317
 '
 Ignore:
    'ignore this
@@ -8,6 +8,7 @@ Ignore:
 Return
 '
 FFF0:
+' F0 deliver not more than Tx_length byte, but complete line always
 #IF Command_is_2_byte = 0
    If Commandpointer >= 3 Then
       A_line = Command_b(2)
@@ -19,17 +20,62 @@ FFF0:
       Number_of_lines = Command_b(5) * 256
       Number_of_lines = Number_of_lines + Command_b(6)
 #ENDIF
+      ' At that point Commands is not needed until end of sub
+      ' -> used for temporary storage of announdements
       If A_line < No_of_announcelines And Number_of_lines < No_of_announcelines Then
          If Number_of_lines > 0 Then
-            Tx_time = 1
-            Send_line_gaps = 4
-            Gosub Sub_restore
             If Command_mode = 1 Then
+               F0stop = 0
+               Tx_time = 1
+#IF Command_is_2_byte = 0
+      Tx_b(1) = &HF0
+      Tx_b(2) = A_line
+      Tx_b(3) = Number_of_lines
+      Tx_write_pointer = 4
+#ELSE
+      Tx_b(1) = &HFF
+      Tx_b(2) = &HF0
+      Tx_b(3) = High(A_line)
+      Tx_b(4) = Low (A_line)
+      Tx_b(5) = High(Number_of_lines)
+      Tx_b(6) = Low(Number_of_lines)
+      Tx_write_pointer = 7
+#ENDIF
+               Command = Lookupstr(A_line, Announce)
+               B_temp3 = Len(Command)
+               Tx_b(Tx_write_pointer) = B_temp3
+               Incr Tx_write_pointer
+               For B_temp2 = 1 To B_temp3
+                   Tx_b(Tx_write_pointer) = Command_b(B_temp2)
+                   Incr Tx_write_pointer
+               Next B_temp2
+               F0elements = 1
+               Incr A_line
+               Decr Number_of_lines
+               If Number_of_lines > 0 Then
+                  'additional announcement lines
+                  While Number_of_lines > 0  and F0stop = 0
+                     Command = Lookupstr(A_line, Announce)
+                     B_temp3 = Len(Command)
+                     W_temp1 = Tx_write_pointer + B_temp3
+                    Incr W_temp1
+                    If W_temp1 < Stringlength Then
+                       Tx_b(Tx_write_pointer) = B_temp3
+                       Incr Tx_write_pointer
+                       For B_temp2 = 1 To B_temp3
+                          Tx_b(Tx_write_pointer) = Command_b(B_temp2)
+                          Incr Tx_write_pointer
+                       Next B_temp2
+                       Incr F0elements
+                    Else
+                       F0stop = 1
+                    End If
+                    Decr Number_of_lines
+                    Incr A_line
+                  Wend
+               End If
+               Tx_b(3) = F0elements
                Gosub Print_tx
-               While Number_of_lines > 0
-                  Gosub Sub_restore
-                  Gosub Print_tx
-               Wend
             End If
          End If
       Else_Parameter_error

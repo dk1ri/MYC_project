@@ -19,6 +19,8 @@ Const Tx_timeout = Tx_watchdog * Tx_factor
 Const Updateeprom=1
 '
 Dim Eramdummy As Eram Byte
+Dim S_temp1 As String * 21
+Dim S_temp1_b(20) As Byte at S_temp1 Overlay
 Dim Temps As String * S_length
 Dim Temps_b(S_length) As Byte At Temps Overlay
 Dim First_set As Eram Byte
@@ -35,6 +37,8 @@ Dim I2C_active As Byte
 Dim I2C_active_eeram As Eram Byte
 Dim Serial_active As Byte
 Dim Serial_active_eeram As Eram Byte
+Dim F0elements As Byte
+Dim F0stop As Byte
 '
 Dim B_temp1 As Byte
 Dim B_temp2 As Byte

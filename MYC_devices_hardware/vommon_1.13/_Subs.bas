@@ -1,5 +1,5 @@
 ' Some subs
-' 20200730
+' 20240317
 '
 #IF Use_command_received = 1
 Command_received:
@@ -30,69 +30,17 @@ Return
 '
 #IF Use_sub_restore = 1
 Sub_restore:
-' read one line
-'
-'Byte beyond restored data must be 0:
-'For B_temp2 = 1 To Tx_length
-'   Tx_b(B_temp2) = 0
-'Next B_temp2
-'
-Tx = Lookupstr(A_line, Announce)
-B_temp3 = Len(Tx)
-Select Case Send_line_gaps
-   Case 1
-      'additional announcement lines
-      B_temp4 = B_temp3 + 1
-      For B_temp2 = B_temp3 To 1 Step - 1
-         Tx_b(B_temp4) = Tx_b(B_temp2)
-         Decr B_temp4
-      Next B_temp2
-      Tx_b(1) = B_temp3
-      Tx_write_pointer = B_temp3 + 2
-   Case 2
-      'start basic announcement
-      B_temp4 = B_temp3 + 2
-      For B_temp2 = B_temp3 To 1 Step - 1
-         Tx_b(B_temp4) = Tx_b(B_temp2)
-         Decr B_temp4
-      Next B_temp2
-      Tx_b(1) = &H00
-      Tx_b(2) = B_temp3
-      Tx_write_pointer = B_temp3 + 3
-   Case 4
-      'start of announceline(s)
-#IF Command_is_2_byte = 0
-      B_temp4 = B_temp3 + 4
-      For B_temp2 = B_temp3 To 1 Step - 1
-         Tx_b(B_temp4) = Tx_b(B_temp2)
-         Decr B_temp4
-      Next B_temp2
-      Tx_b(1) = &HF0
-      Tx_b(2) = A_line
-      Tx_b(3) = Number_of_lines
-      Tx_b(4) = B_temp3
-      Tx_write_pointer = B_temp3 + 5
-#ELSE
-      B_temp4 = B_temp3 + 6
-      For B_temp2 = B_temp3 To 1 Step - 1
-         Tx_b(B_temp4) = Tx_b(B_temp2)
-         Decr B_temp4
-      Next B_temp2
-      Tx_b(1) = &HFF
-      Tx_b(2) = &HF0
-      Tx_b(3) = High(A_line)
-      Tx_b(4) = Low (A_line)
-      Tx_b(5) = High(Number_of_lines)
-      Tx_b(6) = Low(Number_of_lines)
-      Tx_b(7) = B_temp3
-      Tx_write_pointer = B_temp3 + 7
-#ENDIF
-      Send_line_gaps = 1
-End Select
-Incr A_line
-If A_line >= No_of_announcelines Then A_line = 0
-Decr Number_of_lines
-Tx_pointer = 1
+' basic announcement
+' commands as temporary storage
+Command = Lookupstr(0, Announce)
+B_temp3 = Len(Command)
+Tx_b(1) = &H00
+Tx_b(2) = B_temp3
+Tx_write_pointer = 3
+For B_temp2 = 1 To B_temp3
+   Tx_b(Tx_write_pointer) = Command_b(B_temp2)
+   Incr Tx_write_pointer
+Next B_temp2
 Return
 #ENDIF
 '
