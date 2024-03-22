@@ -1,6 +1,9 @@
 """
 name : io_handling.py IC705
-last edited: 20220109
+last edited: 20240311
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
+subs for control input
 """
 
 import sys
@@ -8,7 +11,6 @@ import socket
 import threading
 import os
 import platform
-import v_icom_vars
 
 
 if platform.system() == "Windows":
@@ -54,11 +56,14 @@ def poll_inputs():
         if v_sk.active[input_buffer_number] == 1:
             if v_sk.interface_type[input_buffer_number] == "TERMINAL":
                 # input_buffer_number,device_buffer_number
-                if v_sk.active[input_buffer_number] == 1:
+                if v_icom_vars.terminal_activ == 1:
                     win_terminal(input_buffer_number, 0)
             elif v_sk.interface_type[input_buffer_number] == "TELNET":
                 # telnet is a separate thread, writing directly to inputbuffer
                 pass
+            elif v_sk.interface_type[input_buffer_number] == "FILE":
+                if v_icom_vars.control_data_in != 0:
+                    file_data_input(input_buffer_number)
         input_buffer_number += 1
     return
 
@@ -167,20 +172,60 @@ def win_terminal(input_buffer_number, device_buffer_number):
 
 
 def send_to_all():
+    # data to SK
     if v_sk.info_to_all != bytearray([]):
+        if v_icom_vars.test_mode == 1:
+            print ("send to web:", v_sk.info_to_all)
         temps = ""
+        temps_pure = ""
         count = 0
         while count < len(v_sk.info_to_all):
-            temp = hex(v_sk.info_to_all[count]).lstrip("0x")
-            if len(temp) == 1:
-                temp = " 0" + temp
+            ch = v_sk.info_to_all[count]
+            if ch == 0:
+                temp = "00"
+                temp_pure = "00"
+            else:
+                temp = hex(ch)
+                temp_pure = temp[2:]
+                if len(temp) == 3:
+                    temp = " 0" + temp
+                    temp_pure = "0"+ temp_pure
             temps += temp
+            temps_pure += temp_pure
             count += 1
-        v_sk.info_to_telnet.extend([el for el in (v_sk.info_to_all)])
-        v_sk.info_to_telnet.extend([10])
-        if v_icom_vars.test_mode == 1:
+        if v_icom_vars.telnet_active == 1:
+            v_sk.info_to_telnet = bytearray()
+            v_sk.info_to_telnet.extend([el for el in v_sk.info_to_all])
+            v_sk.info_to_telnet.extend([10])
+        if v_icom_vars.terminal_activ == 1:
             print("Hex: ", temps)
-        else:
-            print(temps)
+        if v_icom_vars.control_data_in != 0:
+            # datatransfer via file
+           # if os.path.exists(v_icom_vars.control_data_out):
+                f = open(v_icom_vars.control_data_out, "a")
+                f.write(temps_pure)
+                f.close()
         v_sk.info_to_all = bytearray([])
     return
+
+
+def file_data_input(input_buffer_number):
+    if os.path.isfile(v_icom_vars.control_data_in):
+        file = open(v_icom_vars.control_data_in)
+        i = 0
+        from_web = ""
+        for lines in file:
+            # read one line only
+            if i == 0:
+                from_web = lines
+            i += 1
+        file.close()
+        os.remove(v_icom_vars.control_data_in)
+        if len(from_web) > 0:
+            i = 0
+            j = 1
+            while i < len(from_web):
+                v_icom_vars.command_time = time.time()
+                analyze_sk(from_web[i:j], input_buffer_number)
+                i += 1
+                j += 1

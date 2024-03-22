@@ -1,6 +1,8 @@
 """
 name : misc_functions.py IC705
-last edited: 20220103
+last edited: 20240311
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 misc functions
 """
 
@@ -353,10 +355,19 @@ def bcd_plusminus_to_int(line, start, max_, bcdbytes, commandbytes, divisor):
 
 
 def check_and_convert_alphabet(a, type_):
-    # used for answers, a= 255 should not happen
+    print(a)
+    #  a= 255 should not happen
     aa = 255
     if type_ == 0:
-        if 0x20 < a < 0x7:
+        # numbers and letters
+        if 47 < a < 58:
+            # numeric
+            aa = a
+        elif (a > 64) and (a < 91):
+            #A-Z
+            aa = a
+        # a to z
+        elif 96 < a < 123:
             aa = a
     elif type_ == 1:
         # symbol 1st char
@@ -379,12 +390,17 @@ def check_and_convert_alphabet(a, type_):
             aa = a
     elif type_ == 3:
         # callsign
+        print ("call")
         # A-Z
+        if 96 < a < 123:
+            aa = a
+        # a-z
         if 64 < a < 91:
             aa = a
         # 0 - 9
         elif 47 < a < 58:
             aa = a
+            print(aa)
         elif a == 0x20:
             aa = a
     elif type_ == 4:
@@ -464,7 +480,7 @@ def check_length(line, no_of_strings, start, max1, max2, max3, max4, max5):
 
 
 def copy_and_fill(line, start, le, max_, alpha):
-    # append le le charrs from line to v_icom_vars.Civ_out anf fill with blanks up to max chars
+    # append le le chars from line to v_icom_vars.Civ_out anf fill with blanks up to max chars
     charcount = 0
     temp = 0
     while temp < le:
@@ -505,8 +521,6 @@ def analyze_sk(t, input_buffer_number):
     if v_sk.hex_count == 2:
         # add to inputline
         v_sk.inputline[input_buffer_number].extend(bytearray([v_sk.data]))
-        if v_icom_vars.test_mode == 1:
-            print("in: ", hex(v_sk.data))
         v_sk.data = ""
         v_sk.hex_count = 0
     return

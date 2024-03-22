@@ -1,21 +1,27 @@
 """
 name : v_icom_vars.py IC705
-last edited: 20220103
+last edited: 20240311
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 Specific constants and variables
 """
-# configurable variables (default)
+# configurable variables (default) may be overwritten by ___config_default
 device_name = "IC705"
 device_number = 1
 terminal_activ = 1
 telnet_active = 1
 telnet_port = 23
-comportnumber = 4
-comport = "COM4"
+comportnumber = 5
+comport = "COM5"
 civ_address = 0xA4
+control_data_in = "/xampp/htdocs/usb_interface/from_web"
+control_data_out = "/xampp/htdocs/usb_interface/to_web"
 # country of radio
 country = 0
+radio_version = 0
 
 # system configuration varialbles (default)
+config_file_default = "___config_default"
 config_file = "___config"
 announce_list = "___announcements"
 log_file = "___logfile"
@@ -39,10 +45,7 @@ civ_command_length = 0
 # set to 1, when read is done; to 0 after successful send (SK)
 input_locked = 0
 last_frequency = 0
-last_mode = 0       # lsb as for command 258 (civ command 01)
-last_mode_filter = 0
-last_data_mode = 0
-last_data_mode_filter = 0
+last_memory_group = 0
 last_vfo_mem = 0    # 0: VFOA, 1:VFOB, 3: memory
 vfo_split = 0
 command_at_start = 1
@@ -52,14 +55,14 @@ data_to_CR = bytearray([])
 start_echo_off = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x1a, 0x05, 0x01, 0x32, 0x00, 0xfd])
 start_transceive = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x1a, 0x05, 0x01, 0x31, 0x01, 0xfd])
 start_memory_no = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x08, 0x00, 0x00, 0xfd])
-# LSB
-start_read_data_mode = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x1a, 0x06, 0xfd])
+start_memory_write = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x09, 0xfd])
 start_VFOA = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x07, 0x00, 0xfd])
 start_read_f = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x03, 0xfd])
 start_read_mode = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x04, 0xfd])
+start_read_data_mode = bytearray([0xfe, 0xfe, civ_address, 0xe0, 0x1a, 0x06, 0xfd])
 # start of tokens for read memorycontents
 # the structure is identical for all radios (but n split for 9700)
-# so the token must not be set differnet for differnt radios
+# so the token must not be set differnet for different radios
 start_token_for_memory_read = 0x0174
 
 
@@ -77,9 +80,11 @@ operate command:
 answer command:
 0: answercommand_memory will generate ask command and set ask_content to 4. do not keep sk input 
 answerfunction will send answer to SK and set ask_content set to 0
+
+99: used for anwer memory_raw
 """
 ask_content = 0
-answer_storage = bytearray([])      # written by anwer, used by next command for ask_content > 0
+answer_storage = bytearray([])      # written by anwser, used by next command for ask_content > 0
 command_storage = bytearray([])     # written by command, used by next answer
 
 
@@ -152,24 +157,116 @@ number_frequency_range =       {1:[30, 1600],
                                 }
 
 
+user_band_edge ={                0:[1810, 1999],
+                                1:[3500, 3800],
+                                2:[7000, 7100],
+                                3:[10100, 10150],
+                                4:[14000, 14350],
+                                5:[18068, 18168],
+                                6:[21000, 21450],
+                                7:[24890, 24990],
+                                8:[28000, 297000],
+                                9:[50000810, 52000],
+                                10: [144000, 146000],
+                                11: [430000, 440000],
+                                 }
+
+
 # civcodes of chanal 4 of scope band edges
-number_civcommand_chanal4 ={    1:[0x03, 0x69],
-                                2: [0x03, 0x70],
-                                3: [0x03, 0x71],
-                                4: [0x03, 0x72],
-                                5: [0x03, 0x73],
-                                6: [0x03, 0x74],
-                                7: [0x03, 0x75],
-                                8: [0x03, 0x76],
-                                9: [0x03, 0x77],
-                                10: [0x03, 0x78],
-                                11: [0x03, 0x79],
-                                12: [0x03, 0x80],
-                                13: [0x03, 0x81],
-                                14: [0x03, 0x82],
-                                15: [0x03, 0x83],
-                                16: [0x03, 0x84],
-                                17: [0x03, 0x85],
+number_civcommand_chanal4 ={    785:[0x03, 0x69],
+                                787: [0x03, 0x70],
+                                789: [0x03, 0x71],
+                                791: [0x03, 0x72],
+                                793: [0x03, 0x73],
+                                795: [0x03, 0x74],
+                                797: [0x03, 0x75],
+                                799: [0x03, 0x76],
+                                801: [0x03, 0x77],
+                                803: [0x03, 0x78],
+                                805: [0x03, 0x79],
+                                807: [0x03, 0x80],
+                                809: [0x03, 0x81],
+                                811: [0x03, 0x82],
+                                813: [0x03, 0x83],
+                                815: [0x03, 0x84],
+                                817: [0x03, 0x85],
+                                }
+
+
+gps_sympbol_translate={         0: [0x2F,0x21],
+                                1: [0x2F,0x23],
+                                2: [0x2F,0x26],
+                                3: [0x2F,0x27],
+                                4: [0x2F,0x2B],
+                                5: [0x2F,0x2D],
+                                6: [0x2F,0x2E],
+                                7: [0x2F,0x2F],
+                                8: [0x2F,0x3A],
+                                9: [0x2F,0x3B],
+                                10: [0x2F,0x3C],
+                                11: [0x2F,0x3D],
+                                12: [0x2F,0x3E],
+                                13: [0x2F,0x43],
+                                14: [0x2F,0x45],
+                                15: [0x2F,0x4B],
+                                16: [0x2F,0x4C],
+                                17: [0x2F,0x4F],
+                                18: [0x2F,0x50],
+                                19: [0x2F,0x52],
+                                20: [0x2F,0x53],
+                                21: [0x2F,0x54],
+                                22: [0x2F,0x55],
+                                23: [0x2F,0x56],
+                                24: [0x2F,0x57],
+                                25: [0x2F,0x58],
+                                26: [0x2F,0x59],
+                                27: [0x2F,0x5B],
+                                28: [0x2F,0x5C],
+                                29: [0x2F,0x5E],
+                                30: [0x2F,0x5F],
+                                31: [0x2F,0x60],
+                                32: [0x2F,0x61],
+                                33: [0x2F,0x62],
+                                34: [0x2F,0x66],
+                                35: [0x2F,0x67],
+                                36: [0x2F,0x68],
+                                37: [0x2F,0x6a],
+                                38: [0x2F,0x6b],
+                                39: [0x2F,0x6e],
+                                40: [0x2F,0x70],
+                                41: [0x2F,0x72],
+                                42: [0x2F,0x73],
+                                43: [0x2F,0x75],
+                                44: [0x2F,0x76],
+                                45: [0x2F,0x79],
+                                46: [0x2F,0x23],
+                                47: [0x5C,0x26],
+                                48: [0x5C,0x2D],
+                                49: [0x5C,0x2E],
+                                50: [0x5C,0x30],
+                                51: [0x5C,0x3B],
+                                52: [0x5C,0x3E],
+                                53: [0x5C,0x4C],
+                                54: [0x5C,0x53],
+                                55: [0x5C,0x55],
+                                56: [0x5C,0x57],
+                                57: [0x5C,0x59],
+                                58: [0x5C,0x5E],
+                                59: [0x5C,0x5F],
+                                60: [0x5C,0x61],
+                                61: [0x5C,0x63],
+                                62: [0x5C,0x67],
+                                63: [0x5C,0x68],
+                                64: [0x5C,0x6A],
+                                65: [0x5C,0x6D],
+                                66: [0x5C,0x6E],
+                                67: [0x5C,0x6F],
+                                68: [0x5C,0x73],
+                                69: [0x5C,0x74],
+                                70: [0x5C,0x75],
+                                71: [0x5C,0x76],
+                                72: [0x5C,0x78],
+                                73: [0x2f,0x22],
                                 }
 
 
@@ -177,7 +274,7 @@ number_civcommand_chanal4 ={    1:[0x03, 0x69],
 # used for 1byte parameters
 # different civ_subcommand within a sk_command must be handled like parameters !!
 #
-# 0 parameter or u_command1 not used (if parameter or subcommand has gaps eg):
+# 0 parameter or u_command1 or not used (if special program used or parameter or subcommand has gaps eg):
 # country, length of_sk_command, 0, civ_command, civ_subcommand, [civ_subcommand[, civ_subcommand]]
 #
 # 1 parameter:
@@ -186,14 +283,11 @@ number_civcommand_chanal4 ={    1:[0x03, 0x69],
 # 2 parameters:
 #  country, length of_sk_command, 2, conversion, max_value1, adder1, max_value2, adder2, civ_command, civ_subcommand, [civ_subcommand[, civ_subcommand]]
 #
-# 1 two byte parameter
-# country, length of_sk_command, 9, conversion, max_value high byte, max_value_low byte, adder, civ_command, civ_subcommand, [civ_subcommand[, civ_subcommand]]
-#
 #  3 parameters:
 #  country, length of_sk_command, 3, conversion, max_value1, adder2, max_value1, adder2, max_value3, adder3, civ_command, civ_subcommand, [civ_subcommand[, civ_subcommand]]
 #
 # 1 two byte parameter
-# country, length of_sk_command, 9, conversion, max_value high byte, max_value_low byte, adder, civ_command, civ_subcommand, [civ_subcommand[, civ_subcommand]]
+# country, length of_sk_command, 9, conversion, max_value_high byte, max_value_low byte, adder, civ_command, civ_subcommand, [civ_subcommand[, civ_subcommand]]
 #
 # set a value (0 parameter):
 # country, length of_sk_command, 10, value, civ_command, civ_subcommand, [civ_subcommand[, civ_subcommand]]
@@ -231,7 +325,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     277: bytearray([0, 2, 0, 0x10]),
                     278: bytearray([0, 3, 0, 0x11]),
                     279: bytearray([0, 2, 0, 0x11]),
-                    280: bytearray([0, 3, 1, 0, 2, 0, 0x13]),
+                    280: bytearray([0, 3, 1, 0, 3, 0, 0x13]),
                     281: bytearray([0, 3, 1, 2, 255, 0, 0x14, 0x01]),
                     282: bytearray([0, 2, 0, 0x14, 0x01]),
                     283: bytearray([0, 3, 1, 2, 255, 0, 0x14, 0x02]),
@@ -358,12 +452,12 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     404: bytearray([0, 4, 0, 0x1a, 0x01]),
                     405: bytearray([0, 3, 0, 0x1a, 0x02]),
                     406: bytearray([0, 3, 1, 0, 8, 1, 0x1a, 0x02]),
-                    407: bytearray([0, 3, 1, 0, 49, 0,  0x1a, 0x03]),
+                    407: bytearray([0, 3, 1, 0, 50, 0, 0x1a, 0x03]),
                     408: bytearray([0, 2, 0, 0x1a, 0x03]),
-                    409: bytearray([0, 3, 1, 0, 40, 0, 0x1a, 0x03]),
+                    409: bytearray([0, 3, 1, 0, 32, 0, 0x1a, 0x03]),
                     410: bytearray([0, 2, 0, 0x1a, 0x03]),
-                    411: bytearray([0, 3, 1, 1, 13, 0, 0x1a, 0x04]),
-                    412: bytearray([0, 2, 0, 0x1a, 0x04]),
+                    411: bytearray([0, 3, 1, 0, 41, 0, 0x1a, 0x03]),
+                    412: bytearray([0, 2, 0, 0x1a, 0x03]),
                     413: bytearray([0, 3, 1, 1, 13, 0, 0x1a, 0x04]),
                     414: bytearray([0, 2, 0, 0x1a, 0x04]),
                     415: bytearray([0, 4, 0, 0x1a, 0x05, 0x00, 0x01]),
@@ -696,7 +790,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     742: bytearray([0, 2, 0, 0x1a, 0x05, 0x01, 0x66]),
                     743: bytearray([0, 3, 1, 0, 1, 0, 0x1a, 0x05, 0x01, 0x67]),
                     744: bytearray([0, 2, 0, 0x1a, 0x05, 0x01, 0x67]),
-                    745: bytearray([0, 64, 11, 6, 0x1a, 0x05, 0x01, 0x68]),
+                    745: bytearray([0, 64, 11, 5, 0x1a, 0x05, 0x01, 0x68]),
                     746: bytearray([0, 2, 0, 0x1a, 0x05, 0x01, 0x68]),
                     747: bytearray([0, 3, 1, 0, 1, 0, 0x1a, 0x05, 0x01, 0x69]),
                     748: bytearray([0, 2, 0, 0x1a, 0x05, 0x01, 0x69]),
@@ -875,7 +969,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     921: bytearray([0, 3, 1, 0, 3, 0, 0x1a, 0x05, 0x02, 0x90]),
                     922: bytearray([0, 2, 0, 0x1a, 0x05, 0x02, 0x90]),
                     923: bytearray([0, 5, 0, 0x1a, 0x05, 0x02, 0x91]),
-                    924: bytearray([0, 3, 0, 0x1a, 0x05, 0x02, 0x91]),
+                    924: bytearray([0, 2, 0, 0x1a, 0x05, 0x02, 0x91]),
                     925: bytearray([0, 3, 1, 1, 42, 0, 0x1a, 0x05, 0x02, 0x95]),
                     926: bytearray([0, 2, 0, 0x1a, 0x05, 0x02, 0x95]),
                     927: bytearray([0, 3, 1, 0, 3, 0, 0x1a, 0x05, 0x02, 0x96]),
@@ -1018,7 +1112,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1064: bytearray([0, 2, 0, 0x1a, 0x05, 0x03, 0x67]),
                     1065: bytearray([0, 3, 1, 1, 4, 0, 0x1a, 0x05, 0x03, 0x68]),
                     1066: bytearray([0, 2, 0, 0x1a, 0x05, 0x03, 0x68]),
-                    1067: bytearray([0, 2, 0, 0x1a, 0x06]),
+                    1067: bytearray([0, 3, 2, 0, 1, 0, 2, 1,0x1a, 0x06]),
                     1068: bytearray([0, 2, 0, 0x1a, 0x06]),
                     1069: bytearray([0, 3, 1, 0, 1, 0, 0x1a, 0x07]),
                     1070: bytearray([0, 2, 0, 0x1a, 0x07]),
@@ -1047,7 +1141,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1093: bytearray([0, 2, 0, 0x1e, 0x02]),
                     1094: bytearray([0, 12, 0, 0x1e, 0x03]),
                     1095: bytearray([0, 3, 1, 1, 29, 1, 0x1e, 0x03]),
-                    1096: bytearray([0, 12, 11, 4, 0x1f, 0x00]),
+                    1096: bytearray([0, 13, 11, 4, 0x1f, 0x00]),
                     1097: bytearray([0, 2, 0, 0x1f, 0x00]),
                     1098: bytearray([0, 24, 11, 4, 0x1f, 0x01]),
                     1099: bytearray([0, 2, 0, 0x1f, 0x01]),
@@ -1070,14 +1164,14 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1116: bytearray([0, 2, 0, 0x20, 0x02, 0x02]),
                     1117: bytearray([0, 3, 1, 0, 1, 0, 0x20, 0x03, 0x00]),
                     1118: bytearray([0, 2, 0, 0x20, 0x03, 0x00]),
-                    1119: bytearray([0, 2, 0, 0x20, 0x03, 0x01, 0x00]),
-                    1120: bytearray([0, 2, 0, 0x20, 0x03, 0x01, 0x01]),
-                    1121: bytearray([0, 2, 0, 0x20, 0x03, 0x01, 0x02]),
-                    1122: bytearray([0, 2, 0, 0x20, 0x03, 0x01, 0x03]),
-                    1123: bytearray([0, 2, 0, 0x20, 0x03, 0x02, 0x00]),
-                    1124: bytearray([0, 2, 0, 0x20, 0x03, 0x02, 0x01]),
-                    1125: bytearray([0, 2, 0, 0x20, 0x03, 0x02, 0x02]),
-                    1126: bytearray([0, 2, 0, 0x20, 0x03, 0x02, 0x03]),
+                    1119: bytearray([0, 2, 1, 0, 1, 0, 0x20, 0x03, 0x01, 0x00]),
+                    1120: bytearray([0, 2, 1, 0, 1, 0, 0x20, 0x03, 0x01, 0x01]),
+                    1121: bytearray([0, 2, 1, 0, 1, 0, 0x20, 0x03, 0x01, 0x02]),
+                    1122: bytearray([0, 2, 1, 0, 1, 0, 0x20, 0x03, 0x01, 0x03]),
+                    1123: bytearray([0, 2, 1, 0, 1, 0, 0x20, 0x03, 0x02, 0x00]),
+                    1124: bytearray([0, 2, 1, 0, 1, 0, 0x20, 0x03, 0x02, 0x01]),
+                    1125: bytearray([0, 2, 1, 0, 1, 0, 0x20, 0x03, 0x02, 0x02]),
+                    1126: bytearray([0, 2, 1, 0, 1, 0, 0x20, 0x03, 0x02, 0x03]),
                     1127: bytearray([0, 3, 1, 0, 1, 0, 0x20, 0x04, 0x00]),
                     1128: bytearray([0, 2, 0, 0x20, 0x04, 0x00]),
                     1129: bytearray([0, 2, 0, 0x20, 0x04, 0x01]),
@@ -1089,7 +1183,7 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1135: bytearray([0, 2, 0, 0x21, 0x01]),
                     1136: bytearray([0, 3, 1, 0, 1, 0, 0x21, 0x02]),
                     1137: bytearray([0, 2, 0, 0x21, 0x02]),
-                    1138: bytearray([0, 30, 11, 0x22, 0x00]),
+                    1138: bytearray([0, 30, 11, 0x00, 0x22, 0x00]),
                     1139: bytearray([0, 2, 0, 0x22, 0x00]),
                     1140: bytearray([0, 3, 1, 0, 1, 0, 0x22, 0x01, 0x00]),
                     1141: bytearray([0, 2, 0, 0x22, 0x01, 0x00]),
@@ -1131,8 +1225,8 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1177: bytearray([0, 2, 0, 0x27, 0x17, 0x00]),
                     1178: bytearray([0, 2, 0, 0x27, 0x19, 0x00]),
                     1179: bytearray([0, 2, 0, 0x27, 0x19, 0x00]),
-                    1180: bytearray([0, 3, 1, 0, 2, 0, 0x27, 0x1a, 0x0]),
-                    1181: bytearray([0, 2, 0, 0x27, 0x1a, 0x0]),
+                    1180: bytearray([0, 3, 1, 0, 2, 0, 0x27, 0x1a, 0x00]),
+                    1181: bytearray([0, 2, 0, 0x27, 0x1a, 0x00]),
                     1182: bytearray([0, 3, 1, 0, 1, 0, 0x27, 0x1b]),
                     1183: bytearray([0, 2, 0, 0x27, 0x1b]),
                     1184: bytearray([0, 3, 1, 0, 2, 0, 0x27, 0x1c]),
@@ -1141,13 +1235,14 @@ token_civ_code =   {256: bytearray([0, 5, 0, 0x05]),
                     1187: bytearray([0, 2, 0, 0x27, 0x1d, 0x00]),
                     1188: bytearray([0, 3, 1, 0, 1, 0, 0x27, 0x20]),
                     1189: bytearray([0, 2, 0, 0x27, 0x20]),
-                    1190: bytearray([0, 3, 1, 0, 8, 0, 0x28, 0x10]),
-                    1191: bytearray([0, 3, 0, 0x04]),
-                    1192: bytearray([0, 2, 0, 0x04]),
-                    1194: bytearray([0, 3, 0, 0x1a, 0x00]),
-                    1195: bytearray([0, 2, 0, 0x1a, 0x00]),
-                    1196: bytearray([0, 3, 0, 0x1a, 0x06]),
-                    1197: bytearray([0, 2, 0, 0x1a, 0x06]),
+                    1190: bytearray([0, 3, 1, 0, 8, 0, 0x28, 0x00]),
+                    1191: bytearray([0, 3, 1, 1, 13, 0, 0x1a, 0x04]),
+                    1192: bytearray([0, 2, 0, 0x1a, 0x04]),
+                    1193: bytearray([0, 3, 1, 1, 13, 0, 0x1a, 0x04]),
+                    1194: bytearray([0, 2, 0, 0x1a, 0x04]),
+                    1195: bytearray([0,1,0,0,0,0,0]),
+                    1196: bytearray([0, 3, 1, 0, 1, 0, 0x1a, 0x0c]),
+                    1197: bytearray([0, 2, 0, 0x1a, 0x0c]),
                     }
 
 
@@ -1208,12 +1303,12 @@ civ_code_to_token =    {"00": 257,
                         "165b": 363,
                         "165c": 365,
                         "165d": 367,
-                        "1900": 372,
+                        "1900": 370,
                         "1a00": 372,
                         "1a01": 403,
                         "1a02": 406,
                         "1a03": 408,
-                        "1a04": 412,
+                        "1a04": 1191,
                         "1a050001": 416,
                         "1a050002": 418,
                         "1a050003": 420,
@@ -1246,7 +1341,7 @@ civ_code_to_token =    {"00": 257,
                         "1a050030": 474,
                         "1a050031": 476,
                         "1a050032": 478,
-                        "1a050033": 490,
+                        "1a050033": 480,
                         "1a050034": 482,
                         "1a050035": 484,
                         "1a050036": 486,

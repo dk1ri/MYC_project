@@ -1,6 +1,8 @@
 """"
 name: v_sk.py IC705
-last edited: 20220103
+last edited: 20240311
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 parameters for SK channel
 """
 # one item for each SK channel
@@ -19,7 +21,7 @@ interface_timeout = []                  # timeout
 interface_type = []                     # interface type as Terminal, Ethernet I2C,...
 # telnet
 socket = []                     	    # sockets
-ethernet_server_started = []             # contains list of started ports
+ethernet_server_started = []            # contains list of started ports
 
 # keyboard
 data = 0                                # ASCII from keyboard

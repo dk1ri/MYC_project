@@ -1,16 +1,16 @@
 """
 name : Ic705_interface.py
-Version 01.6, 202201010
+Version 01.8, 20240311
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 Purpose : Program to control the IC-705 radio
 The program supports the MYC protocol
 Details of the MYC protocol can be found in http://dk1ri.de/myc/Description.pdf
 developed using PyCharm
-tested with win Python >= 3.9 under Win10
-Manual A7560-8EX-1 Jul 2020 and A7577-10G-EN-1
-tested with radio firmware 1.26
+tested with webbrowser under Win10
+Manual A7560D-1EX-7 Sep 2023, A7560-7EX-4 Sep 2023, A7560-8EX-6 Jan 2023
+tested with radio firmware 1.31
 Should be used with raspberry Pi Hardware (later)
-Copyright : DK1RI
-If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 
 Some explanation:
 Some configuration must be set in __config as USB Port
@@ -21,6 +21,7 @@ transceive = 1
 memory = 0
 Vfo: vfoa
 mode: USB
+except last_memory_group the program do not store the values of the radio!
 So it is up to the SK to read the start configuration of the radio
 The radio do not send configuration changes except mode and frequency, if it is operated manually;
 so manual modifying is not recommended during operating this program.
@@ -28,24 +29,16 @@ so manual modifying is not recommended during operating this program.
 Most commands work this way:
 command is received by SK -> execute (send to civ buffer (overwrite)) ->, delete SK input, lock SK input
  -> civ buffer to civ, unlock SK input
-in case of answers: civ answers analyzed and sent to all (overwrite), civ data deleted
-Some operate commands require an answer command first. This is described with the v_icomvars.ask_content variable.
-
-Some operate commands require the actual status of this or other functions to work.
-For details see v_icom_vars.ask_content variable
+in case of answers: civ answers are analyzed and sent to all (overwrite), civ data deleted
+(some CIV commands result in more than one answer )
+Some operate commands require the actual status of this or other functions (an answer command) first.
+This is described with the v_icom_vars.ask_content variable.
 
 Sending more than one command without delay is working
 
 testmode can be set in v_icom_vars.test_mode. Should be set to 1 for manual command entry.
 
-Command 271e (fixed scope bandedge) is omitted, because function is identcal to 1a02xx
-
-Missing, (things to do):
-
-1a00 raw only
-dstar and gps not 100% tested
-command 20xx and 22xx not 100% tested
-rules missing
+commands with pssible errors and missing task are documented in  __possible_errors.txt
 """
 # general
 import os, platform
@@ -89,10 +82,11 @@ while 1:
         write_log("input command timeout")
         v_icom_vars.command_time = 0
         v_icom_vars.input_locked = 0
-    if v_icom_vars.civ_watchdog_time != 0 and time.time() - v_icom_vars.civ_watchdog_time > v_icom_vars.command_timeout:
+    if v_icom_vars.civ_watchdog_time != 0 and ((time.time() - v_icom_vars.civ_watchdog_time) > v_icom_vars.command_timeout):
         write_log("radio not responding")
         v_icom_vars.civ_watchdog_time = 0
         v_icom_vars.input_locked = 0
+        v_icom_vars.Civ_out = bytearray([])
 
     if v_icom_vars.command_at_start > 0:
         # command at_start
@@ -100,8 +94,8 @@ while 1:
 
     # read SK
     if v_icom_vars.input_locked == 0:
-        # poll_inputs()
-        win_terminal(0, 0)
+        poll_inputs()
+        # win_terminal(0, 0)
         # analyzes the input_buffers:
         poll_sk_input_buffer()
 
@@ -112,12 +106,13 @@ while 1:
             v_icom_vars.civ_watchdog_time = time.time()
         try:
             v_icom_vars.icom_usb.write(v_icom_vars.Civ_out)
+            print ("data to device:", v_icom_vars.Civ_out)
             v_icom_vars.Civ_out = bytearray([])
         except NameError:
             write_log("com port " + v_icom_vars.comport + " not found")
             sys.exit()
 
-    # read USB
+    # read USB (device)
     try:
         b = v_icom_vars.icom_usb.in_waiting
         if b > 0:
@@ -127,7 +122,7 @@ while 1:
                 v_icom_vars.Civ_in.extend(bytearray([int(a[temp1])]))
                 temp1 += 1
             if v_icom_vars.test_mode == 1:
-                print("civin ", v_icom_vars.Civ_in)
+                print("from device:", v_icom_vars.Civ_in)
     except NameError:
         write_log("com port " + v_icom_vars.comport + " not found")
         sys.exit()

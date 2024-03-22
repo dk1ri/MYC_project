@@ -1,0 +1,32 @@
+MYC Interface: commands with possible errors
+20240314
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
+
+Missing, (things to do):
+dstar and gps not 100% tested
+command 20xx and 22xx not 100% tested
+some rules missing
+IC705 switch to LSB sometime, reason not found
+
+358	1658	            TX bandwidth: seems to work, but not found in the menu
+371                     not used
+372 -402    1a00        sometimes errors (nok): reason not found.
+                        if store data result is ok: subsequent read deliveres old data
+413 414                 not used
+913         1a05286     manual gps pos not readable (no GPS?)
+953 934     1a050312    not working (no GPS?)
+981 982     1a050326    not working (no GPS?)
+951-954     1a050361 62 not found in menu (no GPS?)
+1059-1062   1a050365 66 seem to be ok (but no tuner connected)
+1073        1a0a        share picture -> nok (no DV active?)
+1086 1087   1c01        do not work (no tuner connected)
+1102-1131   20xx        some commands are ok but tested (no DV)
+1138 1139   2200        not tested, no DV
+1142        220101      not tested, no DV
+1156-1158   24xx        seem to be ok but no manual entry, not founf on menu ; function?
+1163-1167   2700 271x   cannot be used; data are send continously
+1180 1181   271a00      ok , but menu not found
+1196 1197   1a0c        nok: PRT MONI: no manual entry, not founf on menu ; function?
+
+1a050369 - 385          (fixed scope bandedge) is 4th edge of 1a0188 - 238

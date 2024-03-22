@@ -1,5 +1,5 @@
 ﻿' name : ___announcements IC705
-' last edited: 20211205
+' last edited: 20240124
 ' the format matches the bascom compiler
 ' python read lines starting with 'D' only
 '
@@ -7,13 +7,13 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;IC705 Interface python;V01.3;1;175;2;965;1-1"
+Data "0;m;DK1RI;IC705 Interface;V01.3;1;175;2;965;1-1"
 '
 Announce1:
-'Befehl 256 &H0100 Code 05 + 00
+'Befehl 256 &H0100 Code 05 (+ 009
 'Frequenz schreiben
 'write Frequency
-Data "256;op,freqency;1;269970000,{30000 to 199999999,400000000 to 469999999};lin;Hz"
+Data "256;op,freqency;1;269970000, ,{1_30000to199999999,1_400000000to469999999};lin;Hz"
 '
 Announce2:
 'Befehl 257 &H0101 Code 03
@@ -25,26 +25,26 @@ Announce3:
 'Befehl 258 &H0102 Code 01 + 04 + 06
 'Mode schreiben
 'write mode
-Data "258;os,mode;1;0,LSB;1,USB;1,AM;3,CW;4,RTTY;5,FM;6,WFM;7,CW-R;8,RTTY-R;9,DV"
+Data "258;op,mode;1;10,mode,{LSB,USB,AM,CW,RTTY,FM,WFM,CW-R,RTTY-R,DV};lin; ;3,filter,{1,2,3};lin;"
 '
 Announce4:
 'Befehl 259 &H0103 Code 04 + 01+ 06
 'Mode lesen
 'read mode
-Data "259;as,as258"
+Data "259;ap,as258"
 '
 Announce5:
 'Befehl 260 &H0104 Code 02
 'Bandegrenze lesen
 'read band edge
-Data "260;ap,band edge frequencies;1;269970000,{30000 to 199999999,400000000 to 469000000},low,;lin;Hz;"
-Data "260;ap;269970000,{30000 to 199999999,400000000 to 469000000},high;lin;Hz"
+Data "260;ap,band edge frequencies;1;269970000,low,{1_30000to199999999,1_400000000to469000000};lin;Hz;"
+Data "260;ap;269970000,high,{1_30000to199999999,1_400000000to469000000};lin;Hz;9,CHAPTER,band edge"
 '
 Announce6:
 'Befehl 261 &H0105 Code 07, 08
 'Vfo / memory setzen
 'set Vfo / memory 
-Data "261;ou,set vfo / memory;1;0,VFO mode;1,Memory mode"
+Data "261;os,vfo / memory;1;0,VFO;1,memory"
 '
 Announce7:
 'Befehl 262 &H0106 Code 07
@@ -56,28 +56,28 @@ Announce8:
 'Befehl 263 &H0107 Code 08
 'select memory
 'select memory
-Data "263;op,vfo to memory;1;104,{0 to 99,144C1,144C2,430C1,430C2};lin;-"
+Data "263;op,select memory;1;104,{1_0to99,144C1,144C2,430C1,430C2};lin;;6,CHAPTER,memory"
 '
 Announce9:'
 'Befehl 264 &H0108 Code 08 A0
 'memory Gruppe
 'memory group
-Data "264;op,memory group;1;100,{0 to 99},chanalgroup;lin;-"
+Data "264;op,memory;1;100,group,{1_0to99};lin;;6,CHAPTER,memory"
 '
 Announce10:
-'Befehl 265 &H0109 Code 09 - 0b
+'Befehl 265 &H0109 Code 09 0A 0B
 'Vfo - memory Funktionen
 'vfo - memory functions
-Data "265;ou,vfo - memory funtions;1;0,idle;1,copy to memory;2,copy to vfo;3,clear memory"
+Data "265;ou,vfo-memory functions;1;0,idle;1,copy to memory;2,copy to vfo;3,clear memory;6,CHAPTER,memory"
 '
 Announce11:
-'Befehl 266 &H010a Code 0d
+'Befehl 266 &H010a Code 0D
 'Offset
 'offset
-Data "266;op,duplex frequency;1;100000;lin;100Hz"
+Data "266;op,offset;1;100000;lin;100Hz"
 '
 Announce12:
-'Befehl 267 &H010b Code 0c
+'Befehl 267 &H010b Code 0C
 'Offset
 'offset
 Data "267;ap,as266"
@@ -86,37 +86,37 @@ Announce13:
 'Befehl 268 &H010c Code 0e00 - 24
 'start scan mode
 'start scan mode
-Data "268;os,start scan mode;1;0,stop;1,prog memory;2,prog;3,frequncy;4,fine;5,fine delta;6,memory;7,select memory;8,select mode;4,CHAPTER;scan"
+Data "268;os,start scan mode;1;0,stop;1,prog/memory;2,prog;3,delta-f;4,fine;5,fine delta;6,memory;7,select memory;8,select mode;4,CHAPTER,scan"
 '
 Announce14:
 'Befehl 269 &H010d Code 0ea1 - a7
-'scan span waehlen
-'select scan span
-Data "269;os,select scan span;1;0,5kHz;1,10kHz;2,20kHz;3,50kHz;4,100kHz;5,500kHz;6,1MHz;4,CHAPTER;scan"
+'delta f scan span waehlen
+'delta f select scan span
+Data "269;os,delta f scan span;1;0,5kHz;1,10kHz;2,20kHz;3,50kHz;4,100kHz;5,500kHz;6,1MHz;4,CHAPTER,scan"
 '
 Announce15:
-'Befehl 270 &H010e Code 0eb0 3 byte / -
-'set chanal as select unselect
-'set chanal as select unselect
-Data "270;ou,set chanal as select unselect;1;0,idle;1,set;4,CHAPTER;scan"
+'Befehl 270 &H010e Code 0eb0 0eb1
+'set / clear select chanal setting
+'set clear select chanal setting
+Data "270;ou,set/clear select chanal;1;0,idle;1,clear;2,set;4,CHAPTER,scan"
 '
 Announce16:
 'Befehl 271 &H010f Code 0eb1
 'select chanal
 'select chanal
-Data "271;os,select chanal;1;0,1;1,2;2,3;CHAPTER;scan"
+Data "271;os,select chanal;1;0,1;1,2;2,3;4,CHAPTER,scan"
 '
 Announce17:
 'Befehl 272 &H0110 Code 0eb2
 'Set select memory scan
 'Set select memory scan
-Data "272;os,Set select memory scan;1;0,all;1,sel1;2,sel2;3,sel3;4,CHAPTER;scan"
+Data "272;os,Set select memory scan;1;0,all;1,sel1;2,sel2;3,sel3;4,CHAPTER,scan"
 '
 Announce18:
 'Befehl 273 &H0111 Code 0ed0, 0ed3
-'scan
-'scan
-Data "273;os,scan resume;1;0,off;1,on"1
+'scan resume
+'scan resume
+Data "273;os,scan resume;1;0,off;1,on;4,CHAPTER,scan"
 '
 Announce19:
 'Befehl 274 &H0112 Code 0f  3 Byte / -
@@ -128,7 +128,7 @@ Announce20:
 'Befehl 275 &H0113 Code 0f
 'split
 'split
-Data "275;as,split;1;0,off;1,on;2,DUP-;3,DUP+"
+Data "275;as,as274"
 '
 Announce21:
 'Befehl 276 &H0114 Code 10
@@ -158,13 +158,13 @@ Announce25:
 'Befehl 280 &H0118 Code 13
 'aktuelle Sprachausgabe
 'actual speech
-Data "280;os,speech;1;0,all;1,freq and smeter;2,mode"
+Data "280;ou,speech;1;0,idle;1,all;2,freq and smeter;3,mode;7,CHAPTER,function"
 '
 Announce26:
 'Befehl 281 &H0119 Code 1401
 'Lautstärke
 'AF level
-Data "281;op,AF level;1;256;lin;%"
+Data "281;op,AF level;1;256, ,{0.39_0to99.70};lin;%"
 '
 Announce27:
 'Befehl 282 &H011a Code 1401
@@ -176,7 +176,7 @@ Announce28:
 'Befehl 283 &H011b Code 1402
 'Hf Pegel
 'RF level
-Data "283;op,RF level;1;256,;lin;%"
+Data "283;op,RF level;1;256, ,{0.39_0to99.70};lin;%;7,CHAPTER,control"
 '
 Announce29:
 'Befehl 284 &H011c Code 1402
@@ -188,7 +188,7 @@ Announce30:
 'Befehl 285 &H011d Code 1403
 'Squelch
 'Squelch
-Data "285;op,Squelch;1;256[0 to 100};lin;%"
+Data "285;op,Squelch;1;256, ,{0.39_0to99.70};lin;%;7,CHAPTER,control"
 '
 Announce31:
 'Befehl 286 &H011e Code 1403
@@ -200,7 +200,7 @@ Announce32:
 'Befehl 287 &H011f Code 1406
 'Noise reduction
 'Noise reduction
-Data "287;op,Noise reduction;1;256;lin;%"
+Data "287;op,Noise reduction;1;256, ,{0.39_0to99.70};lin;%;7,CHAPTER,control"
 '
 Announce33:
 'Befehl 288 &H0120 Code 1406
@@ -212,7 +212,7 @@ Announce34:
 'Befehl 289 &H0121 Code 1407
 'inner Twin PBT
 'inner Twin PBT
-Data "289;op,inner Twin PBT;1;256;lin;-"
+Data "289;op,inner Twin PBT;1;256, ;lin;-"
 '
 Announce35:
 'Befehl 290 &H0122 Code 1407
@@ -224,7 +224,7 @@ Announce36:
  'Befehl 291 &H0123 Code 1408
 'outer Twin PBT
 'outer Twin PBT
-Data "291;op,outer Twin PBT;1;256;lin;-"
+Data "291;op,outer Twin PBT;1;256, ;lin;-"
 '
 Announce37:
 'Befehl 292 &H0124Code 1408
@@ -236,7 +236,7 @@ Announce38:
 'Befehl 293 &H0125 Code 1409
 'CW Pitch
 'CW Pitch
-Data "293;op,CW Pitch;1;256,{300 to 900};lin;Hz"
+Data "293;op,CW Pitch;1;256, ,{2.35_300to900};lin;Hz;2,CHAPTER,CW"
 '
 Announce39:
 'Befehl 294 &H0126 Code 1409
@@ -248,7 +248,7 @@ Announce40:
 'Befehl 295 &H0127 Code 140a
 'Hf Leistung
 'Rf power
-Data "295;op,Rf power;1;256,{0 to 100};lin;%"
+Data "295;op,Rf power;1;256, ,{0.39_0to99.7};lin;%;7,CHAPTER,control"
 '
 Announce41:
 'Befehl 296 &H0128 Code 140a
@@ -260,7 +260,7 @@ Announce42:
 ''Befehl 297 &H0129 Code 140b
 'Mic Pegel
 'Mic level
-Data "297;op,Mic level;1;256,{0 to 100};lin;%"
+Data "297;op,Mic level;1;256, ,{0.39_0to99.70};lin;%;7,CHAPTER,control"
 '
 Announce43:
 'Befehl 298 &H012b Code 140b
@@ -272,7 +272,7 @@ Announce44:
 'Befehl 299 &H012b Code 140c
 'CW Geschwindigkeit
 'key speed
-Data "299;op,key speed;1;256,{6 to 48};lin;wpm"
+Data "299;op,key speed;1;256, ,{0.16_6to48};lin;wpm;2,CHAPTER,CW"
 '
 Announce45:
 'Befehl 300 &H012c Code 140c
@@ -284,19 +284,19 @@ Announce46:
 'Befehl 301 &H012d Code 140d
 'Notch
 'Notch
-Data "301;op,Notch;1;256,{0 to 100};lin;%"
+Data "301;op,Notch position;1;256, ,{0.39_0to98};lin;%;7,CHAPTER,control"
 '
 Announce47:
 'Befehl 302 &H012e Code 140d
 'Notch
 'Notch
-'Data "302;ap,as301"
+Data "302;ap,as301"
 '
 Announce48:
 'Befehl 303 &H012f Code 140e
 'Comp
 'Comp
-Data "303;op,comp;1;256,{0 to 10};lin;-"
+Data "303;op,Compress;1;256, ,{0.039_0to9.8};lin;-;7,CHAPTER,control"
 '
 Announce49:
 'Befehl 304 &H0130 Code 140e
@@ -308,7 +308,7 @@ Announce50:
 'Befehl 305 &H0131 Code 140f
 'Break in delay
 'Break in delay
-Data "305;op,break in delay;1;256,{2.0 to 13.0};lin;d"
+Data "305;op,break in delay;1;256, ,{0.043_2to13};lin;d;2,CHAPTER,CW"
 '
 Announce51:
 'Befehl 306 &H0132 Code 140f
@@ -320,7 +320,7 @@ Announce52:
 'Befehl 307 &H0133 Code &H1412
 'NB Pegel
 'NB level
-Data "307;op,NB level;1;256,{0 to 100};lin;%"
+Data "307;op,NB level;1;256, ,{0.39_0to98};lin;%;7,CHAPTER,control"
 '
 Announce53:
 'Befehl 308 &H0134Code &H1412
@@ -332,7 +332,7 @@ Announce54:
 'Befehl 309 &H0135 Code 1415
 'Monitor Pegel
 'monitor level
-Data "309;op,monitor level;1;256,{0 to 100};lin;%"
+Data "309;op,monitor level;1;256, ,{0.39_0to98};lin;%;7,CHAPTER,control"
 '
 Announce55:
 'Befehl 310 &H0136 Code 1415
@@ -344,7 +344,7 @@ Announce56:
 'Befehl 311 &H0137 Code 1416
 'VOX Pegel
 'VOX level
-Data "311;op,vox level;1;256,{0 to 100};lin;%"
+Data "311;op,vox level;1;256, ,{0.39_0to98};lin;%;7,CHAPTER,control"
 '
 Announce57:
 'Befehl 312 &H0138 Code 1416
@@ -356,7 +356,7 @@ Announce58:
 'Befehl 313 &H0139 Code 1417
 'AnitVOX Pegel
 'AntiVOX level
-Data "313;op,antivox level;1;256,{0 to 100};lin;%"
+Data "313;op,antivox level;1;256, ,{0.39_0to98};lin;%;7,CHAPTER,control"
 '
 Announce59:
 'Befehl 314 &H013a Code 1417
@@ -368,7 +368,7 @@ Announce60:
 'Befehl 315 &H013b Code 1419
 'Helligkeit
 'brightness
-Data "315;op,brightness;1;256,{0 to 100};lin;%"
+Data "315;op,brightness;1;256 ,,{0.39_0to98};lin;%;7,CHAPTER,control"
 '
 Announce61:
 'Befehl 316 &H013c Code 1419
@@ -380,55 +380,55 @@ Announce62:
 'Befehl 317 &H013d Code 1501
 'noise or S-meter squelch status
 'noise or S-meter squelch status
-Data "317;as,noise or S-meter squelch status;1;0,off;1,on "
+Data "317;as,noise or S-meter squelch;1;0,close;1,open;5,CHAPTER,METER"
 '
 Announce63:
 'Befehl 318 &H013e Code 1502
 'S meter Pegel
 's meter level
-Data "318;ap,s meter level;1;256,{121,{0 to 9},135,{0 to 62}};lin;s,dB;w,METER;100"
+Data "318;ap,s meter level;1;256, ,{0.6_0to114};lin;dBS0;5,CHAPTER,METER"
 '
 Announce64:
 'Befehl 319 &H013f Code 1505
 'various squelch function’s status
 'various squelch function’s status
-Data "319;as,various squelch functions status;1;0,off;1,on "
+Data "319;as,various squelch;1;0,close;1,open;5,CHAPTER,METER"
 '
 Announce65:
 'Befehl 320 &H0140 Code 1511
 'Leistung
 'PO meter
-Data "320;ap,PO meter;1;256,{0 to 120};lin;%;w,METER;100"
+Data "320;ap,PO meter;1;256, ,{0.5_0to120};lin;%;5,CHAPTER,METER"
 '
 Announce66:
 'Befehl 321 &H0141 Code 1512
 'SWR meter
 'SWR meter
-Data "321;ap,SWR meter;1;49,{1.00 to 1.50},32,{1,51 to 2.00},40,{2,01 to 3,00,105,{3,01 to 6};lin;-;w,METER;100"
+Data "321;ap,SWR meter;1;255, ,{0.01_1.00to1.50,0.014_1.51to2.00,0.25_2.01to3.00,0.022_3.01to6.00};lin;-;5,CHAPTER,METER"
 '
 Announce67:
 'Befehl 322 &H0142 Code 1513
 'ALC meter
 'ALC meter
-Data "322;ap,ALC meter;1;121,{0 to 1000};lin;%;w,METER;100"
+Data "322;ap,ALC meter;1;121, ;lin;-;5,CHAPTER,METER"
 '
 Announce68:
 'Befehl 323 &H0143 Code 1514
 'Comp meter
 'comp meter
-Data "323;ap,comp meter;1;242,{0 to 30};lin;dB"
+Data "323;ap,comp meter;1;242, ,{0.115_0.0to15.0,0.13_15.1to25.5};lin;dB;5,CHAPTER,METER"
 '
 Announce69:
 'Befehl 324 &H0144 Code 1515
 'Vsupply meter
 'vsupply meter
-Data "324;ap,v supply;1;242,{122,{0 to 5},100,{5 to 16};lin;V;w,METER;100"
+Data "324;ap,v supply;1;242, ,{0.066_0.0to16};lin;V;5,CHAPTER,METER"
 '
 Announce70:
 'Befehl 325 &H0145 Code 1516
 'Isupply meter
 'isupply meter
-Data "325;ap,i supply;1;242,{122,{0 to 2},100,{2 to 4}};lin;A;w,METER;100"
+Data "325;ap,i supply;1;242, ,{0.0165_0.00to4.00};lin;A;5,CHAPTER,METER"
 '
 Announce71:
 'Befehl 326 &H0146 Code 1602
@@ -446,13 +446,13 @@ Announce73:
 'Befehl 328 &H0148 Code 1612
 'AGC
 'AGC
-Data "328;os,AGC;1;0,off;1,fast;2,med;3,slow"
+Data "328;os,AGC;1;0,fast;1,med;2,slow"
 '
 Announce74:
 'Befehl 329 &H0149 Code 1612
 'AGC
 'AGC
-Data "329;as,AGC;1;0,not valid;1,fast;2,med;3,slow"
+Data "329;as,as328"
 '
 Announce75:
 'Befehl 330 &H014a Code 1622
@@ -530,7 +530,7 @@ Announce87:
 'Befehl 342 &H0156 Code 1645
 'Monitor
 'Monitor
-Data "342;os,,Monitor;1;0,off;1,on"
+Data "342;os,Monitor;1;0,off;1,on"
 '
 Announce88:
 'Befehl 343 &H0157 Code 1645
@@ -542,7 +542,7 @@ Announce89:
 'Befehl 344 &H0158 3Code 1646
 'VOX
 'VOX
-Data "344;os,VOX;1;0,off;1,on"
+Data "344;os,VOX;1;0,off;1,on;5,CHAPTER,voice"
 
 Announce90:
 'Befehl 345 &H0159 Code 1646
@@ -554,7 +554,7 @@ Announce91:
 'Befehl 346 &H015a Code 1647
 'BK
 'BK
-Data "346;os,BK;1;0,off;1,semi;2,full"
+Data "346;os,BK;1;0,off;1,semi;2,full;2,CHAPTER,CW"
 '
 Announce92:
 'Befehl 347 &H015b 2 Code 1647
@@ -578,7 +578,7 @@ Announce95:
 'Befehl 350 &H015e Code 164b
 'DTCS
 'DTCS
-Data "350;os,manual notch;1;0,off;1,on"
+Data "350;os,DTCS;1;0,off;1,on"
 '
 Announce96:
 'Befehl 351 &H015f Code 164b
@@ -590,7 +590,7 @@ Announce97:
 'Befehl 352 &H0160 Code 164f
 'Twin Peak Filter
 'Twin Peak Filter
-Data "352;os,Twin Peak Filter;1;0,off;1,on"
+Data "352;os,Twin Peak Filter;1;0,off;1,on;4,CHAPTER,rtty"
 '
 Announce98:
 'Befehl 353 &H0161 Code 164f
@@ -599,13 +599,13 @@ Announce98:
 Data "353;as,as352"
 '
 Announce99:
-'Befehl 354 &H0162 Code 1650 3 byte / -
+'Befehl 354 &H0162 Code 1650
 'Dial lock
 'Dial lock
 Data "354;os,Dial lock;1;0,off;1,on"
 '
 Announce100:
-'Befehl 355 &H0163 Code 1650 2 byte / 3 byte
+'Befehl 355 &H0163 Code 1650
 'Dial lock
 'Dial lock
 Data "355;as,as354"
@@ -638,7 +638,7 @@ Announce105:
 'Befehl 360 &H0168 Code 1658
 'SSB transmit bandwidth
 'SSB transmit bandwidth
-Data "360;os,SSB transmit bandwidth;1;0,wide;1,mid;2,narrow"
+Data "360;os,SSB transmit bandwidth;1;0,wide;1,mid;2,narrow;16,CHAPTER,tone control"
 '
 Announce106:
 'Befehl 361 &H0169 Code 1658
@@ -650,7 +650,7 @@ Announce107:
 'Befehl 361 &H016a Code 0x165b
 'DSQL
 'DSQL
-Data "362;os,DSQL;1;0,0ff;1,DSQL;2,CSQL"
+Data "362;os,DSQL;1;0,0ff;1,DSQL;2,CSQL;2,CHAPTER,DV"
 '
 Announce108:
 'Befehl 363 &H016b Code 0x165b
@@ -662,7 +662,7 @@ Announce109:
 'Befehl 364 &H016c Code 0x165c
 'GPS tx mode
 'GPS tx mode
-Data "364;os,GPS tx mode;1;0,0ff;1,PMS;2,NMEA"
+Data "364;os,GPS tx mode;1;0,0ff;1,PMS/D-PRS;2,NMEA;3,CHAPTER,GPS"
 '
 Announce110:
 'Befehl 365 &H016d Code 0x165c
@@ -674,7 +674,7 @@ Announce111:
 'Befehl 366 &H016e Code 0x165d
 'Tone Sqelch
 'tone squelch
-Data "366;os,tone squelch;1;0,0ff;1,tone;2,TSQL;3,TCS;4,DTCS-T;5,TONE(T)/DTCS(R),;6,DTCS(T)/TSQL(R);7,TONE(T)/TSQ(R)"
+Data "366;os,tone squelch fuction;1;0,off;1,tone;2,TSQL;3,DTCS;4,DTCS-T;5,TONE(T)/DTCS(R);6,DTCS(T)/TSQL(R);7,TONE(T)/TSQ(R)"
 '
 Announce112:
 'Befehl 367 &H016f Code 0x165d
@@ -683,280 +683,251 @@ Announce112:
 Data "367;as,as366"
 '
 Announce113:
-'Befehl 368 &H170 Code 17 3 byte + string / -
+'Befehl 368 &H170 Code 17
 'Cw message
 'Cw message
-Data "368;om,Cw message;1;30,{ALPHA2}"
+Data "368;oa,Cw message;30,{ALPHA2};2,CHAPTER,CW"
 '
 Announce114:
 'Befehl 369 &H0171 Code 18
 'Aus / Einschalten
 'switch off / on
-Data "370;os,main switch;1;0,off;1,on"
+Data "369;os,main switch;1;0,off;1,on"
 '
 Announce115:
-'Befehl 370 &H0172 Code 19
+'Befehl 370 &H0172 Code 1900
 'ID
 'Id
-Data "370;aa,id;1;b"
+Data "370;aa,ID;b"
 '
 Announce116:
 'Befehl 371 &H0173 Code 1a00
 'memory (keine Umwandlung)
 'memory raw data
-Data "371;om,memory raw data;10004,{100,groupMUL100,channelADD5,{144C1,144C2,430C1,430C2}};110;6,CHAPTER;memory"
+# Data "371;om,memory raw data;115;10015,{100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2}};6,CHAPTER,memory"
 '
 Announce117:
 'Befehl 372 &H0174 Code 1a00
 'memory (keine Umwandlung)
 'memory raw data
-Data "372;am,as371"
+Data "372;am,memory raw data;115;10015,{100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2}};6,CHAPTER,memory"
 '
 Announce118:
 'Befehl 373 &H0175 Code 0x1a00
 'memory Frequenz
 'memory frequency
-Data "373;op, frequency;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};"
-Data "373;op;269970000,{30000 to 199999999,40000000 to 469000000};lin;Hz;6,CHAPTER;memory"
+Data "373;op,memory frequency;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split430C1,split 430C2}};"
+Data "373;op;269970000,{1_30000to199999999,1_400000000to469000000};lin;Hz;6,CHAPTER,memory"
 '
 Announce119:
 'Befehl 374 &H0176  Code 0x1a00
 'memory Frequenz
 'memory frequency
-Data "374;ap,memory frequency;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};"
-Data "374;ap;269970000{30000 to 199999999.40000000 to 469000000};lin;Hz;6,CHAPTER;memory"
+Data "374;ap,as373"
 '
 Announce120:
 'Befehl 375 &H0177 Code 0x1a00
 'memory split select
 'memory split select
-Data "375;os,memory split select;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};0,split off;1,split on;"
-Data "375;os;0,off;1,sel1;2,sel2;3,sel3;6,CHAPTER;memory"
+Data "375;op,memory split select;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};"
+Data "375;op;2,split,{off,on};lin;;3,select,{off,1,2,3};lin;;6,CHAPTER,memory"
 '
 Announce121:
 'Befehl 376 &H0178  Code 0x1a00
 'memory split select
 'memory split select
-Data "376;as,memory split / select;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};0,split off;1,split on;"
-Data "376;as;0,off;1,0n;0,off;1,sel1;2,sel2;3,sel3;6,CHAPTER;memory"
+Data "376;ap,as375"
 '
 Announce122:
 'Befehl 377 &H0179 Code 0x1a00
 'memory mode filter
 'memory mode filter
-Data "377;os,memory mode filter;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};"
-Data "377;os;0,LSB;1,USB;2,AM;3,CW;4,RTTY;5,FM;6,WFM;7,CWR;8,RTTYR;9,DV;0,fIL1;1,fil2;2,fil3;6,CHAPTER;memory"
+Data "377;op,memory mode filter;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};"
+Data "377;op;10,mode,{LSB,USB,AM,CW,RTTY,FM,WFM,CWR,RTTYR,DV};lin;;3,filter,{1,2,3};lin;;6,CHAPTER,memory"
 '
 Announce123:
 'Befehl 378 &H017a  Code 0x1a00
 'memory mode filter
 'memory mode filter
-Data "378;as,memory mode filter;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};"
-Data "378;as;0,LSB;1,USB;2,AM;3,CW;4,RTTY;5,FM;6,WFM;7,CWR;8,RTTYR;9,DV;0,fIL1;1,fil2;2,fil3;6,CHAPTER;memory"
+Data "378;ap,as377"
 '
 Announce124:
 'Befehl 379 &H017b Code 0x1a00
 'memory data mode
 'memory data mode
-Data "379;os,data mode;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};0,off;1,on;6,CHAPTER;memory"
+Data "379;os,data mode;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};0,off;1,on;6,CHAPTER,memory"
 '
 Announce125:
 'Befehl 380 &H017c  Code 0x1a00
 'memory data mode
 'memory data mode
-Data "380;as,data mode;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};0,off;1,on;6,CHAPTER;memory"
+Data "380;as,as379
 '
 Announce126:
 'Befehl 381 &H017d Code 0x1a00
-'memory duplex
-'memory duplex
-Data "381;os,memory duplex tone;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};"
-Data "381;os;0,off;1,-;2,+;6,CHAPTER;memory"
+'memory duplex tone
+'memory duplex tone
+Data "381;op,memory duplex tone;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};"
+Data "381;op;3,duplex,{off,-,+};lin;;4,tone,{off,tone,TQSL,DTCS;lin;;6,CHAPTER,memory"
 '
 Announce127:
 'Befehl 382 &H017e  Code 0x1a00
-'memory duplex
-'memory duplex
-Data "382;as,memory duplex ton;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};"
-Data "382;as;0,off;1,-;2,+;0,off;1,tone,2,TQSL;3,DTCS;6,CHAPTER;memory"
-'
+'memory duplex tone
+'memory duplex tone
+Data "382;ap,as381"
+;
 Announce128:
 'Befehl 383 &H017f Code 0x1a00
 'memory digital sqelch
 'memory digital sqelch
-Data "383;os,memory digital sqelch;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};0,off;1,on;6,CHAPTER;memory"
+Data "383;os,memory digital sqelch;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};0,off;1,on;6,CHAPTER,memory"
 '
 Announce129:
 'Befehl 384 &H0180  Code 0x1a00 4 byte / 5 byte
 'memory digital sqelch
 'memory digital sqelch
-Data "384;as,memory digital squelch;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};0,off;1,on;6,CHAPTER;memory"
+Data "384;as,as383"
 '
 Announce130:
 'Befehl 385 &H0181 Code 0x1a00
 'memory repeater tone
 'memory repeater tone
-Data "385;os,memory repeater tone;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};"
-Data "385;os;0,67.0;1,69.3;2,71.9;3,74.4;4,77,0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
-Data "385;os;12,100.0;13,103.5;14,107,2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
+Data "385;os,memory repeater tone;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};"
+Data "385;os;0,67.0;1,69.3;2,71.9;3,74.4;4,77.0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
+Data "385;os;12,100.0;13,103.5;14,107.2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
 Data "385;os;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;26,159.8;27,162.2;28,165.5;29,167.9;"
 Data "385;os;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
-Data "385;os;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1,;6,CHAPTER;memory"
+Data "385;os;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1;6,CHAPTER,memory"
 '
 Announce131:
 'Befehl 386 &H0182  Code 0x1a00
 'memory repeater tone
 'memory repeater tone
-Data "386;as,memory repater tone;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};"
-Data "386;as;0,67.0;1,69.3;2,71.9;3,74.4;4,77,0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
-Data "386;as;12,100.0;13,103.5;14,107,2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
-Data "386;as;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;26,159.8;27,162.2;28,165.5;29,167.9;"
-Data "386;as;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
-Data "386;as;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1;6,CHAPTER;memory"
+Data "386;as,as385"
 '
 Announce132:
 'Befehl 387 &H0183 Code 0x1a00
 'memory tone sqelch
 'memory tone sqelch
-Data "387;os,memory tone sqelch;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};"
-Data "387;os;0,67.0;1,69.3;2,71.9;3,74.4;4,77,0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
-Data "387;os;12,100.0;13,103.5;14,107,2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
+Data "387;os,memory tone sqelch;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};"
+Data "387;os;0,67.0;1,69.3;2,71.9;3,74.4;4,77.0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
+Data "387;os;12,100.0;13,103.5;14,107.2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
 Data "387;os;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;26,159.8;27,162.2;28,165.5;29,167.9;"
 Data "387;os;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
-Data "387;os;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1;6,CHAPTER;memory"
+Data "387;os;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1;6,CHAPTER,memory"
 '
 Announce133:
 'Befehl 388 &H0184  Code 0x1a00
 'memory tone sqelch
 'memory tone sqelch
-Data "388;as,memory tone squelch;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};"
-Data "388;as;0,67.0;1,69.3;2,71.9;3,74.4;4,77,0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
-Data "388;as;12,100.0;13,103.5;14,107,2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
-Data "388;as;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;26,159.8;27,162.2;28,165.5;29,167.9;"
-Data "388;as;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
-Data "388;as;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1;6,CHAPTER;memory"
+Data "388;as,as387"
 '
 Announce134:
 'Befehl 389 &H0185 Code 0x1a00
 'memory DCTS
 'memory DCTS
-Data "389;os,memory DTCS;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};"
-Data "389;os;0,NN;1,NR;2,RN;3,RR;0,23;1,25;2,26;3,31;4,32;5,36;6,43;7,47;8,51;9,53;10,54;"
-Data "389;os;11,65;12,71;13,72;14,73;15,74;16,114;17,115;18,116;19,122;20,125;"
-Data "389;os;21,131;22,132;23,134;24,143;25,145;26,152;27,155;28,156;29,162;30,165"
-Data "389;os;31,172;32,174;33,205;34,212;35,223;36,225;37,226;38,243;39,244;40,245;"
-Data "389;os;41,246;42,251;43,252;44,255;45,261;46,263;47,265;48,266;49,271;50,274;"
-Data "389;os;51,306;52,311;53,315;54,325;55,331;56,332;57,343;58,346;59,351;60,356;"
-Data "389;os;61,364;62,365;63,371;64,411;65,412;66,413;67,423;68,431;69,432;70,445;"
-Data "389;os;71,446;72,452;73,454;74,455;75,462;76,464;77,465;78,466;79,503;80,506;"
-Data "389;os;81,516;82,523;83,526;84,532;85,546;86,565;87,606;88,612;89,624;90,627;"
-Data "389;os;91,631;92,632;93,654;94,662;95,664;96,703;97,712;98,723;99,731;100,732;101,734;102,743;103,754;6,CHAPTER;memory"
+Data "389;op,memory DTCS;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};"
+Data "389;op;4,,{normal,RX reverse,TX reverse,TX RX reverse;lin;;103,{23,25,26,31,32,36,43,47,51,53,54,65,71,72,73,74,114,115,116,122,125,"
+Data "389;op;131,132,134,143,145,152,155,156,162,165,172,174,205,212,223,225,226,243,244,245,"
+Data "389;op;246,251,252,255,261,263,265,266,271,274,306,311,315,325,331,332,343,346,351,356,"
+Data "389;op;364,365,371,411,412,413,423,431,432,445,446,452,454,455,462,464,465,466,503,506,"
+Data "389;op;516,523,526,532,546,565,606,612,624,627,631,632,654,662,664,703,712,723,731,732,734,743,754};lin;;6,CHAPTER,memory"
 '
 Announce135:
 'Befehl 390 &H0186  Code 0x1a00
 'memory DCTS
 'memory DCTS
-Data "390;as,memory DTCS;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};"
-Data "390;as;0,NN;1,NR;2,RN;3,RR;0,23;1,25;2,26;3,31;4,32;5,36;6,43;7,47;8,51;9,53;10,54;"
-Data "390;as;11,65;12,71;13,72;14,73;15,74;16,114;17,115;18,116;19,122;20,125;"
-Data "390;1as;21,131;22,132;23,134;24,143;25,145;26,152;27,155;28,156;29,162;30,165"
-Data "390;as;31,172;32,174;33,205;34,212;35,223;36,225;37,226;38,243;39,244;40,245;"
-Data "390;as;41,246;42,251;43,252;44,255;45,261;46,263;47,265;48,266;49,271;50,274;"
-Data "390;as;51,306;52,311;53,315;54,325;55,331;56,332;57,343;58,346;59,351;60,356;"
-Data "390;as;61,364;62,365;63,371;64,411;65,412;66,413;67,423;68,431;69,432;70,445;"
-Data "390;as;71,446;72,452;73,454;74,455;75,462;76,464;77,465;78,466;79,503;80,506;"
-Data "390;as;81,516;82,523;83,526;84,532;85,546;86,565;87,606;88,612;89,624;90,627;"
-Data "390;as;91,631;92,632;93,654;94,662;95,664;96,703;97,712;98,723;99,731;100,732;101,734;102,743;103,754;6,CHAPTER;memory"
+Data "390;ap,as389"
 '
 Announce136:
 'Befehl 391 &H0187 Code 0x1a00
 'memory DV digital code
 'memory DV digital code
-Data "391;os,memory DV digital code;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};100;lin;-;6,CHAPTER;memory"
+Data "391;op,memory DV digital code;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};100;lin;-;6,CHAPTER,memory"
 '
 Announce137:
 'Befehl 392 &H0188  Code 0x1a00
 'memory DV digital code
 'memory DV digital code
-Data "392;as,memory DV digital code;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};100;lin;-;6,CHAPTER;memory"
+Data "392;ap,as391"
 '
 Announce138:
 'Befehl 393 &H0189 Code 0x1a00
 'memory duplex offset Frequenz
 'memory duplex offset frequency
-Data "393;os,memory duplex offset frequency;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};100000;lin;100Hz;6,CHAPTER;memory"
+Data "393;op,memory duplex offset frequency;20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};100000;lin;100Hz;6,CHAPTER,memory"
 '
 Announce139:
 'Befehl 394 &H018a  Code 0x1a00
 'memory duplex offset Frequenz
 'memory duplex offset frequency
-Data "394;as,memory duplex offset frequenvy;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};100000;lin;100Hz;6,CHAPTER;memory"
+Data "394;ap,as393"
 '
 Announce140:
 'Befehl 395 &H018b Code 0x1a00
 'memory UR Ziel Rufzeichen
 'memory UR destination callsign
-Data "395;os,memory UR destination callsign;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};8,{ALPHA3};6,CHAPTER;memory"
+Data "395;om,memory UR destination callsign;8,{ALPHA3};20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};6,CHAPTER,memory"
 '
 Announce141:
 'Befehl 396 &H018c  Code 0x1a00
 'memory UR Ziel Rufzeichen
 'memory UR destination callsign
-Data "396;as,memory UR destination callsign;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};8,{ALPHA3};6,CHAPTER;memory"
+Data "396;am,as395"
 ''
 Announce142:
 'Befehl 397 &H018d Code 0x1a00 5 byte / -
 'memory R1 Rufzeichen
 'memory R1 callsign
-Data "397;os,memory R1 callsign;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};8,{ALPHA3};6,CHAPTER;memory"
+Data "397;om,memory R1 callsign;8,{ALPHA3};20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};6,CHAPTER,memory"
 '
 Announce143:
 'Befehl 398 &H018e  Code 0x1a00
 'memory R1 Rufzeichen
 'memory R1 callsign
-Data "398;as,R1 callsign;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};8,{ALPHA3};6,CHAPTER;memory"
+Data "398;am,as397"
 '
 Announce144:
 'Befehl 399 &H018f Code 0x1a00
 'memory R2 Rufzeichen
 'memory R2 callsign
-Data "399;os,memory R2 callsign;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};8,{ALPHA3};6,CHAPTER;memory"
+Data "399;om,memory R2 callsign;8,{ALPHA3};20008,{2,,{VFO,split}MUL100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};6,CHAPTER,memory"
 '
 Announce145:
 'Befehl 400 &H0190  Code 0x1a00
 'memory R2 Rufzeichen
 'memory R2 callsign
-Data "400;as,R2 callsign;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};8,{ALPHA3}"
+Data "400;am,as399"
 '
 Announce146:
 'Befehl 401 &H0191 Code 0x1a00
 'memory Name
 'memory name
-Data "401;os,memory memory name;1004,{100,groupMUL100,channelADD4,{144C1,144C2,430C1,430C2}};8,{ALPHA0};6,CHAPTER;memory"
+Data "401;om,memory memory name;8,{ALPHA0};1004,{100,groupMUL100,channelADD9,,{memory,144C1,144C2,430C1,430C2,split 144C1,split 144C2,split 430C1,split 430C2}};6,CHAPTER,memory"
 '
 Announce147:
 'Befehl 402 &H0192  Code 0x1a00
 'memory Name
 'memory name
-Data "402;as,memory name;1005,{100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};8;ALPHA0;6,CHAPTER;memory"
+Data "402;am,as401"
 '
 Announce148:
 'Befehl 403 &H0193 Code 0x1a01
 'Band Stack lesen (keine Umwandlung)
 'read band stack (raw data)
-Data "403;am,bandstack raw data;45,{15,{160m,80m,40m,30m,20m,17m,15m,12m,10m,6m,WFM,air,2m,70cm,GENE}MUL3,{left,middle,right}};56,ALPHA0"
+Data "403;am,bandstack raw data;56,{ALPHA0};15,band,{160m,80m,40m,30m,20m,17m,15m,12m,10m,6m,WFM,air,2m,70cm,GENE};3,,{left,middle,right}"
 '
 Announce149:
 'Befehl 404 &H0194  Code 0x1a01
-'kopiert Band Stack inks oder rechts nach mitte
-'copy band stack left or right to middle
-Data "404;ou,copy bandstack;2,{left,right};0,160m;1,80m;2,40m;3,30m;4,20m;5,17m;6,15m;7,12m;8,10m;9,6m;10,WFM;11,air;12,2m;13,70cm;14,GENE"
+'kopiert Band Stack mitte oder rechts nach links
+'copy band stack middle or right to left
+Data "404;ou,copy bandstack to left;2,{middle,right};0,160m;1,80m;2,40m;3,30m;4,20m;5,17m;6,15m;7,12m;8,10m;9,6m;10,WFM;11,air;12,2m;13,70cm;14,GENE"
 '
 Announce150:
 'Befehl 405 &H0195 Code &H1a02
 '8 Kanal memory keyer
 '8 chanal memory keyer
-Data "405;om,memory keyer;8;70,ALPHA4"
+Data "405;om,memory keyer;70,{ALPHA4};8,memory keyer;2,CHAPTER,CW"
 '
 Announce151:
 'Befehl 406 &H0196 Code &H1a02
@@ -966,57 +937,47 @@ Data "406;am,as405"
 '
 Announce152:
 'Befehl 407 &H0197 Code &H1a03
-'AMFilter Bandbreite
+'AM Filter Bandbreite
 'AM filter width
-Data "407;op,AMfilter width;1;50,{200 to 10000};lin;Hz"
+Data "407;op,AM filter width;1;50,,{199_200to10000};lin;Hz;16,CHAPTER,tone control"
 '
 Announce153:
 'Befehl 408 &H0198 Code &H1a03
 'AM Filter Bandbreite
 'AM filter width
-Data "408;ap,as3407"
+Data "408;ap,as407"
 '
 Announce154:
 'Befehl 409 &H0199 Code &H1a03
-'SSB / CW Filter Bandbreite
-'SSB / CW filter width
-Data "409;op,SSB filter width;1;41,{50 to 3600};lin;Hz"
+'RTTY Filter Bandbreite
+'RTTY filter width
+Data "409;op,RTTY filter width;1;32,,{49_50to500,99_600to2700};lin;Hz;16,CHAPTER,tone control"
 '
 Announce155:
 'Befehl 410 &H019a Code &H1a03
-'SSB / CW Filter Bandbreite
-'SSB / CW filter width
+'RTTY Filter Bandbreite
+'RTTY filter width
 Data "410;ap,as409"
 '
 Announce156:
-'Befehl 411 &H019b Code &H1a04
-'AGC Zeitkonstante
-'AGC time constant
-Data "411;os, AM time comstant;1;0,off;1,.3;2,.5;3,.8,4,1.2;5,1.6;6,2;7,2,5;3,3;9,4;10,5;11,6;12,7;13,8"
+'Befehl 411 &H019b Code &H1a03
+'SSB CW Filter Bandbreite
+'SSB CW filter width
+Data "411;op,SSB CW filter width;1;41,,{49_50to500,99_600to3600};lin;Hz;16,CHAPTER,tone control"
 '
 Announce157:
-'Befehl 412 &H019c Code &H1a04
-'AGC Zeitkonstante
-'AGC time constant
-Data "412;as,as411"
+'Befehl 412 &H019c Code &H1a03
+'SSB CW Filter Bandbreite
+'SSB CW filter width
+Data "412;ap,as411"
 '
-Announce158:
-'Befehl 413 &H019d Code &H1a04
-'AGC Zeitkonstante
-'AGC time constant
-Data "413;os,non AM AGC time comstant;1;0,odd;1,.1;2,.2;3,.3;4,.5;5,.8;6,1.2;7,1.6;8,2;9,2.5;10,3;11,4;12,5;13,6"
-'
-Announce159:
-'Befehl 414 &H019e Code &H1a04
-'AGC Zeitkonstante
-'AGC time constant
-Data "414;as,as413"
+' Announce158 159 missing
 '
 Announce160:
 'Befehl 415 &H019f Code 1a050001
 'HPF / LPF SSB
 'HPF / LPF SSB
-Data "415;op,HPF / LPF;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400},though;lin;Hz;16,CHAPTER;tone control_tbw"
+Data "415;op,SSB Rx HPF/LPF;1;20,,{through,100_100to2000};lin;Hz;20,{110_500to2400},though;lin;Hz;16,CHAPTER,tone control"
 '
 Announce161:
 'Befehl 416 &H01a0 Code 1a050001
@@ -1028,7 +989,7 @@ Announce162:
 'Befehl 417 &H01a1 Code 01a0002
 'SSB Bass Level
 'SSB Bass Level
-Data "417;op,SSB Bass Level;1;11,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "417;op,SSB Rx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce163:
 'Befehl 418 &H01a2 Code 1a050002
@@ -1040,7 +1001,7 @@ Announce164:
 'Befehl 419 &H01a3 Code 01a0003
 'SSB Hoehen Level
 'SSB Treble Level
-Data "419;op,SSB Treble Level;1;11,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "419;op,SSB RX Treble Level;1;11,,{0.5_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce165:
 'Befehl 420 &H01a4 Code 1a050003
@@ -1052,7 +1013,7 @@ Announce166:
 Befehl 421 &H01a5 Code 01a050004 3 byte / -
 'HPF / LPF AM
 'HPF / LPF AM
-Data "421;op,HPF / LPF AM;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400},though;lin; Hz;16,CHAPTER;tone control_tbw"
+Data "421;op,AM RX HPF/LPF;1;20,,{through,100_100to2000};lin;Hz;20,,{110_500to2400,though};lin;Hz;16,CHAPTER,tone control"
 '
 Announce167:
 'Befehl 422 &H01a6 Code 1a050004 2 byte / 3 byte
@@ -1064,7 +1025,7 @@ Announce168:
 'Befehl 423 &H01a7 Code 01a050005
 'AM Bass Level
 'AM Bass Level
-Data "423;op,AM Bass Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "423;op,AM Rx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce169:
 'Befehl 424 &H01a8 Code 1a050005
@@ -1076,7 +1037,7 @@ Announce170:
 'Befehl 425 &H01a9 Code 01a050006
 'AM Hoehen Level
 'AM Treble Level
-Data "425;op,AM Treble Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "425;op,AM RX Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce171:
 'Befehl 426 &H01aa Code 1a050006
@@ -1088,7 +1049,7 @@ Announce172:
 'Befehl 427 &H01ab Code 01a050007
 'HPF / LPF FM
 'HPF / LPF FM
-Data "427;op,HPF / LPF FM;1;20{through,100 to 2000};lin;Hz;20,{500 to 2400},though;lin; Hz;16,CHAPTER;tone control_tbw"
+Data "427;op,FM RX HPF/LPF;1;20,,{through,100_100to2000};lin;Hz;20,,{110_500to2400},though;lin; Hz;16,CHAPTER,tone control"
 '
 Announce173:
 'Befehl 428 &H01ac Code 1a050007
@@ -1100,7 +1061,7 @@ Announce174:
 'Befehl 429 &H01ad Code 01a050008
 'FM Bass Level
 'FM Bass Level
-Data "429;op,FM Bass Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "429;op,FM Rx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce175:
 'Befehl 430 &H01ae Code 1A05000
@@ -1112,7 +1073,7 @@ Announce176:
 'Befehl 431 &H01af Code 01a050009
 'FM Hoehen Level
 'FM Treble Level
-Data "431;op,FM Treble Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "431;op,FM Rx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce177:
 'Befehl 432 &H01b0 Code 1a050009
@@ -1124,7 +1085,7 @@ Announce178:
 'Befehl 433 &H01b1 Code 01a050010
 'HPF / LPF DV
 'HPF / LPF DV
-Data "433;op,HPF / LPF DV;1;20{through,100 to 2000};lin;Hz;20,{500 to 2400},though;lin; Hz1;6,CHAPTER;tone control_tbw"
+Data "433;op,DV RxHPF/LPF;1;20,,{through,100_100to2000};lin;Hz;20,,{110_500to2400},though;lin;Hz;6,CHAPTER,tone control"
 '
 Announce179:
 'Befehl 434 &H01b2 Code 1a050010
@@ -1136,7 +1097,7 @@ Announce180:
 'Befehl 435 &H01b3 Code 01a050011
 'DV Bass Level
 'DV Bass Level
-Data "435;op,DV Bass Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "435;op,DV RX Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce181:
 'Befehl 436 &H01b4  Code 1a05011
@@ -1148,7 +1109,7 @@ Announce182:
 'Befehl 437 &H01b5 Code 01a050012
 'DV Hoehen Level
 'DV Treble Level
-Data "437;op,DV Treble Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "437;op,DV Rx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce183:
 'Befehl 438 &H01b6 Code 1a050012
@@ -1160,7 +1121,7 @@ Announce184:
 'Befehl 439 &H01b7 Code 01a050013
 'WFM Bass Level
 'WFM Bass Level
-Data "439;op,WFM Bass Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "439;op,WFM Rx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce185:
 'Befehl 440 &H01b8 Code 1a05013
@@ -1172,7 +1133,7 @@ Announce186:
 'Befehl 441 &H01b9 Code 01a050014
 'WFM Hoehen Level
 'WFM Treble Level
-Data "441;op,WFM Treble Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "441;op,WFM RX Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce187:
 'Befehl 442 &H01ba Code 1a050014
@@ -1184,7 +1145,7 @@ Announce188:
 'Befehl 443 &H01bb Code 01a050015
 'HPF / LPF CW
 'HPF / LPF CW
-Data "443;op,HPF / LPF CW;1;20{through,100 to 2000};lin;Hz;20{500 to 2400},though;lin; Hz;16,CHAPTER;tone control_tbw"
+Data "443;op,CW Rx HPF/LPF;1;20,,{through,100_100to2000};lin;Hz;20,,{110_500to2400},though;lin;Hz;16,CHAPTER,tone control"
 '
 Announce189:
 'Befehl 444 &H01bc Code 1a050015
@@ -1196,7 +1157,7 @@ Announce190:
 'Befehl 445 &H01bd Code 01a050016
 'HPF / LPF RTTY
 'HPF / LPF RTTY
-Data "445;op,HPF / LPF RTTY;1;20,{through,100 to 2000};lin;Hz;20,{500 to 2400},though;lin; Hz;16,CHAPTER;tone control_tbw"
+Data "445;op,RTTY RX HPF/LPF;1;20,,{through,100_100to2000};lin;Hz;20,,{110_500to2400},though;lin;Hz;16,CHAPTER,tone control"
 '
 Announce191:
 'Befehl 446 &H01be Code 1a050016
@@ -1208,7 +1169,7 @@ Announce192:
 'Befehl 447 &H01bf Code 01a050017
 'SSB TX Bass Level
 'SSB TX Bass Level
-Data "447;op,SSB Tx Bass Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "447;op,SSB Tx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce193:
 'Befehl 448 &H01c0 Code 1a050017
@@ -1220,7 +1181,7 @@ Announce194:
 'Befehl 449 &H01c1 Code 01a050018
 'SSB Tx Hoehen Level
 'SSB Tx Treble Level
-Data "449;op,SSB Tx Treble Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "449;op,SSB Tx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce195:
 'Befehl 450 &H01c2 Code 1a050018
@@ -1232,55 +1193,55 @@ Announce196:
 'Befehl 451 &H01c3 Code 01a050019
 'SSB Tx wide  Bandbreite
 'SSB Tx wide bandwidth
-Data "451;os,SSB Tx wide bandwidth;1;0,0k1;1,0k2;2,0k3;3,0k5;0,2k5;1,2k7;2,2k8;3,2k9;16,CHAPTER;tone control_tbw"
+Data "451;op,SSB Tx wide bandwidth;1;4,,{100,200,300,500};lin;Hz;4,,{2500,2700,2800,2900};lin;Hz;16,CHAPTER,tone control"
 '
 Announce197:
 'Befehl 452 &H01c4 Code 1a050019
 'SSB Tx wide  Bandbreite
 'SSB Tx wide bandwidth
-Data "452;as,as451"
+Data "452;ap,as451"
 '
 Announce198:
 'Befehl 453 &H01c5 Code 01a050020
 'SSB Tx mid  Bandbreite
 'SSB Tx mid bandwidth
-Data "453;os,SSB Tx mid bandwidth;1;0,0k1;1,0k2;2,0k3;3,0k5;0,2k5;1,2k7;2,2k8;3,2k9;16,CHAPTER;tone control_tbw"
+Data "453;op,SSB Tx mid bandwidth;1;4,,{100,200,300,500};lin;Hz;4,,{2500,2700,2800,2900};lin;Hz;16,CHAPTER,tone control"
 '
 Announce199:
 'Befehl 454 &H01c6 Code 1a050020
 'SSB Tx mid  Bandbreite
 'SSB Tx wide bandwidth
-Data "454;as,as453"
+Data "454;ap,as453"
 '
 Announce200:
 'Befehl 455 &H01c7 Code 01a050021
 'SSB Tx narrow  Bandbreite
 'SSB Tx narrow bandwidth
-Data "455;os,SSB Tx narrow bandwidth;1;0,0k1;1,0k2;2,0k3;3,0k5;0,2k5;1,2k7;2,2k8;3,2k9;16,CHAPTER;tone control_tbw"
+Data "455;op,SSB Tx narrow bandwidth;1;4,,{100,200,300,500};lin;Hz;4,,{2500,2700,2800,2900};lin;Hz;16,CHAPTER,tone control"
 '
 Announce201:
 'Befehl 456 &H01c8 Code 1a050021
 'SSB Tx narrow  Bandbreite
 'SSB Tx narrow bandwidth
-Data "456;as,as457"
+Data "456;ap,as455"
 '
 Announce202:
 'Befehl 457 &H01c9 Code 01a050022
 'SSBD Tx Bandbreite
 'SSBD Tx bandwidth
-Data "457;os,SSBD Tx bandwidth;1;0,0k1;1,0k2;2,0k3;3,0k5;0,2k5;1,2k7;2,2k8;3,2k9;16,CHAPTER;tone control_tbw"
+Data "457;op,SSBD Tx bandwidth;1;4,,{100,200,300,500};lin;Hz;4,,{2500,2700,2800,2900};lin;Hz;16,CHAPTER,tone control"
 '
 Announce203:
 'Befehl 458 &H01ca Code 1a050022
 'SSBD Tx narrow  Bandbreite
 'SSBD Tx narrow bandwidth
-Data "458;as,as457"
+Data "458;ap,as457"
 '
 Announce204:
 'Befehl 459 &H01cb Code 01a050023
 'AM TX Bass Level
 'AM TX Bass Level
-Data "459;op,AM TX Bass Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "459;op,AM TX Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce205:
 'Befehl 460 &H01cc Code 1a050023
@@ -1292,7 +1253,7 @@ Announce206:
 'Befehl 461 &H01cd Code 01a050024
 'AM Tx Hoehen Level
 'AM Tx Treble Level
-Data "461;op,AM TX Treble Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "461;op,AM TX Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce207:
 'Befehl 462 &H01ce Code 1a050024
@@ -1304,7 +1265,7 @@ Announce208:
 'Befehl 463 &H01cf Code 01a050025
 'FM Tx Bass Level
 'FM Tx Bass Level
-Data "463;op,FM Tx Bass Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "463;op,FM Tx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce209:
 'Befehl 464 &H01d0 Code 1a050025
@@ -1316,19 +1277,19 @@ Announce210:
 'Befehl 465 &H01d1 Code 01a050026
 'FM Tx Hoehen Level
 'FM Tx Treble Level
-Data "465;op,FM Tx Treble Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "465;op,FM Tx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce211:
 'Befehl 466 &H01d2 Code 01a050026
 'FM Tx Hoehen Level
 'FM Tx Treble Level
 Data "466;ap,as465
-
+'
 Announce212:
 'Befehl 467 &H0d3 Code 01a050027
 'DV Tx Bass Level
 'DV Tx Bass Level
-Data "467;op,DV Tx Bass Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "467;op,DV Tx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce213:
 'Befehl 468 &H01d4 Code 1a050027
@@ -1340,7 +1301,7 @@ Announce214:
 'Befehl 469 &H01d5 Code 01a050028
 'DV Tx Hoehen Level
 'DV Tx Treble Level
-Data "469;op,DV Tx Treble Level;1;10,{-5 to 5};lin;16,CHAPTER;tone control_tbw"
+Data "469;op,DV Tx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce215:
 'Befehl 470 &H01d6 Code 01a050028
@@ -1352,7 +1313,7 @@ Announce216:
 'Befehl 471 &H01d7 Code 1a050029
 'Beep Pegel
 'Beep gain
-Data "471;op,beep gain;1;255;lin;8,CHAPTER;function"
+Data "471;op,beep gain;1;255;lin;-;8,CHAPTER,function"
 '
 Announce217:
 'Befehl 472 &H01d8 Code 1a050029
@@ -1364,7 +1325,7 @@ Announce218:
 'Befehl 473 &H01d9 Code 1a050030
 'Beep Pegel Grenze
 'Beep gain limit
-Data "473;os,beep gain limit;1;0,off;1,on;8,CHAPTER;function"
+Data "473;os,beep gain limit;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce219:
 'Befehl 474  &H01da Code 1a05030
@@ -1376,7 +1337,7 @@ Announce220:
 'Befehl 475 &H01db Code 1a050031
 'Bestaetigungston
 'confirmation beep
-Data "475;os,confirmation beep;1;0,off;1,on;8,CHAPTER;function"
+Data "475;os,confirmation beep;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce221:
 'Befehl 476 &H01dc Code 1a050031
@@ -1388,7 +1349,7 @@ Announce222:
 'Befehl 477 &H01dd Code 1a050032
 'Home CH ton
 'Home CH beep
-Data "477;os,Home CH beep;1;0,off;1,on;8,CHAPTER;function"
+Data "477;os,Home CH beep;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce223:
 'Befehl 478 &H01de Code 1a050032
@@ -1400,7 +1361,7 @@ Announce224:
 'Befehl 479 &H01df Code 1a050033
 'Bandgrenze Beep mode
 'bandedge beep mode
-Data "479;os,bandedge beep mode;1;0,off;1,on;2,user defined;3,user defined + tx limit;8,CHAPTER;function"
+Data "479;os,bandedge beep mode;1;0,off;1,on;2,user defined;3,user defined + tx limit;8,CHAPTER,function"
 '
 Announce225:
 'Befehl 480 &H01e0 Code 1a050033 2 Byte / 3 Byte
@@ -1412,7 +1373,7 @@ Announce226:
 'Befehl 481 &H01e1 Code 1a050034
 'Auto Power Off
 'Auto Power Off
-Data "481;os,Auto Power Off;1;0,off;1,30;2,60;3,90;4,120;8,CHAPTER;function"
+Data "481;os,Auto Power Off;1;0,off;1,30;2,60;3,90;4,120;8,CHAPTER,function"
 '
 Announce227:
 'Befehl 482 &H01e2 Code 1a050034
@@ -1424,7 +1385,7 @@ Announce228:
 'Befehl 483 &H01e3 Code 1a050035
 'Power Save
 'Power Save
-Data "483;os,Power save;1;0,off;1,short;2,middle;3,long;8,CHAPTER;function"
+Data "483;os,Power save;1;0,off;1,short;2,middle;3,long;8,CHAPTER,function"
 '
 Announce229:
 'Befehl 484 &H01e4 Code 1a050035
@@ -1436,7 +1397,7 @@ Announce230:
 'Befehl 485 &H01e5 Code 1a050036
 'Power max batterie
 'Power max battery
-Data "485;os,Power max battery;1;0,0.5W;1,1W;2,2.5W;3,5W;8,CHAPTER;function"
+Data "485;os,Power max with battery;1;0,0.5W;1,1W;2,2.5W;3,5W;8,CHAPTER,function"
 '
 Announce231:
 'Befehl 486 &H01e6 Code 1a050036
@@ -1448,7 +1409,7 @@ Announce232:
 'Befehl 487 &H01e7 Code 1a050037
 'Power max 13.5V
 'Power max 13.5V
-Data "487;os,Power max b13.5V;1;0,0.5W;1,1W;2,2.5W;3,5W;4,10W;8,CHAPTER;function"
+Data "487;os,Power max b13.5V;1;0,0.5W;1,1W;2,2.5W;3,5W;4,10W;8,CHAPTER,function"
 '
 Announce233:
 'Befehl 488 &H01e8 Code 1a050037
@@ -1460,7 +1421,7 @@ Announce234:
 'Befehl 489 &H01e9 Code 1a050038
 'Hf Tx Verzögerung
 'HF Tx delay
-Data "489;os,Hf Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms;8,CHAPTER;function"
+Data "489;os,Hf Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms;8,CHAPTER,function"
 '
 Announce235:
 'Befehl 490 &H01ea Code 1a050038
@@ -1472,7 +1433,7 @@ Announce236:
 'Befehl 491 &H01eb Code 1a050039
 '50MHz Tx Verzögerung
 '50MHz Tx delay
-Data "491;os,50MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms;8,CHAPTER;function"
+Data "491;os,50MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms;8,CHAPTER,function"
 '
 Announce237:
 'Befehl 492 &H01ec Code 1a050039
@@ -1484,7 +1445,7 @@ Announce238:
 'Befehl 493 &H01ed Code 1a050041
 '144MHz Tx Verzögerung
 '144MHz Tx delay
-Data "494;os,144MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms;8,CHAPTER;function"
+Data "493;os,144MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms;8,CHAPTER,function"
 '
 Announce239:
 'Befehl 494 &H01ee Code 1a050041
@@ -1496,7 +1457,7 @@ Announce240:
 'Befehl 495 &H01ef Code 1a050042
 '430MHz Tx Verzögerung
 '430MHz Tx delay
-Data "495;os,430MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms;8,CHAPTER;function"
+Data "495;os,430MHz Tx delay;1;0,off;1,10ms;2,15ms;3,20ms;4,25ms;5,30ms;8,CHAPTER,function"
 '
 Announce241:
 'Befehl 496 &H01f0 Code 1a050042
@@ -1508,7 +1469,7 @@ Announce242:
 'Befehl 497 &H01f1 Code 1a050043
 'Timeout
 'Timeout
-Data "497;os,Timeout;1;0,off;1,3min;2,5min;3,10min;4,20min;5,30min;8,CHAPTER;function"
+Data "497;os,Timeout;1;0,off;1,3min;2,5min;3,10min;4,20min;5,30min;8,CHAPTER,function"
 '
 Announce243:
 'Befehl 498 &H01f2 Code 1a050043
@@ -1520,7 +1481,7 @@ Announce244:
 'Befehl 499 &H01f3 Code 1a050044
 'PTT Sperre
 'PTT lock
-Data "499;os,TT lock;1;0,off;1,on;8,CHAPTER;function"
+Data "499;os,PTT lock;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce245:
 'Befehl 500 &H01f4 Code 1a050044
@@ -1532,19 +1493,19 @@ Announce246:
 'Befehl 501 &H01f5 Code 1a050045
 'quick slpit
 'quick slpit
-Data "501;op,quick split;1;0,off;1,on;8,CHAPTER;function"
+Data "501;os,quick split;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce247:
 'Befehl 502 &H01f6 Code 1a050045
 'quick slpit
 'quick slpit
-Data "502;ap,as501"
+Data "502;as,as501"
 '
 Announce248:
 'Befehl 503 &H01f7 Code 1a050046
 'split offset
 'split offset
-Data "503;op,split offset;1;19999,{-9.999 to 9.999};lin;MHz;8,CHAPTER;function"
+Data "503;op,split offset;1;19999,{1_-9999to9999};lin;kHz;8,CHAPTER,function"
 '
 Announce249:
 'Befehl 504 &H01f8 Code 1a050046
@@ -1556,7 +1517,7 @@ Announce250:
 'Befehl 505 &H01f9 Code 1a050047
 'split lock
 'split lock
-Data "506;os,split lock;1;0,off;1,on;8,CHAPTER;function"
+Data "505;os,split lock;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce251:
 'Befehl 506 &H01fa Code 1a050047
@@ -1568,7 +1529,7 @@ Announce252:
 'Befehl 507 &H01fb Code 1a050048
 'Tuner Start
 'Tuner start
-Data "507;os,Tuner;1;0,off;1,on;8,CHAPTER;function"
+Data "507;os,Tuner PTT start;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce253:
 'Befehl 508 &H01fc Code 1a050048
@@ -1580,7 +1541,7 @@ Announce254:
 'Befehl 509 &H01fd Code 1a050049
 'Auto repeater
 'Auto repeater
-Data "509;os,Auto repeater;1;0,off;1,on DUP;2,on DUP Tone;8,CHAPTER;function"
+Data "509;os,Auto repeater;1;0,off;1,on DUP;2,on DUP Tone;8,CHAPTER,function"
 '
 Announce255:
 'Befehl 510 &H01fe Code 1a050049
@@ -1592,7 +1553,7 @@ Announce256:
 'Befehl 511 &H01ff Code 1a050050
 'RTTY mark freqency
 'RTTY mark freqency
-Data "511;os,RTTY mark freqency;1;0,1275Hz;1,1615Hz;2,2125Hz";8,CHAPTER;function"
+Data "511;os,RTTY mark freqency;1;0,1275Hz;1,1615Hz;2,2125Hz;10,CHAPTER,rtty"
 '
 Announce257:
 'Befehl 512 &H0200 Code 1a050050
@@ -1604,7 +1565,7 @@ Announce258:
 'Befehl 513 &H0201 Code 1a05 0051
 'RTTY shift width
 'RTTY shift width
-Data "513;os,RTTY shift width;1;0,170Hz;1,200Hz;2,425Hz;8,CHAPTER;function"
+Data "513;os,RTTY shift width;1;0,170Hz;1,200Hz;2,425Hz;4,CHAPTER,rtty"
 '
 Announce259:
 'Befehl 514 &H0202 Code 1a050051
@@ -1616,7 +1577,7 @@ Announce260:
 'Befehl 515 &H0203 Code 1a050052
 'RTTY polaritaet
 'RTTY polarity
-Data "515;os,RTTY polarity;1;0,normal;1,reverse;8,CHAPTER;function"
+Data "515;os,RTTY polarity;1;0,normal;1,reverse;4,CHAPTER,rtty"
 '
 Announce261:
 'Befehl 516 &H0204 Code 1a050052
@@ -1628,7 +1589,7 @@ Announce262:
 'Befehl 517 &H0205 Code 1a050053
 'Sprache
 'language
-Data "517;os,language;1;0,english;1,japanese;8,CHAPTER;function"
+Data "517;os,language;1;0,english;1,japanese;8,CHAPTER,function"
 '
 Announce263:
 'Befehl 518 &H0206 Code 1a050053
@@ -1640,7 +1601,7 @@ Announce264:
 'Befehl 519 &H0207 Code 1a050054
 'Alphabet
 'Alphabet
-Data "519;os,Alphabet;1;0,normal;1,phonetic;8,CHAPTER;function"
+Data "519;os,Alphabet;1;0,normal;1,phonetic;8,CHAPTER,function"
 '
 Announce265:
 'Befehl 520 &H0208 Code 1a050054
@@ -1652,7 +1613,7 @@ Announce266:
 'Befehl 521 &H0209 Code 1a050055
 'Sprachgeschwindigkeit
 'language speed
-Data "521;os,language speed;1;0,slow;1,fast;8,CHAPTER;function"
+Data "521;os,language speed;1;0,slow;1,fast;8,CHAPTER,function"
 '
 Announce267:
 'Befehl 522 &H20a Code 1a050055
@@ -1664,7 +1625,7 @@ Announce268:
 'Befehl 523 &H020b Code 1a050056
 'RX Rufzeichen Sprachausgabe
 'Rxcallsign speech
-Data "523;os,rx callsign speech;1;0,normal;1,Kerchunk,;2,on all;8,CHAPTER;function"
+Data "523;os,rx callsign speech;1;0,off;1,Kerchunk;2,on all;8,CHAPTER,function"
 '
 Announce269:
 'Befehl 524 &H020c Code 1a050056
@@ -1676,7 +1637,7 @@ Announce270:
 'Befehl 525 &H020d Code 1a050057
 'RX>CS Sprachausgabe
 'Rx>CS speech
-Data "525;os,rx>cs speech;1;0,off;1,on;8,CHAPTER;function"
+Data "525;os,rx>cs speech;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce271:
 'Befehl 526 &H020e Code 1a050057
@@ -1688,7 +1649,7 @@ Announce272:
 'Befehl 527 &H020f Code 1a050058
 'Mic updown Sprachausgabe
 'Mic updown speech
-Data "527;os,mic updown speech;1;0,off;1,on;8,CHAPTER;function"
+Data "527;os,mic updown speech;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce273:
 'Befehl 528 &H0210 Code 1a050058
@@ -1700,7 +1661,7 @@ Announce274:
 'Befehl 529 &H0211 Code 1a050059
 'S meter Sprachausgabe
 'S meter speech
-Data "529;os,s meter speech;1;0,off;1,o;8,CHAPTER;function"
+Data "529;os,s meter speech;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce275:
 'Befehl 530 &H0212 Code 1a050059
@@ -1712,7 +1673,7 @@ Announce276:
 'Befehl 531 &H0213 Code 1A050060
 'mode Sprachausgabe
 'mode speech
-Data "531;os,mode speech;1;0,off;1,on;8,CHAPTER;function"
+Data "531;os,mode speech;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce277:
 'Befehl 532 &H0214 Code 1a050060
@@ -1724,7 +1685,7 @@ Announce278:
 'Befehl 533 &H0215 Code 1a050061
 'Sprach Pegel
 'speech level
-Data "533;op,speech level;1;256;lin;-;8,CHAPTER;function"
+Data "533;op,speech level;1;256, ,{0.39_0to99.70};lin;%;8,CHAPTER,function"
 '
 Announce279:
 'Befehl 534 &H0216 Code 1a050061
@@ -1736,7 +1697,7 @@ Announce280:
 'Befehl 535 &H0217 Code 1a050062
 'Speech / lock Taste
 'speech / lock key
-Data "535;os,speech / lock key;1;0,push:speech lock;1,lock speech;8,CHAPTER;function"
+Data "535;os,speech / lock key;1;0,push:speech lock;1,lock speech;8,CHAPTER,function"
 '
 Announce281:
 'Befehl 536 &H0218 Code 1a050062
@@ -1748,7 +1709,7 @@ Announce282:
 'Befehl 537 &H0219 Code 1a050063
 'lock Funktion
 'lock function
-Data "538;os,lock function;1;0,main dial;1,panel;8,CHAPTER;function"
+Data "537;os,lock function;1;0,main dial;1,panel;8,CHAPTER,function"
 '
 Announce283:
 'Befehl 538 &H021a Code 1a050063
@@ -1760,7 +1721,7 @@ Announce284:
 'Befehl 539 &H021b Code 1a050064
 'Zahl der memory pads
 'number of memory pads
-Data "539;os,number of memory pads;1;0,5ch;1,10ch;8,CHAPTER;function"
+Data "539;os,number of memory pads;1;0,5ch;1,10ch;8,CHAPTER,function"
 '
 Announce285:
 'Befehl 540 &H021c Code 1a050064
@@ -1772,7 +1733,7 @@ Announce286:
 'Befehl 541 &H021d Code 1a050065
 'Main Dial auto TS
 'Main Dial auto TS
-Data "541;os,Main Dial auto TS;1;0,off;1,low;2,high;8,CHAPTER;function"
+Data "541;os,Main Dial auto TS;1;0,off;1,low;2,high;8,CHAPTER,function"
 '
 Announce287:
 'Befehl 542 &H021e Code 1a050065
@@ -1784,7 +1745,7 @@ Announce288:
 'Befehl 543 &H021f Code 1a050066
 'mic up/down Geschwindigkeit
 'mic up/down speed
-Data "543;os,mic up/down speed;1;0,slow;1,fast;8,CHAPTER;function"
+Data "543;os,mic up/down speed;1;0,slow;1,fast;8,CHAPTER,function"
 '
 Announce289:
 'Befehl 544 &H0220 Code 1a050066
@@ -1796,7 +1757,7 @@ Announce290:
 'Befehl 545 &H0221 Code 1a050067
 'SSB notch
 'SSB notch
-Data "545;os,SSB notch;1;0,auto;1,manual;2,auto/manual;8,CHAPTER;function"
+Data "545;os,SSB notch;1;0,auto;1,manual;2,auto/manual;8,CHAPTER,function"
 '
 Announce291:
 'Befehl 546 &H0222 Code 1a050067
@@ -1808,7 +1769,7 @@ Announce292:
 'Befehl 547 &H0223 Code 1A050068 3 Byte / -
 'AM notch
 'AM notch
-Data "547;os,AM notch;1;0,auto;1,manual;2,auto/manual;8,CHAPTER;function"
+Data "547;os,AM notch;1;0,auto;1,manual;2,auto/manual;8,CHAPTER,function"
 '
 Announce293:
 'Befehl 548 &H0224 Code 1a050068
@@ -1820,7 +1781,7 @@ Announce294:
 'Befehl 549 &H0225 Code 1A050069
 'SSB/CW synchronous tuning
 'SSB/CW synchronous tuning
-Data "549;os,SSB/CW synchronous tuning;1;0,off;1,on;8,CHAPTER;function"
+Data "549;os,SSB/CW synchronous tuning;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce295:
 'Befehl 550 &H0226 Code 1a050069
@@ -1832,7 +1793,7 @@ Announce296:
 'Befehl 551 &H0227 Code 1a050070
 'CW normal side
 'CW normal side
-Data "552;os,CW normal side;1;0,LSB;1,USB;8,CHAPTER;function"
+Data "551;os,CW normal side;1;0,LSB;1,USB;8,CHAPTER,function"
 '
 Announce297:
 'Befehl 552 &H0228 Code 1a050070
@@ -1844,7 +1805,7 @@ Announce298:
 'Befehl 553 &H0229 Code 1a050071
 'Power on laden
 'power on charging
-Data "553;os,power on charging;1;0,off;1,on;8,CHAPTER;function"
+Data "553;os,power on charging;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce299:
 'Befehl 554 &H022a Code 1a050071
@@ -1856,7 +1817,7 @@ Announce300:
 'Befehl 555 &H022b Code 1a050072
 'USB power Eingang
 'USB power input
-Data "555;os,usb power input;1;0,off;1,on;8,CHAPTER;function"
+Data "555;os,usb power input;1;0,off;1,on;8,CHAPTER,function"
 '
 Announce301:
 'Befehl 556 &H022c Code 1a050072
@@ -1868,7 +1829,7 @@ Announcee302:
 'Befehl 557 &H022d Code 1a050073
 'power off fuer remote
 'power off for remote
-Data "557;os,power off for remote;1;0,shutdown only;1,standby shutdown;8,CHAPTER;function"
+Data "557;os,power off for remote;1;0,shutdown only;1,standby shutdown;8,CHAPTER,function"
 '
 Announce303:
 'Befehl 558 &H022e Code 1a050073
@@ -1880,9 +1841,9 @@ Announce304:
 'Befehl 559 &H022f Code 1a050074
 'Mic A Funktion
 'mic A function
-Data "559;os,mic A function;1;0,no function;1,up;2,down;3,up vfo khz;4,down vfo khz;5,vol up;6,vol down;7,xfc;8,call;9,vfo/memo;10,dr;11.from/to dr;"
-Data "559;os;12,home ch;13,band/group up;14,band/group down;15,scan;16,tamprary skip;17,speech;18,mode;19,rf power;20,voice keyer/rtty memory1;21,voice keyer/rtty memory2;"
-Data "559;os;22,voice keyer/rtty memory3;23,voice keyer/rtty memory4;24,t-call;25,RX>CS;26,ts;27,mpad;28split;29,a/b;30,tuner;9,CHAPTER;remote mic"
+Data "559;os,mic A function;1;0,no function;1,up;2,down;3,up vfo khz;4,down vfo khz;5,vol up;6,vol down;7,xfc;8,call;9,vfo/memo;10,dr;11,from/to dr;"
+Data "559;os;12,home ch;13,band/group up;14,band/group down;15,scan;16,tamporary skip;17,speech;18,mode;19,rf power;20,voice keyer/rtty memory1;21,voice keyer/rtty memory2;"
+Data "559;os;22,voice keyer/rtty memory3;23,voice keyer/rtty memory4;24,t-call;25,RX>CS;26,ts;27,mpad;28,split;29,a/b;30,tuner;9,CHAPTER,remote mic"
 '
 Announce305:
 'Befehl 560 &H0230 Code 1a050074
@@ -1894,9 +1855,9 @@ Announce306:
 'Befehl 561 &H0231 Code 1a050075
 'Mic B Funktion
 'mic B function
-Data "561;os,mic B function;1;0,no function;1,up;2,down;3,up vfo khz;4,down vfo khz;5,vol up;6,vol down;7,xfc;8,call;9,vfo/memo;10,dr;11.from/to dr;"
-Data "561;os;12,home ch;13,band/group up;14,band/group down;15,scan;16,tamprary skip;17,speech;18,mode;19,rf power;20,voice keyer/rtty memory1;21,voice keyer/rtty memory2;"
-Data "561;os;22,voice keyer/rtty memory3;23,voice keyer/rtty memory4;24,t-call;25,RX>CS;26,ts;27,mpad;28split;29,a/b;30,tuner;9,CHAPTER;remote mic"
+Data "561;os,mic B function;1;0,no function;1,up;2,down;3,up vfo khz;4,down vfo khz;5,vol up;6,vol down;7,xfc;8,call;9,vfo/memo;10,dr;11,from/to dr;"
+Data "561;os;12,home ch;13,band/group up;14,band/group down;15,scan;16,tamporary skip;17,speech;18,mode;19,rf power;20,voice keyer/rtty memory1;21,voice keyer/rtty memory2;"
+Data "561;os;22,voice keyer/rtty memory3;23,voice keyer/rtty memory4;24,t-call;25,RX>CS;26,ts;27,mpad;28,split;29,a/b;30,tuner;9,CHAPTER,remote mic"
 '
 Announce307:
 'Befehl 562 &H0232 Code 1a050075
@@ -1908,9 +1869,9 @@ Announce308:
 'Befehl 563 &H0233 Code 1a050076
 'Mic up Funktion
 'mic up function
-Data "563;os,mic up function;1;0,no function;1,up;2,down;3,up vfo khz;4,down vfo khz;5,vol up;6,vol down;7,xfc;8,call;9,vfo/memo;10,dr;11.from/to dr;"
-Data "563;os;12,home ch;13,band/group up;14,band/group down;15,scan;16,tamprary skip;17,speech;18,mode;19,rf power;20,voice keyer/rtty memory1;21,voice keyer/rtty memory2;"
-Data "563;os;22,voice keyer/rtty memory3;23,voice keyer/rtty memory4;24,t-call;25,RX>CS;26,ts;27,mpad;28split;29,a/b;30,tuner;9,CHAPTER;remote mic"
+Data "563;os,mic up function;1;0,no function;1,up;2,down;3,up vfo khz;4,down vfo khz;5,vol up;6,vol down;7,xfc;8,call;9,vfo/memo;10,dr;11,from/to dr;"
+Data "563;os;12,home ch;13,band/group up;14,band/group down;15,scan;16,tamporary skip;17,speech;18,mode;19,rf power;20,voice keyer/rtty memory1;21,voice keyer/rtty memory2;"
+Data "563;os;22,voice keyer/rtty memory3;23,voice keyer/rtty memory4;24,t-call;25,RX>CS;26,ts;27,mpad,28,split,29,a/b,30,tuner;9,CHAPTER,remote mic"
 '
 Announce309:
 'Befehl 564 &H0234 Code 1a050076
@@ -1922,9 +1883,9 @@ Announce310:
 'Befehl 565 &H0235 Code 1a050077
 'Mic down Funktion
 'mic down function
-Data "565;os,mic down function;1;1;0,no function;1,up;2,down;3,up vfo khz;4,down vfo khz;5,vol up;6,vol down;7,xfc;8,call;9,vfo/memo;10,dr;11.from/to dr;"
-Data "565;os;12,home ch;13,band/group up;14,band/group down;15,scan;16,tamprary skip;17,speech;18,mode;19,rf power;20,voice keyer/rtty memory1;21,voice keyer/rtty memory2;"
-Data "565;os;22,voice keyer/rtty memory3;23,voice keyer/rtty memory4;24,t-call;25,RX>CS;26,ts;27,mpad;28split;29,a/b;30,tuner;9,CHAPTER;remote mic"
+Data "565;os,mic down function;1;0,no function;1,up;2,down;3,up vfo khz;4,down vfo khz;5,vol up;6,vol down;7,xfc;8,call;9,vfo/memo;10,dr;11,from/to dr;"
+Data "565;os;12,home ch;13,band/group up;14,band/group down;15,scan;16,tamporary skip;17,speech;18,mode;19,rf power;20,voice keyer/rtty memory1;21,voice keyer/rtty memory2;"
+Data "565;os;22,voice keyer/rtty memory3;23,voice keyer/rtty memory4;24,t-call;25,RX>CS;26,ts,27,mpad,28,split,29,a/b,30,tuner;9,CHAPTER,remote mic"
 '
 Announce311:
 'Befehl 566 &H0236 Code 1a050077
@@ -1936,7 +1897,7 @@ Announce312:
 'Befehl 567 &H0237 Code 1a050078
 'mode Auswahl ssb
 'mode select ssb
-Data "567;os,mode select ssb;1;0,off;1,on;9,CHAPTER;remote mic"
+Data "567;os,mode select ssb;1;0,off;1,on;9,CHAPTER,remote mic"
 '
 Announce313:
 'Befehl 568 &H0238 Code 1a050078
@@ -1948,7 +1909,7 @@ Announce314:
 'Befehl 569 &H0239 Code 1a050079
 'mode Auswahl cw
 'mode select cw
-Data "569;os,mode select cw;1;0,off;1,on;9,CHAPTER;remote mic"
+Data "569;os,mode select cw;1;0,off;1,on;9,CHAPTER,remote mic"
 '
 Announce315:
 'Befehl 570 &H023a Code 1a050079
@@ -1960,7 +1921,7 @@ Announce316:
 'Befehl 571 &H023b Code 1a050080
 'mode Auswahl rtty
 'mode select rtty
-Data "571;os,mode select rtty;1;0,off;1,on;9,CHAPTER;remote mic"
+Data "571;os,mode select rtty;1;0,off;1,on;9,CHAPTER,remote mic"
 '
 Announce317:
 'Befehl 572 &H023c Code 1a050080
@@ -1972,7 +1933,7 @@ Announce318:
 'Befehl 573 &H023d Code 1a050081
 'mode Auswahl am
 'mode select am
-Data "573;os,mode select am;1;0,off;1,on;9,CHAPTER;remote mic"
+Data "573;os,mode select am;1;0,off;1,on;9,CHAPTER,remote mic"
 '
 Announce319:
 'Befehl 574 &H023e Code 1a050081
@@ -1984,7 +1945,7 @@ Announce320:
 'Befehl 575 &H023f Code 1a050082
 'mode Auswahl fm
 'mode select fm
-Data "575;os,mode select fm;1;0,off;1,on;9,CHAPTER;remote mic"
+Data "575;os,mode select fm;1;0,off;1,on;9,CHAPTER,remote mic"
 '
 Announce321:
 'Befehl 576 &H0240 Code 1a050082
@@ -1996,7 +1957,7 @@ Announce322:
 'Befehl 577 &H0241 Code 1a050083
 'mode Auswahl dv
 'mode select dv
-Data "577;os,mode select dv;1;0,off;1,on;9,CHAPTER;remote mic"
+Data "577;os,mode select dv;1;0,off;1,on;9,CHAPTER,remote mic"
 '
 Announce323:
 'Befehl 578 &H0242 Code 1a050083
@@ -2008,7 +1969,7 @@ Announce324:
 'Befehl 579 &H0243 Code 1a050084
 'mode Auswahl wfm
 'mode select wfm
-Data "579;os,mode select wfm;1;0,off;1,on;9,CHAPTER;remote mic"
+Data "579;os,mode select wfm;1;0,off;1,on;9,CHAPTER,remote mic"
 '
 Announce325:
 'Befehl 580 &H0244 Code 1A050084
@@ -2020,7 +1981,7 @@ Announce326:
 'Befehl 581 &H0245 Code 1a050085
 'Keyboard Typ
 'Keyboard type
-Data "581;os,Keyboard type;1;0,10 key;1,full;8,CHAPTER;function"
+Data "581;os,Keyboard type;1;0,10 key;1,full;8,CHAPTER,function"
 '
 Announce327:
 'Befehl 582 &H0246 Code 1a05085
@@ -2032,7 +1993,7 @@ Announce328:
 'Befehl 583 &H0247 Code 1a050086
 'keyboard layout
 'keyboard layout
-Data "583;os,keyboard layout;1;0,english;1,german;2,french;8,CHAPTER;function"
+Data "583;os,keyboard layout;1;0,english;1,german;2,french;8,CHAPTER,function"
 '
 Announce329:
 'Befehl 584 &H0248 Code 1a050086
@@ -2044,7 +2005,7 @@ Announce330:
 'Befehl 585 &H0249 Code 1a050087
 'Bildschimeingabe power
 'screen capture power
-Data "585;os,screen capture power;1;0,off;1,on;8,CHAPTER;function"
+Data "585;os,screen capture (power);1;0,off;1,on;8,CHAPTER,function"
 '
 Announce331:
 'Befehl 586 &H024a Code 1a050087
@@ -2056,7 +2017,7 @@ Announce332:
 'Befehl 587 &H024b Code 1a050088
 'Bildschimeingabe file type
 'screen capture file type
-Data "587;os,screen capture file type;1;0,png;1,bmp;8,CHAPTER;function"
+Data "587;os,screen capture file type;1;0,png;1,bmp;8,CHAPTER,function"
 '
 Announce333:
 'Befehl 588 &H024c Code 1a050088
@@ -2068,7 +2029,7 @@ Announce334:
 'Befehl 589 &H024d Code 1a050089
 'Referenz Frequenz
 'reference frequency
-Data "589;op,reference frequency;1;512;lin;-;8,CHAPTER;function"
+Data "589;op,reference frequency;1;512,{0.195_0to100};lin;%;8,CHAPTER,function"
 '
 Announce335:
 'Befehl 590 &H024e Code 1a050089
@@ -2080,7 +2041,7 @@ Announce336:
 'Befehl 591 &H024f Code 1a050090
 'standby beep
 'standby beep
-Data "591;os,standby beep;1;0,off;1,on;2,to me: high tone;3,to me:alarm high tone;2,CHAPTER;DV"
+Data "591;os,standby beep;1;0,off;1,on;2,to me: high tone;3,to me:alarm high tone;2,CHAPTER,DV"
 '
 Announce337:
 'Befehl 592 &H0250 Code 1a050090
@@ -2092,7 +2053,7 @@ Announce338:
 'Befehl 593 &H0251 Code 1a050091
 'Audio Antwort
 'audio reply
-Data "593;os,audio reply;1;0,off;1,on;2,voice;3,position;2,CHAPTER;DV"
+Data "593;os,audio reply;1;0,off;1,on;2,voice;3,position;2,CHAPTER,DV"
 '
 Announce339:
 'Befehl 594 &H0252 Code 1a050091
@@ -2104,7 +2065,7 @@ Announce340:
 'Befehl 595 &H0253 Code 1a050092
 'DV data tx
 'DV data tx
-Data "595;os,DV data tx;1;0,PTT;1,auto;2,CHAPTER;DV"
+Data "595;os,DV data tx;1;0,PTT;1,auto;2,CHAPTER,DV"
 '
 Announce341:
 'Befehl 596 &H0254 Code 1a050092
@@ -2116,7 +2077,7 @@ Announce342:
 'Befehl 597 &H0255 Code 1a050093
 'dv fast data
 'dv fast data
-Data "597;os,fast data;1;0,off;1,on;2,CHAPTER;DV"
+Data "597;os,DV fast data;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce343:
 'Befehl 598 &H0256 Code 1a050093
@@ -2128,7 +2089,7 @@ Announce344:
 'Befehl 599 &H0257 Code 1a050094
 'dv fast data gps data speed
 'dv fast data gps data speed
-Data "599;os,gps data speed;1;0,slow;1,fast;2,CHAPTER;DV"
+Data "599;os,gps data speed;1;0,slow;1,fast;2,CHAPTER,DV"
 '
 Announce345:
 'Befehl 600 &H0258 Code 1a050094
@@ -2140,7 +2101,7 @@ Announce346:
 'Befehl 601 &H0259 Code 1a050095
 'dv fast data ptt tx delay
 'dv fast data ptt tx delay
-Data "601;op,dv fast data ptt tx delay;1;11;lin;s;2,CHAPTER;DV"
+Data "601;op,dv fast data ptt tx delay;1;11;lin;s;2,CHAPTER,DV"
 '
 Announce347:
 'Befehl 602 &H025a Code 1A050095
@@ -2152,7 +2113,7 @@ Announce348:
 'Befehl 603 &H025b Code 1a050096
 'digital monitor
 'digital monitor
-Data "603;os,digital monitor;1;0,auto;1,digital;2,analog;2,CHAPTER;DV"
+Data "603;os,digital monitor;1;0,auto;1,digital;2,analog;2,CHAPTER,DV"
 '
 Announce349:
 'Befehl 604 &H025c Code 1a050096
@@ -2164,7 +2125,7 @@ Announce350:
 'Befehl 605 &H025d Code 1a050097
 'digital repeater
 'digital repeater
-Data "605;os,digital repeater;1;0,off;1,on;2,CHAPTER;DV"
+Data "605;os,digital repeater;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce351:
 'Befehl 606 &H025e Code 1a050097
@@ -2176,7 +2137,7 @@ Announce352:
 'Befehl 607 &H0225f Code 1a050098
 'dv auto detect
 'dv auto detect
-Data "607;os,dv auto detect;1;0,off;1,on;2,CHAPTER;DV"
+Data "607;os,dv auto detect;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce353:
 'Befehl 608 &H0260 Code 1a050098
@@ -2188,7 +2149,7 @@ Announce354:
 'Befehl 609 &H0261 Code 1a050099
 'rx rpt Aufnahme
 'rx rpt record
-Data "609;os,rx rpt record;1;0,all;1,latest only;2,CHAPTER;DV"
+Data "609;os,rx rpt record;1;0,all;1,latest only;2,CHAPTER,DV"
 '
 Announce355:
 'Befehl 610 &H0262 Code 1a050099
@@ -2200,7 +2161,7 @@ Announce356:
 'Befehl 611 &H0263 Code 1a050100
 'bk
 'bk
-Data "611;os,bk;1;0,off;1,on;2,CHAPTER;DV"
+Data "611;os,bk;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce357:
 'Befehl 612 &H0264 Code 1a050100
@@ -2212,7 +2173,7 @@ Announce358:
 'Befehl 613 &H0265 Code 1a050101
 'emr
 'emr
-Data "613;os,emr;1;0,off;1,on;2,CHAPTER;DV"
+Data "613;os,emr;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce359:
 'Befehl 614 &H0266 Code 1a050101
@@ -2224,7 +2185,7 @@ Announce360:
 'Befehl 615 &H0267 Code 1a050102
 'emr NF Pegel
 'emr af level
-Data "615;op,emr af level;1;256,{0 to 100};lin;%;2,CHAPTER;DV"
+Data "615;op,emr af level;1;256, ,{0.39_0to99.7};lin;%;2,CHAPTER,DV"
 '
 Announce361:
 'Befehl 616 &H0268 Code 1a050102
@@ -2236,7 +2197,7 @@ Announce362:
 'Befehl 617 &H0269 Code 1a050103
 'qso log
 'qso log
-Data "617;os,qso log;1;0,off;1,on;10,CHAPTER;QSO_RX log"
+Data "617;os,qso log;1;0,off;1,on;10,CHAPTER,QSO_RX log"
 '
 Announce363:
 'Befehl 618 &H026a Code 1a050103
@@ -2248,7 +2209,7 @@ Announce364:
 'Befehl 619 &H026b Code 1a050104
 'history log
 'history log
-Data "619;os,history log;1;0,off;1,on;10,CHAPTER;QSO_RX log"
+Data "619;os,history log;1;0,off;1,on;10,CHAPTER,QSO_RX log"
 '
 Announce365:
 'Befehl 620 &H026c Code 1a050104
@@ -2260,7 +2221,7 @@ Announce366:
 'Befehl 621 &H025d Code 1a050105
 'csv format
 'csv format
-Data "621;os,csv format;1;0,separator . decimal comma;1,separator colon decimal .;2,separator colon decimal comma;10,CHAPTER;QSO_RX log"
+Data "621;os,csv format;1;0,separator: comma decimal: .;1,separator: semicolon decimal: .;2,separator: semicolon decimal: comma;10,CHAPTER,QSO_RX log"
 '
 Announce367:
 'Befehl 622 &H026e Code 1a050105
@@ -2272,7 +2233,7 @@ Announce368:
 'Befehl 623 &H026f Code 1a050106
 'date format
 'date format
-Data "623;os,date format;1;0,yyyy/mm/dd;1,mm/dd/yyyy;2,dd/mm/yyyy;10,CHAPTER;QSO_RX log"
+Data "623;os,date format;1;0,yyyy/mm/dd;1,mm/dd/yyyy;2,dd/mm/yyyy;10,CHAPTER,QSO_RX log"
 '
 Announce369:
 'Befehl 624 &H0270 Code 1a050106
@@ -2284,7 +2245,7 @@ Announce370:
 'Befehl 625 &H0271 Code 1a050107
 'SP Stecker Funktion
 'Sp jack function
-Data "625;os,sp jack function;1;0,speaker;1,phone;2,phone l+r;10,CHAPTER;connectors"
+Data "625;os,sp jack function;1;0,speaker;1,phone;2,phone l+r;10,CHAPTER,connectors"
 '
 Announce371:
 'Befehl 626 &H0272 Code 1a050107
@@ -2296,67 +2257,67 @@ Announce372:
 'Befehl 627 &H0273 Code 1a050108
 'phone Pegel
 'phone level
-Data "627;os,phone level;1;31{-15 to +15};lin;-;10,CHAPTER;connectors"
+Data "627;op,phone level;1;31,{1_-15to+15};lin;-;10,CHAPTER,connectors"
 '
 Announce373:
 'Befehl 628 &H0274 Code 1a050108
 'phone Pegel
 'phone level
-Data "628;as,as627"
+Data "628;ap,as627"
 '
 Announce374:
 'Befehl 629 &H0275 Code 1a050109
-'af signal output to af/if
-'af signal output to af/if
-Data "629;os,AF output to af/if;1;0,AF;1,IF;10,CHAPTER;connectors"
+'af signal output
+'af signal output 
+Data "629;os,USB output;1;0,AF;1,IF;10,CHAPTER,connectors"
 '
 Announce375:
 'Befehl 630 &H0276 Code 1a050109
-'af signal output to af/if
-'af signal output to af/if
+'af signal output
+'af signal output
 Data "630;as,as629"
 '
 Announce376:
 'Befehl 631 &H0277 Code 1a050110
-'AF signal output Pegel to AF/IF
-'AF signal output levelto af/if
-Data "631;op,AF signal output level to af/if;1;256;lin;-;10,CHAPTER;connectors"
+'AF signal output Pegel
+'AF signal output level
+Data "631;op,USB AF output level;1;256, ,{0.39_0to99.7};lin;%;10,CHAPTER,connectors"
 '
 Announce377:
 'Befehl 632 &H0278 Code 1a050110
-'AF signal output Pegel to AF/IF
-'AF signal output levelto af/if
+'AF signal output Pegel
+'AF signal output level
 Data "632;ap,as631"
 '
 Announce378:
 'Befehl 633 &H0279 Code 1a050111
-'squelch function for the AF signal output to AF/IF
-'squelch function for the AF signal output to af/if
-Data "633;os,af/if squelch;1;0,off;1,on;10,CHAPTER;connectors"
+'squelch function for the AF signal
+'squelch function for the AF signal
+Data "633;os,af squelch;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce379:
 'Befehl 634 &H027a Code 1a050111
-'squelch function for the AF signal output to AF/IF
-'squelch function for the AF signal output to af/if
+'squelch function for the AF signal
+'squelch function for the AF signal
 Data "634;as,as633"
 '
 Announce380:
 'Befehl 635 &H027b Code 1a000112
-'beep and speech output setting to AF/IF
-'beep and speech output setting to af/if
-Data "635;os,beep and speech output setting to a/if;1;0,off;1,on;10,CHAPTER;connectors"
+'beep and speech output
+'beep and speech output
+Data "635;os,beep and speech output;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce381:
 'Befehl 636 &H027c Code 1a050112
-'beep and speech output setting to AF/IF
-'beep and speech output setting to af/if
+'beep and speech output
+'beep and speech output
 Data "636;as,as635"
 '
 Announce382:
 'Befehl 637 &H027d Code 1a050113
-'IF signal output level to AF/IF
-'IF signal output level to af/if
-Data "637;op,IF signal output level to af/if;1;256;lin;-;10,CHAPTER;connectors"
+'IF signal output level
+'IF signal output level
+Data "637;op,USB IF output level;1;256, ,{0.39_0to99.7};lin;%;10,CHAPTER,connectors"
 '
 Announce383:
 'Befehl 638 &H027e Code 1a050113
@@ -2368,7 +2329,7 @@ Announce384:
 'Befehl 639 &H027f Code 1a050114
 'Wlan AF/IF Ausgang
 'wlan af/if output
-Data "639;os,wlan af/if output;1;0,af;1,if;10,CHAPTER;connectors"
+Data "639;os,wlan af/if output;1;0,af;1,if;10,CHAPTER,connectors"
 '
 Announce385:
 'Befehl 640 &H0280 Code 1a050114
@@ -2380,7 +2341,7 @@ Announce386:
 'Befehl 641 &H0281 Code 1a050115
 'Wlan AF SQL
 'wlan af sql
-Data "641;os,wlan af sql;1;0,off;1,on;10,CHAPTER;connectors"
+Data "641;os,wlan af sql;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce387:
 'Befehl 642 &H0282 Code 1a050115
@@ -2392,7 +2353,7 @@ Announce388:
 'Befehl 643 &H0283 Code 1a050116
 'Mod input level from USB
 'Mod input level from USB
-Data "643;op,USB mod input level;1;256;lin{0 to 100};%;10,CHAPTER;connectors"
+Data "643;op,USB mod input level;1;256, ,{0.39_0to99.7};lin;%;10,CHAPTER,connectors"
 '
 Announce389:
 'Befehl 644 &H0284 Code 1a050116
@@ -2404,7 +2365,7 @@ Announce390:
 'Befehl 645 &H0285 Code 1a050117
 'Mod input level from WLAN
 'Mod input level from WLAN
-Data "645;op,Mod input level from WLAN;1;256,{0 to 100;lin;-;10,CHAPTER;connectors"
+Data "645;op,WLAN mod input level;1;256, ,{0.39_0to99.7};lin;-;10,CHAPTER,connectors"
 '
 Announce391:
 'Befehl 646 &H0286 Code 1a050117
@@ -2414,33 +2375,33 @@ Data "646;ap,as645"
 '
 Announce392:
 'Befehl 647 &H0287 Code 1a050118
-'MOD input connector during  DATA OFF
-'MOD input connector during  DATA OFF
-Data "647;os,MOD input for DATA OFF;1;0,Mic;1,USB;2,Mic/USB;3,WLAN;10,CHAPTER;connectors"
+'MOD input connector during  DATA
+'MOD input connector during  DATA
+Data "647;os,MOD input for DATA;1;0,Mic;1,USB;2,Mic/USB;3,WLAN;10,CHAPTER,connectors"
 '
 Announce393:
 'Befehl 648 &H0288 Code 1a050118
-'MOD input connector during  DATA OFF
-'MOD input connector during  DATA OFF
+'MOD input connector during  DATA
+'MOD input connector during  DATA
 Data "648;as,as647"
 '
 Announce394:
 'Befehl 649 &H0289 Code 1a050119
-'MOD input connector during  DATA
-'MOD input connector during  DATA
-Data "649;os,MOD input connector for DATA;1;0,Mic;1,USB;2,Mic/USB;3,USB;10,CHAPTER;connectors"
+'MOD input connector during  DATA OFF
+'MOD input connector during  DATA OFF
+Data "649;os,MOD input for DATA OFF;1;0,Mic;1,USB;2,Mic/USB;3,WLAN;10,CHAPTER,connectors"
 '
 Announce395:
 'Befehl 650 &H028a Code 1a050119
-'MOD input connector during  DATA
-'MOD input connector during  DATA
+'MOD input connector during  DATA OFF
+'MOD input connector during  DATA OFF
 Data "650;as,as649"
 '
 Announce396:
 'Befehl 651 &H028b Code 1a050120
 'Senden Ausgang fuer HF
 'send output for hf
-Data "651;os,send output for hf;1;0,off;1,on;10,CHAPTER;connectors"
+Data "651;os,send output for hf;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce397:
 'Befehl 652 &H028c Code 1a050120
@@ -2452,7 +2413,7 @@ Announce398:
 'Befehl 653 &H028d Code 1a050121
 'Senden Ausgang fuer 50MHz
 'send output for 50MHz
-Data "653;os,send output for 50MHz;1;0,off;1,on;10,CHAPTER;connectors"
+Data "653;os,send output for 50MHz;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce399:
 'Befehl 654 &H028e Code 1a050121
@@ -2464,7 +2425,7 @@ Announce400:
 'Befehl 655 &H028f Code 1a050123
 'Senden Ausgang fuer 144MHz
 'send output for 144MHz
-Data "655;os,send output for 144MHz;1;0,off;1,on;10,CHAPTER;connectors"
+Data "655;os,send output for 144MHz;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce401:
 'Befehl 656 &H0290 Code 1a50123
@@ -2476,7 +2437,7 @@ Announce402:
 'Befehl 657 &H0291 Code 1a050124
 'Senden Ausgang fuer 430MHz
 'send output for 430MHz
-Data "657;os,send output for 430MHz;1;0,off;1,on;10,CHAPTER;connectors"
+Data "657;os,send output for 430MHz;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce403:
 'Befehl 658 &H0292 Code 1a050124
@@ -2488,7 +2449,7 @@ Announce404:
 'Befehl 659 &H0293 Code 1a050125
 'USB Senden
 'USB send
-Data "659;os,USB send;1;0,off;1,USBA DTR;2,USBA RTS;3,USBB DTR;4,USBB RTS;10,CHAPTER;connectors"
+Data "659;os,USB send;1;0,off;1,USBA DTR;2,USBA RTS;3,USBB DTR;4,USBB RTS;10,CHAPTER,connectors"
 '
 Announce405:
 'Befehl 660 &H0294 Code 1a050125
@@ -2500,7 +2461,7 @@ Announce406:
 'Befehl 661 &H0295 Code 1a050126
 'USB Senden CW
 'USB send CW
-Data "661;os,USB send cw;1;0,off;1,USBA DTR;2,USBA RTS;3,USBB DTR;4,USBB RTS;10,CHAPTER;connectors"
+Data "661;os,USB send cw;1;0,off;1,USBA DTR;2,USBA RTS;3,USBB DTR;4,USBB RTS;10,CHAPTER,connectors"
 '
 Announce407:
 'Befehl 662 &H0296 Code 1A050126
@@ -2512,7 +2473,7 @@ Announce408:
 'Befehl 663 &H0297 Code 1a050127
 'USB Senden RTTY
 'USB send rtty
-Data "663;os,USB send rtty;1;0,off;1,USBA DTR;2USBA RTS;3,USBB DTR;4,USBB RTS;10,CHAPTER;connectors"
+Data "663;os,USB send rtty;1;0,off;1,USBA DTR;2,USBA RTS;3,USBB DTR;4,USBB RTS;10,CHAPTER,connectors"
 '
 Announce409:
 'Befehl 664 &H0298 Code 1a050127
@@ -2524,7 +2485,7 @@ Announce410:
 'Befehl 665 &H0299 Code 1a050128
 'external keypad setting for VOICE
 'external keypad setting for VOICE
-Data "665;os,external keypad for VOICE;1;0,off;1,on;10,CHAPTER;connectors"
+Data "665;os,external keypad for VOICE;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce411:
 'Befehl 666 &H029a Code 1a050128
@@ -2536,7 +2497,7 @@ Announce412:
 'Befehl 667 &H029b Code 1a050129
 'external keypad setting for keyer
 'external keypad setting for keyer
-Data "667;os,external keypad for keyer;1;0,off;1,on;10,CHAPTER;connectors"
+Data "667;os,external keypad for keyer;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce413:
 'Befehl 668 &H029c Code 1a050129
@@ -2548,7 +2509,7 @@ Announce414:
 'Befehl 669 &H029d Code 1a050130
 'external keypad setting for RTTY
 'external keypad setting for RTTY
-Data "669;os,external keypad setting for RTTY;1;0,off;1,on;10,CHAPTER;connectors"
+Data "669;os,external keypad for RTTY;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce415:
 'Befehl 670 &H029e Code 1a050130
@@ -2560,7 +2521,7 @@ Announce416:
 'Befehl 671 &H029f Code 1a050131
 'CI-V transceive
 'CI-V transceive
-Data "671;os,CI-V transceive;1;0,off;1,on;10,CHAPTER;connectors"
+Data "671;os,CI-V transceive;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce417:
 'Befehl 672 &H02a0 Code 1a050131
@@ -2572,7 +2533,7 @@ Announce418:
 'Befehl 673 &H02a1 Code 1a050132
 'echo setting for CI-V operation from USB
 'echo setting for CI-V operation from USB
-Data "673;os,echo for CI-V USB;1;0,off;1,on;10,CHAPTER;connectors"
+Data "673;os,echo for CI-V USB;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce419:
 'Befehl 674 &H02a2 Code 1a050132
@@ -2584,7 +2545,7 @@ Announce420:
 'Befehl 675 &H02a3 Code 1a050133
 'USB B Funktion
 'USB B function
-Data "675;os,USB B function;1;0,off;1,RTTY decode;2,dv data,3,weather;10,CHAPTER;connectors"
+Data "675;os,USB B function;1;0,off;1,rtty;2,dv data,3,weather;10,CHAPTER,connectors"
 '
 Announce421:
 'Befehl 676 &H02a4 Code 1a050133
@@ -2596,7 +2557,7 @@ Announce422:
 'Befehl 677 &H02a5 Code 1a050134
 'USB B GPS out
 'USB B GPS out
-Data "677;os,USB b gps out;1;0,off;1,on;10,CHAPTER;connectors"
+Data "677;os,USB B gps out;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce423:
 'Befehl 678 &H02a6 Code 1a050134
@@ -2608,7 +2569,7 @@ Announce424:
 'Befehl 679 &H02a7 Code 1a050135
 'Mic 8V Ausgang
 'Mic 8V output
-Data "679;os,mic 8v output;1;0,off;1,on;10,CHAPTER;connectors"
+Data "679;os,mic 8v output;1;0,off;1,on;10,CHAPTER,connectors"
 '
 Announce425:
 'Befehl 680 &H02a8 Code 1a050135
@@ -2620,7 +2581,7 @@ Announce426:
 'Befehl 681 &H02a9 Code 1a050136
 'LCD Helligkeit
 'LCD unit backlight brightness
-Data "681;op,LCD unit backlight brightness;1;256{0 to 100};lin;%;10,CHAPTER;display"
+Data "681;op,LCD unit backlight brightness;1;256,{0.39_0to99.7};lin;%;10,CHAPTER,display"
 '
 Announce427:
 'Befehl 682 &H02aa Code 1a050136
@@ -2632,7 +2593,7 @@ Announce428:
 'Befehl 683 &H02ab Code 1a050137
 'Helligkeit auto Anpassung
 'brightness auto adjust
-Data "683;os,LCD brightness auto adjust;1;0,off;1,on;10,CHAPTER;display"
+Data "683;os,LCD brightness auto adjust;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce429:
 'Befehl 684 &H02ac Code 1a050137
@@ -2644,7 +2605,7 @@ Announce430:
 'Befehl 685 &H02ad Code 1a050138
 'Bildschirmschoner Batterie
 'screen saver battery
-Data "685;os,screen saver battery;1;0,off;1,1min;2,2min;3,5min;4,15min;5,30min;6,60min;10,CHAPTER;display"
+Data "685;os,screen saver battery;1;0,off;1,1min;2,2min;3,5min;4,15min;5,30min;6,60min;10,CHAPTER,display"
 '
 Announce431:
 'Befehl 686 &H02ae Code 1a050138
@@ -2656,7 +2617,7 @@ Announce432:
 'Befehl 687 &H02af Code 1a050139
 'Bildschirmschoner 13,8V
 'screen saver 13.8V
-Data "687;os,screen saver battery;1;0,off;1,1min;2,2min;3,5min;4,15min;5,30min;6,60min;10,CHAPTER;display"
+Data "687;os,screen saver battery;1;0,off;1,1min;2,2min;3,5min;4,15min;5,30min;6,60min;10,CHAPTER,display"
 '
 Announce433:
 'Befehl 688 &H02b0 Code 1a050139
@@ -2668,7 +2629,7 @@ Announce434:
 'Befehl 689 &H02b1 Code 1a050140
 'Bildschirm power schalter
 'screen power switch
-Data "689;os,screen power switch;1;0,off;1,on;10,CHAPTER;display"
+Data "689;os,screen power switch;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce435:
 'Befehl 690 &H02b2 Code 1a050140
@@ -2680,7 +2641,7 @@ Announce436:
 'Befehl 691 &H02b3 Code 1a050141
 'RX LED
 'rx led
-Data "691;os,rx led;1;0,off;1,on;10,CHAPTER;display"
+Data "691;os,rx led;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce437:
 'Befehl 692 &H02b4 Code 1a050141
@@ -2692,7 +2653,7 @@ Announce438:
 'Befehl 693 &H02b5 Code 1a050142
 'meter peak hold
 'meter peak hold
-Data "693;os,meter peak hold;1;0,off;1,on;10,CHAPTER;display"
+Data "693;os,meter peak hold;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce439:
 'Befehl 694 &H02b6 Code 1a050142
@@ -2704,7 +2665,7 @@ Announce440:
 'Befehl 695 &H02b7 Code 1a050143
 'memory Name
 'memory name
-Data "695;os,memory name;1;0,off;1,on;10,CHAPTER;display"
+Data "695;os,memory name;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce441:
 'Befehl 696 &H0b8 Code 1a050143
@@ -2716,7 +2677,7 @@ Announce442:
 'Befehl 697 &H02b9 Code 1a050144
 'Gruppen Name popup
 'group name popup
-Data "697;os,group name popup;1;0,off;1,on;10,CHAPTER;display"
+Data "697;os,group name popup;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce442:
 'Befehl 698 &H02ba Code 1a050144
@@ -2728,7 +2689,7 @@ Announce444:
 'Befehl 699 &H02bb Code 1a050145
 'Rufzeichen Anzeige
 'call sign display
-Data "699;os,call sign display;1;0,off;1,normal;2,rx hold;3,hold;10,CHAPTER;display"
+Data "699;os,call sign display;1;0,off;1,normal;2,rx hold;3,hold;10,CHAPTER,display"
 '
 Announce445:
 'Befehl 700 &H02bc Code 1a050145
@@ -2740,7 +2701,7 @@ Announce446
 'Befehl 701 &H02bd Code 1a050146
 'RX Lage 
 'rx position indicator
-Data "701;os,rx position indicator;1;0,off;1,on;10,CHAPTER;display"
+Data "701;os,rx position indicator;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce447:
 'Befehl 702 &H02be Code 1a050146
@@ -2752,7 +2713,7 @@ Announce448:
 'Befehl 703 &H02bf Code 1a050147
 'RX Lage Anzeige
 'rx position display
-Data "703;os,rx position display;1;0,off;1,on;10,CHAPTER;display"
+Data "703;os,rx position display;1;0,off;1,on;10,CHAPTER,display"
 ''
 Announce449:
 'Befehl 704 &H02c0 Code 1a050147
@@ -2764,7 +2725,7 @@ Announce450:
 'Befehl 705 &H02c1 Code 1a050148
 'RX Lage Anzeige Zeit
 'rx position display timer
-Data "705;os,rx position display timer;1;0,5s;1,10s;2,15s;3,30s;4,hold;10,CHAPTER;display"
+Data "705;os,rx position display timer;1;0,5s;1,10s;2,15s;3,30s;4,hold;10,CHAPTER,display"
 '
 Announce451:
 'Befehl 706 &H02c2 Code 1a050148
@@ -2776,7 +2737,7 @@ Announce452:
 'Befehl 707 &H02c3 Code 1a050149
 'Antwort Lage Anzeige
 'reply position display
-Data "707;os,rely position display;1;0,off;1,on;10,CHAPTER;display"
+Data "707;os,rely position display;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce443:
 'Befehl 708 &H02c4 Code 1a050149
@@ -2788,7 +2749,7 @@ Announce454:
 'Befehl 709 &H02c5 Code 1a050150
 'Bild
 'rx picture indicator
-Data "709;os,rx picture indicator;1;0,off;1,on;10,CHAPTER;display"
+Data "709;os,rx picture indicator;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce455:
 'Befehl 710 &H02c6 Code 1a050150
@@ -2800,7 +2761,7 @@ Announce456:
 'Befehl 711 &H02c7 Code 1a050151
 'DV RX Hintergrundbeleuchtung
 'dv rx backlight
-Data "711;os,dv rx backlight;1;0,off;1,on;10,CHAPTER;display"
+Data "711;os,DV rx backlight;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce457:
 'Befehl 712 &H02c8 Code 1a050151
@@ -2812,7 +2773,7 @@ Announce458:
 'Befehl 713 &H02c9 Code 1a050152
 'TX Rufzeicheanzeige
 'tx call sign display
-Data "713;os,tx call sign display;1;0,off;1,your call sign;2,my call sign;10,CHAPTER;display"
+Data "713;os,tx call sign display;1;0,off;1,your call sign;2,my call sign;10,CHAPTER,DV"
 '
 Announce459:
 'Befehl 714 &H02ca Code 1a05052
@@ -2824,19 +2785,19 @@ Announce460:
 'Befehl 715 &H02cb Code 1a050153
 'Scroll Geschindigkeit
 'scroll speed
-Data "715;os,scroll speed;1;0,slow;1,fast;10,CHAPTER;display"
+Data "715;os,scroll speed;1;0,slow;1,fast;10,CHAPTER,display"
 '
 Announce461:
 'Befehl 716 &H02cc Code 1a050153
 'Scroll Geschindigkeit
 'scroll speed
-Data "716;as,as6715"
+Data "716;as,as715"
 '
 Announce462:
 'Befehl 717 &H02cd Code 1a050154
 'opening message
 'opening message
-Data "717;os,opening message;1;0,off;1,on;10,CHAPTER;display"
+Data "717;os,opening message;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce463:
 'Befehl 718 &H02ce Code 1a050154
@@ -2848,7 +2809,7 @@ Announce464:
 'Befehl 719 &H02cf Code 1a050155
 'Power on check
 'Power on check
-Data "719;os,Power on check;1;0,off;1,on;10,CHAPTER;display"
+Data "719;os,Power on check;1;0,off;1,on;10,CHAPTER,display"
 '
 Announce465:
 'Befehl 720 &H02d0 Code 1a050155
@@ -2860,19 +2821,19 @@ Announce466
 'Befehl 721 &H02d1 Code 1a050156
 'Format Laenge / Breite
 'format latitude / longitude
-Data "721;os,format longituder /latitude;1;0,dddmmmm;1,dddmmss;2,dddd.dddddd;10,CHAPTER;display"
+Data "721;os,format longitude /latitude;1;0,dddmmmm;1,dddmmss;2,dddd.dddddd;10,CHAPTER,display"
 '
 Announce467:
 'Befehl 722 &H02d2 Code 1a050156
 'Format Laenge / Breite
 'format latitude / longitude
-Data "722;as,as6721"
+Data "722;as,as721"
 '
 Announce468:
 'Befehl 723 &H02d3 Code 1a050157
 'Format Hoehe / Entfernung
 'format altitude / distance
-Data "723;os,format altitude / distance;1;0,m;1,ft/ml;10,CHAPTER;display"
+Data "723;os,format altitude / distance;1;0,m;1,ft/ml;10,CHAPTER,display"
 '
 Announce469:
 'Befehl 724 &H02d4 Code 1a050157
@@ -2884,7 +2845,7 @@ Announce470:
 'Befehl 725 &H02d5 Code 1a050158
 'Format Geschwindigkeit
 'format speed
-Data "725;os,speed;1;0,km/h;1,mph;2,knots;10,CHAPTER;display"
+Data "725;os,speed;1;0,km/h;1,mph;2,knots;10,CHAPTER,display"
 '
 Announce471:
 'Befehl 726 &H02d6 Code 1a050158
@@ -2896,7 +2857,7 @@ Announce472:
 'Befehl 727 &H02d7 Code 1a050159
 'Temperatur
 'temperature
-Data "727;os,temperature;1;0,degC;1,degF;10,CHAPTER;display"
+Data "727;os,temperature;1;0,degC;1,degF;10,CHAPTER,display"
 '
 Announce473:
 'Befehl 728 &H02d8 Code 1a050159
@@ -2908,19 +2869,19 @@ Announce474:
 'Befehl 729 &H02d9 Code 1a050160
 'Format Batrometer
 'format barometric
-Data "729;os,format barometric;1;0,hPA;1,mb;2,mmHg;3,inHg;10,CHAPTER;display"
+Data "729;os,barometric;1;0,hPA;1,mb;2,mmHg;3,inHg;10,CHAPTER,display"
 '
 Announce475:
 'Befehl 730 &H02da Code 1a050160
 'Format Barometer
 'format barometric
-Data "730;as,as629"
+Data "730;as,as729"
 '
 Announce476:
 'Befehl 731 &H02db Code 1a050161
 'Format Regen
 'format rainfall
-Data "731;os,format rainfall;1;0,mm;1,inch;10,CHAPTER;display"
+Data "731;os,rainfall;1;0,mm;1,inch;10,CHAPTER,display"
 '
 Announce477:
 'Befehl 732 &H02dc Code 1a050161
@@ -2932,7 +2893,7 @@ Announce478:
 'Befehl 733 &H02dd Code 1a050162
 'Format Winsgeschwindigkeit
 'format wind speed
-Data "733;os,format wind speed;1;0,m/s;1,km/h;2,mph;3,knots;10,CHAPTER;display"
+Data "733;os,wind speed;1;0,m/s;1,km/h;2,mph;3,knots;10,CHAPTER,display"
 '
 Announce479:
 'Befehl 734 &H02de Code 1a050162
@@ -2944,7 +2905,7 @@ Announce480:
 'Befehl 735 &H02df Code 1a050163
 'Display Sprache
 'display language
-Data "735;os,display language;1;0,english;1,japanese;10,CHAPTER;display"
+Data "735;os,display language;1;0,english;1,japanese;10,CHAPTER,display"
 '
 Announce481:
 'Befehl 636 &H02e0 Code 1a050163
@@ -2956,7 +2917,7 @@ Announce482:
 'Befehl 737 &H02e1 Code 1a050164
 'System Sprache
 'system language
-Data "737;os,system language;1;0,english;1,japanese;10,CHAPTER;display"
+Data "737;os,system language;1;0,english;1,japanese;10,CHAPTER,display"
 '
 Announce483:
 'Befehl 738 &H02e2 Code 1a050164
@@ -2968,7 +2929,7 @@ Announce484:
 'Befehl 739 &H02e3 Code 1a050165
 'Datum
 'date
-Data "739;op,date;1;80,{20 to 99};lin;year;12,{1 to 12};lin;month;31,{1 to 31};lin;day;10,CHAPTER;display"
+Data "739;op,date;1;80,{1_20to 99};lin;year;12,{1_1to12};lin;month;31,{1_1to31};lin;day;4,CHAPTER,time"
 '
 Announce485:
 'Befehl 740 &H02e4 Code 1a05165
@@ -2980,7 +2941,7 @@ Announce486:
 'Befehl 741 &H02e5 Code 1a050166
 'Zeit
 'time
-Data "741;op,time;1;24,{0 to 23};lin;hour;60,{0 to 59};lin;min;10,CHAPTER;display"
+Data "741;op,time;1;24,{1_0to23};lin;hour;60,{1_0to59};lin;min;4,CHAPTER,time"
 '
 Announce487:
 'Befehl 742 &H02e6 Code 1a050166
@@ -2992,7 +2953,7 @@ Announce488:
 'Befehl 743 &H02e7 Code 1a050167
 'NTP
 'ntp
-Data "743;os,ntp;1;0,off;1,on;10,CHAPTER;display"
+Data "743;os,ntp;1;0,off;1,on;4,CHAPTER,time"
 '
 Announce489:
 'Befehl 744 &H02e8 Code 1a050167
@@ -3004,7 +2965,7 @@ Announce490:
 'Befehl 745 &H02e9 Code 1a050168
 'NTP Adresse
 'ntp address
-Data "745;oa,ntp address;64,ALPHA5;7,CHAPTER;display"
+Data "745;oa,ntp address;64,{ALPHA5};4,CHAPTER,time"
 '
 Announce491:
 'Befehl 746 &H02ea Code 1a050168
@@ -3016,7 +2977,7 @@ Announce492:
 'Befehl 747 &H02eb Code 1a050169
 'GPS Zeit Korrektur
 'gps time correction
-Data "747;os,ntp address;1;0,off;1,auto;10,CHAPTER;display"
+Data "747;os,GPS time correction;1;0,off;1,auto;4,CHAPTER,time"
 '
 Announce493:
 'Befehl 748 &H02ec Code 1a050169
@@ -3028,7 +2989,7 @@ Announce494:
 'Befehl 749 &H02ed Code 1a050170
 'UTC offset
 'UTC offset
-Data "749;op,UTC offset;1;1681{-14:00 to +14:00};lin,;min;10,CHAPTER;display"
+Data "749;op,UTC offset;1;1681, ,{1_-840to840};lin;min;4,CHAPTER,time"
 '
 Announce495:
 'Befehl 750 &H02ee Code 1A050170
@@ -3040,7 +3001,7 @@ Announce496:
 'Befehl 751 &H02ef Code 1a050171
 'SD CSV Format
 'sd csv format
-Data "751;os,sd csv format;1;0,separator comman, decimal .;1,separator semicolon decimal .;2,separator semicolon decimal comma;7,CHAPTER;SD card"
+Data "751;os,SD csv format;1;0,separator: comma decimal: .;1,separator: semicolon decimal: .;2,separator: semicolon decimal: comma;7,CHAPTER,SD card"
 '
 Announce497:
 'Befehl 752 &H02f0 Code 1a050171
@@ -3052,7 +3013,7 @@ Announce498:
 'Befehl 753 &H02f1 Code 1a050172
 'SD CSV Format Datum
 'sd csv format date
-Data "753;os,sd csv format date;1;0,yyyymmdd;1,mmddyyyy;2,ddmmyyyy;7,CHAPTER;SD card"
+Data "753;os,SD csv format date;1;0,yyyymmdd;1,mmddyyyy;2,ddmmyyyy;7,CHAPTER,SD card"
 '
 Announce499:
 'Befehl 754 &H02f2 Code 1a050172
@@ -3064,19 +3025,19 @@ Announce500:
 'Befehl 755 &H02f3 Code 1a050173
 'scope during TX center type
 'scope during TX center type
-Data "755;os,scope indication during TX center type;1;0,off;1,on;5,CHAPTER;scope"
+Data "755;os,scope during TX center type;1;0,off;1,on;5,CHAPTER,scope"
 '
 Announce501:
 'Befehl 756 &H02f4 Code 1a050173
 'scope during TX center type
 'scope during TX center type
-Data "756;ap,as755"
+Data "756;as,as755"
 '
 Announce502:
 'Befehl 757 &H02f5 Code 1a050174
 'scope max. hold
 'scope max. hold
-Data "757;os,scope max. hold;1;0,off;1,10s;2,on;5,CHAPTER;scope"
+Data "757;os,scope max. hold;1;0,off;1,10s;2,on;5,CHAPTER,scope"
 '
 Announce503:
 'Befehl 758 &H02f6 Code 1a050174
@@ -3088,7 +3049,7 @@ Announce504:
 'Befehl 759 &H02f7 Code 1a050175
 'scope center frequency
 'scope center frequency
-Data "759;os,scope center frequency;1;0,fillter center;1,carrier point center;2,carrier poin center (abs);5,CHAPTER;scope"
+Data "759;os,scope center frequency;1;0,fillter center;1,carrier point center;2,carrier poin center (abs);5,CHAPTER,scope"
 '
 Announce505:
 'Befehl 760 &H02f8 Code 1a050175
@@ -3100,7 +3061,7 @@ Announce506:
 'Befehl 761 &H02f9 Code 1a050176
 'scope marker position FIX type / Scroll type
 'scope marker position fix type / Scroll type
-Data "761;os,scope marker position fix type / Scroll type;1;0,filter center;1,carrier point;5,CHAPTER;scope"
+Data "761;os,scope marker position fix type / Scroll type;1;0,filter center;1,carrier point;5,CHAPTER,scope"
 '
 Announce507:
 'Befehl 762 &H02fa Code 1a050176
@@ -3112,7 +3073,7 @@ Announce508:
 'Befehl 763 &H02fb Code 1a05017
 'VBW
 'VBW
-Data "763;os,VBW;1;0,narrow;1,wide;5,CHAPTER;scope"
+Data "763;os,VBW;1;0,narrow;1,wide;5,CHAPTER,scope"
 '
 Announce509:
 'Befehl 764 &H02fc Code 1a050177
@@ -3124,7 +3085,7 @@ Announce510:
 'Befehl 765 &H02fd Code 1a050178
 'averaging function for spectrum scope
 'averaging function for spectrum scope
-Data "765;os,averaging for spectrum scope;1;0,off;1,2;2,3;3,4;5,CHAPTER;scope"
+Data "765;os,averaging for spectrum scope;1;0,off;1,2;2,3;3,4;5,CHAPTER,scope"
 '
 Announce511:
 'Befehl 766 &H02fe Code 1a050178
@@ -3136,7 +3097,7 @@ Announce512:
 'Befehl 767 &H02ff Code 1a050179
 'spectrum display type
 'spectrum display type
-Data "767;os,spectrum display type;1;0,fill;1,fill+line;5,CHAPTER;scope"
+Data "767;os,spectrum display type;1;0,fill;1,fill+line;5,CHAPTER,scope"
 '
 Announce513:
 'Befehl 768 &H0300 Code 1a050179
@@ -3148,7 +3109,7 @@ Announce514:
 'Befehl 769 &H0301 Code 1a050180
 'waveform Farbe current
 'waveform color current
-Data "769;op,waveform color current;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-;5,CHAPTER;scope"
+Data "769;op,waveform color current;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;5,CHAPTER,scope"
 '
 Announce515:
 'Befehl 770 &H0302 Code 1a050180
@@ -3160,7 +3121,7 @@ Announce516:
 'Befehl 771 &H0303 Code 1a050181
 'waveform line color
 'waveform line color
-Data "771;op,waveform line color;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-;5,CHAPTER;scope"
+Data "771;op,waveform line color;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;5,CHAPTER,scope"
 '
 Announce517:
 'Befehl 772 &H0304 Code 1a050181
@@ -3172,7 +3133,7 @@ Announce518:
 'Befehl 773 &H0305 Code 1a050182
 'waveform  color for peak hold
 'waveform  color for peak hold
-Data "773;op,waveform  color for peak hold;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-;5,CHAPTER;scope"
+Data "773;op,waveform  color for peak hold;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;5,CHAPTER,scope"
 '
 Announce519:
 'Befehl 774 &H0306 Code 1a050182
@@ -3184,7 +3145,7 @@ Announce520:
 'Befehl 775 &H0307 Code 1a050183
 'waterfall set for spectrum scope
 'waterfall set for spectrum scope
-Data "775;os,waterfall;1;0,off;1,on;5,CHAPTER;scope"
+Data "775;os,waterfall;1;0,off;1,on;5,CHAPTER,scope"
 '
 Announce521:
 'Befehl 776 &H0308 Code 1a050183
@@ -3196,7 +3157,7 @@ Announce522:
 'Befehl 777 &H0309 Code 1a050184
 'wasserfall Geschwindigkeit
 'waterfall speed
-Data "777;os,waterfall speed;1;0,slow;1,mid;2,high;5,CHAPTER;scope"
+Data "777;os,waterfall speed;1;0,slow;1,mid;2,high;5,CHAPTER,scope"
 '
 Announce523:
 'Befehl 778 &H030a Code 1a050184
@@ -3208,7 +3169,7 @@ Announce524:
 'Befehl 779   &H030b Code 12050185
 'wasserfall Hoehe
 'waterfall  height when expanded scope is selected
-Data "779;os,waterfall height (expanded);1;0,small;1,mid;2,larger;5,CHAPTER;scope"
+Data "779;os,waterfall height (expanded);1;0,small;1,mid;2,larger;5,CHAPTER,scope"
 '
 Announce525:
 'Befehl 780 &H030c Code 1a050185
@@ -3220,7 +3181,7 @@ Announce526:
 'Befehl 781 &H030d Code 1a050186
 'peak color level set for waterfall of the spectrum scope
 'peak color level set for waterfall of the spectrum scope
-Data "781;os,peak color level set for waterfall;1;0,grid1;1,grid2;2,grid3;3,grid4;4,grid5;5,grid6;6,grid7;7,grid8;5,CHAPTER;scope"
+Data "781;os,peak color level set for waterfall;1;0,grid1;1,grid2;2,grid3;3,grid4;4,grid5;5,grid6;6,grid7;7,grid8;5,CHAPTER,scope"
 '
 '
 Announce527:
@@ -3233,7 +3194,7 @@ Announce528:
 'Befehl 783 &H030f Code 1a050187
 'scope waterfall marker auto-hide
 'scope waterfall marker auto-hide
-Data "783;os,waterfall marker auto-hide;1;0,off;1,on;5,CHAPTER;scope"
+Data "783;os,waterfall marker auto-hide;1;0,off;1,on;5,CHAPTER,scope"
 '
 '
 Announce529:
@@ -3243,10 +3204,10 @@ Announce529:
 Data "784;as,as783"
 '
 Announce530:
-'Befehl 785 &H0311 Code 1a050188 - 190
+'Befehl 785 &H0311 Code 1a050188 - 190 1a050369
 'fixed mode scope edge frequencies for 0.03 to 1.60 MHz band
 'fixed mode scope edge frequencies for 0.03 to 1.60 MHz band
-Data "785;op,fixed mode scope edge frequencies for 0.03 to 1.60 MHz band;4,edgenumber;1566,{30 to 1595},low edge;lin;kHz;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "785;op,fixed mode scope edge for 0.03 to 1.60 MHz band;4,edgenumber,{1,2,3,4};1566,low edge,{1_30to1595};lin;kHz;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce531:
 'Befehl 786 &H0312 Code 1a050188 - 190
@@ -3255,11 +3216,11 @@ Announce531:
 Data "786;ap,as785"
 '
 Announce532:
-'Befehl 787 &H0313 Code 1a050191 - 193
+'Befehl 787 &H0313 Code 1a050191 - 193 370
 'fixed mode scope edge frequencies for 1.60 to 2.00 MHz band
 'fixed mode scope edge frequencies for 1.60 to 2.00 MHz band
-Data "787;op,fixed mode scope edge frequencies for 1.60 to 2.00 MHz band;4,edgenumber;3996,{1600 to 1995},low edge;lin;kHz;"
-Data "787,op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "787;op,fixed mode scope edge for 1.60 to 2.00 MHz band;4,edgenumber,{1,2,3,4};3996,low edge,{1_1600to1995};lin;kHz;"
+Data "787;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce533:
 'Befehl 788 &H0314 Code 1a050191 - 193
@@ -3268,24 +3229,24 @@ Announce533:
 Data "788;ap,as787"
 '
 Announce534:
-'Befehl 789 &H0315 Code 1a050194 - 196
+'Befehl 789 &H0315 Code 1a050194 - 196 371
 'fixed mode scope edge frequencies for  2.00 to 6.00 MHz band
 'fixed mode scope edge frequencies for  2.00 to 6.00 MHz band
-Data "789;op,fixed mode scope edge frequencies for 2.00 to 6.00 MHz band;4,edgenumber;3996,{2000 to 5995},low edge;lin;kHz;"
-Data "789;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "789;op,fixed mode scope edge for 2.00 to 6.00 MHz band;4,edgenumber,{1,2,3,4};3996,low edge,{1_2000to5995};lin;kHz;"
+Data "789;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce535:
-'Befehl 790 &H0316 Code 1a050194 - 196
+'Befehl 790 &H0316 Code 1a050194 - 196 
 'fixed mode scope edge frequencies for 2.00 to 6.00 MHz band
 'fixed mode scope edge frequencies for 2.00 to 6.00 MHz band
 Data "790;ap,as789"
 '
 Announce536:
-'Befehl 791 &H0317 Code 1a050197 - 199
+'Befehl 791 &H0317 Code 1a050197 - 199 372
 'fixed mode scope edge frequencies for 6.00 to 8.00 MHz band
 'fixed mode scope edge frequencies for 6.00 to 8.00 MHz band
-Data "791;op,fixed mode scope edge frequencies for 6.00 to 8.00 MHz band;4,edgenumber;1996,{6000 to 7995},low edge;lin;kHz;"
-Data "791;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "791;op,fixed mode scope edge for 6.00 to 8.00 MHz band;4,edgenumber,{1,2,3,4};1996,low edge,{1_6000to7995};lin;kHz;"
+Data "791;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce537:
 'Befehl 792 &H0318 Code 1a050197 - 199
@@ -3294,12 +3255,11 @@ Announce537:
 Data "792;ap,as791"
 '
 Announce538:
-'Befehl 793 &H0319 Code 1a050200 - 202
+'Befehl 793 &H0319 Code 1a050200 - 202 373
 'fixed mode scope edge frequencies for 8.00 to 11.00 MHz band
 'fixed mode scope edge frequencies for 8.00 to 11.00 MHz band
-Data "793;op,fixed mode scope edge frequencies for 8.00 to 11.00 MHz band;4,edgenumber;2996,{8000 to 10995},low edge;lin;kHz;"
-Data "793;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
-''
+Data "793;op,fixed mode scope edge frequencies for 8.00 to 11.00 MHz band;4,edgenumber,{1,2,3,4};2996,low edge,{1_8000to10995};lin;kHz;"
+Data "793;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 Announce539:
 'Befehl 794 &H031a Code 1a050200 - 202
 'fixed mode scope edge frequencies for 8.00 to 11.00 MHz band
@@ -3307,11 +3267,11 @@ Announce539:
 Data "794;ap,as793"
 '
 Announce540:
-'Befehl 895 &H031b Code 1a050203 - 205
+'Befehl 895 &H031b Code 1a050203 - 205 374
 'fixed mode scope edge frequencies for 11.00 to 15.00 MHz band
 'fixed mode scope edge frequencies for 11.00 to 15.00 MHz band
-Data "795;op,fixed mode scope edge frequencies for 11.00 to 15.00 MHz band;4,edgenumber;3996,{11000 to 14995},low edge;lin;kHz;"
-Data "795;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "795;op,fixed mode scope edge for 11.00 to 15.00 MHz band;4,edgenumber,{1,2,3,4};3996,low edge,{1_11000to14995};lin;kHz;"
+Data "795;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce541
 'Befehl 796 &H031c Code 1a050203 - 205
@@ -3320,11 +3280,11 @@ Announce541
 Data "796;ap,as795"
 '
 Announce542:
-'Befehl 797 &H031d Code 1a050206 - 208
+'Befehl 797 &H031d Code 1a050206 - 208 375
 'fixed mode scope edge frequencies for 15.00 to 20.00 MHz band
 'fixed mode scope edge frequencies for 15.00 to 20.00 MHz band
-Data "797;op,fixed mode scope edge frequencies for 15.00 to 20.00 MHz band;4,edgenumber;4996,{15000 to 199995},low edge;lin;kHz;kHz;"
-Data "797;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "797;op,fixed mode scope edge frequencies for 15.00 to 20.00 MHz band;4,edgenumber,{1,2,3,4};4996,low edge,{1_15000to199995};lin;kHz;"
+Data "797;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce543:
 'Befehl 798 &H031e Code 1a050206 - 208
@@ -3333,12 +3293,12 @@ Announce543:
 Data "798;ap,as797"
 
 Announce544:
-'Befehl 799 &H031f Code 1a050209 - 211
+'Befehl 799 &H031f Code 1a050209 - 211 376
 'fixed mode scope edge frequencies for 20.00 to 22.00 MHz band
 'fixed mode scope edge frequencies for 20.00 to 22.00 MHz band
-Data "799;op,fixed mode scope edge frequencies for 20.00 to 22.00 MHz band;4,edgenumber;1996,{20000 to 21995},low edge;lin;kHz;"
-Data "799;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
-'
+Data "799;op,fixed mode scope edge for 20.00 to 22.00 MHz band;4,edgenumber,{1,2,3,4};1996,low edge,{1_20000to21995};lin;kHz;"
+Data "799;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
+
 Announce545:
 'Befehl 800 &H0320 Code 1a050209 - 211
 'fixed mode scope edge frequencies for 20.00 to 22.00 MHz band
@@ -3346,11 +3306,11 @@ Announce545:
 Data "800;ap,as799"
 '
 Announce546:
-'Befehl 801 &H0321 Code 1a050212 - 214
+'Befehl 801 &H0321 Code 1a050212 - 214 377
 'fixed mode scope edge frequencies for 22.00 to 26.00 MHz band
 'fixed mode scope edge frequencies for 22.00 to 26.00 MHz band
-Data "801;op,fixed mode scope edge frequencies for 22.00 to 26.00 MHz band;4,edgenumber;3996,{22000 to 25995},low edge;lin;kHz;"
-Data "801;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "801;op,fixed mode scope edge frequencies for 22.00 to 26.00 MHz band;4,edgenumber,{1,2,3,4};3996,low edge,{1_22000to25995};lin;kHz;"
+Data "801;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce547:
 'Befehl 802 &H0322 Code 1a050212 - 214
@@ -3359,11 +3319,11 @@ Announce547:
 Data "802;ap,as801"
 
 Announce548:
-'Befehl 803 &H0323 Code 1a050215 - 217
+'Befehl 803 &H0323 Code 1a050215 - 217 378
 'fixed mode scope edge frequencies for 26.00 to 30.00 MHz band
 'fixed mode scope edge frequencies for 26.00 to 30.00 MHz band
-Data "803;op,fixed mode scope edge frequencies for 26.00 to 30.00 MHz band;4,edgenumber;3996,{26000 to 29995},low edge;lin;kHz;"
-Data "803;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "803;op,fixed mode scope edge for 26.00 to 30.00 MHz band;4,edgenumber,{1,2,3,4};3996,low edge,{1_26000to29995};lin;kHz;"
+Data "803;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce549:
 'Befehl 804 H0324 Code 1a050215 - 217
@@ -3372,11 +3332,11 @@ Announce549:
 Data "804;ap,as803"
 '
 Announce550:
-'Befehl 805 &H0325 Code 1a050218 - 220
+'Befehl 805 &H0325 Code 1a050218 - 220 379
 'fixed mode scope edge frequencies for 30.00 to 45.00 MHz band
 'fixed mode scope edge frequencies for 30.00 to 45.00 MHz band
-Data "805;op,fixed mode scope edge frequencies for 30.00 to 45.00 MHz band;4,edgenumber;14996,{30000 to 44995,low edge;lin;kHz;kHz;"
-Data "805;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "805;op,fixed mode scope edge for 30.00 to 45.00 MHz band;4,edgenumber,{1,2,3,4};14996,low edge,{1_30000to4499};lin;kHz;"
+Data "805;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce551:
 'Befehl 806 &H0326 Code 1a050218 - 220
@@ -3385,11 +3345,11 @@ Announce551:
 Data "806;ap,as805"
 '
 Announce552:
-'Befehl 807  &H0327 Code 1a050221 - 223
+'Befehl 807  &H0327 Code 1a050221 - 223 380
 'fixed mode scope edge frequencies for 45.00 to 60.00 MHz band
 'fixed mode scope edge frequencies for 45.00 to 60.00 MHz band
-Data "807;op,fixed mode scope edge frequencies for 45.00 to 60.00 MHz band;4,edgenumber;14996,{45000 to 59995},low edge;lin;kHz;"
-Data "807;os;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "807;op,fixed mode scope edge for 45.00 to 60.00 MHz band;4,edgenumber,{1,2,3,4};14996,low edge,{1_45000to59995};lin;kHz;"
+Data "807;os;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce553:
 'Befehl 808 &H0328 Code 1a050221 - 223
@@ -3398,11 +3358,11 @@ Announce553:
 Data "808;ap,as807"
 '
 Announce554:
-'Befehl 809 &H0329 Code 1a050224 - 226
+'Befehl 809 &H0329 Code 1a050224 - 226 381
 'fixed mode scope edge frequencies for 60.00 to 74.80 MHz band
 'fixed mode scope edge frequencies for 60.00 to 74.80 MHz band
-Data "809;op,fixed mode scope edge frequencies for 60.00 to 74.80 MHz band;4,edgenumber;14796,{60000 to 74795},low edge;lin;kHz;kHz;"
-Data "809;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "809;op,fixed mode scope edge for 60.00 to 74.80 MHz band;4,edgenumber,{1,2,3,4};14796,low edge,{1_60000to74795};lin;kHz;"
+Data "809;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce555:
 'Befehl 810 &H032a Code 1a050224 - 226
@@ -3411,11 +3371,11 @@ Announce555:
 Data "810;ap,as809"
 '
 Announce556:
-'Befehl 811 &H032b Code 1a050227 -229
+'Befehl 811 &H032b Code 1a050227 -229 382
 'fixed mode scope edge frequencies for 74.80 to 108,00 MHz band
 'fixed mode scope edge frequencies for 74.80 to 108,00 MHz band
-Data "811;op,fixed mode scope edge frequencies for 60.00 to 74.80 MHz band;4,edgenumber;14796,{60000 to 74795},low edge;lin;kHz;"
-Data "811;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "811;op,fixed mode scope edge for 60.00 to 74.80 MHz band;4,edgenumber,{1,2,3,4};14796,low edge,{1_60000to74795};lin;kHz;"
+Data "811;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce557:
 'Befehl 812 &H032c Code 1a050227 - 229
@@ -3424,11 +3384,11 @@ Announce557:
 Data "812;ap,as811"
 '
 Announce558:
-'Befehl 813 &H032d Code 1a050230 - 232
+'Befehl 813 &H032d Code 1a050230 - 232 383
 'fixed mode scope edge frequencies for 108.00 to 137.00 MHz band
 'fixed mode scope edge frequencies for 108.00 to 137.00 MHz band
-Data "813;op,fixed mode scope edge frequencies for 60.00 to 74.80 MHz band;4,edgenumber;28996,{108000 to 136995},low edge;lin;kHz;"
-Data "813;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "813;op,fixed mode scope edge for 60.00 to 74.80 MHz band;4,edgenumber,{1,2,3,4};28996,low edge,{1_108000to136995};lin;kHz;"
+Data "813;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce559:
 'Befehl 814 &H032e Code 1a050230 - 232
@@ -3437,12 +3397,12 @@ Announce559:
 Data "814;ap,as813"
 '
 Announce560:
-'Befehl 815 &H032f Code 1a050233 - 235
+'Befehl 815 &H032f Code 1a050233 - 235 384
+'fixed mode scope edge for 137.00 to 200.00 MHz band
 'fixed mode scope edge frequencies for 137.00 to 200.00 MHz band
-'fixed mode scope edge frequencies for 137.00 to 200.00 MHz band
-Data "815;op,fixed mode scope edge frequencies for 60.00 to 74.80 MHz band;4,edgenumber;62996,{137000 to 199995},low edge;lin;kHz;"
-Data "815;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
-'
+Data "815;op,fixed mode scope edge for 60.00 to 74.80 MHz band;4,edgenumber,{1,2,3,4};62996,low edge,{1_137000to199995};lin;kHz;"
+Data "815;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
+
 Announce561:
 'Befehl 816 &H0330 Code 1a050233 - 235
 'fixed mode scope edge frequencies for 137.00 to 200.00 MHz band
@@ -3450,11 +3410,11 @@ Announce561:
 Data "816;ap,as815"
 '
 Announce562:
-'Befehl 817 &H0331 Code 1a050236 - 238
+'Befehl 817 &H0331 Code 1a050236 - 238 385
 'fixed mode scope edge frequencies for 400.00 to 470.00 MHz band
 'fixed mode scope edge frequencies for 400.00 to 470.00 MHz band
-Data "817;op,fixed mode scope edge frequencies for 60.00 to 74.80 MHz band;4,edgenumber;69996,{400000 to 469995},low edge;lin;kHz;"
-Data "817;op;996,{5 to 1000},span;lin;kHz;5,CHAPTER;scope"
+Data "817;op,fixed mode scope edge for 60.00 to 74.80 MHz band;4,edgenumber,{1,2,3,4};69996,low edge,{1_400000to469995};lin;kHz;"
+Data "817;op;996,span;lin;kHz;11,CHAPTER,fixed scope edges"
 '
 Announce563:
 'Befehl 818 &H0332 Code 1a050236 - 238
@@ -3466,7 +3426,7 @@ Announce564:
 'Befehl 819 &H0333 Code 1a050239
 'audio FFT scope
 'audio FFT scope
-Data "819;os,audio FFT scope;1;0,line;1,fill;11,CHAPTER;audio scope"
+Data "819;os,audio FFT scope;1;0,line;1,fill;5,CHAPTER,scope"
 '
 Announce565:
 'Befehl 820 &H0334 Code 1a050239
@@ -3478,7 +3438,7 @@ Announce566:
 'Befehl 821 &H0335 Code 1a050240
 'audio FFT fill color
 'audio FFT fill color
-Data "821;op,audio FFT fill color;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-;11,CHAPTER;audio scope"
+Data "821;op,audio FFT fill color;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;11,CHAPTER,audio scope"
 '
 Announce567:
 'Befehl 822 &H0336 Code 1a050240
@@ -3490,7 +3450,7 @@ Announce568:
 'Befehl 823 &H0337 Code 1A050241
 'Audio FFT scope waterfall
 'Audio FFT scope waterfall
-Data "823;os,Audio FFT scope waterfall;1;0,off;1,on;11,CHAPTER;audio scope"
+Data "823;os,Audio FFT scope waterfall;1;0,off;1,on;5,CHAPTER,scope"
 '
 Announce569:
 'Befehl 824 &H0338 Code 1A050241
@@ -3502,7 +3462,7 @@ Announce570:
 'Befehl 825 &H0339 Code 1a050242
 'Audio Oscilloscope scope color
 'Audio Oscilloscope scope color
-Data "825;op,Audio Oscilloscope scope color;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-;11,CHAPTER;audio scope"
+Data "825;op,Audio Oscilloscope scope color;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;5,CHAPTER,scope"
 '
 Announce571:
 'Befehl 826 &H033a Code 1a050242
@@ -3514,7 +3474,7 @@ Announce572:
 'Befehl 827 &H033b Code 1a050243
 'Tx Pegel
 'Tx level
-Data "827;op,Tx level;1;256,0 to 100;lin;%;5,CHAPTER;voice"
+Data "827;op,Tx level;1;256,,{0.39_0to99.7};lin;%;5,CHAPTER,voice"
 '
 Announce573:
 'Befehl 828 &H033c Code 1a050243
@@ -3525,7 +3485,7 @@ Data "828;ap,as827"
 Announce574:
 'Befehl 829 &H33d Code 1a050344
 'Tx auto monitor
-Data "829;os,auto monitor;1;0,off;1,on;5,CHAPTER;voice"
+Data "829;os,auto monitor;1;0,off;1,on;5,CHAPTER,voice"
 '
 Announce575:
 'Befehl 830 &H033e Code 1a050244 2 Byte / 3 Byte
@@ -3537,7 +3497,7 @@ Announce576:
 'Befehl 831 &H033f Code 1a050245
 'Tx Wiederholzeit
 'Tx repeat time
-Data "831;op,Tx repeat time;1;15,{1 to 15};lin;sec;5,CHAPTER;voice"
+Data "831;op,Tx repeat time;1;15,,{1_1to15};lin;sec;5,CHAPTER,voice"
 '
 Announce577:
 'Befehl 832 &H0340 Code 1a050245
@@ -3549,7 +3509,7 @@ Announce578:
 'Befehl 833 &H0341 Code 1a050246
 'contest number style
 'contest number style
-Data "833;os,contest number style;1;0,normal;1,190-ANO;2,190-ANT;3,90-NO;4,90-NT;5,CHAPTER;keyer"
+Data "833;os,contest number style;1;0,normal;1,190-ANO;2,190-ANT;3,90-NO;4,90-NT;2,CHAPTER,CW"
 '
 Announce579:
 'Befehl 834 &H0342 Code 1a050246
@@ -3561,7 +3521,7 @@ Announce580:
 'Befehl 835 &H0343 Code 1a05247
 'count up trigger channel
 'count up trigger channel
-Data "835;os,count up trigger channel;1;0,M1;1,M2;2,M3;3,M4;4,M5;5,M6;6,M7;7,M8;5,CHAPTER;keyer"
+Data "835;os,count up trigger channel;1;0,M1;1,M2;2,M3;3,M4;4,M5;5,M6;6,M7;7,M8;2,CHAPTER,CW"
 '
 Announce581:
 'Befehl 836 &H0344 Code 1a050247
@@ -3573,7 +3533,7 @@ Announce582:
 'Befehl 837 &H0345 Code 1a050248
 'present number
 'present number
-Data "837;op,present number;1;9999{1 to 9999};lin;-;5,CHAPTER;keyer"
+Data "837;op,present number;1;9999,{1_1to9999};lin;-;2,CHAPTER,CW"
 '
 Announce583:
 'Befehl 838 &H0346 Code 1a050248
@@ -3585,7 +3545,7 @@ Announce584:
 'Befehl 839 &H0347 Code 1a050249
 'CW side tone gain
 'CW side tone gain
-Data "839;op,CW side tone level;1;256,{0 to 100};lin;%;6,CHAPTER;CW-key"
+Data "839;op,CW side tone level;1;256,{0.39_0to99.7};lin;%;2,CHAPTER,CW"
 '
 Announce585:
 'Befehl 840 &H0348 Code 1a050249
@@ -3597,7 +3557,7 @@ Announce586:
 'Befehl 841 &H0349 Code 1a050250
 'CW side tone gain limit
 'CW side tone gain limit
-Data "842;os,CW side tone level limit;1;0,off;1,on;6,CHAPTER;CW-key"
+Data "841;os,CW side tone level limit;1;0,off;1,on;2,CHAPTER,CW"
 '
 Announce587:
 'Befehl 842 &H034a Code 1a050250
@@ -3609,7 +3569,7 @@ Announce588:
 'Befehl 843 &H034b Code 1a05251
 'CW keyer repeat time
 'CW keyer repeat time
-Data "843;op,CW keyer repeat time;1;60{1 to 60};lin;sec;6,CHAPTER;CW-key"
+Data "843;op,CW keyer repeat time;1;60,{1_1to60};lin;sec;2,CHAPTER,CW"
 '
 Announce589:
 'Befehl 844 &H034c Code 1a050251
@@ -3621,7 +3581,7 @@ Announce590:
 'Befehl 845 &H034d Code 1a050252
 'CW keyer dot/dash ratio
 'CW keyer dot/dash ratio
-Data "845;op,CW keyer dot/dash ratio;1;18{2.8 to 4.5};lin;sec;6,CHAPTER;CW-key"
+Data "845;op,CW keyer dot/dash ratio;1;18,{0.1_2.8to4.5};lin;sec;2,CHAPTER,CW"
 '
 Announce591:
 'Befehl 846 &H034e Code 1a050252
@@ -3633,7 +3593,7 @@ Announce592:
 'Befehl 847 &H034f Code 1a050253
 'rise time
 'rise time
-Data "847;os,rise time;1;0,2ms;1,4ms;2,6ms;3,8ms;6,CHAPTER;CW-key"
+Data "847;os,rise time;1;0,2ms;1,4ms;2,6ms;3,8ms;2,CHAPTER,CW"
 '
 Announce593:
 'Befehl 848 &H0350 Code 1a05253
@@ -3645,7 +3605,7 @@ Announce594:
 'Befehl 849 &H0351 Code 1a05254
 'paddle polarity
 'paddle polarity
-Data "849;os,paddle polarity;1;0,normal;1,reverse;6,CHAPTER;CW-key"
+Data "849;os,paddle polarity;1;0,normal;1,reverse;2,CHAPTER,CW"
 '
 Announce595:
 'Befehl 850 &H0352 Code 1a050254
@@ -3657,7 +3617,7 @@ Announce596:
 'Befehl 851 &H0353 Code 1a050255
 'keyer type
 'keyer type
-Data "851;os,keyer type;1;0,straight;1,bug;2,paddle;6,CHAPTER;CW-key"
+Data "851;os,keyer type;1;0,straight;1,bug;2,paddle;2,CHAPTER,CW"
 '
 Announce597:
 'Befehl 852 &H0354 Code 1a050355
@@ -3669,7 +3629,7 @@ Announce598:
 'Befehl 853 &H0355 Code 1a050256
 'mic. up/down keyer
 'mic. up/down keyer
-Data "853;os,mic.up/down keyer;1;0,off;1,on up down;2,on a b;6,CHAPTER;CW-key"
+Data "853;os,mic.up/down keyer;1;0,off;1,on up down;2,on a b;2,CHAPTER,CW"
 '
 Announce599:
 'Befehl 854 &H0356 Code 1a050256
@@ -3681,7 +3641,7 @@ Announce600:
 'Befehl 855 &H0357 Code 1a050257
 'averaging function for RTTY FFT
 'averaging function for RTTY FFT
-Data "855;os,averaging function for RTTY FFT;1;0,off;1,2;2,3;3,4;10,CHAPTER;RTTY decode"
+Data "855;os,averaging function for RTTY FFT;1;0,off;1,2;2,3;3,4;10,CHAPTER,rtty"
 '
 Announce601:
 'Befehl 856 &H0358 Code 1a050257
@@ -3693,7 +3653,7 @@ Announce602:
 'Befehl 857 &H0359 Code 1a050258
 'RTTY FFT scope waveform color
 'RTTY FFT scope waveform color
-Data "857;op,RTTY FFT scope waveform color;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-;10,CHAPTER;RTTY decode"
+Data "857;op,RTTY FFT scope waveform color;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;10,CHAPTER,rtty"
 '
 Announce603:
 'Befehl 858 &H035a Code 1a050258
@@ -3703,34 +3663,34 @@ Data "858;ap,as857"
 '
 Announce604:
 'Befehl 859 &H035b Code 1a050259
-'RTTY decode USOS
-'RTTY decode USOS
-Data "859;os,RTTY decode USOS;1;0,off;1,on;10,CHAPTER;RTTY decode"
+'rtty USOS
+'rtty USOS
+Data "859;os,rtty USOS;1;0,off;1,on;10,CHAPTER,rtty"
 '
 Announce605:
 'Befehl 860 &H035c Fode 1a050259
-'RTTY decode USOS
-'RTTY decode USOS
+'rtty USOS
+'rtty USOS
 Data "860;as,as859"
 '
 Announce606:
 'Befehl 861 &H035d Code 1a050260
-'RTTY decode new line code
-'RTTY decode new line code
-Data "861;os,RTTY decode new line code;1;0,Cr,LF,CR+LF;1,CR+LF;10,CHAPTER;RTTY decode"
+'rtty new line code
+'rtty new line code
+Data "861;os,rtty new line code;1;0,Cr LF CR+LF;1,CR+LF;10,CHAPTER,rtty"
 '
 '
 Announce607:
 'Befehl 862 &H035e Code 1a050260
-'RTTY decode new line code
-'RTTY decode new line code
+'rtty new line code
+'rtty new line code
 Data "862;as,as861"
 '
 Announce608:
 'Befehl 863 &H035f Code 1a050261
 'RTTY TX USOS
 'RTTY TX USOS
-Data "864;os,RTTY TX USOS;1;0,off;1,on;10,CHAPTER;RTTY decode"
+Data "863;os,RTTY TX USOS;1;0,off;1,on;10,CHAPTER,rtty"
 '
 Announce609:
 'Befehl 864 &H0360 Code 1a050261
@@ -3742,7 +3702,7 @@ Announce610:
 'Befehl 865 &H0361 Code 1a050262
 'received RTTY font Farbe
 'received RTTY text font color
-Data "865;op,received RTTY text font color;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-;10,CHAPTER;RTTY decode"
+Data "865;op,received RTTY text font color;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;10,CHAPTER,rtty"
 '
 Announce611:
 'Befehl 866 &H0362 Code 1a050262
@@ -3754,7 +3714,7 @@ Announce612:
 'Befehl 867 &H0363 Code 1a050263
 'transmitted RTTY text font color
 'transmitted RTTY text font color
-Data "867;op,transmitted RTTY text font color;1;256,red;lin;-;256,yellow;lin;-;256,blue,lin,-;10,CHAPTER;RTTY decode"
+Data "867;op,transmitted RTTY text font color;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;10,CHAPTER,rtty"
 '
 Announce613:
 'Befehl 868 &H0364 Code 1a050263
@@ -3766,7 +3726,7 @@ Announce614:
 'Befehl 869 &H0365 Code 1a050264
 'RTTY log function
 'RTTY log function
-Data "869;os,RTTY log;1;0,off;1,on;15,CHAPTER;RTTY decode log"
+Data "869;os,RTTY log;1;0,off;1,on;10,CHAPTER,rtty"
 '
 Announce615:
 'Befehl 870 &H0366 Code 1a050264
@@ -3778,7 +3738,7 @@ Announce616:
 'Befehl 871 &H0367 Code 1a050265
 'file saving format for the  RTTY log
 'file saving format for the  RTTY log
-Data "871;os,file saving format for the  RTTY log;1;0,text;1,HTML;15,CHAPTER;RTTY decode log"
+Data "871;os,file saving format for the  RTTY log;1;0,text;1,HTML;10,CHAPTER,rtty"
 '
 Announce617:
 'Befehl 872 &H0368 Code 1a050265
@@ -3790,7 +3750,7 @@ Announce618:
 'Befehl 873 &H0369 Code 1a050266
 'RTTY time stamp set
 'RTTY time stamp set
-Data "873;os,RTTY time stamp;1;0,off;1,on;15,CHAPTER;RTTY decode log"
+Data "873;os,RTTY time stamp;1;0,off;1,on;10,CHAPTER,rtty"
 '
 Announce619:
 'Befehl 874 &H036a Code 1a050266
@@ -3800,21 +3760,21 @@ Data "874;as,as873"
 '
 Announce620:
 'Befehl 875 &H036b Code 1a050267
-'RTTY Decode Log Time Stamp
-'RTTY Decode Log Time Stamp
-Data "875;os,RTTY Decode Log Time Stamp;1;0,local;1,UTC15,CHAPTER;RTTY decode log"
+'rtty Log Time Stamp
+'rtty Log Time Stamp
+Data "875;os,rtty Log Time Stamp;1;0,local;1,UTC;10,CHAPTER,rtty"
 '
 Announce621:
 'Befehl 876 &H036c Code 1a050267
-'RTTY Decode Log Time Stamp
-'RTTY Decode Log Time Stamp
+'rtty Log Time Stamp
+'rtty Log Time Stamp
 Data "876;as,as875"
 '
 Announce622:
 'Befehl 877 &H036d Code 1a050268
 'RTTY frequency stamp
 'RTTY frequency stamp
-Data "877;os,RTTY frequency stamp;1;0,off;1,on;15,CHAPTER;RTTY decode log"
+Data "877;os,RTTY frequency stamp;1;0,off;1,on;10,CHAPTER,rtty"
 '
 Announce623:
 'Befehl 878 &H036e Code 1a050268
@@ -3826,7 +3786,7 @@ Announce624:
 'Befehl 879 &H036f Code 1a050269
 'Tx Aufnahme
 'TX recording
-Data "879;os,TX recording;1;0,direct;1,monitor;8,CHAPTER;Recorder"
+Data "879;os,TX recording;1;0,direct;1,monitor;8,CHAPTER,Recorder"
 '
 Announce625:
 'Befehl 880 &H0370 Code 1a050269
@@ -3838,7 +3798,7 @@ Announce626:
 'Befehl 881 &H0371 Code 1a050270
 'Rx Aufnahme 
 'rx recording
-Data "881;os,rx recording;1;0,always;1,squelch auto;8,CHAPTER;Recorder"
+Data "881;os,RX recording;1;0,always;1,squelch auto;8,CHAPTER,Recorder"
 '
 Announce627:
 'Befehl 882 &H0372 Code 1a050270
@@ -3850,7 +3810,7 @@ Announce628:
 'Befehl 883 &H0373 Code 1a050271
 'File split
 'file split
-Data "883;os,file split;1;0,off;1,on;8,CHAPTER;Recorder"
+Data "883;os,file split;1;0,off;1,on;8,CHAPTER,Recorder"
 '
 Announce629:
 'Befehl 884 &H0374 Code 1a050271
@@ -3860,9 +3820,9 @@ Data "884;as,as883"
 '
 Announce630:
 'Befehl 885 &H0375 Code 1a050272
-'PTT nauto Aufnahme
+'PTT auto Aufnahme
 'ptt auto receive
-Data "885;os,ptt auto receive;1;0,off;1,on;8,CHAPTER;Recorder"
+Data "885;os,ptt auto receive;1;0,off;1,on;8,CHAPTER,Recorder"
 '
 Announce631:
 'Befehl 886 &H0376 Code 1a050272
@@ -3874,7 +3834,7 @@ Announce632:
 'Befehl 887 &H0377 Code 1a050273
 'Vorlauf PTT auto Aufnahme
 'pre recording for ptt auto receive
-Data "887;os,pre recording for ptt auto receive;1;0,off;1,5s;2,10s;3,15s;8,CHAPTER;Recorder"
+Data "887;os,pre recording for ptt auto receive;1;0,off;1,5s;2,10s;3,15s;8,CHAPTER,Recorder"
 '
 Announce633:
 'Befehl 888 &H0378 Code 1a050273
@@ -3886,7 +3846,7 @@ Announce634:
 'Befehl 889 &H0379 Code 1a050274
 'Abspielen skip Zeit
 'player skip time
-Data "889;os,player skip time;1;0,off;1,5s;2,10s;3,15s;8,CHAPTER;Recorder"
+Data "889;os,player skip time;1;0,3s ;1,5 s;2,10 s;3,30 s;8,CHAPTER,Recorder"
 '
 Announce635:
 'Befehl 890 &H037a Code 1a050274
@@ -3898,7 +3858,7 @@ Announce636:
 'Befehl 891 &H037b Code 1a050275
 'scan speed
 'scan speed
-Data "891;os,scan speed;1;0,slow;1,fast;4,CHAPTER;scan"
+Data "891;os,scan speed;1;0,slow;1,fast;4,CHAPTER,scan"
 '
 Announce637:
 'Befehl 892 &H037c Code 1a050275
@@ -3910,7 +3870,7 @@ Announce638:
 'Befehl 893 &H037d Code 1a050176
 'scan resume
 'scan resume
-Data "893;os,scan resume;1;0,off;1,on;4,CHAPTER;scan"
+Data "893;os,scan resume;1;0,off;1,on;4,CHAPTER,scan"
 '
 Announce639:
 'Befehl 894 &H037e Code 1050276
@@ -3922,7 +3882,7 @@ Announce640:
 'Befehl 895 &H0237f Code 1a050277
 'Pause timer
 'pause timer
-Data "895;os,pause timer;1;11{2 to 20, hold};lin;sec;4,CHAPTER;scan"
+Data "895;os,pause timer;1;0,2s;1,4 s;2,6 s;3,8s;4,10 s;5,12 s;6,14 s;7,16s;8,18s;9,20 s;10,hold;4,CHAPTER,scan"
 '
 Announce641:
 'Befehl 896 &H0380 Code 1a050277
@@ -3934,19 +3894,19 @@ Announce642:
 'Befehl 897 &H02381 Code 1a050278
 'resume timer
 'resume timer
-Data "897;op,resume timer;1;7,{0 to 6, hold},lin;sec;4,CHAPTER;scan"
+Data "897;os,resume timer;1;0,0 s;1,1 s;2,2 s;3,3 s;4,4 s;5,5 s;6,hold;4,CHAPTER,scan"
 '
 Announce643:
 'Befehl 898 &H0382 Code 1a050278
 'resume timer
 'resume timer
-Data "898;ap,as897"
+Data "898;as,as897"
 '
 Announce644:
 'Befehl 899 &H0383 Code 1a050279
 'temporary skip timer
 'temporary skip timer
-Data "899;os,temporary skip timer;1;0,5min;1,10mim;2,15min;3,while scanning;4,while power on;4,CHAPTER;scan"
+Data "899;os,temporary skip timer;1;0,5min;1,10mim;2,15min;3,while scanning;4,while power on;4,CHAPTER,scan"
 '
 Announce645:
 'Befehl 900 &H0384 Code 1a050279
@@ -3958,7 +3918,7 @@ Announce646:
 'Befehl 901 &H0385 Code 1a050280
 'main dial Scan
 'main dial Scan
-Data "901;os,main dial Scan;1;0,off;1,up down;4,CHAPTER;scan"
+Data "901;os,main dial Scan;1;0,off;1,up down;4,CHAPTER,scan"
 '
 Announce647:
 'Befehl 902 &H0386 Code 1a050280
@@ -3970,7 +3930,7 @@ Announce648:
 'Befehl 903 &H0387 Code 1a050281
 'gps Auswahl
 'gps select
-Data "903;os,gps select;1;0,off;1,on;2,manual;3,CHAPTER;gps"
+Data "903;os,gps select;1;0,off;1,on;2,manual;3,CHAPTER,gps"
 '
 Announce649:
 'Befehl 904 &H0388 Code 1a050281
@@ -3982,7 +3942,7 @@ Announce650:
 'Befehl 905 &H0389 Code 1a050282
 'SBAS
 'SBAS
-Data "905;os,SBAS;1;0,off;1,on;3,CHAPTER;gps"
+Data "905;os,SBAS;1;0,off;1,on;3,CHAPTER,gps"
 '
 Announce651:
 'Befehl 906 &H038a Code 1a050282
@@ -3994,7 +3954,7 @@ Announce652:
 'Befehl 907 &H038b Code 1a050283
 'Glonass
 'Glonass
-Data "907;os,Glonass;1;0,off;1,on;3,CHAPTER;gps"
+Data "907;os,Glonass;1;0,off;1,on;3,CHAPTER,gps"
 '
 Announce653:
 'Befehl 908 &H038c Code 1a050283
@@ -4004,9 +3964,9 @@ Data "908;as,as907"
 '
 Announce654:
 'Befehl 909 &H038d Code 1a050284
-'power safe
-'power safe
-Data "909;os,power safe;1;0,off;1,1min;2,2min;3,4min;4,8min;5,auto;3,CHAPTER;gps"
+'power save
+'power save
+Data "909;os,power save;1;0,off;1,1min;2,2min;3,4min;4,8min;5,auto;3,CHAPTER,gps"
 '
 Announce655:
 'Befehl 910 &H038e Code 1a050284
@@ -4018,7 +3978,7 @@ Announce656:
 'Befehl 911 &H038f Code 1a050285
 'Satellite Information Out
 'Satellite Information Out
-Data "911;os,Satellite Information Out;1;0,GPS/QZSS/GLONASS;1,Gps only;3,CHAPTER;gps"
+Data "911;os,Satellite Information Out;1;0,GPS/QZSS/GLONASS;1,Gps only;3,CHAPTER,gps"
 '
 Announce657:
 'Befehl 912 &H0390 Code 1a050285
@@ -4030,9 +3990,9 @@ Announce658:
 'Befehl 913 &H0391 Code 1a050286
 'Manual Position
 'manual position
-Data "913;op,GGPS Manual Position;1;90,lat;lin;deg;60000,{0 to 59.999},lat;lin;min;2,{S,N};lin;-"
-Data "913;op;1;180,long;lin;degree;60000,{0 to 59.999},long;lin;min;2,{W,E};lin;-"
-Data "913;op;1;199999,{0 to 19999,9,alt;lin;m;2,{+,-},alt;lin;-;3,CHAPTER;gps"
+Data "913;op,manual position;1;90,lat,{1_0to89};lin;deg;60,lat,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,{south,north};lin;-;"
+Data "913;op;180,long,{1_0to179};lin;deg;60,long,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,{W,E};lin;-;"
+Data "913;op;20002,hight +-9999 -,{1_-10000to10000,-};lin;m;10,hight;lin;m;10,CHAPTER,gps"
 '
 Announce659:
 'Befehl 914 &H0392 Code 1a050286
@@ -4044,7 +4004,7 @@ Announce660:
 'Befehl 915 &H0393 Code 1a050287
 'TX mode
 'TX mode
-Data "915;os,TX mode;1;0,off;1,D-PRS;2,NMEA;3,CHAPTER;gps"
+Data "915;os,TX mode;1;0,off;1,D-PRS;2,NMEA;3,CHAPTER,gps"
 '
 Announce661:
 'Befehl 916 &H0394 Code 1a050287
@@ -4056,7 +4016,7 @@ Announce662:
 'Befehl 917 &H0395 Code 1a050288
 'unproto address
 'unproto address
-Data "917;oa,unproto address;56,ALPHA0;11,CHAPTER;gps tx d-prs"
+Data "917;oa,unproto address;56,{ALPHA0};11,CHAPTER,gps tx d-prs"
 '
 Announc663:
 'Befehl 918 &H0396 Code 1a050288
@@ -4068,7 +4028,7 @@ Announce664:
 'Befehl 919 &H0397 Code 1a050289
 'TX Format
 'tx format
-Data "919;os,tx format;1;0,position;1,object;2,item;3,weather;11,CHAPTER;gps tx d-prs"
+Data "919;os,tx format;1;0,position;1,object;2,item;3,weather;11,CHAPTER,gps tx d-prs"
 '
 Announce665:
 'Befehl 920 &H0398 Code 1a050289
@@ -4080,7 +4040,7 @@ Announce666:
 'Befehl 921 &H0399 Code a050290
 'Symbol
 'symbol
-Data "921;os,symbol;1;0,no1;1,no2;2,no3;3,no4;30,CHAPTER;gps tx d-prs tx format postion"
+Data "921;os,symbol;1;0,no1;1,no2;2,no3;3,no4;11,CHAPTER,gps postion"
 '
 Announce667:
 'Befehl 922 &H039a Code 1a050290
@@ -4090,21 +4050,30 @@ Data "922;as,as921"
 '
 Announce668:
 'Befehl 923 &H039b Code 1a050291 - 94
-'Symbol no1 - 4
-'symbol no1 - 4
-Data "923;oa,symbol no1 - 4;4;b,{ALPHA1};b,{ALPHA0}"
+'Symbol for selected pos
+'symbol for selected pos
+Data "923;os,symbol for selected pos;4,symbol no;0,Sheriff,1,Digi;2,Gateway;3,small aircraft;4,Red Cross;"
+Data "923;os;5,QTH;6,X;7,Red Dot;8,Fire;9,Campground;10,Motorcycle;11,Railroad;12,Car;13,Canoe;14,Eyeball;15,School;"
+Data "923;os;16,PC User;17,Ballon;18,Police;19,Recreat. Vehicle;20,Shuttle;21,SSTV;22,Bus;23,ATV;24,WX Service;"
+Data "923;os;25,Heli;26,Yacht;27,Person;28,Df Station;29,Large Aircraft;30,WX Station;31,Dish Antenna;32,Ambulance;"
+Data "923;os;33,Bicicle;34,Fire Truck;35,Glider;36,Hospital;37,Jeep;38,Truck;39,Node;40,Rover;41,Repeater;42,Powerboat;"
+Data "923;os;43,18 wheeler;44,Van;45,Yagi;46,overlayed Digi;47,Overlayaed Gateway;48,House;49,Big ?;50,circle;"
+Data "923;os;51,Parc;52,Overlayd Car;53,Lighthouse;54,Satellite;55,Sunny;56,Overlayed Wx;57;Radio;"
+Data "923;os;58,Aircraft;59,Ovelayed WX Station;60,Overlayd Diamond;61,RACS;62,Gale Flags;63,Ham Store;64,Work Zone;"
+Data "923;os;65,Speedpost;66;Triangle;67,Small Circle;68,Overlayed Ship;69,Tornado;70,Overlayd Truck;71,Overlayed Van;"
+Data "923;os;72;Wreck;73,Other;11,CHAPTER,gps postion"
 '
 Announce669:
 'Befehl 924 &H039c Code 1a050291 - 94
-'Symbol no1 - 4
-'symbol no1 - 4
-Data "924;aa,as923"
+'Symbol for selected pos
+'symbol for selected pos
+Data "924;as,as923"
 '
 Announce670:
 'Befehl 925 &H039d Code 1a050295
 'SSID
 'SSID
-Data "925;op,SSID;1;43,{-,-0,-1 to -15,-A to -Z};lin;-;30,CHAPTER;gps tx d-prs tx format postion"
+Data "925;op,SSID;1;43,{-,0,1_1to15,a,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z};lin;-;11,CHAPTER,gps postion"
 '
 Announce671:
 'Befehl 926 &H039e Code 1a050295
@@ -4116,8 +4085,7 @@ Announce672:
 'Befehl 927 &H039f Code 1a050296
 'Kommentar
 'comment
-Data "927;os,comment;1;0,no1;1,no2;2,no3;3,no4;30,CHAPTER;gps tx d-prs tx format postion"
-'
+Data "927;os,comment;1;0,no1;1,no2;2,no3;3,no4;311,CHAPTER,gps postion"
 Announce673:
 'Befehl 928 &H03a0 Code 1a050296
 'Kommentar
@@ -4126,33 +4094,32 @@ Data "928;as,as927"
 '
 Announce674:
 'Befehl 929 &H03a1 Code 1a050297 -300
-'Kommentar no1 - no4
-'comment no1 - no4
-Data "929;oa,comment no1 - no4;4,commentnumber;43,ALPHA0;30,CHAPTER;gps tx d-prs tx format postion"
-'
+'Kommentar 
+'comment 
+Data "929;om,comment;43,{ALPHA0};4,commentnumber;11,CHAPTER,gps postion"
+
 Announce675:
 'Befehl 930 &H03a2 Code 1a050297 - 300
-'Kommentar no1 - no4
-'comment no1 - no4
-Data "930;aa,as929"
+'Kommentar
+'comment 
+Data "930;am,as929"
 '
 Announce676:
 'Befehl 931 &H03a3 Code 1a050301
 'time stamp
 'time stamp
-Data "931;os,time stamp;1;0,0ff,1DHM;2,HMS;30,CHAPTER;gps tx d-prs tx format postion"
-'
+Data "931;os,time stamp;1;0,0ff;1,DHM;2,HMS;11,CHAPTER,gps postion"
 Announce677:
 'Befehl 932 &H03a4 Code 1a050301
 'time stamp
 'time stamp
 Data "932;as,as931"
-''
+'
 Announce678:
 'Befehl 833 &H03a5 Code 1a050302
 'Hoehe
 'altitude
-Data "933;os,altitude;1;0,0ff,1,on;30,CHAPTER;gps tx d-prs tx format postion"
+Data "933;os,altitude;1;0,0ff,1,on;11,CHAPTER,gps postion"
 '
 Announce679:
 'Befehl 934 &H03a6 Code 1a050302
@@ -4164,7 +4131,7 @@ Announce680:
 'Befehl 935 &H03a7 Code 1a050303
 'Data Erweiterung
 'data extension
-Data "935;os,data extension;1;0,0ff,1,course/speed;2,Power/Height/Gain/Directivity;30,CHAPTER;gps tx d-prs tx format postion"
+Data "935;os,data extension;1;0,0ff,1,course/speed;2,Power/Height/Gain/Directivity;11,CHAPTER,gps postion"
 '
 Announce681:
 'Befehl 936 &H03a8 Code 1a050303
@@ -4176,7 +4143,7 @@ Announce682:
 'Befehl 937 &H03a9 Code 1a050304
 'Leistung
 'power
-Data "937;os,power;1;0,1W,1,2W;2,4W;3,9W;416W;5,25W;6,36W;7,49W;8,64W;9,81W;30,CHAPTER;gps tx d-prs tx format postion"
+Data "937;os,power;1;0,1W,1,2W;2,4W;3,9W;4,16W;5,25W;6,36W;7,49W;8,64W;9,81W;11,CHAPTER,gps postion"
 '
 Announce683:
 'Befehl 938 &H03aa Code 1a050304
@@ -4188,8 +4155,7 @@ Announce684:
 'Befehl 939 &H03ab Code 1a050305
 'Hoehe
 'hight
-Data "939;os,hight;1;0,3m,1,6m;2,12m;3,24;4,49m;5,96m;6,195m;7,390;8,780m;9,1561m;30,CHAPTER;gps tx d-prs tx format postion"
-'
+Data "939;os,hight;1;0,3m,1,6m;2,12m;3,24;4,49m;5,96m;6,195m;7,390;8,780m;9,1561m;11,CHAPTER,gps postion"
 Announce685:
 'Befehl 940 &H03ac Code 1a050305
 'Hoehe
@@ -4200,7 +4166,7 @@ Announce686:
 'Befehl 941 &H03ad Code 1a050306
 'Verstaerkung
 'gain
-Data "941;op,gain;1;10;lin;dB;30,CHAPTER;gps tx d-prs tx format postion"
+Data "941;op,gain;1;10;lin;dB;11,CHAPTER,gps postion"
 '
 Announce687:
 'Befehl 942 &H03ae Code 1a050306
@@ -4212,8 +4178,7 @@ Announce688:
 'Befehl 943 &H03af Code 1a050307
 'Richtung
 'directivity
-Data "943;os,directivity;1;0,omni;1,45NE;2,90E;3,135SE;4,180S;5,225SW;6,270W;7,315NW;8,360N;30,CHAPTER;gps tx d-prs tx format postion"
-'
+Data "943;os,directivity;1;0,omni;1,45NE;2,90E;3,135SE;4,180S;5,225SW;6,270W;7,315NW;8,360N;11,CHAPTER,gps postion"
 Announce689:
 'Befehl 944 &H03b0 Code 1a050307
 'Richtung
@@ -4224,7 +4189,7 @@ Announce690:
 'Befehl 945 &H03b1 Code 1a050308
 'Name
 'name
-Data "945;oa,name;9,ALPHA0;29,CHAPTER;gps tx d-prs tx format object"
+Data "945;oa,name;9,{ALPHA0};10,CHAPTER,gps object"
 '
 Announce691:
 'Befehl 946 &H03b2 Code 1a050308
@@ -4236,7 +4201,7 @@ Announce692:
 'Befehl 947 &H03b3 Code 1a050309
 'Data Typ
 'data type
-Data "947;os,data type;1;0,live object;1,kill object;29,CHAPTER;gps tx d-prs tx format object"
+Data "947;os,data type;1;0,live object;1,kill object;10,CHAPTER,gps object"
 '
 Announce693:
 'Befehl 948 &H03b4 Code 1a050309
@@ -4248,7 +4213,16 @@ Announce694:
 'Befehl 949 &H03b5 Code 1a050310
 'Symbol
 'symbol
-Data "949;oa,symbol;1;b,{ALPHA1};b,{ALPHA0};30,CHAPTER;gps tx d-prs tx format object"
+Data "949;os,symbol for selected pos;1;0,Sheriff,1,Digi;2,Gateway;3,small aircraft;4,Red Cross;"
+Data "949;os;5,QTH;6,X;7,Red Dot;8,Fire;9,Campground;10,Motorcycle;11,Railroad;12,Car;13,Canoe;14,Eyeball;15,School;"
+Data "949;os;16,PC User;17,Ballon;18,Police;19,Recreat. Vehicle;20,Shuttle;21,SSTV;22,Bus;23,ATV;24,WX Service;"
+Data "949;os;25,Heli;26,Yacht;27,Person;28,Df Station;29,Large Aircraft;30,WX Station;31,Dish Antenna;32,Ambulance;"
+Data "949;os;33,Bicicle;34,Fire Truck;35,Glider;36,Hospital;37,Jeep;38,Truck;39,Node;40,Rover;41,Repeater;42,Powerboat;"
+Data "949;os;43,18 wheeler;44,Van;45,Yagi;46,overlayed Digi;47,Overlayaed Gateway;48,House;49,Big ?;50,circle;"
+Data "949;os;51,Parc;52,Overlayd Car;53,Lighthouse;54,Satellite;55,Sunny;56,Overlayed Wx;57;Radio;"
+Data "949;os;58,Aircraft;59,Ovelayed WX Station;60,Overlayd Diamond;61,RACS;62,Gale Flags;63,Ham Store;64,Work Zone;"
+Data "949;os;65,Speedpost;66;Triangle;67,Small Circle;68,Overlayed Ship;69,Tornado;70,Overlayd Truck;71,Overlayed Van;"
+Data "949;os;72;Wreck;73,Other;10,CHAPTER,gps object"
 '
 Announce695:
 'Befehl 950 &H03b6 Code 1a050310
@@ -4260,7 +4234,7 @@ Announce696:
 'Befehl 951 &H03b7 Code 1a050311
 'Kommentar
 'comment
-Data "951;oa,comment;43;29,CHAPTER;gps tx d-prs tx format object"
+Data "951;oa,comment;43,{ALPHA0};10,CHAPTER,gps object"
 '
 Announce697:
 'Befehl 952 &H03b8 Code 1a050311
@@ -4272,8 +4246,9 @@ Announce698:
 'Befehl 953 &H03b9 Code 1a050312
 'Position
 'position
-Data "953;op,position;1;540000;ddmm.mmmm;deg lat;2,{south,north};lin;-;1080000;dddmm.mmm;deg long;1,[W/E;lin;-;"
-Data "953;op;200002,{-100000 to 100000,undefined};lin;10cm;29,CHAPTER;gps tx d-prs tx format object"
+Data "953;op,position;1;90,lat,{1_0to89};lin;deg;60,lat,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,{south,north};lin;-;"
+Data "953;op;180,long,{1_0to179};lin;deg;60,long,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,{W,E};lin;-;"
+Data "953;op;20002,hight +-9999 -,{1_-10000to10000,-};lin;m;10,hight;lin;m;10,CHAPTER,gps object"
 '
 Announce699:
 'Befehl 954 &H03ba Code 1a050312
@@ -4285,7 +4260,7 @@ Announce700:
 'Befehl 955 &H03bb Code 1a050313
 'Data Erweiterung
 'data extendsion
-Data "955;os,data extension;1;0,off;1,course/speed;2,Power/Height/Gain/Directivity;29,CHAPTER;gps tx d-prs tx format object"
+Data "955;os,data extension;1;0,off;1,course/speed;2,Power/Height/Gain/Directivity;10,CHAPTER,gps object"
 '
 Announce701:
 'Befehl 956 &H03bc Code 1a050313
@@ -4297,19 +4272,19 @@ Announce702:
 'Befehl 957 &H03bd Code 1a050314
 'Kurs
 'course
-Data "957;op,course;1;361;lin;deg;29,CHAPTER;gps tx d-prs tx format object"
+Data "957;op,course;1;361;lin;deg;10,CHAPTER,gps object"
 '
 Announce703:
 'Befehl 958 &H03be Code 1a050314
 'Kurs
 'course
-Data "958;ap,as9575"
+Data "958;ap,as957"
 '
 Announce704:
 'Befehl 959 &H03cbf Code 1a050315
 'Geschwindigkeit
 'speed
-Data "959;op,speed;1;1851;lin;km/h;29,CHAPTER;gps tx d-prs tx format object"
+Data "959;op,speed;1;1851,<1851;lin;km/h;10,CHAPTER,gps object"
 '
 Announce705:
 'Befehl 960 &H03c0 Code 1a050315
@@ -4321,7 +4296,7 @@ Announce706:
 'Befehl 961 &H03c1 Code 1a050316
 'Leistung
 'power
-Data "961;os,power;1;0,1W,1,2W;2,4W;3,9W;416W;5,25W;6,36W;7,49W;8,64W;9,81W;29,CHAPTER;gps tx d-prs tx format object"
+Data "961;os,power;1;0,0W,1,1W;2,4W;3,9W;4,16W;5,25W;6,36W;7,49W;8,64W;9,81W;10,CHAPTER,gps object"
 '
 Announce707:
 'Befehl 962 &H03c2 Code 1a050316
@@ -4333,8 +4308,7 @@ Announce708:
 'Befehl 963 &H03c3 Code 1a050317
 'Hoehe
 'hight
-Data "963;os,hight;1;0,3m,1,6m;2,12m;3,24;4,49m;5,96m;6,195m;7,390;8,780m;9,1561m;29,CHAPTER;gps tx d-prs tx format object"
-'
+Data "963;os,hight;1;0,3m,1,6m;2,12m;3,24;4,49m;5,96m;6,195m;7,390;8,780m;9,1561m;10,CHAPTER,gps object"
 Announce709:
 'Befehl 964 &H03c4 Code 1a050317
 'Hoehe
@@ -4345,7 +4319,7 @@ Announce710:
 'Befehl 965 &H03c5 Code 1a050318
 'Verstaerkung
 'gain
-Data "965;op,gain;1;10;lin;dB;29,CHAPTER;gps tx d-prs tx format object"
+Data "965;op,gain;1;10;lin;dB;10,CHAPTER,gps object"
 '
 Announce711:
 'Befehl 966 &H03c6 Code 1a050318
@@ -4357,7 +4331,7 @@ Announce712:
 'Befehl 967 &H03c7 Code 1a050319
 'Richtung
 'directivity
-Data "967;os,directivity;1;0,omni;1,45NE;2,90E;3,135SE;4,180S;5,225SW;6,270W;7,315NW;8,360N;29,CHAPTER;gps tx d-prs tx format object"
+Data "967;os,directivity;1;0,omni;1,45NE;2,90E;3,135SE;4,180S;5,225SW;6,270W;7,315NW;8,360N;10,CHAPTER,gps object"
 '
 Announce713:
 'Befehl 968 &H03c8 Code 1a050319
@@ -4369,7 +4343,7 @@ Announce714:
 'Befehl 969 &H03c9 Code 1a050320
 'SSID
 'SSID
-Data "969;op,SSID;1;43,{-,-0,-1 to -15,-A to -Z};lin;-;29,CHAPTER;gps tx d-prs tx format object"
+Data "969;op,SSID;1;43,{-,0,1_1to15,a,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z};lin;-;10,CHAPTER,gps object"
 '
 Announce715:
 'Befehl 970 &H03ca Code 1a050320
@@ -4381,7 +4355,7 @@ Announce716:
 'Befehl 971 &H03cb Code 1a050321
 'Zeitstempel
 'time stamp
-Data "971;os,time stamp;1;0,DHM;1,HMS;29,CHAPTER;gps tx d-prs tx format object"
+Data "971;os,time stamp;1;0,DHM;1,HMS;10,CHAPTER,gps object"
 '
 Announce717:
 'Befehl 972 &H03cc Code 1a050321
@@ -4393,7 +4367,7 @@ Announce718:
 'Befehl 973 &H03cd Code 1a050322
 'Name
 'name
-Data "973;oa,name;9,{ALPHA0};29,CHAPTER;gps tx d-prs tx format item"
+Data "973;oa,name;9,{ALPHA0};8,CHAPTER,gps item"
 '
 Announce719:
 'Befehl 974 &H03ce Code 1a050322
@@ -4405,7 +4379,7 @@ Announce720:
 'Befehl 975 &H03df Code 1a050323
 'Data Typ
 'data type
-Data "975;os,data type;1;0,live object;1,kill object;29,CHAPTER;gps tx d-prs tx format item"
+Data "975;os,data type;1;0,live object;1,kill object;8,CHAPTER,gps item"
 '
 Announce721:
 'Befehl 976 &H03d0 Code 1a050323
@@ -4417,19 +4391,28 @@ Announce722:
 'Befehl 977 &H03d1 Code 1a050324
 'Symbol
 'symbol
-Data "977;oa,symbol;b,{ALPHA1};b,{ALPHA0};30,CHAPTER;gps tx d-prs tx format item"
-
+Data "977;os,symbol;1;0,Sheriff,1,Digi;2,Gateway;3,small aircraft;4,Red Cross;"
+Data "977;os;5,QTH;6,X;7,Red Dot;8,Fire;9,Campground;10,Motorcycle;11,Railroad;12,Car;13,Canoe;14,Eyeball;15,School;"
+Data "977;os;16,PC User;17,Ballon;18,Police;19,Recreat. Vehicle;20,Shuttle;21,SSTV;22,Bus;23,ATV;24,WX Service;"
+Data "977;os;25,Heli;26,Yacht;27,Person;28,Df Station;29,Large Aircraft;30,WX Station;31,Dish Antenna;32,Ambulance;"
+Data "977;os;33,Bicicle;34,Fire Truck;35,Glider;36,Hospital;37,Jeep;38,Truck;39,Node;40,Rover;41,Repeater;42,Powerboat;"
+Data "977;os;43,18 wheeler;44,Van;45,Yagi;46,overlayed Digi;47,Overlayaed Gateway;48,House;49,Big ?;50,circle;"
+Data "977;os;51,Parc;52,Overlayd Car;53,Lighthouse;54,Satellite;55,Sunny;56,Overlayed Wx;57;Radio;"
+Data "977;os;58,Aircraft;59,Ovelayed WX Station;60,Overlayd Diamond;61,RACS;62,Gale Flags;63,Ham Store;64,Work Zone;"
+Data "977;os;65,Speedpost;66;Triangle;67,Small Circle;68,Overlayed Ship;69,Tornado;70,Overlayd Truck;71,Overlayed Van;"
+Data "977;os;72;Wreck;73,Other;8,CHAPTER,gps item"
+'
 Announce723:
 'Befehl 978 &H03d2 Code 1a050324
 'Symbol
 'symbol
-Data "978;aa,as977"
+Data "978;as,as977"
 '
 Announce724:
 'Befehl 979 &H03d3 Code 1a050325
 'Kommentar
 'comment
-Data "979;oa,comment;43,{ALPHA0};29,CHAPTER;gps tx d-prs tx format item"
+Data "979;oa,comment;43,{ALPHA0};8,CHAPTER,gps item"
 '
 Announce725:
 'Befehl 980 &H03d4 Code 1a050325
@@ -4441,8 +4424,9 @@ Announce726:
 'Befehl 981 &H03d5 Code 1a050326
 'Position
 'position
-Data "981;op,position;1;540000;ddmm.mmmm;deg lat;2,{south,north};lin;-;1080000;dddmm.mmm;deg long;1,[W/E;lin;-;"
-Data "981;op;200002{-100000 to 100000,undefined};lin;10cm;27,CHAPTER;gps tx d-prs tx format item"
+Data "981;op,position;1;90,lat,{1_0to89};lin;deg;60,lat,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,{south,north};lin;-;"
+Data "981;op;180,long,{1_0to179};lin;deg;60,long,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,{W,E};lin;-;"
+Data "981;op;20002,hight +-9999 -,{1_-10000to10000,-};lin;m;10,hight;lin;m;8,CHAPTER,gps item"
 '
 Announce727:
 'Befehl 982 &H03d6 Code 1a050326
@@ -4454,7 +4438,7 @@ Announce728:
 'Befehl 983 &H03d7 Code 1a050327
 'Data Erweiterung
 'data extendsion
-Data "983;os,data extension;1;0,off;1,course/speed;2,Power/Height/Gain/Directivity;27,CHAPTER;gps tx d-prs tx format item"
+Data "983;os,data extension;1;0,off;1,course/speed;2,Power/Height/Gain/Directivity;8,CHAPTER,gps item"
 '
 Announce729:
 'Befehl 984 &H03d8 Code 1a050327
@@ -4466,7 +4450,7 @@ Announce730:
 'Befehl 985 &H03d9 Code 1a050328
 'Kurs
 'course
-Data "985;op,course;1;361;lin;deg;27,CHAPTER;gps tx d-prs tx format item"
+Data "985;op,course;1;361;lin;deg;8,CHAPTER,gps item"
 '
 Announce631:
 'Befehl 986 &H03da Code 1a050328
@@ -4478,7 +4462,7 @@ Announce732:
 'Befehl 987 &H03db Code 1a050329
 'Geschwindigkeit
 'speed
-Data "987;op,speed;1;1851;lin;km/h;27,CHAPTER;gps tx d-prs tx format item"
+Data "987;op,speed;1;1851,<1851;lin;km/h;8,CHAPTER,gps item"
 '
 Announce733:
 'Befehl 988 &H03dc Code 1a050329
@@ -4490,7 +4474,7 @@ Announce734:
 'Befehl 989 &H03dd Code 1a050330
 'Leistung
 'power
-Data "989;os,power;1;0,1W,1,2W;2,4W;3,9W;416W;5,25W;6,36W;7,49W;8,64W;9,81W;27,CHAPTER;gps tx d-prs tx format item"
+Data "989;os,power;1;0,0W,1,1W;2,4W;3,9W;4,16W;5,25W;6,36W;7,49W;8,64W;9,81W;8,CHAPTER,gps item"
 '
 Announce735:
 'Befehl 990 &H03de Code 1a050330
@@ -4502,7 +4486,7 @@ Announce736:
 'Befehl 991 &H03df Code 1a050331
 'Hoehe
 'hight
-Data "991;os,hight;1;0,3m,1,6m;2,12m;3,24;4,49m;5,96m;6,195m;7,390;8,780m;9,1561m;27,CHAPTER;gps tx d-prs tx format item"
+Data "991;os,hight;1;0,3m,1,6m;2,12m;3,24;4,49m;5,96m;6,195m;7,390;8,780m;9,1561m;8,CHAPTER,gps item"
 '
 Announce737:
 'Befehl 992 &H03e0 Code 1a050331
@@ -4514,7 +4498,7 @@ Announce738:
 'Befehl 993 &H03e1 Code 1a050332
 'Verstaerkung
 'gain
-Data "993;op,gain;1;10;lin;dB;27,CHAPTER;gps tx d-prs tx format item"
+Data "993;op,gain;1;10;lin;dB;8,CHAPTER,gps item"
 '
 Announce739:
 'Befehl 994 &H03e2 Code 1a050332
@@ -4526,7 +4510,7 @@ Announce740:
 'Befehl 995 &H03e3 Code 1a050333
 'Richtung
 'directivity
-Data "995;os,directivity;1;0,omni;1,45NE;2,90E;3,135SE;4,180S;5,225SW;6,270W;7,315NW;8,360N;27,CHAPTER;gps tx d-prs tx format item"
+Data "995;os,directivity;1;0,omni;1,45NE;2,90E;3,135SE;4,180S;5,225SW;6,270W;7,315NW;8,360N;8,CHAPTER,gps item"
 '
 Announce741:
 'Befehl 996 &H03e4 Code 1a050333
@@ -4538,7 +4522,7 @@ Announce742:
 'Befehl 997 &H03e5 Code 1a050334
 'SSID
 'SSID
-Data "997;op,SSID;1;43,{-,-0,-1 to -15,-A to -Z};lin;-;27,CHAPTER;gps tx d-prs tx format item"
+Data "997;op,SSID;1;43,{-,0,1_1to15,a,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z};lin;-;8,CHAPTER,gps item"
 '
 Announce743:
 'Befehl 998 &H03e6 Code 1a050334
@@ -4550,7 +4534,16 @@ Announce744:
 'Befehl 999 &H03e7 Code 1a050335
 'Symbol
 'symbol
-Data "999;oa,symbol;b,{ALPHA1};b,{ALPHA0};30,CHAPTER;gps tx d-prs tx format weather"
+Data "999;os,symbol;1;0,Sheriff,1,Digi;2,Gateway;3,small aircraft;4,Red Cross;"
+Data "999;os;5,QTH;6,X;7,Red Dot;8,Fire;9,Campground;10,Motorcycle;11,Railroad;12,Car;13,Canoe;14,Eyeball;15,School;"
+Data "999;os;16,PC User;17,Ballon;18,Police;19,Recreat. Vehicle;20,Shuttle;21,SSTV;22,Bus;23,ATV;24,WX Service;"
+Data "999;os;25,Heli;26,Yacht;27,Person;28,Df Station;29,Large Aircraft;30,WX Station;31,Dish Antenna;32,Ambulance;"
+Data "999;os;33,Bicicle;34,Fire Truck;35,Glider;36,Hospital;37,Jeep;38,Truck;39,Node;40,Rover;41,Repeater;42,Powerboat;"
+Data "999;os;43,18 wheeler;44,Van;45,Yagi;46,overlayed Digi;47,Overlayaed Gateway;48,House;49,Big ?;50,circle;"
+Data "999;os;51,Parc;52,Overlayd Car;53,Lighthouse;54,Satellite;55,Sunny;56,Overlayed Wx;57;Radio;"
+Data "999;os;58,Aircraft;59,Ovelayed WX Station;60,Overlayd Diamond;61,RACS;62,Gale Flags;63,Ham Store;64,Work Zone;"
+Data "999;os;65,Speedpost;66;Triangle;67,Small Circle;68,Overlayed Ship;69,Tornado;70,Overlayd Truck;71,Overlayed Van;"
+Data "999;os;72;Wreck;73,Other;11,CHAPTER,gps weather"
 
 Announc745:
 'Befehl 1000 &H03e8 Code 1a050335
@@ -4562,7 +4555,7 @@ Announce746:
 'Befehl 1001 &H03e9 Code 1a050336
 'SSID
 'SSID
-Data "1001;op,SSID;1;43,{-,-0,-1 to -15,-A to -Z};lin;-;27,CHAPTER;gps tx d-prs tx format weather"
+Data "1001;op,SSID;1;43,{-,0,1_1to15,a,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z};lin;-;11,CHAPTER,gps weather"
 '
 Announce747:
 'Befehl 1002 &H03ea Code 1a050336
@@ -4574,19 +4567,19 @@ Announce748:
 'Befehl 1003 &H03eb Code 1a050337
 'Kommentar
 'comment
-Data "1004;os,comment;1;43;29,CHAPTER;gps tx d-prs tx format weather"
+Data "1003;oa,comment;43,{ALPHA0};11,CHAPTER,gps weather"
 '
 Announce749:
 'Befehl 1004 &H03ec Code 1a050337
 'Kommentar
 'comment
-Data "1004;as,as1003"
+Data "1004;aa,as1003"
 '
 Announce750:
 'Befehl 1005 &H03ed Code 1a050338
 'time stamp
 'time stamp
-Data "1005;os,time stamp;1;0,0ff,1,DHM;2,HMS;30,CHAPTER;gps tx d-prs tx format weather"
+Data "1005;os,time stamp;1;0,0ff,1,DHM;2,HMS;11,CHAPTER,gps weather"
 '
 Announce751:
 'Befehl 1006 &H03ee Code 1a050338
@@ -4598,7 +4591,7 @@ Announce752:
 'Befehl 1007 &H03ef Code 1a050339
 'sentence RMC
 'sentence RMC
-Data "1007;os,sentence RMC;1;0,0ff,1,on;16,CHAPTER;gps tx mode NMEA"
+Data "1007;os,sentence RMC;1;0,0ff,1,on;8,CHAPTER,gps NMEA"
 '
 Announce753:
 'Befehl 1008 &H03f0 Code 1a050339
@@ -4608,10 +4601,9 @@ Data "1008;as,as1007"
 '
 Announce754:
 'Befehl 1009 &H03f1 Code 1a050340
-'sentence GCA
-'sentence GCA
-Data "1009;os,sentence GCA;1;0,0ff,1,on;16,CHAPTER;gps tx mode NMEA"
-'
+'sentence GGA
+'sentence GGA
+Data "1009;os,sentence GGA;1;0,0ff,1,on;8,CHAPTER,gps NMEA"
 Announce755:
 'Befehl 1010 &H03f2 Code 1a050340
 'sentence GCA
@@ -4622,7 +4614,7 @@ Announce756:
 'Befehl 1011 &H03f3 Code 1a050341
 'sentence GLL
 'sentence GLL
-Data "1011;os,sentence GLL;1;0,0ff,1,on;16,CHAPTER;gps tx mode NMEA"
+Data "1011;os,sentence GLL;1;0,0ff,1,on;8,CHAPTER,gps NMEA"
 '
 Announce757:
 'Befehl 1012 &H03f4 Code 1a050341
@@ -4634,7 +4626,7 @@ Announce758:
 'Befehl 1013 &H03f5 Code 1a050342
 'sentence GSA
 'sentence GSA
-Data "1013;os,sentence GSA;1;0,0ff,1,on;16,CHAPTER;gps tx mode NMEA"
+Data "1013;os,sentence GSA;1;0,0ff,1,on;8,CHAPTER,gps NMEA"
 '
 Announce759:
 'Befehl 1014 &H03f6 Code 1a050342
@@ -4646,7 +4638,7 @@ Announce760:
 'Befehl 1015 &H03f7 Code 1a05043
 'sentence VTG
 'sentence VTG
-Data "1015;os,sentence VTG;1;0,0ff,1,on;16,CHAPTER;gps tx mode NMEA"
+Data "1015;os,sentence VTG;1;0,0ff,1,on;8,CHAPTER,gps NMEA"
 '
 Announce761:
 'Befehl 1016 &H03f8 Code 1a05043
@@ -4658,7 +4650,7 @@ Announce762:
 'Befehl 1017 &H03f9 Code 1a050344
 'sentence GSV
 'sentence GSV
-Data "1017;os,sentence GSV;1;0,0ff,1,on;16,CHAPTER;gps tx mode NMEA"
+Data "1017;os,sentence GSV;1;0,0ff,1,on;8,CHAPTER,gps NMEA"
 '
 Announce763:
 'Befehl 1018 &H03fa Code 1a050344
@@ -4670,7 +4662,7 @@ Announce764:
 'Befehl 1019 &H03fb Code 1a050345
 'message
 'message
-Data "1019;oa,message;20,{ALPHA0};16,CHAPTER;gps tx mode NMEA"
+Data "1019;oa,message;20,{ALPHA0};8,CHAPTER,gps NMEA"
 '
 Announce765:
 'Befehl 1020 &H03fc Code 1a050345
@@ -4682,7 +4674,7 @@ Announce766:
 'Befehl 1021 &H03fd Code 1a050346
 'Alarm Gruppe
 'alarm group
-Data "1021;op,alarm group;1;5992,{8 to 5999};lin;0.001 min;9,CHAPTER;gps alarm"
+Data "1021;op,alarm group;1;60,;lin;min;100,;lin;0.001 min;3,CHAPTER,gps"
 '
 Announce767:
 'Befehl 1022 &H03fe Code 1a050346
@@ -4693,7 +4685,7 @@ Announce768:
 'Befehl 1023 &H03ff Code 1a050347
 'rx memory
 'rx memory
-Data "1023;os,rx memory;1;0,limited;1,extended;2,both;20;9,CHAPTER;gps alarm"
+Data "1023;os,rx memory;1;0,limited;1,extended;2,both;3,CHAPTER,gps"
 '
 Announce769:
 'Befehl 1ß24 &H0400 Code 1a050347
@@ -4705,7 +4697,7 @@ Announce770:
 'Befehl 1025 &H0401 Code 1a050348
 'gps logging
 'gps logging
-Data "1025;os,gps logging;1;0,off;1,on;10,CHAPTER;gps logger"
+Data "1025;os,gps logging;1;0,off;1,on;3,CHAPTER,gps"
 '
 Announce771:
 'Befehl 1026 &H0402 Code 1050348
@@ -4717,7 +4709,7 @@ Announce772:
 'Befehl 1027 &H0403 Code 1a050349
 'Aufnahme Intervall
 'record intervall
-Data "1027;os,record logging;1;0,1s;1,5s;2,10s;3,30s;4,1min;5,5min;6,10min;10,CHAPTER;gps logger"
+Data "1027;os,record logging;1;0,1s;1,5s;2,10s;3,30s;4,1min;5,5min;6,10min;3,CHAPTER,gps"
 '
 Announce773
 'Befehl 1028 &H0404 Code 1a050349
@@ -4729,19 +4721,19 @@ Announce774:
 'Befehl 1029 &H0405 Code 1a050350
 'Aufnahme sentence RMC
 'record sentence RMC
-Data "1029;os,record sentence RMC;1;0,off;1,on;10,CHAPTER;gps logger"
+Data "1029;os,record sentence RMC;1;0,off;1,on;3,CHAPTER,gps"
 '
 Announce775:
 'Befehl 1030 &H0406 Code 1a050350
 'Aufnahme sentence RMC
 'record sentence RMC
-Data "1030;as,as91029"
+Data "1030;as,as1029"
 '
 Announce776:
 'Befehl 1031 &H0407 Code 1a050351
 'Aufnahme sentence GGA
 'record sentence GGA
-Data "1031;os,record sentence GGA;1;0,off;1,on;10,CHAPTER;gps logger"
+Data "1031;os,record sentence GGA;1;0,off;1,on;3,CHAPTER,gps"
 '
 Announce777:
 'Befehl 1032 &H0408 Code 1a050351
@@ -4753,19 +4745,19 @@ Announce778:
 'Befehl 1033 &H0409 Code 1a050352
 'Aufnahme sentence VTG
 'record sentence VTG
-Data "1034;os,record sentence VTG;1;0,off;1,on;10,CHAPTER;gps logger"
+Data "1033;os,record sentence VTG;1;0,off;1,on;3,CHAPTER,gps"
 '
 Announce779:
 'Befehl 1034 &H040a Code 1a050352
 'Aufnahme sentence VTG
 'record sentence VTG
-Data "1035;as,as1035"
+Data "1034;as,as1033"
 '
 Announce780:
 'Befehl 1035 &H040b Code 1a050353
 'Aufnahme sentence GSA
 'record sentence GSA
-Data "1035;os,record sentence VTG;1;0,off;1,on;10,CHAPTER;gps logger"
+Data "1035;os,record sentence GSA;1;0,off;1,on;3,CHAPTER,gps"
 '
 Announce781:
 'Befehl 1036 &H040c Code 1a050353
@@ -4777,7 +4769,7 @@ Announce782:
 'Befehl 1037 &H040d Code 1a050354
 'Auto TX
 'auto tx
-Data "1037;os,auto tx VTG;1;0,off;1,30s;2,1min;3,3min;4,5min;5,10min;6,30min;3,CHAPTER;gps"
+Data "1037;os,auto tx;1;0,off;1,30s;2,1min;3,3min;4,5min;5,10min;6,30min;3,CHAPTER,gps"
 '
 Announce783:
 'Befehl 1038 &H040e Code 1a050354 2 Byte / 3 Byte
@@ -4789,7 +4781,7 @@ Announce784:
 'Befehl 1039 &H040f Code 1a050355
 'DTMF Geschwindigkeit
 'dtmf speed
-Data "1039;os,dtmf speed;1;0,100ms;1,200ms;2,300ms;3,500ms;4,CHAPTER;dtmf"
+Data "1039;os,dtmf speed;1;0,100ms;1,200ms;2,300ms;3,500ms;8,CHAPTER,function"
 '
 Announce785:
 'Befehl 1040 &H0410 Code 1a050355
@@ -4801,7 +4793,7 @@ Announce786:
 'Befehl 1041 &H0411 Code 1a050356
 'NB Pegel
 'NB level
-Data "1041;op,NB level;1;256,lin;-;12,CHAPTER;noise blanker"
+Data "1041;op,NB level;1;256,;lin;-;12,CHAPTER,noise blanker"
 '
 Announce787:
 'Befehl 10042 &H0412 Code 1a050356
@@ -4813,7 +4805,7 @@ Announce788:
 'Befehl 1043 &H0413 Code 1a050357
 'NB Tiefe
 'NB depth
-Data "1043;op,NB depth;1;10,lin;-12,CHAPTER;noise blanker"
+Data "1043;op,NB depth;1;10,;lin;-;12,CHAPTER,noise blanker"
 
 Announce789:
 'Befehl 1044 &H0414 Code 1a050357
@@ -4825,7 +4817,7 @@ Announce790:
 'Befehl 1045 &H0415 Code 1a050358
 'NB Breite
 'NB width
-Data "1045;op,NB width;1;256{1 to 100},lin;-;12,CHAPTER;noise blanker"
+Data "1045;op,NB width;1;256,,{0.39_1to100};lin;-;12,CHAPTER,noise blanker"
 '
 Announce791:
 'Befehl 1046 &H0416 Code 1a050358
@@ -4837,7 +4829,7 @@ Announce792:
 'Befehl 1047 &H0417 Code 1a050359
 'VOX delay
 'VOX delay
-Data "1047;op,VOX delay;1;21{0 to 2.0},lin;s;3,CHAPTER;vox"
+Data "1047;op,VOX delay;1;21, ,{0.1_0to2.1};lin;s;5,CHAPTER,voice"
 '
 Announce793:
 'Befehl 1048 &H0418 Code 1a050359
@@ -4847,9 +4839,9 @@ Data "1048;ap,as1047"
 '
 Announce794:
 'Befehl 1049 &H0419 Code 1a050360
-'VOX voice delay
-'VOX voice delay
-Data "1049;os,VOX voice delay;1;0,off;1,short;2,mid;3,long3,CHAPTER;vox"
+'Voice delay
+'Voice delay
+Data "1049;os,Voice delay;1;0,off;1,short;2,mid;3,long;5,CHAPTER,voice"
 '
 Announce795:
 'Befehl 1050 &H041a Code 1a050360
@@ -4861,7 +4853,7 @@ Announce796:
 'Befehl 1051 &H041b Code 1a050361
 'Rufzeichen Anzeige
 'call sign display
-Data "1051;os,call sign display;1;0,callsign;1,name;2,CHAPTER;cd"
+Data "1051;os,call sign display;1;0,callsign;1,name;2,CHAPTER,DV"
 '
 Announce797:
 'Befehl 1052 &H041c Code 1a050361
@@ -4873,7 +4865,7 @@ Announce798:
 'Befehl 1053 &H041d Code 1a050362
 'Kompass Richtung
 'compass direction
-Data "1053;os,compass direction;1;0,heading;1,north up;2,south up;3,CHAPTER;gps"
+Data "1053;os,compass direction;1;0,heading;1,north up;2,south up;3,CHAPTER,gps"
 '
 Announce799:
 'Befehl 1054 &H041e Code 1a050362
@@ -4885,7 +4877,7 @@ Announce800:
 'Befehl 1055 &H041f Code 1a050363
 'Batterie
 'battery
-Data "1055;os,battery;1;0,BP272;1,BP307;7,CHAPTER;function"
+Data "1055;os,battery;1;0,BP272;1,BP307;7,CHAPTER,function"
 '
 Announce801:
 'Befehl 1056 &H0420 Code 1a050363
@@ -4897,7 +4889,7 @@ Announce802:
 'Befehl 1057 &H0421 Code 1a050364
 'Battrerie Bestaetigung
 'battery confirmation
-Data "1057;os,battery confirmation;1;0,off;1,on;7,CHAPTER;function"
+Data "1057;os,battery confirmation;1;0,off;1,on;7,CHAPTER,function"
 '
 Announce803:
 'Befehl 1058 &H0422 Code 1a050364
@@ -4909,7 +4901,7 @@ Announce804:
 'Befehl 1059 &H0423 Code 0x1a050365
 'Tuner selected
 'Tuner selected
-Data "1059;os,Tuner selected;1;0,off;1,on;5,CHAPTER;Tuner"
+Data "1059;os,Tuner selected;1;0,AH-705;1,others;5,CHAPTER,Tuner"
 '
 Announce805:
 'Befehl 1060 &H0424  Code 0x1a050365
@@ -4921,7 +4913,7 @@ Announce806:
 'Befehl 1061 &H0425 Code 0x1a050366
 'Tune Memory
 'Tune Memory
-Data "1061;os,Tune Memory;1;0,off;1,on;5,CHAPTER;Tuner"
+Data "1061;os,Tune Memory;1;0,off;1,on;5,CHAPTER,Tuner"
 '
 Announce807:
 'Befehl 1062 &H0426  Code 0x1a050366
@@ -4933,7 +4925,7 @@ Announce808:
 '[VOX/BK-IN]
 '[VOX/BK-IN]
 Data "1063;os,vox/bkin config;1;0,transmit;1,tuner;2,vox/bkin;3,pamp/att;4,notch;5,nb;6,nr;7,split,8,a/b;9,vfo/memo;10,cd;11,preset;"
-Data "1063;os;12,home ch;13,temporary skip;14,voice keyer/rttymem1;15,voice keyer/rttymem2;16,voice keyer/rttymem3;17,voice keyer/rttymem4;18,CHAPTER;font key customize"
+Data "1063;os;12,home ch;13,temporary skip;14,voice keyer/rttymem1;15,voice keyer/rttymem2;16,voice keyer/rttymem3;17,voice keyer/rttymem4;18,CHAPTER,front key customize"
 
 Announce809:
 'Befehl 1064 &H0428  Code 0x1a050367
@@ -4945,7 +4937,7 @@ Announce810:
 'Befehl 1065 &H0429 Code 0x1a050368
 'AUTOTUNE/RX>CS
 'AUTOTUNE/RX>CS
-Data "1065;os,autotune/rx>cs config;1;0,autotune/rx>CS;1,CD/RX>CS;2,PRESET/RX>CS;3,Home CH/RX>CS;4,Temporary Skip/RX>CS;18,CHAPTER;font key customize"
+Data "1065;os,autotune/rx>cs config;1;0,autotune/rx>CS;1,CD/RX>CS;2,PRESET/RX>CS;3,Home CH/RX>CS;4,Temporary Skip/RX>CS;18,CHAPTER,front key customize"
 '
 Announce811:
 'Befehl 1066 &H042a Code 0x1a050368
@@ -4957,19 +4949,19 @@ Announce812:
 'Befehl 1067 &H042b Code 1a06
 'DATA mode
 'DATA mode
-Data "1067;os,DATA mode;1;0,off;1"
+Data "1067;op,DATA mode;1;2,mode,{off,on};lin;;3,filter,{1,2,3};lin;"
 '
 Announc813:
 'Befehl 1078 &H042c Code 1a06
 'DATA mode
 'DATA mode
-Data "1068;as,as1067"
+Data "1068;ap,as1067"
 '
 Announce814:
 'Befehl 1069 &H042d Code 1a07
 'NTP Server
 'NTP Server
-Data "1069;os,NTP Server;1;0,terminate;1,initiate;3,CHAPTER;ntp"
+Data "1069;os,NTP Server;1;0,terminate;1,initiate;4,CHAPTER,time"
 '
 Announce815:
 'Befehl 1070 &H042e Code 1a07
@@ -4981,16 +4973,16 @@ Announce816:
 'Befehl 1071 &H042f Code 1a08
 'NTP Server status
 'NTP Server status
-Data "1071;as,NTP Server status;1,0,accesing or notaccessed;1,success;2,failed;3,CHAPTER;ntp"
+Data "1071;as,NTP Server status;1;0,accesing or notaccessed;1,success;2,failed;4,CHAPTER,time"
 '
 Announce817:
 'Befehl 1072 &H0430 Code 1a09
 'OVF
 'OVF
-Data "1072;as,ovf;1,0,off;1,on2
+Data "1072;as,OVF;1;0,off;1,on;5,CHAPTER,METER"
 '
 Announce818:
-'Befehl 1023 &H0331 Code 1a0a
+'Befehl 1073 &H0331 Code 1a0a
 'Share picture
 'Share picture
 Data "1073;os,Share picture;1;0,off;1,on;2,on repeat"
@@ -5011,48 +5003,43 @@ Announce821:
 'Befehl 1076 &H0434 Code 1b00
 'repeater tone frequency
 'repeater tone frequency
-Data "1076;os,repeater tone frequency;1;0,67.0;1,69.3;2,71.9;3,74.4;4,77,0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
-Data "1076;os;12,100.0;13,103.5;14,107,2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
+Data "1076;os,repeater tone frequency;1;0,67.0;1,69.3;2,71.9;3,74.4;4,77.0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
+Data "1076;os;12,100.0;13,103.5;14,107.2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
 Data "1076;os;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;26,159.8;27,162.2;28,165.5;29,167.9;"
-Data "1076;os;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
-Data "1076;os;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1"
+Data "1076;os;30,171.3;31,173.8;32,177.3;33,179.9;34,183.5;35,186.2;36,189.9;37,192.8;38,196.6;"
+Data "1076;os;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225.7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1"
 '
 Announce822:
 'Befehl 1077 &H0435 Code 1b00
 'repeater tone frequency
 'repeater tone frequency
-Data "1077;ap,as1076"
+Data "1077;as,as1076"
 '
 Announce823:
 'Befehl 1078 &H0436 Code 1b01
 'TSQL tone frequency
 'TSQL tone frequency
-Data "1078;os,TSQL tone frequency;1;0,67.0;1,69.3;2,71.9;3,74.4;4,77,0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
-Data "1078;os;12,100.0;13,103.5;14,107,2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
+Data "1078;os,TSQL tone frequency;1;0,67.0;1,69.3;2,71.9;3,74.4;4,77.0;5,79.7;6,82.5;7,85.4;8,88.5;9,91.5;10,94.8,11,97.4;"
+Data "1078;os;12,100.0;13,103.5;14,107.2;15,110.9;16,114.8;17,118.8;18,123.0;19,127.3;20,131.8;"
 Data "1078;os;21,136.5;22,141.3;23,146.2;24,151.4;25,156.7;26,159.8;27,162.2;28,165.5;29,167.9;"
-Data "1078;os;30,171.3;31,173.8;32,177.3;33,179.9;34,183,5;35,186.2;36,189.9;37,192.8;38,196.6;"
-Data "1078;os;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225,7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1"
+Data "1078;os;30,171.3;31,173.8;32,177.3;33,179.9;34,183.5;35,186.2;36,189.9;37,192.8;38,196.6;"
+Data "1078;os;39,199.5;40,203.5;41,206.5;42,210.7;43,218.1;44,225.7;45,229.1;46,233.6;47,241.8;48,250.2;49,254.1"
 '
 Announce824:
 'Befehl 1079 &H0437 Code 1b01
 'TSQL tone frequency
 'TSQL tone frequency
-Data "1079;ap,as1078"
+Data "1079;as,as1078"
 '
 Announce825:
 'Befehl 1080 &H0438 Code 1b02
 'DTCS Frequenz
 'DTCS frequency
-Data "1080;os,DTCS frequency;1;0,NN;1,NR;2,RN;3,RR;0,23;1,25;2,26;3,31;4,32;5,36;6,43;7,47;8,51;9,53;10,54;"
-Data "1080;os;11,65;12,71;13,72;14,73;15,74;16,114;17,115;18,116;19,122;20,125;"
-Data "1080;os;21,131;22,132;23,134;24,143;25,145;26,152;27,155;28,156;29,162;30,165"
-Data "1080;os;31,172;32,174;33,205;34,212;35,223;36,225;37,226;38,243;39,244;40,245;"
-Data "1080;os;41,246;42,251;43,252;44,255;45,261;46,263;47,265;48,266;49,271;50,274;"
-Data "1080;os;51,306;52,311;53,315;54,325;55,331;56,332;57,343;58,346;59,351;60,356;"
-Data "1080;os;61,364;62,365;63,371;64,411;65,412;66,413;67,423;68,431;69,432;70,445;"
-Data "1080;os;71,446;72,452;73,454;74,455;75,462;76,464;77,465;78,466;79,503;80,506;"
-Data "1080;os;81,516;82,523;83,526;84,532;85,546;86,565;87,606;88,612;89,624;90,627;"
-Data "1080;os;91,631;92,632;93,654;94,662;95,664;96,703;97,712;98,723;99,731;100,732;101,734;102,743;103,754"
+Data "1080;op,DTCS frequency;1;4,,{NN,NR,RN,RR};lin;-;103,frequency,{23,25,26,31,32,36,43,47,51,53,54,65,71,72,73,74,114,115,116,122,125,"
+Data "1080;os;131,132,134,143,145,152,155,156,162,165,31,172,32,174,205,212,223,225,226,243,244,245,"
+Data "1080;os;246,251,252,255,261,263,265,266,271,274,306,311,315,325,331,332,343,346,351,356,"
+Data "1080;os;364,365,371,411,412,413,423,431,432,445,446,452,454,455,462,464,465,466,503,506,"
+Data "1080;os;516,523,526,532,546,565,606,612,624,627,631,632,654,662,664,703,712,723,731,732,734,743,754};lin;-"
 '
 Announce826:
 'Befehl 1081 &H0439 Code 1b02
@@ -5064,7 +5051,7 @@ Announce827:
 'Befehl 1082 &H043a Code 1b07
 'CSQL Code
 'CSQL code
-Data "1082;os,CSQL code;1;100;lin;-"
+Data "1082;op,CSQL code;1;100,;lin;;2,CHAPTER,DV"
 '
 Announce828:
 'Befehl 1083 &H043b Code 1b07
@@ -5076,31 +5063,31 @@ Announce829:
 'Befehl 1084 &H043c Code 1c00
 'RX/TX
 'RX/TX
-Data "1084;os,PTT1;1;0,RX;1,TX"
+Data "1084;os,PTT;1;0,RX;1,TX"
 '
 Announce830:
 'Befehl 1085 &H043d Code 1c00
 'RX/TX
 'RX/TX
-Data "1085;as,as1083"
+Data "1085;as,as1084"
 '
 Announce831:
 'Befehl 1086 &H043e Code 1c01
 'Antenna Tuner
 'Antenna Tuner
-Data "1086;os,Antenna Tuner;1;0,off;1,on;2,tune"
+Data "1086;os,Antenna Tuner;1;0,off;1,on;2,tune;5,CHAPTER,Tuner"
 '
 Announce832:
 'Befehl 1087 &H043f Code 1c01
 'Antenna Tuner
 'Antenna Tuner
-Data "1087;as,as1036"
+Data "1087;as,as1086"
 '
 Announce833:
 'Befehl 1088 &H0440 Code 1c02
 'transmit frequency monitor
 'transmit frequency monitor
-Data "1088;os,transmit frequency monitor;1;0,off;1,on;"
+Data "1088;os,transmit frequency monitor;1;0,off;1,on"
 '
 Announce834:
 'Befehl 1089 &H0441 Code 1c02
@@ -5112,32 +5099,33 @@ Announce835:
 'Befehl 1090 &H0442 Code 1c03
 'transmit frequency
 'transmit frequency
-Data "1090;ap,transmit frequency;1;2699970000{30000 to 199999999. 40000000 to 469000000};lin;Hz"
+Data "1090;ap,transmit frequency;1;269970000,{1_30000to199999999,1_400000000to469999999};lin;Hz"
 '
 Announce836:
 'Befehl 1091 &H0443 Code 1e00
 'number of available TX frequency band
 'number of available TX frequency band
-Data "1091;ap,number of available TX frequency band;1;255;lin"
+Data "1091;ap,available TX bands;1;255, ;lin; ;9,CHAPTER,band edge"
 '
 Announce837:
 'Befehl 1092 &H0444 Code 1e01
 'TX Bandgrenzen
 'Tx Band edge
-Data "1092;ap,band edge frequencies;12;2699970000{30000 to 199999999. 40000000 to 469000000};lin;Hz;"
-Data "1092;ap;2699970000{30000 to 199999999. 40000000 to 469000000};lin;Hz"
+Data "1092;ap,TX band edges;12,band;2699970000,{1_30000to199999999,1_400000000to469000000};lin;Hz;"
+Data "1092;ap;2699970000,{1_30000to199999999,1_400000000to469000000};lin;Hz;9,CHAPTER,band edge"
 '
 Announce838:
 'Befehl 1093 &H0445 Code 1e02
-'number of available use set TX frequency band
-'number of available user set TX frequency band
-Data "1093;ap,number of available user setTX frequency band;1;255;lin"
+'number of available user TX frequency band
+'number of available user TX frequency band
+Data "1093;ap,available user TX bands;1;255;lin;-;9,CHAPTER,band edge"
 '
 Announce839:
 'Befehl 1094 &H0446 Code 1e03
 'user-set TX band edge frequencies
 'user-set TX band edge frequencies
-Data "1094;op,user-set TX band edge frequencies;29;2699970000{30000 to 199999999. 40000000 to 469000000};lin;Hz;"
+Data "1094;op,user TX band edges;29,band;2699970000,{1_30000to199999999,1_400000000to469000000};lin;Hz;"
+Data "1094;ap;2699970000,{1_30000to199999999,1_400000000to469000000};lin;Hz;9,CHAPTER,band edge"
 '
 Announce840:
 'Befehl 1095 &H0447 Code 1e03
@@ -5149,19 +5137,19 @@ Announce841:
 'Befehl 1096 &H0448 Code 1f00
 'Mein Rufzeichen
 'my call
-Data "1096;oa,my call;8,{ALPHA3}"
+Data "1096;oa,my call;12,{ALPHA3};2,CHAPTER,DV"
 '
 Announce842:
 'Befehl 1097 &H0449 Code 1f00
 'Mein Rufzeichen
 'my call
-Data "1097;aa,as1097"
+Data "1097;aa,as1096"
 '
 Announce843:
 'Befehl 1098 &H044a Code 1f01
-'DV TX Rufzeichen
+'DV TX Ruf
 'dv tx call
-Data "1098;oa,dv tx call;8,UR,{ALPHA3};8,R1,{ALPHA3};8,R2,{ALPHA3}"
+Data "1098;oa,tx call;8,UR,{ALPHA3};8,R1,{ALPHA3};8,R2,{ALPHA3};0,ALL;2,CHAPTER,DV"
 '
 Announce844:
 'Befehl 1099 &H044b Code 1f01
@@ -5173,7 +5161,7 @@ Announce845:
 'Befehl 1010 &H044c Code 1f02
 'TX Nachricht
 'tx message
-Data "1100;oa,tx message;20,{ALPHA0}"
+Data "1100;oa,tx message;20,{ALPHA0};2,CHAPTER,DV"
 '
 Announce846:
 'Befehl 1101 &H044d Code 1f02
@@ -5185,7 +5173,7 @@ Announce847:
 'Befehl 1102 &H044e Code 200000
 'Auto DV RX Call signs output
 'Auto DV RX Call signs output
-Data "1102;os,Auto DV RX Call signs output;1;0,off;1,on"
+Data "1102;os,auto DV RX Callsigns;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce848:
 'Befehl 1103 &H044f Code 200000
@@ -5197,9 +5185,8 @@ Announce849:
 'Befehl 1104 &H0450 Code 200001
 'DV RX Call signs for transceive
 'DV RX Call signs for transceive
-Data "1104;oa,DV RX Call signs for transceive;a,0,0,0,0,0,0,voice,data,direct,through repater,no breakin,break in,data,control,normal,EMR;"
-Data "1104;oa;1,repeater control,send auto ack,request to retransmit, dentack,receive no replay,repeter disabled, NULL;"
-Data "1104;oa;8,{ALPHA3};4,{ALPHA3};8,{ALPHA3};8,{ALPHA3},8,{ALPHA3}"
+Data "1104;oa,DV RX Call signs for transceive;b,heaeder1;b,header2;"
+Data "1104;oa;8,caller,{ALPHA3};4,caller note,{ALPHA3};8,called,{ALPHA3};8,repeater,{ALPHA3};8,gateway,{ALPHA3};2,CHAPTER,DV"
 '
 Announce850:
 'Befehl 1105 &H0451 Code 200001
@@ -5211,15 +5198,14 @@ Announce851:
 'Befehl 1106 &H0452 Code 200002
 'Auto DV RX Call signs
 'Auto DV RX Call signs
-Data "1106;am,Auto DV RX Call signs;1;a,0,0,0,0,0,0,voica,data,direct,through repater,no breakin, reak in,data,control,normal,EMR, notvalid;"
-Data "1106;am;1,{repeater control,send auto ack,request to retransmit, dentack,receive no replay,repeter disabled, NULL, not valid;"
-Data "1106;am;8,{ALPHA3};4,{ALPHA3};8,{ALPHA3};8,{ALPHA3},8,{ALPHA3}"
+Data "1106;aa,Auto DV RX Call signs;b,heaeder1;b,header2;"
+Data "1106;aa;8,caller,{ALPHA3};4,caller note,{ALPHA3};8,called,{ALPHA3};8,repeater,{ALPHA3};8,gateway,{ALPHA3};2,CHAPTER,DV"
 '
 Announce852:
 'Befehl 1107 &H0453 Code 200100
 'Auto DV RX message output
 'Auto DV RX message output
-Data "1107;os,Auto DV RX message output;1;0,off;1,on"
+Data "1107;os,Auto DV RX message output;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce853:
 'Befehl 1108 &H0454 Code 200100
@@ -5231,7 +5217,7 @@ Announce854:
 'Befehl 1109 &H0455 Code 200101
 'DV RX message for transceive
 'DV RX message for transceive
-Data "1109;oa,DV RX message for transceive;20,{ALPHA3};8,{ALPHA3};4,{ALPHA3}"
+Data "1109;oa,DV RX message for transceive;20,{ALPHA3};8,{ALPHA3};4,{ALPHA3};2,CHAPTER,DV"
 '
 Announce855:
 'Befehl 1110 &H0456 Code 200101
@@ -5243,13 +5229,13 @@ Announce856:
 'Befehl 1111 &H0457 Code 200102
 'Auto DV RX message 
 'Auto DV RX message 
-Data "1111;aa,Auto DV RX message;20,{ALPHA3};8,{ALPHA3};4,{ALPHA3}"
+Data "1111;aa,Auto DV RX message;20,{ALPHA3};8,{ALPHA3};4,{ALPHA3};2,CHAPTER,DV"
 '
 Announce857:
 'Befehl 1112 &H0458 Code 200200
 'Auto DV RX status output
 'Auto DV RX status output
-Data "1112;os,Auto DV RX status output;1;0,off;1,on"
+Data "1112;os,Auto DV RX status output;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce858:
 'Befehl 1113 &H0459 Code 200200
@@ -5261,27 +5247,27 @@ Announce859:
 'Befehl 1114 &H045a Code 200201
 'DV RX status for transceive
 'DV RX status for transceive
-Data "1114;oa,DV RX status for transceive;a,{0,receiving a DV signal:no,yes,last call finished:no,yes,audio heard:no,yes,"
-Data "1114;oa;receving BK:no,yes,receiving EMR:no,yes,receiving other signal than DV:no,yes,packet loss.no;yes}"
+Data "1114;or,DV RX status (transceive);1;0,receiving a voice call;1,last call finished;2,receiving signal"
+Data "1114;or;3,receving BK;4,receiving EMR;5,receiving non DV;6,packet loss;0,ALL;2,CHAPTER,DV"
 '
 Announce860:
 'Befehl 1115 &H045b Code 200201
 'DV RX status for transceive
 'DV RX status for transceive
-Data "1115;aa,as1114"
+Data "1115;ar,as1114"
 '
 Announce861:
 'Befehl 1116 &H045c Code 200202
 'Auto DV RX status 
 'Auto DV RX status 
-Data "1116;aa,Auto DV RX status;a,{0,receiving a DV signal:no,yes,last call finished: no,yes,audio heard:no,yes,"
-Data "1116;aa;receving BK:no,yes,receiving EMR:no,yes,receiving other signal than DV:no,yes,packet loss.no;yes}"
+Data "1116;ar,Auto DV RX status;1;0,receiving a voice call;1,last call finished;2,receiving signal"
+Data "1116;ar;3,receving BK;4,receiving EMR;5,receiving other signal than DV;6,packet loss;0,ALL;2,CHAPTER,DV"
 '
 Announce862:
 'Befehl 1117 &H045d Code 200300
 'Auto DV RX GPS/D-PRS data output
 'Auto DV RX GPS/D-PRS data output
-Data "1117;os,Auto DV RX GPS/D-PRS data output;1;0,off;1,on"
+Data "1117;os,Auto DV RX GPS/D-PRS data output;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce863:
 'Befehl 1118 &H045e Code 200300
@@ -5293,55 +5279,67 @@ Announce864:
 'Befehl 1119 &H045f Code 20030100
 'DV RX GPS/D-PRS Position for transceive
 'DV RX GPS/D-PRS Position for transceive
-Data "1119;aa,DV RX GPS/D-PRS Position for transceive;42"
+Data "1119;aa,DV RX GPS/D-PRS Position (transceive);1,number;9,callsign;2,symbol;5,lat;6,long;4,alt;"
+Data "1119;aa;2,course;3,speed;7,date;3,alt;2,gain;2,direction;2,CHAPTER,DV"
 '
 Announce865:
 'Befehl 1120 &H0460 Code 20030101
 'DV RX GPS/D-PRS S Object status for transceive
 'DV RX GPS/D-PRS S Object status for transceive
-Data "1120;aa,DV RX GPS/D-PRS S Object status for transceive;52"
+Data "1120;aa,DV RX GPS/D-PRS Object (transceive);1,number;9,callsign;2,symbol;5,lat;6,long;4,alt;"
+Data "1120;aa;2,course;3,speed;7,date;3,alt;2,gain;2,direction;10,name;1,type;2,CHAPTER,DV"
 '
 Announce866:
 'Befehl 1121 &H0461 Code 20030102
 'DV RX GPS/D-PRS S Item status for transceive
 'DV RX GPS/D-PRS S Item status for transceive
-Data "1121;aa,DV RX GPS/D-PRS S Item status for transceive;35"
+Data "1121;aa,DV RX GPS/D-PRS Item (transceive);1,number;9,callsign;2,symbol;5,lat;6,long;4,alt;"
+Data "1121;aa;2,course;3,speed;1,power;3,alt;2,gain;2,direction;10,name;1,type;"
+Data "1121;aa;2,humidity;3,pressure;2,CHAPTER,DV"
 '
 Announce867:
 'Befehl 1122 &H0462 Code 20030103
 'DV RX GPS/D-PRS S Weather status for transceive
 'DV RX GPS/D-PRS S Weather status for transceive
-Data "1122;aa,DV RX GPS/D-PRS S Weather status for transceive;49"
+Data "1122;aa,DV RX GPS/D-PRS Weather (transceive);1,number;9,callsign;2,symbol;5,lat;6,long;7,date;"
+Data "1122;aa;2,wind dir;2,wind speed;2,gust speed;3,temp;2,rain;2,rain 24h;2,rain midnight;"
+Data "1122;aa;2,humidity;3,pressure;2,CHAPTER,DV"
 '
 Announce868:
 'Befehl 1123 &H0463 Code 20030200
 'DV RX GPS/D-PRS Position
 'DV RX GPS/D-PRS Position
-Data "1123;aa,DV RX GPS/D-PRS Position;42"
+Data "1123;aa,DV RX GPS/D-PRS Position;42;1,number;9,callsign;2,symbol;5,lat;6,long;4,alt;"
+Data "1123;aa;2,course;3,speed;7,date;3,alt;2,gain;2,direction;2,CHAPTER,DV"
 '
 Announce869:
 'Befehl 1124 &H0464 Code 20030201
 'DV RX GPS/D-PRS S Object status
 'DV RX GPS/D-PRS S Object status
-Data "1124;aa,DV RX GPS/D-PRS S Object status;52"
+Data "1124;aa,DV RX GPS/D-PRS Object;1,number;9,callsign;2,symbol;5,lat;6,long;4,alt;"
+Data "1124;aa;2,course;3,speed;7,date;3,alt;2,gain;2,direction;10,name;1,type;2,CHAPTER,DV"
 '
 Announce870:
 'Befehl 1125 &H0465 Code 20030202
 'DV RX GPS/D-PRS S Item status
 'DV RX GPS/D-PRS S Item status
-Data "1125;aa,DV RX GPS/D-PRS S Item status;35"
+Data "1125;aa,DV RX GPS/D-PRS Item;1,number;9,callsign;2,symbol;5,lat;6,long;4,alt;"
+Data "1125;aa;2,course;3,speed;1,power;3,alt;2,gain;2,direction;10,name;1,type;"
+Data "1125;aa;2,humidity;3,pressure;2,CHAPTER,DV"
 '
 Announce871:
 'Befehl 1126 &H0466 Code 20030203
 'DV RX GPS/D-PRS S Weather status
 'DV RX GPS/D-PRS S Weather status
-Data "1126;aa,DV RX GPS/D-PRS S Weather status;49"
+Data "1126;aa,DV RX GPS/D-PRS Weather;1,number;9,callsign;2,symbol;5,lat;6,long;7,date;"
+Data "1126;aa;2,wind dir;2,wind speed;2,gust speed;3,temp;2,rain;2,rain 24h;2,rain midnight;"
+Data "1126;aa;2,humidity;3,pressure;2,CHAPTER,DV"
 '
 Announce872:
 'Befehl 1127 &H0467 Code 200400
 'Auto DV RX GPS/D-PRS message output
 'Auto DV RX GPS/D-PRS message output
-Data "1127;os,Auto DV RX GPS/D-PRS message outputt;1;0,off;1,on"
+Data "1127;os,Auto DV RX GPS/D-PRS message output;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce873:
 'Befehl 1128 &H0468 Code 200400
@@ -5353,7 +5351,7 @@ Announce874:
 'Befehl 1129 &H0469 Code 200401
 'DV RX GPS/D-PRS message for transceive
 'DV RX GPS/D-PRS message for transceive
-Data "1129;oa,DV RX GPS/D-PRS message for transceive;1;9,{ALPHA3};43,{ALPHA3}"
+Data "1129;oa,DV RX GPS/D-PRS message for transceive;52, ,{ALPHA3};2,CHAPTER,DV"
 '
 Announce875:
 'Befehl 1130 &H046a Code 200401
@@ -5365,13 +5363,13 @@ Announce876:
 'Befehl 1131 &H046b Code 200402
 'DV RX GPS/D-PRS message status 
 'DV RX GPS/D-PRS message status 
-Data "1131;aa,DV RX GPS/D-PRS message status;9,{ALPHA3};43,{ALPHA3}"
+Data "1131;aa,DV RX GPS/D-PRS message status;52, ,{ALPHA3};2,CHAPTER,DV"
 '
 Announce877:
 'Befehl 1132 &H046c Code 2100
 'RIT frequency
 'RIT frequency
-Data "1132;op,RIT frequency;1;19999,{-9999 to 9999};lin;Hz"
+Data "1132;op,RIT frequency;1;19999,{1_-9999to9999};lin;Hz"
 '
 Announce878:
 'Befehl 1133 &H046d Code 2100
@@ -5407,7 +5405,7 @@ Announce883:
 'Befehl 1138 &H0472 Code 2200
 'DV TX data
 'DV TX data
-Data "1138;oa,DV TX data;30,{ALPHA0}"
+Data "1138;oa,DV TX data;30,{ALPHA0};2,CHAPTER,DV"
 '
 Announce884:
 'Befehl 1139 &H0473 Code 2200
@@ -5419,7 +5417,7 @@ Announce885:
 'Befehl 1140 &H0474 Code 220100
 'Auto DV RX
 'Auto DV RX
-Data "1140;os,Auto DV RX;1;0,off;1,on"
+Data "1140;os,Auto DV RX data;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce886:
 'Befehl 1141 &H0475 Code 220100
@@ -5431,13 +5429,13 @@ Announce887:
 'Befehl 1142 &H0476 Code 220101
 'DV RX data for transceive
 'DV RX data for transceive
-Data "1142;as,DV RX data for transceive;1;30,{ALPHA0}"
+Data "1142;as,DV RX data for transceive;1;30,{ALPHA0};2,CHAPTER,DV"
 '
 Announce888:
 'Befehl 1143 &H0477 Code 2202
 'DV TX data 
 'DV TX data
-Data "1143;os,DV TX data;1;20,off;1,on"
+Data "1143;os,DV TX data;1;0,PTT;1,auto;2,CHAPTER,DV"
 '
 Announce889
 'Befehl 1144 &H0478 Code 2202
@@ -5449,7 +5447,7 @@ Announce890:
 'Befehl 1145 &H0479 Code 2203
 'DV fast data 
 'DV fast data
-Data "1145;os,DV fast data;1;20,off;1,on"
+Data "1145;os,DV fast data;1;20,off;1,on;2,CHAPTER,DV
 '
 Announce891:
 'Befehl 1146 &H047a Code 2203
@@ -5461,7 +5459,7 @@ Announce892:
 'Befehl 1147 &H047b Code 2204
 'GPS data Geschwindigkeit
 'gps data speed
-Data "1147;os,gps data speed;1;20,slow;1,fast"
+Data "1147;os,gps data speed;1;0,slow;1,fast;3,CHAPTER,DV"
 '
 Announce893:
 'Befehl 1148 &H047c Code 2204
@@ -5473,7 +5471,7 @@ Announce894:
 'Befehl 1149 &H047d Code 2205
 'DV fast data tx delay
 'DV fast data tx delay
-Data "1149;op,DV fast data tx delay;1;10,{off,1 to 10}"
+Data "1149;op,fast data tx delay;1;11,,{off,1_1to10};lin;sec;2,CHAPTER,DV"
 '
 Announce895:
 'Befehl 1150 &H047e Code 2205
@@ -5483,17 +5481,19 @@ Data "1150;ap,as1149"
 ''
 Announce896:
 'Befehl 1151 &H047f Code 2300
-'GPS meine position Status
-'GPS my position status
-Data "1151;ap,GPS my position data;1;8960000;ddmm.mmmm;deg lat;3,{south,north,undefinded};lin;-;"
-Data "1151;ap;17960000;dddmm.mmm;deg long;3,{W,E,undefined;lin;-;200001{-100000 to 100000,undefined};lin;10cm;"
-Data "1151;ap;361,[0 to 359, undefined,course;lin,deg;1000,speed;lin;km/h;3,CHAPTER;gps"
+'GPS meine position
+'GPS my position
+Data "1151;ap,my position;1;90,lat,{1_0to89};lin;deg;60,lat,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,S/N,{south,north};lin;-;"
+Data "1151;ap;180,long,{1_0to179};lin;deg;60,long,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,W/E,{west,east};lin;-;"
+Data "1151;ap;20002,hight +-9999 -,{1_-10000to10000,-};lin;m;10,hight;lin;0.1m;"
+Data "1151;ap;361,course,{1_0to360,undefined;lin;deg;10000,speed;lin;km/h;"
+Data "1151;ap;3000;lin;year;12,;lin;month;31,;lin;day;24,;lin;hour;60,;lin;min;60,;lin;sec;3,CHAPTER,gps"
 '
 Announce897:
 'Befehl 1152 &H0480 Code 2301
 'GPS select
 'GPS select
-Data "1152;os,GPS select;1;0,off;1,on;2,manual"
+Data "1152;os,GPS select;1;0,off;1,on;2,manual;3,CHAPTER,gps"
 '
 Announce898:
 'Befehl 1153 &H0481 Code 2301
@@ -5502,23 +5502,24 @@ Announce898:
 Data "1153;as,as1152"
 '
 Announce899:
-'Befehl 1164 &H0482 Code 2302
+'Befehl 1154 &H0482 Code 2302
 'GPS Manual position
 'GPS Manual position
-Data "1154;os,GPS manual position;1;540000;ddmm.mmmm;deg lat;2,{south,north};lin;-;
-Data "1154;os;1080000;dddmm.mmm;deg long;1,[W/E;lin;-;200001{-100000 to 100000,undefined};lin;10cm;3,CHAPTER;gps"
+Data "1154;op,position;1;90,lat,{1_0to89};lin;deg;60,lat,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,{south,north};lin;-;"
+Data "1154;op;180,long,{1_0to179};lin;deg;60,long,{1_0to59};lin;min;100,lat,{1_0to99};lin;sec;2,{W,E};lin;-;"
+Data "1154;op;20002,hight +-9999 -,{1_-10000to10000,-};lin;m;10,hight;lin;0.1m;3,CHAPTER,gps"
 '
 Announce900:
 'Befehl 1155 &H0483 Code 2302
 'GPS Manual position
 'GPS Manual position
-Data "1155;as,as1154"
+Data "1155;ap,as1154"
 '
 Announce901:
 'Befehl 1156 &H0484 Code 240000
 'TX Ausgangsleistung
 'Tx output power
-Data "1156;os,tx output power;1;10,off;1,on"
+Data "1156;os,tx output power;1;0,off;1,on"
 '
 Announce902:
 'Befehl 1157 &H0485 Code 240000
@@ -5530,13 +5531,13 @@ Announce903:
 'Befehl 1158 &H0486 Code 240001
 'TX Ausgangsleistung fuer transceive
 'Tx output power for transceive
-Data "1158;as,tx output power for transceive;1;10,off;1,on"
+Data "1158;as,tx output power for transceive;1;0,off;1,on"
 '
 Announce904:
 'Befehl 1159 &H0487 Code 25
 'unselected / selected VFO’s frequency
 'unselected / selected VFO’s frequency
-Data "1159;op,selected VFO’s operating frequency;2,{sel, unsel};269970000{30000 to 199999999. 40000000 to 469000000};lin;Hz"
+Data "1159;op,frequency;2,VFO:,{sel,unsel};269970000,{1_30000to199999999,1_400000000to469999999};lin;Hz"
 '
 Announce905:
 'Befehl 1160 &H0488 Code 25
@@ -5548,7 +5549,7 @@ Announce906:
 'Befehl 1161 &H0489 Code 26
 'unselected / selected VFO’s operating mode
 'unselected / selected VFO’s operating mode
-Data "1161;os,mode of sel / unsel VFO;2;{0,sel};1,unsel;0,LSB;1,USB;1,AM;3,CW;4,RTTY;5,FM;6,WFM;7,CW-R;8,RTTY-R;9,DV;10,LSB-D;11,USB-D;12,AM-D;13,FM-D;0,Fil1;1,Fil2;2,Fil3"
+Data "1161;op,mode;2,VFO:,{sel,unsel};10,mode,{LSB,USB,AM,CW,RTTY,FM,WFM,CW-R,RTTY-R,DV,LSB-D,USB-D,AM-D,FM-D};lin; ;3,filter,{fl1,fil2,fil3};lin; "
 '
 Announce907:
 'Befehl 1162 &H048a Code 26
@@ -5560,13 +5561,13 @@ Announce908:
 'Befehl 1163 &H048b Code 2700
 'scope data 
 'scope data
-Data "1163;aa, scope data;480;5,CHAPTER;scope"
+Data "1163;aa, scope data;480;5,CHAPTER,scope"
 '
 Announce909:
 'Befehl 1164 &H048c Code 2710
 'send scope data status
 'send scope data status
-Data "1165;os,send scope data status;1;0 off;1 on;5,CHAPTER;scope"
+Data "1164;os,scope;1;0,off;1,on;5,CHAPTER,scope"
 '
 Announce910:
 'Befehl 1165 &H048d Code 2710
@@ -5578,7 +5579,7 @@ Announce911:
 'Befehl 1166 &H048e Code 2711
 'Scope wave data output
 'Scope wave data output
-Data "1166;os,Scope wave data output;1;0 off;1 on;5,CHAPTER;scope"
+Data "1166;os,Scope wave data output;1;0,off;1,on;5,CHAPTER,scope"
 '
 Announce912:
 'Befehl 1167 &H048f Code 2711
@@ -5590,20 +5591,19 @@ Announce913:
 'Befehl 1168 &H0490 Code 2712
 'Main or Sub scope setting
 'Main or Sub scope setting
-Data "1168;as,Main or Sub scope setting;1;0 main;1,sub;5,CHAPTER;scope"
+Data "1168;as,Main / Sub;1;0,main;1,sub;5,CHAPTER,scope"
 '
 Announce914:
 'Befehl 1169 &H0491 Code 2713
 'Single/Dual scope setting
 'Single/Dual scope setting
-Data "1169;as,Single/Dual scope setting;1;0 single;1,dual;5,CHAPTER;scope"
+Data "1169;as,scope mode;1;0,single;1,dual;5,CHAPTER,scope"
 '
 Announce915:
-92'Befehl 1170 &H0492 Code271400
- 3 Byte / -
+'Befehl 1170 &H0492 Code271400
 'Scope Center mode or Fixed mode
 'Scope Center mode or Fixed mode
-Data "1170;os,Scope Center mode or Fixed mode;1;0 center;1,fixed;2,scroll-c mode;3,scroll-f mode;5,CHAPTER;scope"
+Data "1170;os,mode;1;0,center;1,fixed;2,scroll-c;3,scroll-f;5,CHAPTER,scope"
 '
 Announce916:
 'Befehl 1171 &H0493 Code 271400
@@ -5615,19 +5615,19 @@ Announce917:
 'Befehl 1172 &H0494 Code 2715
 'span setting in the Center mode or scroll-c mode
 'span setting in the Center mode or scroll-c mode
-Data "1172;os,span setting in the Center mode or scroll-c mode;1;0 2k5;1,5k;2,10k;3,25k;4,50k;5,100k;6,250k;7,500k;5,CHAPTER;scope"
+Data "1172;os,span for Center or scroll-c mode;1;0,2k5;1,5k;2,10k;3,25k;4,50k;5,100k;6,250k;7,500k;5,CHAPTER,scope"
 '
 Announce918:
 'Befehl 1173 &H0495 Code 2715
 'span setting in the Center mode or scroll-c mode
 'span setting in the Center mode or scroll-c mode
-Data "1173;as,as172"
+Data "1173;as,as1172"
 '
 Announce919:
 'Befehl 1174 &H0496 Code 2716
 'Edge number setting in the Fixed mode or scroll-f mode
 'Edge number setting in the Fixed mode or scroll-f mode
-Data "1174;os,Edge number setting in the Fixed mode or scroll-f mode;1;0 Edge1;1,Edge2;2,Edge3;3,Edge4;5,CHAPTER;scope"
+Data "1174;os,Edge numberfor Fixed or scroll-f mode;1;0,Edge1;1,Edge2;2,Edge3;3,Edge4;5,CHAPTER,scope"
 '
 Announce920:
 'Befehl 1175 &H0497 Code 2716
@@ -5639,7 +5639,7 @@ Announce921:
 'Befehl 1176 &H0498 Code 2717
 'Scope hold
 'Scope hold
-Data "1176;os,Scope hold;1;0 Edge1;1,off;2,on;5,CHAPTER;scope"
+Data "1176;os,Scope hold;1;0,off;1,on;5,CHAPTER,scope"
 '
 Announce922:
 'Befehl 1177 &H0499 Code 2717
@@ -5651,7 +5651,7 @@ Announce923:
 'Befehl 1178 &H049a Code 2719
 'Scope Reference level
 'Scope Reference level
-Data "1178;op,Scope Reference level;1;81{-20.0 to 20.0};lin;db;5,CHAPTER;scope"
+Data "1178;op,Scope Reference level;1;81,{0.5_-20.0to20.1};lin;db;5,CHAPTER,scope"
 '
 Announce924:
 'Befehl 1179 &H049b Code 2719
@@ -5660,25 +5660,25 @@ Announce924:
 Data "1179;ap,as1178"
 '
 Announce925:
-'Befehl 1180 &H049c Code 271A00
+'Befehl 1180 &H049c Code 271A0A
 'Sweep speed
 'Sweep speed
-Data "1180;os,Sweep speed;1;0,fast;1,mid;2,slow;5,CHAPTER;scope"
+Data "1180;os,Sweep speed;1;0,fast;1,mid;2,slow;5,CHAPTER,scope"
 '
 Announce926:
-'Befehl 1181 &H049d Code 271A00
+'Befehl 1181 &H049d Code 271A0A
 'Sweep speed
 'Sweep speed
 Data "1181;as,as1180"
 '
 Announce927:
-'Befehl 1182 &H049e Code 271B 3 Byte / -
-'SScope during Tx (CENTER TYPE)
+'Befehl 1182 &H049e Code 271B
+'Scope during Tx (CENTER TYPE)
 'Scope during Tx( CENTER TYPE)
-Data "1182;os,Scope during Tx (CENTER TYPE) ;1;0,off;1,on;5,CHAPTER;scope"
+Data "1182;os,Scope during Tx (CENTER TYPE);1;0,off;1,on;5,CHAPTER,scope"
 '
 Announce928:
-'Befehl 1183 &H049f Code 271B 2 Byte / 3 Byte
+'Befehl 1183 &H049f Code 271B
 'Scope during Tx (CENTER TYPE)
 'Scope during Tx (CENTER TYPE)
 Data "1183;as,as1182"
@@ -5687,7 +5687,7 @@ Announce929:
 'Befehl 1184 &H04a0 Code 271C
 'center frequency setting in the Center mode
 'center frequency setting in the Center mode
-Data "1184;os,center frequency in the Center mode;1;0,Filter center;1,carrier center;2,carrier center(absolute);5,CHAPTER;scope"
+Data "1184;os,center frequency in the Center mode;1;0,Filter center;1,carrier center;2,carrier center(absolute);5,CHAPTER,scope"
 '
 Announce930:
 'Befehl 1185 &H04a1 Code 271C
@@ -5699,7 +5699,7 @@ Announce931:
 'Befehl 1186 &H04a2 Code 271D
 'VBW
 'VBW
-Data "1186;os,VBW;1;0,narrow;1,wide;5,CHAPTER;scope;5,CHAPTER;scope"
+Data "1186;os,VBW;1;0,narrow;1,wide;5,CHAPTER,scope"
 '
 Announce932:
 'Befehl 1187 &H04a3 Code 271D
@@ -5711,7 +5711,7 @@ Announce933:
 'Befehl 1188 &H04a4 Code 2720
 'Scope Marker position
 'Scope Marker position
-Data "1188;os,Scope Marker position;1;0,center point;1,carrier point;5,CHAPTER;scope"
+Data "1188;os,Scope Marker position;1;0,filter center;1,carrier point;5,CHAPTER,scope"
 '
 Announce934:
 'Befehl 1189 &H04a5 Code 2720
@@ -5726,209 +5726,271 @@ Announce935:
 Data "1190;os,Transmit the Voice TX Memory;1;0,stop;1,T1;2,T2;3,T3;4,T4;5,T5;6,T6;7,T7;8,T8"
 '
 Announce936:
-'Befehl 1191 &H04a7 Code 01 + 04 + 06
-'filter schreiben
-'write filter
-Data "1191;os,filter;0;Fil1;1,Fil2;2,Fil3"
+'Befehl 1191 &H04a7 Code &H1a04
+'AGC Zeitkonstante
+'AGC time constant
+Data "1191;os, AM AGC time comstant;1;0,off;1,.3;2,.5;3,.8,4,1.2;5,1.6;6,2;7,2.5;3,3;9,4;10,5;11,6;12,7;13,8"
 '
 Announce937:
-'Befehl 1192 &H04a8 Code 01 + 04 + 06
-'filter lesen
-'read filter
-Data "1192, as1191"
+'Befehl 1192 &H04a8 Code &H1a04
+'AGC Zeitkonstante
+'AGC time constant
+Data "1192;as,as1191"
 '
 Announce938:
-'Befehl 1193 &H04a9 Code 0x1a00
-'memory tone
-'memory tone
-Data "1193;os,memory tone;20008,{2,{VFO,split}MUL100,groupMUL100,channelADD5,{memory,144C1,144C2,430C1,430C2}};"
-Data "1193;os;0,off;1,tone,2,TQSL;3,DTCS;6,CHAPTER;memory"
+'Befehl 1193 &H04a9 Code &H1a04
+'AGC Zeitkonstante
+'AGC time constant
+Data "1193;os,non AM AGC time comstant;1;0,off;1,.1;2,.2;3,.3;4,.5;5,.8;6,1.2;7,1.6;8,2;9,2.5;10,3;11,4;12,5;13,6"
 '
 Announce939:
-'Befehl 1194 &H04aa  Code 0x1a00
-'memory tone
-'memory tone
-Data "1194;as,memory ton;20009,{2,{VFO,split}MUL100,groupMUL100,channelADD6,{memory,144C1,144C2,430C1,430C2,notused}};"
-Data "1194;as;2,+;0,off;1,tone,2,TQSL;3,DTCS;6,CHAPTER;memory"
+'Befehl 1194 &H019e Code &H1a04
+'AGC Zeitkonstante
+'AGC time constant
+Data "1194;as,as1193"
 '
 Announce940:
-'Befehl 1195 &H04ab Code 1a06
-'DATA mode filter
-'DATA mode filter
-Data "1195;os,DATA mode filter;0,Fil1;1,Fil2;2,Fil3"
+'Befehl 1195 &H019f Code -
+'Version
+'version
+Data "1195;as,radio version;1;0,german;1,US;8,CHAPTER,function"
 '
-Announc941:
-'Befehl 1196 &H04ac Code 1a06
-'DATA mode filter
-'DATA mode filter
-Data "1196;as,as1195"
+Announce941
+'PRT Moni 1196 &H04a0
+'PRT Moni
+Data "1196;os,PRT MONI;1;0,off;1,on;6,CHAPTER,display"
 '
-Announce942:
-'Alphabet 0
-Data "1191;id;1;ALPHA0,0x21to0x7e"
+Announce942
+'PRT Moni 1197 &H04a1
+'PRT Moni
+Data "1197;as,as1196"
 '
 Announce943:
-'Alphabet 1 Symbol 1
-Data "1192;id;1;ALPHA1,AA,11,/,\"
+'Alphabet 0
+Data "1198;id,DEF;ALPHA0,1_0x21to0x7e"
 '
 Announce944:
-'Alphabet 2 CW
-Data "1193;id;1;ALPHA2,AA,aa,11,/,?,.,-,0x2c,:,0x27,(,),=,+,0x22,@,0x20"
+'Alphabet 1 Symbol 1
+Data "1199;id,DEF;ALPHA1,AA,11,/,\"
 '
 Announce945:
-'Alphabet 3 callsign
-Data "1194;id;1;ALPHA3,AA,11,/,0x20"
+'Alphabet 2 CW
+Data "1200;id,DEF;ALPHA2,AA,aa,11,/,?,.,-,,,:,0x27,(,),=,+,0x22,@,0x20"
 '
 Announce946:
-'Alphabet 4 memory keyer 1a02
-Data "1195;id;1;ALPHA4,AA,11,0x20,/,?,.,0x2c,@,0x5e,*"
+'Alphabet 3 callsign
+Data "1201;id,DEF;ALPHA3,AA,11,/, "
 '
 Announce947:
-'Alphabet 5 ntp server
-Data "1196;id;1;ALPHA5,AA,aa,11,.,-"
-
+'Alphabet 4 memory keyer 1a02
+Data "1202;id,DEF;ALPHA4,AA,11, ,/,?,.,0x2c,@,0x5e,*"
+'
 Announce948:
+'Alphabet 5 ntp server
+Data "1203;id,DEF;ALPHA5,AA,aa,11,.,-"
+
+Announce949:
 'Befehl  65520 &Hfff0
 'liest announcements
 'read n announcement lines
-Data "65520;ln,ANNOUNCEMENTS;175;965"
+Data "65520;an,ANNOUNCEMENTS;175;972,start at (999max);972,elements (999max);14,CHAPTER,ADMINISTRATION"
 '
-Announce949:                                                  '
+Announce950:                                                  '
+'Befehl 65530 &Hfffa
+'Feature
+'Feature
+Data "65530;aa,FEATURE;b,INFO,0;14,CHAPTER,ADMINISTRATION"
+'
+Announce951:                                                  '
 'Befehl 65532 &Hfffc
 'Liest letzten Fehler
 'read last error
 Data "65532;aa,LAST ERROR;20,last_error"
 '
-Announce950:                                                  '
+Announce952:                                                  '
 'Befehl 65533 &Hfffd
 'Geraet aktiv Antwort
 'Life signal
 Data "65533;aa,MYC INFO;b,ACTIVE"
 '
-Announce951:
+Announce953:
 'Befehl 65534 &Hfffe :
 'eigene Individualisierung schreiben
 'write individualization
-Data "65534;ka,INDIVIDUALIZATION;1;20,NAME,IC705;b,NUMBER,1;a,TERMINAL,1;a,TELNET,1;w,PORT,23;b,COM;6"
+Data "65534;oa,INDIVIDUALIZATION;20,NAME,IC705;b,NUMBER,1;a,TERMINAL,1;a,TELNET,1;w,Telnet Port,23;b,USB Port,6;"
+Data "65534;oa;a,FILE,1;36,FILIN,/xampp/htdocs/usb_interface/from_web;34,FILOUT,/xampp/htdocs/usb_interface/to_web;14,CHAPTER,ADMINISTRATION"
 '
-Announce952:
+Announce954:
 'Befehl 65535 &Hffff :
 'eigene Individualisierung lesen
 'read individualization
-Data "65535;la,INDIVIDUALIZATION;1;20,NAME,IC705;b,NUMBER,1;a,TERMINAL,1;a,TELNET,1;w,PORT,23;b,COM;6"
-'
-'
-Announce953:
-'07a0 07b0
-'vfo A = vfo B a<>B
-'vfo A = vfo B a<>B
-Data "R ?262&2 ?262&3 ?265?1 IF $1187 = 0"
-'
-Announce954:
-'0b
-'clear memory
-'clear memory
-Data "R ?265&2 ?265?3 IF $1187 = 2"
+Data "65535;aa,INDIVIDUALIZATION;20,NAME,IC705;b,NUMBER,1;a,TERMINAL,1;a,TELNET,1;w,Telnet Port,23;b,USB Port,6;"
+Data "65535;aa;a,FILE,1;36,FILIN,/xampp/htdocs/usb_interface/from_web;34,FILOUT,/xampp/htdocs/usb_interface/to_web;14,CHAPTER,ADMINISTRATION"
 '
 Announce955:
-'11
+''262
+'vfo A = vfo B a<>B
+Data "R ?262&2 ?262&3 ?265?1 IF $261=0
+;
+Announce956:
+'265
+'clear memory
+'clear memory
+Data "R ?265&2 ?265?3 IF $261 = 1"
+'
+Announce957:
+'268
+'scan memory
+Data "R !$268&6 !2687 IF $261=0"
+'
+Announce958:
+'270 271
+'scan memory select
+Data "R !$270 !$271 IF $261=0"
+'
+Announce959:
+'368
+'CW message
+DATA "R 368 IF $258&0=3 OR $258&0=7
+'
+Announce960:
+'278
 'Abschwaecher
 'attenuator
 Data "R ?278 IF $257 < 199969999"
 '
-Announce956:
-'1642
+nnounce961:
+'336
 'repeater tone
 'repeater tone
 Data "R $336 = 0 IF $339 = 1"
 '
-Announce957:
-'1643
+Announce962:
+'338
 'tone squelch
 'tone squelch
 Data "R $338 = 0 IF $337 = 1"
 '
-Announce958:
-'1656
+Announce963:
+'334
 'DSP
 'DSP
-Data "R ?354 IF $1188 = 0 OR $1188 = 1 OR $1188 = 3"
+Data "R ?354 IF $1188=0 OR $1188=1 OR $1188=3"
 '
-Announce959:
-'165B
-'DSQL
-'DSQL
-Data "R ?1180 IF $1188 = 10"
-'
-Announce960:
-'17
+Announce964:
+'360
 'cw message only in cw mode
 'cw message only in cw mode
 Data "R $360 IF $1188 != 3
 '
-Announce961:
-'1a03
+Announce965:
+'365
 'AM Filter Bandbreite
 'AM filter width
-Data "R ?365 IF $1188 = 2"
-' 
-Announce962:
-'1a03
-'SSB / CW Filter Bandbreite
-'SSB / CW filter width
+Data "R ?365 IF $1188=2"
+'
+Announce966:
+'367
+'n0 AM Filter Bandbreite
+'no AM filter width
 Data "R ?367 UNLESS $1188 = 2"
 ' 
-Announce963:
-'1a04
+Announce967:
+'369
 'AM AGC
 'AM AGC
 Data "R ?369 IF $1188 = 2"
 ' 
-Announce964:
+Announce968:
 '1a04
 'SSB / AGC
 'SSB / CW AGC
 Data "R ?371 UNLESS $1188 = 2"
 ' 
-Announce965:
-'1a050106
-'Log Format
-'log format
-Data "R ?579 IF $576 = 0 AND $578 = 0 AND $1188 != 0"
-'
-Announce966:
-'1a050105
-'Datumsformat
-'date format
-Data "R ?581 IF $576 = 0 AND $578 = 0 AND $1188 != 0"
-'
-Announce967:
-'1a050126 - 28
-'
-'
-Data "R"
-'
-Announce968:
-'1a050163
-'Sprache
-'language
-Data "R ?693 IF $696 = 1"
-'
 Announce969:
-'1a05249 -53
-'
-'
-Data "R"
+'408
+' AM filter
+Data "R ?408 ?409 IF 259=2
 '
 Announce970:
-'1a050265
-'log Format
-'log format
-Data "R ?829 IF $828 = 0 AND $1188 != 5"
+'410
+'RTTY CW Filter
+Data "R ?410 ?411 IF 259=4 OR 259=8
+Data "R ?410 ?411 IF 259=0 OR 259=1 OR 259=3
 '
 Announce971:
-'1b02
+'509
+'auto repeater US only
+Data "R ?509 ?510 ?265?1 IF $1187 =1"
+'
+Announce972:
+'579
+'Log Format
+'log format
+Data "R ?579 IF $576=0 AND $578=0 AND $1188!=0"
+'
+Announce973:
+'481
+'Datumsformat
+'date format
+Data "R ?581 IF $576=0 AND $578=0 AND $1188 =0"
+'
+Announce974:
+'693
+'Sprache
+'language
+Data "R ?693 IF $696=1"
+'
+Announce975:
+'829
+'log Format
+'log format
+Data "R ?829 IF $828=0 AND $1188!=5"
+'
+Announce976:
+' 1191 1193
+'AGC time contant
+Data "R ?1191 ?1192 IF 259=2
+Data "R ?1193 ?1194 UNLESS 259=2
+'
+Announce977:
+'785 -
+' fixed edges
+Data "R ?785 IF $785&0 + $785&1 < $785&0MAX + 6
+Data "R ?787 IF $787&0 + $787&1 < $787&0MAX + 6
+Data "R ?789 IF $789&0 + $789&1 < $789&0MAX + 6
+Data "R ?791 IF $791&0 + $791&1 < $791&0MAX + 6
+Data "R ?793 IF $793&0 + $793&1 < $793&0MAX + 6
+Data "R ?795 IF $795&0 + $795&1 < $795&0MAX + 6
+Data "R ?797 IF $797&0 + $797&1 < $797&0MAX + 6
+Data "R ?799 IF $799&0 + $799&1 < $799&0MAX + 6
+Data "R ?801 IF $801&0 + $801&1 < $801&0MAX + 6
+Data "R ?803 IF $803&0 + $803&1 < $803&0MAX + 6
+Data "R ?805 IF $805&0 + $805&1 < $805&0MAX + 6
+Data "R ?807 IF $807&0 + $807&1 < $807&0MAX + 6
+Data "R ?809 IF $809&0 + $809&1 < $809&0MAX + 6
+Data "R ?811 IF $811&0 + $811&1 < $811&0MAX + 6
+Data "R ?813 IF $813&0 + $813&1 < $813&0MAX + 6
+Data "R ?815 IF $815&0 + $815&1 < $815&0MAX + 6
+Data "R ?817 IF $817&0 + $817&1 < $817&0MAX + 6
+'
+Announce994:
+'871
+#rtty format
+Data "R !$871 IF $870=1
+Data "R !$873 IF $870=1
+Data "R !$875 IF $870=1
+Data "R !$877 IF $870=1
+' 
+Announce998:
+'1030
 'DTCS
 'DTCS
-Data "R`?1030 IF $188 = 6 OR $1188 = 10"
+Data "R ?1030 IF $188=6 OR $1188=10"
+'
+Announce999:
+'1180
+'DSQL
+'DSQL
+Data "R ?1180 IF $1188=10"
 '

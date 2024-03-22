@@ -1,6 +1,8 @@
 """
 name: answers.py IC705
-last edited: 20220103
+last edited: 20240311
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 handling of answers from the radio
 output to v_sk_info_to_all
 """
@@ -147,6 +149,28 @@ def answer_4_1_b_28(line):
     return answer_x_1_b_x(line, -28, 8)
 
 
+def answer_commentn(line):
+    if line[7] == 0x97:
+        v_sk.info_to_all.extend([0])
+    elif line[7] == 0x98:
+        v_sk.info_to_all.extend([1])
+    elif line[7] == 0x99:
+        v_sk.info_to_all.extend([2])
+    elif line[7] == 0x00:
+        v_sk.info_to_all.extend([3])
+    start = 8
+    v_sk.info_to_all.extend([0])
+    stringcount = 0
+    end = line.find(0xfd)
+    while start < end:
+        # -1 because of "fd"
+        v_sk.info_to_all.extend(bytearray([line[start]]))
+        stringcount += 1
+        start += 1
+    v_sk.info_to_all[3] = stringcount
+    return 1
+
+
 def answer_string(line):
     # aswers with one string
     start = v_icom_vars.civ_command_length + 4
@@ -172,13 +196,9 @@ def answer_frequency(line):
 def answer_mode(line):
     # mode and filter
     if line[5] == 0x17:
-        line[5] = 9
-    if v_sk.last_token == 4:
-        v_sk.info_to_all.extend([line[5]])
-    else:
-        v_sk.info_to_all.extend([line[6] - 1])
-    v_icom_vars.last_mode = line[5]
-    v_icom_vars.last_mode_filter = line[6]
+        line[5] = 0x09
+    v_sk.info_to_all.extend([line[5]])
+    v_sk.info_to_all.extend([line[6] - 1])
     return 1
 
 
@@ -203,7 +223,7 @@ def answer_split_offset(line):
     if line[5] < 2:
         v_sk.info_to_all.extend([line[5]])
     else:
-        v_sk.info_to_all.extend([line[5] - 15])
+        v_sk.info_to_all.extend([line[5] - 14])
     return 1
 
 
@@ -224,133 +244,160 @@ def answer_cw_message(line):
         v_sk.info_to_all.extend([0x01])
     return 1
 
+def answer_id(line):
+    v_sk.info_to_all.extend([line[6]])
+    return 1
 
 def answer_memory(line):
     # memory
-    if v_icom_vars.ask_content != 4:
-        # store data for following command
-        if v_icom_vars.ask_content == 1:
-            if len(line) > 12:
-                v_icom_vars.answer_storage = line[6:]
-                v_icom_vars.ask_content = 2
-            else:
-                # memory empty
-                # 5 means error
-                v_icom_vars.ask_content = 5
-                return 2
-        else:
-            return 0
-    else:
+    if v_icom_vars.ask_content == 4 or v_icom_vars.ask_content == 99:
         # analyze data, command was answercommand
+        if line[10] == 0xff:
+            # no valid memory
+            return 2
         v_sk.info_to_all = v_sk.last_token[:]
         group = bcd2_to_int(line[6:8])
-        if line[6:8] == [0x01, 0x000]:
-            # channal group
-            # 10000 - 10003, 20004 - 20007
-            if v_icom_vars.command_storage == 0:
-                group_memory = (10000 + bcd2_to_int(line[8:10]))
+        if line[6:8] == [0x01, 0x00]:
+            # chanal group
+            # 20000 - - 20006
+            if v_icom_vars.vfo_split == 0:
+                group_memory = (20000 + bcd2_to_int(line[8:10]))
             else:
-                group_memory = (20004 + bcd2_to_int(line[8:10]))
+                group_memory = (20003 + bcd2_to_int(line[8:10]))
         else:
-            # memory 0 - 9999, 10004 - 20003
-            if v_icom_vars.command_storage == 0:
+            # memory group 0 - 20003
+            if v_icom_vars.vfo_split == 0:
                 group_memory = 100 * group + bcd2_to_int(line[8:10])
             else:
-                group_memory = (100 * group + bcd2_to_int(line[8:10])) + 10004
+                group_memory = (100 * group + bcd2_to_int(line[8:10])) + 10000
         v_sk.info_to_all.extend(int_to_list(group_memory, 2))
         read_token = v_sk.last_token[0] * 256 + v_sk.last_token[1]
         if read_token == 1194:
             # special
             # tone
-            tone = line[v_icom_vars.command_storage + 19] & 0x0f
-            v_sk.info_to_all.extend(bytearray([tone]))
+            if line[10] == 0xff:
+                v_sk.info_to_all.extend(bytearray([0x0]))
+            else:
+                tone = line[v_icom_vars.command_storage + 19] & 0x0f
+                v_sk.info_to_all.extend(bytearray([tone]))
         else:
             read_token -= v_icom_vars.start_token_for_memory_read
             if read_token == 0:
                 # raw data
-                length = len(line[8:-1])
-                v_sk.info_to_all.extend([length])
+                v_sk.info_to_all.extend(int_to_list(len(line) - 10, 1))
                 v_sk.info_to_all.extend(line[8:-1])
             elif read_token == 2:
                 # frequency
-                v_sk.info_to_all.extend(frequency_for_answer(line[v_icom_vars.command_storage + 11:v_icom_vars.command_storage + 16], 30000, 4, 0))
+                pointer = 11 + v_icom_vars.vfo_split * 47
+                v_sk.info_to_all.extend(frequency_for_answer(line[pointer:pointer + 5], 30000, 4, 0))
             elif read_token == 4:
                 # split select
-                v_sk.info_to_all.extend([(line[v_icom_vars.command_storage + 10] & 0xf0) >> 4])
-                v_sk.info_to_all.extend([line[v_icom_vars.command_storage + 10] & 0x0f])
+                pointer = 11 + v_icom_vars.vfo_split * 47
+                v_sk.info_to_all.extend([(line[pointer] & 0xf0) >> 4])
+                v_sk.info_to_all.extend([line[pointer] & 0x0f])
             elif read_token == 6:
                 # mode
-                mode = bcd_to_int((line[v_icom_vars.command_storage + 16]))
+                pointer = 16 + v_icom_vars.vfo_split * 47
+                mode = bcd_to_int((line[pointer]))
                 if mode > 8:
                     mode = 9
-                filter_ = (line[v_icom_vars.command_storage + 17]) - 1
+                filter_ = (line[pointer + 1]) - 1
                 v_sk.info_to_all.extend(bytearray([mode, filter_]))
             elif read_token == 8:
                 # data mode
-                data_mode = bcd_to_int((line[v_icom_vars.command_storage + 18]))
+                pointer = 18 + v_icom_vars.vfo_split * 47
+                data_mode = bcd_to_int((line[pointer]))
                 v_sk.info_to_all.extend(bytearray([data_mode]))
             elif read_token == 10:
                 # duplex, tone
-                duplex = (line[v_icom_vars.command_storage + 19] & 0xf0) >> 4
-                tone = line[v_icom_vars.command_storage + 19] & 0x0f
+                pointer = 19 + v_icom_vars.vfo_split * 47
+                duplex = (line[pointer] & 0xf0) >> 4
+                tone = line[pointer] & 0x0f
                 v_sk.info_to_all.extend(bytearray([duplex, tone]))
             elif read_token == 12:
                 # digital squelch
-                squelch = bcd_to_int((line[v_icom_vars.command_storage + 20]))
+                pointer = 20 + v_icom_vars.vfo_split * 47
+                squelch = bcd_to_int(line[pointer])
                 if squelch == 10:
                     squelch = 1
                 v_sk.info_to_all.extend(bytearray([squelch]))
             elif read_token == 14:
                 # tone frequency
+                pointer = 22 + v_icom_vars.vfo_split * 47
                 temp = 0
-                tone1 = line[v_icom_vars.command_storage + 22]
-                tone2 = line[v_icom_vars.command_storage + 23]
+                tone1 = line[pointer]
+                tone2 = line[pointer + 1]
                 while temp < 50 and ([tone1, tone2] != v_fix_tables.tone_frequency[temp]):
                     temp += 1
                 v_sk.info_to_all.extend(bytearray([temp]))
             elif read_token == 16:
                 # tone squelch frequency
+                pointer = 25 + v_icom_vars.vfo_split * 47
                 temp = 0
-                tone1 = line[v_icom_vars.command_storage + 25]
-                tone2 = line[v_icom_vars.command_storage + 26]
+                tone1 = line[pointer]
+                tone2 = line[pointer + 1]
                 while temp < 50 and ([tone1, tone2] != v_fix_tables.tone_frequency[temp]):
                     temp += 1
                 v_sk.info_to_all.extend(bytearray([temp]))
             elif read_token == 18:
                 # DTCS frequency
+                pointer = 27 + v_icom_vars.vfo_split * 47
                 temp = 0
-                pm = line[v_icom_vars.command_storage + 27]
-                if pm > 15:
-                    pm -= 14
-                tone1 = line[v_icom_vars.command_storage + 28]
-                tone2 = line[v_icom_vars.command_storage + 29]
+                pm = line[pointer]
+                if pm == 0x00:
+                    pm = 0
+                elif pm == 0x01:
+                    pm = 1
+                elif pm == 0x10:
+                    pm = 2
+                elif pm == 0x11:
+                    pm = 3
+                tone1 = line[pointer + 1]
+                tone2 = line[pointer + 2]
                 while temp < 104 and ([tone1, tone2] != v_fix_tables.dtcs_frequency[temp]):
                     temp += 1
                 v_sk.info_to_all.extend(bytearray([pm, temp]))
             elif read_token == 20:
                 # DV digital code
-                code = bcd_to_int(line[v_icom_vars.command_storage + 30])
+                pointer = 30 + v_icom_vars.vfo_split * 47
+                code = bcd_to_int(line[pointer])
                 v_sk.info_to_all.extend([code])
             elif read_token == 22:
                 # duplex offset frequency
-                v_sk.info_to_all.extend(frequency_for_answer(line[v_icom_vars.command_storage + 31:v_icom_vars.command_storage + 34], 0, 3, 0))
+                pointer = 31 + v_icom_vars.vfo_split * 47
+                v_sk.info_to_all.extend(frequency_for_answer(line[pointer:pointer + 3], 0, 3, 0))
             elif read_token == 24:
                 # UR destination callsign
+                pointer = 34 + v_icom_vars.vfo_split * 47
                 v_sk.info_to_all.extend([8])
-                v_sk.info_to_all.extend(line[v_icom_vars.command_storage + 34:v_icom_vars.command_storage + 42])
+                v_sk.info_to_all.extend(line[pointer:pointer + 8])
             elif read_token == 26:
                 # R1 access repeater callsign
+                pointer = 42 + v_icom_vars.vfo_split * 47
                 v_sk.info_to_all.extend([8])
-                v_sk.info_to_all.extend(line[v_icom_vars.command_storage + 42:v_icom_vars.command_storage + 50])
+                v_sk.info_to_all.extend(line[pointer:pointer + 8])
             elif read_token == 28:
                 # R2 Gateway callsign
+                pointer = 50 + v_icom_vars.vfo_split * 47
                 v_sk.info_to_all.extend([8])
-                v_sk.info_to_all.extend(line[v_icom_vars.command_storage + 50:v_icom_vars.command_storage + 58])
+                v_sk.info_to_all.extend(line[pointer:pointer + 8])
             elif read_token == 30:
                 # memory name
                 v_sk.info_to_all.extend([16])
-                v_sk.info_to_all.extend(line[v_icom_vars.command_storage + 105:v_icom_vars.command_storage + 121])
+                v_sk.info_to_all.extend(line[105:121])
             v_icom_vars.ask_content = 0
+    else:
+        # store data for following operating command
+        if v_icom_vars.ask_content == 1:
+            if len(line) > 12:
+                v_icom_vars.answer_storage = line[6:]
+                v_icom_vars.ask_content = 2
+                v_sk.info_to_all = bytearray([])
+            else:
+                # memory empty
+                return 2
+        else:
+            return 0
     return 1
 
 
@@ -462,82 +509,92 @@ def answer_color(line):
 
 def answer_scope_bandedge(line):
     # scope band edge
-    v_sk.info_to_all.extend([(line[8] - 188) % 3])
+    civ_cmd = bcd_to_int(line[6]) * 100 + bcd_to_int(line[7])
+    if civ_cmd < 239:
+        v_sk.info_to_all.extend([(civ_cmd - 188) % 3])
+    else:
+        v_sk.info_to_all.extend([4])
     tokennumber = v_sk.last_token[0] * 256 + v_sk.last_token[1]
     min_ = v_icom_vars.number_frequency_range[v_icom_vars.tokennumber_frequency_range_number[tokennumber]][0]
-    flow = answer_frequency_fixed_edge(line[8:12]) - min_
-    if 0x35 < line[7] < 0x39:
-        # 470MHz has 3 byte for flow
-        temp1 = flow.to_bytes(3, byteorder="big")
+    # min frequency
+    min_f = answer_frequency_fixed_edge(line[8:12])
+    # span
+    span = answer_frequency_fixed_edge(line[12:16])
+    span -= min_f
+    min_f -= min_
+    if tokennumber != 817:
+        v_sk.info_to_all.extend(min_f.to_bytes(2, byteorder="big"))
     else:
-        temp1 = flow.to_bytes(2, byteorder="big")
-    v_sk.info_to_all.extend(temp1)
-    span = answer_frequency_fixed_edge(line[12:16]) - min_ - flow
+        # for 430MHz band
+        v_sk.info_to_all.extend(min_f.to_bytes(3, byteorder="big"))
     v_sk.info_to_all.extend(span.to_bytes(2, byteorder="big"))
     return 1
 
 
 def answer_gps_position(line):
-    answer_gps_position_(line)
-    return 1
-
-
-def answer_gps_position_(line):
     # gps position
     if line[6] == 0xff:
         v_sk.info_to_all.extend([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
     else:
         # lat
-        v_sk.info_to_all.extend(int.to_bytes(bcdx_to_int(line[6:9], 2), 2, byteorder="big"))
-        # N / S
-        v_sk.info_to_all.extend([line[10]])
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[6]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[7]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[8]), 1, byteorder="big"))
+        # N/S
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[10]), 1, byteorder="big"))
         # long
-        v_sk.info_to_all.extend(int.to_bytes(bcd2_to_int(line[11:15]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[11] * 10 + bcd_to_int(line[12])), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[13]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[14]), 1, byteorder="big"))
         # W / E
-        v_sk.info_to_all.extend([line[16]])
-        if line[19:22] == bytearray([0xff, 0xff, 0xff]):
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[16]),1, byteorder="big"))
+        if line[18:20] == bytearray([0xff, 0xff, 0xff]):
             v_sk.info_to_all.extend([0x00, 0x00])
         else:
-            hight = bcdx_to_int(line[17:20], 3)
-            hight //= 10
+            hight = bcdx_to_int(line[17:20], 2)
+            if line[20] == 0:
+                hight *= 10000
+            else:
+                hight = 10000 - hight
             v_sk.info_to_all.extend(int.to_bytes(hight, 2, byteorder="big"))
         v_sk.info_to_all.extend([line[20]])
     return 1
 
 
-def answer_gps_symbol_(line, subtr):
-    # gps symbol
-    if subtr != 0:
-        v_sk.info_to_all.extend([bcd_to_int(line[7]) - subtr])
-    v_sk.info_to_all.extend([line[8]])
-    v_sk.info_to_all.extend([line[9]])
-    return 1
-
-
 def answer_gps_symbol(line):
-    answer_gps_symbol_(line, 91)
+    v_sk.info_to_all.extend([bcd_to_int(line[7]) - 91])
+    i = 0
+    found = 0
+    while i < 74 or found == 0:
+        if [line[8] , line[9]] == v_icom_vars.gps_sympbol_translate[i]:
+            v_sk.info_to_all.extend([i])
+            found =1
+        i += 1
     return 1
 
 
-def answer_gps_symbol1(line):
-    answer_gps_symbol_(line, 0)
+def answer_gps_symboln1(line):
+    i = 0
+    found = 0
+    while i < 74 or found == 0:
+        if [line[8] , line[9]] == v_icom_vars.gps_sympbol_translate[i]:
+            v_sk.info_to_all.extend([i])
+            found =1
+        i += 1
     return 1
+
 
 
 def answer_alarm_group(line):
     # alarm group
-    a = bcd_to_int(line[8]) * 100 + bcd_to_int(line[9]) - 8
-    v_sk.info_to_all.extend(int.to_bytes(a, 2, byteorder="big"))
+    v_sk.info_to_all.extend([bcd_to_int(int(line[8]))])
+    v_sk.info_to_all.extend([bcd_to_int(int(line[9]))])
     return 1
 
 
 def answer_data_mode_wth_filter(line):
     # Data mode with filter
-    if v_sk.last_token == 1196:
-        temp1 = line[6]
-    else:
-        temp1 = line[7]
-    v_sk.info_to_all.extend(bytearray([temp1]))
+    v_sk.info_to_all.extend(bytearray([line[6], line[7]]))
     return 1
 
 
@@ -570,29 +627,42 @@ def answer_dcts(line):
 def answer_transmit_f(line):
     # transmit frequency
     v_sk.info_to_all = bytearray([0x04, 0x42])
-    v_sk.info_to_all.extend(frequency_for_answer(line[6:11], 30000, 5, 0))
+    v_sk.info_to_all.extend(frequency_for_answer(line[6:11], 30000, 4, 1))
     return 1
 
 
 def answer_user_bandedge(line):
-    #  TX band edge frequencies
-    v_sk.info_to_all.extend([line[6]])
+    #  Tanswer_user_bandedgeX band edge frequencies
+    v_sk.info_to_all.extend([bcd_to_int(line[6] -1)])
     if line[7] == 0xff:
         # empty
         v_sk.info_to_all.extend([0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
     else:
-        temp1 = frequency_for_answer(line[7:12], 30000, 5, 0)
+        temp1 = frequency_for_answer(line[7:12], 30000, 4, 1)
         temp2 = 0
-        while temp2 < 5:
+        while temp2 < 4:
             v_sk.info_to_all.extend(bytearray([temp1[temp2]]))
             temp2 += 1
-        temp1 = frequency_for_answer(line[13:18], 30000, 5, 0)
+        temp1 = frequency_for_answer(line[13:18], 30000, 4, 1)
         temp2 = 0
-        while temp2 < 5:
+        while temp2 < 4:
             v_sk.info_to_all.extend(bytearray([temp1[temp2]]))
             temp2 += 1
     return 1
 
+def dv_tx_call(line):
+    head = v_sk.info_to_all
+    v_sk.info_to_all = [head[0], head[1]]
+    #UR
+    v_sk.info_to_all.extend([0,8])
+    v_sk.info_to_all.extend(bytes(line[6:14]))
+    # R1
+    v_sk.info_to_all.extend([head[0],head[1],1, 8])
+    v_sk.info_to_all.extend(bytes(line[14:22]))
+    # R2
+    v_sk.info_to_all.extend([head[0],head[1],2, 8])
+    v_sk.info_to_all.extend(bytes(line[22:30]))
+    return 1
 
 def answer_dv_rx_call_sign(line):
     # DV RX call sign for transceive
@@ -613,11 +683,63 @@ def answer_dv_rx_message(line):
     return 1
 
 
+def dv_rx_status(line):
+    head = v_sk.info_to_all
+    i = 0
+    mask = 1
+    while i < 8:
+        bit = line[8]&mask
+        v_sk.info_to_all.extend([head,bit])
+        mask *= 2
+        i += 1
+
 def dpsrs_postion(line):
     # DV RX D-PRS postion for transceive
     if line[8] == 0xff:
-        v_sk.info_to_all.extend([0, 0])
+        v_sk.info_to_all.extend([line[2], 0])
     else:
+        match v_icom_vars.command_storage:
+            case 0:
+                v_sk.info_to_all.extend([line[8]])
+            case 1:
+                v_sk.info_to_all.extend([line[9:18]])
+            case 2:
+                v_sk.info_to_all.extend([line[18:20]])
+            case 3:
+                # lat
+                v_sk.info_to_all.extend([line[20], "d", line[21], ".", line[22:25]])
+            case 4:
+                # long
+                v_sk.info_to_all.extend([line[25:27], "d", line[27], ".", line[28:31]])
+            case 5:
+                # alt
+                if line[34] == 0:
+                    v_sk.info_to_all.extend(["+"])
+                else:
+                    v_sk.info_to_all.extend(["+"])
+                v_sk.info_to_all.extend([line[31:34]])
+            case 6:
+                # course
+                v_sk.info_to_all.extend([line[35:37]])
+            case 7:
+                # speed
+                v_sk.info_to_all.extend([line[37:40]])
+            case 8:
+                # date
+                v_sk.info_to_all.extend(
+                    [line[40:42], ":", line[42], ";", line[43], ":", line[44], ";", line[45], ":", line[46]])
+            case 9:
+                # power
+                v_sk.info_to_all.extend([translate_power(line[47])])
+            case 10:
+                # hight
+                v_sk.info_to_all.extend([translate_hight(line[48])])
+            case 11:
+                # gain
+                v_sk.info_to_all.extend([line[49]])
+            case 12:
+                # dir
+                v_sk.info_to_all.extend([translate_dir(bytes(line[50]))])
         data_length = len(line) - 4
         v_sk.info_to_all.extend(bytes([data_length]) + line[7:data_length - 1])
     return 1
@@ -625,29 +747,237 @@ def dpsrs_postion(line):
 
 def dprs_object_status(line):
     # DV RX D-PRS dprs_object_status for transceive
+    v_sk.info_to_all.extend(bytes([v_icom_vars.command_storage]))
     if line[8] == 0xff:
-        v_sk.info_to_all.extend([0, 0])
+        v_sk.info_to_all.extend([line[2], 0])
     else:
+        match v_icom_vars.command_storage:
+            case 0:
+                v_sk.info_to_all.extend([line[8]])
+            case 1:
+                v_sk.info_to_all.extend([line[9:18]])
+            case 2:
+                v_sk.info_to_all.extend([line[18:20]])
+            case 3:
+                # lat
+                v_sk.info_to_all.extend([line[20], "d", line[21], ".", line[22:25]])
+            case 4:
+                # long
+                v_sk.info_to_all.extend([line[25:27], "d", line[27], ".", line[28:31]])
+            case 5:
+                # alt
+                if line[34] == 0:
+                    v_sk.info_to_all.extend(["+"])
+                else:
+                    v_sk.info_to_all.extend(["+"])
+                v_sk.info_to_all.extend([line[31:34]])
+            case 6:
+                # course
+                v_sk.info_to_all.extend([line[35:37]])
+            case 7:
+                # speed
+                v_sk.info_to_all.extend([line[37:40]])
+            case 8:
+                #date
+                v_sk.info_to_all.extend(
+                    [line[40:42], ":", line[42], ";", line[43], ":", line[44], ";", line[45], ":", line[46]])
+            case 9:
+                # power
+                v_sk.info_to_all.extend([translate_power(line[47])])
+            case 10:
+                # hight
+                v_sk.info_to_all.extend([translate_hight(line[48])])
+            case 11:
+                # gain
+                v_sk.info_to_all.extend([line[49]])
+            case 12:
+                # dir
+                v_sk.info_to_all.extend([translate_dir(bytes(line[50]))])
+            case 13:
+                # name
+                v_sk.info_to_all.extend(line[44:53])
+            case 14:
+                # type
+                v_sk.info_to_all.extend(line[53])
         data_length = len(line) - 4
         v_sk.info_to_all.extend(bytes([data_length]) + line[7:data_length - 1])
     return 1
 
 
 def dprs_item_status(line):
-    # DV RX D-PRS dprs_item_status for transceive
+    # DV RX D-PRS dprs_item_status
+    v_sk.info_to_all.extend(bytes([v_icom_vars.command_storage]))
     if line[8] == 0xff:
-        v_sk.info_to_all.extend([0, 0])
+        v_sk.info_to_all.extend([line[2], 0])
     else:
+        match v_icom_vars.command_storage:
+            case 0:
+                v_sk.info_to_all.extend([line[8]])
+            case 1:
+                v_sk.info_to_all.extend([line[9:18]])
+            case 2:
+                v_sk.info_to_all.extend([line[18:20]])
+            case 3:
+                # lat
+                v_sk.info_to_all.extend([line[20], "d", line[21], ".", line[22:25]])
+            case 4:
+                # long
+                v_sk.info_to_all.extend([line[25:27], "d", line[27], ".", line[28:31]])
+            case 5:
+                # alt
+                if line[34] == 0:
+                    v_sk.info_to_all.extend(["+"])
+                else:
+                    v_sk.info_to_all.extend(["+"])
+                v_sk.info_to_all.extend([line[31:34]])
+            case 6:
+                # course
+                v_sk.info_to_all.extend([line[35:37]])
+            case 7:
+                # speed
+                v_sk.info_to_all.extend([line[37:40]])
+            case 8:
+                # power
+                v_sk.info_to_all.extend([translate_power(line[41])])
+            case 9:
+                # hight
+                v_sk.info_to_all.extend([translate_hight(line[42])])
+            case 10:
+                # gain
+                v_sk.info_to_all.extend([line[43]])
+            case 11:
+                # dir
+                v_sk.info_to_all.extend([translate_dir(bytes(line[44]))])
+            case 12:
+                # name
+                v_sk.info_to_all.extend(line[44:53])
+            case 13:
+                # type
+                v_sk.info_to_all.extend(line[53])
         data_length = len(line) - 4
         v_sk.info_to_all.extend(bytes([data_length]) + line[7:data_length - 1])
     return 1
 
 
+def translate_power(dat):
+    match dat:
+        case 0:
+            return 0
+        case 1:
+            return 1
+        case 2:
+            return 4
+        case 3:
+            return 9
+        case 4:
+            return 16
+        case 5:
+            return 25
+        case 6:
+            return 33
+        case 7:
+            return 49
+        case 8:
+            return 64
+        case 9:
+            return 81
+
+
+def translate_hight(dat):
+    match dat:
+        case 0:
+            return 3
+        case 1:
+            return 6
+        case 2:
+            return 12
+        case 3:
+            return 24
+        case 4:
+            return 49
+        case 5:
+            return 98
+        case 6:
+            return 195
+        case 7:
+            return 390
+        case 8:
+            return 780
+        case 9:
+            return 1561
+
+
+def translate_dir(dat):
+    match dat:
+        case 0:
+            return "omni"
+        case 1:
+            return "45NE"
+        case 2:
+            return "90E"
+        case 3:
+            return "135SE"
+        case 4:
+            return "180S"
+        case 5:
+            return "225SW"
+        case 6:
+            return "170W"
+        case 7:
+            return "315NW"
+        case 8:
+            return "360N"
+
+
 def dprs_weather_status(line):
-    # DV RX D-PRS dprs_weather_status for transceive
+    # DV RX D-PRS dprs_weather_status
+    v_sk.info_to_all.extend(bytes([v_icom_vars.command_storage]))
     if line[8] == 0xff:
-        v_sk.info_to_all.extend([0, 0])
+        v_sk.info_to_all.extend([line[2], 0])
     else:
+        match v_icom_vars.command_storage:
+            case 0:
+                v_sk.info_to_all.extend([line[8]])
+            case 1:
+                v_sk.info_to_all.extend([line[9:18]])
+            case 2:
+                v_sk.info_to_all.extend([line[18:20]])
+            case 3:
+                # lat
+                v_sk.info_to_all.extend([line[20], "d",line[21],".",line[22:25]])
+            case 4:
+                # long
+                v_sk.info_to_all.extend([line[25:27], "d",line[27],".",line[28:31]])
+            case 5:
+                # date
+                v_sk.info_to_all.extend([line[31:33],":",line[33],";",line[34],":",line[35],";",line[36],":",line[37]])
+            case 6:
+                # wind dir
+                v_sk.info_to_all.extend(line[38:40])
+            case 7:
+                # wind speed
+                v_sk.info_to_all.extend(line[40:42])
+            case 8:
+                # gust speed
+                v_sk.info_to_all.extend(line[42:44])
+            case 9:
+                # temp
+                v_sk.info_to_all.extend(line[44:47])
+            case 10:
+                # rain
+                v_sk.info_to_all.extend(line[47:49])
+            case 11:
+                # rain 24h
+                v_sk.info_to_all.extend(line[48:51])
+            case 12:
+                # rain midnight
+                v_sk.info_to_all.extend(line[51:53])
+            case 13:
+                # humidity
+                v_sk.info_to_all.extend(line[53:55])
+            case 14:
+                # pressure
+                v_sk.info_to_all.extend(line[55:58])
         data_length = len(line) - 4
         v_sk.info_to_all.extend(bytes([data_length]) + line[7:data_length - 1])
     return 1
@@ -655,13 +985,8 @@ def dprs_weather_status(line):
 
 def answer_dprs_message(line):
     # DV RX D-PRS message for transceive
-    if len(line) < 59:
-        v_sk.info_to_all.extend([0, 0])
-    else:
-        v_sk.info_to_all.extend([0x09])
-        my_exte(v_sk.info_to_all,v_sk.info_to_all,7,16)
-        v_sk.info_to_all.extend([0x43])
-        my_exte(v_sk.info_to_all, v_sk.info_to_all, 16, 59)
+    v_sk.info_to_all.extend([len(line)- 7])
+    v_sk.info_to_all.extend(line[7:])
     return 1
 
 
@@ -676,14 +1001,56 @@ def answer_pos_speed_hight(line):
     if len(line) < 9:
         v_sk.info_to_all.extend([0x0, 0x0, 0x0, 0x3, 0x0, 0x0, 0x0, 0x3, 0x03, 0x0d, 0x41, 0x16, 0x09, 0x00, 0x00, 0x00, 0x00])
     else:
-        # lat, long, hight
-        v_sk.info_to_all.extend(position(line, 6))
+        # lat,
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[6]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[7]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[8]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[10]), 1, byteorder="big"))
+        #long
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[11]) * 10 + bcd_to_int(line[12]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[13]), 1, byteorder="big"))
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[14]), 1, byteorder="big"))
+        # W / E
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[16]), 1, byteorder="big"))
+        # alt
+        if line[18:20] == bytearray([0xff, 0xff, 0xff]):
+            v_sk.info_to_all.extend([0x00, 0x00])
+        else:
+            hight = bcdx_to_int(line[17:20], 2)
+            if line[20] == 0:
+                hight *= 10000
+            else:
+                hight = 10000 - hight
+            v_sk.info_to_all.extend(int.to_bytes(hight, 2, byteorder="big"))
+            v_sk.info_to_all.extend([line[20]])
         # course
-        v_sk.info_to_all.extend(bytearray([bcd_to_int2(line[21:23])]))
+        if line[21:23] == bytearray([0xff,0xff]):
+            v_sk.info_to_all.extend(bytearray([0,0]))
+        else:
+            v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[21] * 100 + bcd_to_int(line[22])), 2, byteorder="big"))
         # speed
-        v_sk.info_to_all.extend(bytearray([bcd_to_int2(line[23:26])]))
+        if line[23:25] == bytearray([0xff,0xff]):
+            v_sk.info_to_all.extend(bytearray([0,0]))
+        else:
+            v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[23]) * 100 + bcd_to_int(line[24]) * 10 + bcd_to_int(line[25]), 2, byteorder="big"))
+        # year
+        year = bcd_to_int(line[26]) * 100 + bcd_to_int(line[27])
+        v_sk.info_to_all.extend(int.to_bytes(year, 2, byteorder="big"))
+        # month
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[28]), 1, byteorder="big"))
+        # day
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[29]), 1, byteorder="big"))
+        # hour
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[30]), 1, byteorder="big"))
+        # min
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[31]), 1, byteorder="big"))
+        # sec
+        v_sk.info_to_all.extend(int.to_bytes(bcd_to_int(line[32]), 1, byteorder="big"))
     return 1
 
+def position(line,x):
+    # missung !!!!
+    return 1
 
 def answer_gps_select(line):
     #  GPS Select

@@ -2,6 +2,11 @@ ICOM CIV Issues and comments for IC705
 20211207
 Author: DK1RI
 
+#######################################################
+There is a new version of the CIV manual (Jan 2023)
+This manual was not tested!!!!
+#######################################################
+
 Used IC705 firmware version: 1.26
 CIV Manual Version: march 2021
 IC705 converter programm (python) version: V01.5

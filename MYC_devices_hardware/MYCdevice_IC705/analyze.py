@@ -1,6 +1,8 @@
 """
 name : analyze.py IC705
-last edited: 20220103
+last edited: 20240311
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 command handling, subprograms for sk and civ
 """
 
@@ -68,10 +70,14 @@ def poll_sk_input_buffer():
                         temps += hex(temp)
                         count += 1
                     write_log(v_error_msg.parameter_error + temps)
+                    print ("finish 2 delete")
+                    v_sk.info_to_all = bytearray([])
                     v_icom_vars.input_locked = 0
                 else:
                     # finish == 1, correct lock for commands with civ
                     if line[0] != 0 and int.from_bytes(line[0:2], byteorder='big', signed=False) < 0xfff0:
+                        if not v_icom_vars.Civ_out:
+                            v_icom_vars.Civ_out = ""
                         v_icom_vars.input_locked = 1
                     else:
                         v_icom_vars.input_locked = 0
@@ -95,7 +101,7 @@ def poll_civ_input_buffer():
     if v_icom_vars.Civ_in.find(0xfd) == -1:
         return
     # end found
-    # finish = 1 : ok
+    # finish = 1 : end
     finish = 2
     # got answer:
     v_icom_vars.civ_watchdog_time = 0
@@ -112,7 +118,7 @@ def poll_civ_input_buffer():
                 msg = v_error_msg.civ_wrong_parameter
             write_log(msg + temp)
         # send "E"
-        v_sk.info_to_all = bytearray([v_sk.last_token[0], 70])
+        v_sk.info_to_all = bytearray([])
         finish = 1
     elif v_icom_vars.Civ_in[0:6] == v_icom_vars.ok_msg:
         if v_icom_vars.test_mode == 1:
@@ -121,6 +127,7 @@ def poll_civ_input_buffer():
     elif len(v_icom_vars.Civ_in) == 6:
         # should not happen
         write_log(v_error_msg.civ_other_error + " for command " + temp)
+        v_sk.info_to_all = bytearray([])
         finish = 1
     else:
         # answer or info
@@ -144,7 +151,7 @@ def poll_civ_input_buffer():
         elif civ_command == 25:
             # civ command 19
             if find_token(v_icom_vars.Civ_in[4:6]) == 1:
-                finish = answer_2_1_b(v_icom_vars.Civ_in)
+                finish = answer_id(v_icom_vars.Civ_in)
         elif civ_command == 0x1a:
             subcommand1 = int.from_bytes(v_icom_vars.Civ_in[5:6], byteorder='big', signed=False)
             if subcommand1 < 5:
@@ -202,27 +209,40 @@ def poll_civ_input_buffer():
         elif civ_command == 0x20:
             subcommand1 = int.from_bytes(v_icom_vars.Civ_in[5:6], byteorder='big', signed=False)
             if subcommand1 == 0x00:
-                # 2000 - 02
-                subcommand2 = int.from_bytes(v_icom_vars.Civ_in[6:7], byteorder='big', signed=False)
-                finish = v_command_answer.answer_2000[subcommand2](v_icom_vars.Civ_in)
+                v_icom_vars.civ_command_length = 3
+                if find_token(v_icom_vars.Civ_in[4:7]) == 1:
+                    # 2000 - 02
+                    subcommand2 = int.from_bytes(v_icom_vars.Civ_in[6:7], byteorder='big', signed=False)
+                    finish = v_command_answer.answer_2000[subcommand2](v_icom_vars.Civ_in)
             elif subcommand1 == 0x01:
-                subcommand2 = int.from_bytes(v_icom_vars.Civ_in[6:7], byteorder='big', signed=False)
-                finish = v_command_answer.answer_2001[subcommand2](v_icom_vars.Civ_in)
+                v_icom_vars.civ_command_length = 3
+                if find_token(v_icom_vars.Civ_in[4:7]) == 1:
+                    subcommand2 = int.from_bytes(v_icom_vars.Civ_in[6:7], byteorder='big', signed=False)
+                    finish = v_command_answer.answer_2001[subcommand2](v_icom_vars.Civ_in)
             elif subcommand1 == 0x02:
-                subcommand2 = int.from_bytes(v_icom_vars.Civ_in[6:7], byteorder='big', signed=False)
-                finish = v_command_answer.answer_2002[subcommand2](v_icom_vars.Civ_in)
-            elif subcommand1 != 0x03:
+                v_icom_vars.civ_command_length = 3
+                if find_token(v_icom_vars.Civ_in[4:7]) == 1:
+                    subcommand2 = int.from_bytes(v_icom_vars.Civ_in[6:7], byteorder='big', signed=False)
+                    finish = v_command_answer.answer_2002[subcommand2](v_icom_vars.Civ_in)
+            elif subcommand1 == 0x03:
                 subcommand2 = int.from_bytes(v_icom_vars.Civ_in[6:7], byteorder='big', signed=False)
                 subcommand3 = int.from_bytes(v_icom_vars.Civ_in[7:8], byteorder='big', signed=False)
-                if subcommand3 == 0:
-                    finish = v_command_answer.answer_200300[subcommand2](v_icom_vars.Civ_in)
+                print (subcommand3)
+                print(subcommand2)
+                v_icom_vars.civ_command_length = 4
+                if subcommand2 == 0:
+                    if find_token(v_icom_vars.Civ_in[4:7]) == 1:
+                        finish = v_command_answer.answer_2003[subcommand2](v_icom_vars.Civ_in)
                 elif subcommand3 == 1:
-                    finish = v_command_answer.answer_200301[subcommand2](v_icom_vars.Civ_in)
+                    if find_token(v_icom_vars.Civ_in[4:8]) == 1:
+                        finish = v_command_answer.answer_200301[subcommand2](v_icom_vars.Civ_in)
                 elif subcommand3 == 2:
-                    finish = v_command_answer.answer_200302[subcommand2](v_icom_vars.Civ_in)
+                    if find_token(v_icom_vars.Civ_in[4:8]) == 1:
+                        finish = v_command_answer.answer_200302[subcommand2](v_icom_vars.Civ_in)
             elif subcommand1 == 0x04:
                 subcommand2 = int.from_bytes(v_icom_vars.Civ_in[6:7], byteorder='big', signed=False)
-                finish = v_command_answer.answer_2004[subcommand2](v_icom_vars.Civ_in)
+                if find_token(v_icom_vars.Civ_in[4:7]) == 1:
+                    finish = v_command_answer.answer_2004[subcommand2](v_icom_vars.Civ_in)
         elif civ_command == 0x21:
             if find_token(v_icom_vars.Civ_in[4:6]) == 1:
                 v_icom_vars.civ_command_length = 2
@@ -258,12 +278,13 @@ def poll_civ_input_buffer():
             if find_token(v_icom_vars.Civ_in[4:5]) == 1:
                 v_icom_vars.civ_command_length = 1
                 finish = v_command_answer.answer_rest[civ_command](v_icom_vars.Civ_in)
-    v_icom_vars.Civ_in = bytearray([])
-    v_icom_vars.input_locked = 0
-    if finish != 1:
-        v_icom_vars.command_storage = []
-        v_sk.info_to_all = [0xff, 0xef, 0x45]
-        v_icom_vars.ask_content = 0
-    if v_icom_vars.ask_content > 0:
-        v_icom_vars.ask_content = 2
+    if finish > 0:
+        v_icom_vars.Civ_in = bytearray([])
+        v_icom_vars.input_locked = 0
+        if finish != 1:
+            v_icom_vars.command_storage = []
+            v_sk.info_to_all = []
+            v_icom_vars.ask_content = 0
+        if v_icom_vars.ask_content > 0:
+            v_icom_vars.ask_content = 2
     return
