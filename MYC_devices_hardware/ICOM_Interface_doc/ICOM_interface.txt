@@ -2,59 +2,111 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Icom Interfaces für das MYC Protokoll
 
-Author DK1RI, Version V03.1 20210310
+Author DK1RI, Version V04.0 20240422
 This paper is published in https://github.com/dk1ri  as well.
 
 Einleitung
 
 Dies ist die Beschreibung eines Interfaces für einige ICOM (TM) Transceiver; siehe auch: Details zu den einzelnen Tranceivern
-Dieses Interface kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden.
+Dieses Interface kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder über einen Webbrowser gesteuert werden.
 
 Beschreibung
 
 Das Interface setzt MYC Befehle in das CIV Protokoll um.
 Es werden die meisten CIV Befehle der Radios direkt unterstützt. 
+Das Interface nimmt die MYC Befehle entgegen und gibt die CIV Befehle aus.
+Die Eingabe erfolgt über die Tastatur, seriell, I2C, Ethernet Schnittstelle (Telnet) oder über Dateitransfer (mit Webserver) abhängig von Software oder Hardware Variante.
 Es gibt zwei Varianten:
 Software (für Transceiver mit USB Schnittstelle):
 Die wurde unter Windows10 getestet, Raspberry und ESP8266 fehlen noch.
-Das Programm nimmt die MYC Befehle über die Tastatur oder Ethernet Schnittstelle über Telnet entgegen und gibt die CIV Befehle über den USB Port (oder WLAN) aus. Der Transceiver wird direkt an die USB Schnittstelle oder über einen USB -> RS232Wandler  ? CIV Pegelwandler an die Remote Buchse angeschlossen.
+ Der Transceiver wird direkt an die USB Schnittstelle oder über einen USB -> RS232Wandler  ? CIV Pegelwandler an die Remote Buchse angeschlossen.
 Hardware:
-Das Interface arbeitet als Slave am I2C Bus oder kann über RS232 /  USB gesteuert werden.
-Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
-Der Transceiver wird über die Remote Buchse angeschlossen. 
+Diese Variante wird nicht mehr unterstützt. Die Steuerung erfolgt über RS232 / USB oder I2C. Details siehe bei Hardwareversionen!
+
+Die Befehlsbeschreibung steht in der Datei __announcements im Programm.
+Die Steuerung mit einem Webbrowser ist für die Softwareversionen möglich.
 
 Hinweise zur Bedienung
 
 Die Befehle sind meist eine direkte Übersetzung der CIV Befehle. Daraus ergeben sich Einschränkungen bei der Bedienung:
-Einige Befehle arbeiten abhängig von den aktuellen Einstellungen: Dies ist in den Regeln abgebildet, und die Befehle wirken dann auch nicht (soweit ich das erkannt habe :) ).
+Einige Befehle arbeiten abhängig von den aktuellen Einstellungen: Dies ist in den Regeln abgebildet (soweit ich das erkannt habe :) ). Das Interface blockiert falsche Eingaben nicht und liefert auch keine Fehlermeldung. Das Interface erwartet, dass die Regeln beachtet werden..
 Für einige Befehle sind weitere Hardware Voraussetzungen nötig, die aber nicht abgefragt werden können (SD Karte, Antennentuner). Dann wird eine Fehlermeldung als Info gesendet.
-Die Handbücher zum CIV rotokol enthalten einige Fehler und Ungenauigkeiten. Details dazu und Abweichungen dazu bei den MYC Befehlen stehen im Programm.
+Die Handbücher zum CIV Protokoll enthalten möglicherweise einige Fehler und Ungenauigkeiten. 
+Aktuelle Versionen der Dokumentation wurden nicht mehr überprüft.
 
-Die Befehlseingabe erfolgt binär. Der Wertebereich der Befehlsparameter ist bei den Befehlsbeschreibungen angegeben.
+Die Befehlseingabe zum Interface erfolgt binär. Der Wertebereich der Befehlsparameter ist bei den Befehlsbeschreibungen angegeben. Bei der Eingabe über Dateien oder Telnet werden die Bytes hexadezimal übertragen.
 
-Softwareversion:
+
+Softwareversionen:
+
+Die Softwareversionen wurden mit Pycharm 2022.2.1 entwickelt
+
+Die aktuellen Versionen (ab 2024) werden nur mit dem Webserver getestet; bisher nur für IC705.
+
 Folgende Parameter müssen in der Datei ___config eingestellt werden:
-- Comport
-- Testmode: (default: 1) Testmode =0 ist für die Verwendung im MYC System vorgesehen.Es werden nur die Antworten des Transceivers im Hex Format zurückgegeben. Testmode=1 ist für manuellen Betrieb gedacht. Es gibt einige zusätzliche Meldungen.
-- Timeout: (default: 10 (Sekunden)) Der komplette Befehl muss innerhalb dieser Zeit eingeben werden. Bei Verwendung in einem MYC System kann der Wert auf 1 geändert werden.
+- Comport für das Radio Interface
+- Testmode: (default: 1) Testmode =0 ist für die Verwendung im MYC System vorgesehen. Es werden nur die Antworten des Transceivers im Hex Format zurückgegeben. Testmode=1 ist für manuellen Betrieb gedacht. Es gibt einige zusätzliche Meldungen.
+- Timeout: (default: 10 (Sekunden)) Der komplette Befehl muss innerhalb dieser Zeit eingeben
+werden. Bei Verwendung in einem MYC System kann der Wert auf 1 geändert werden.
+- radio_version: 0 für nicht US Geräte; 1 für US Geräte 
+Defaultmäßig ist nur die Webserver Schnittstelle aktiv, um die Bedienung der Tastatur für andere Zwecke zu ermöglichen. Es können aber auch alle möglichen Schnittstellen gleichzeitig verwendet werden.
 Einige Werte der ___config Datei können auch mit dem Befehl 0HFFHFE geändert werden.
-Fehlt die Datei ___config, wird sie mit Defaultwerten neu angelegt.
+Fehlt die Datei ___config, wird sie mit Defaultwerten neu angelegt. 
 
 Windows10:
-Zum Betrieb unter Windows muss Python 3.6 und danach eine Erweiterung installiert werden.
-Der Aufruf  erfolgt in der Powershell (Die Verzeichnisnamen müssen ggf angepasst werden):
-C:\Users\xx\AppData\Local\Programs\Python\Python36-32\Scriptspip.exe install pyserial
-Das Programm wird nach (zum Beispiel)  C:\Users\xx\Desktop\IC7300 entpackt
+Vorbereitung:
+Zum Betrieb unter Windows muss Python 3.9 oder eine spätere Version und danach eine Erweiterung installiert werden.
+Der Aufruf  dazu erfolgt in der Powershell (Die Verzeichnisnamen müssen ggf angepasst werden):
+C:\Users\xx\AppData\Local\Programs\Python\Python39\Scripts\pip.exe install pyserial
+Das Interface Programm wird nach (zum Beispiel)  C:\Users\xx\Desktop\IC705 entpackt.
+Weiterhin muss möglicherweise der passende USB Treiber für den Transceiver installiert werden. Auf einem Rechner hatte ich das Problem, dass der Treiber zwar vorhanden war aber falsche Daten lieferte. Deinstallieren und Installation des passenden ICOM Treibers (für den jeweiligen Transceiver) hat geholfen.
 
 Betrieb:
 Das Radio muss eingeschaltet und verbunden sein!
-cd C:\Users\xx\Desktop\IC7300
-C:\Users\xx\AppData\Local\Programs\Python\Python36-32\python.exe Icxxx_interface.py
-Der Transceiver startet mit VFOA und Betriebsart USB, USB; CIV echo wird abgeschaltet und der transceive mode eingeschaltet.
+In der Powershell:
+cd c:\xxx\<ICxx_directory>
+C:\Users\xx\AppData\Local\Programs\Python\Pythonxx\python.exe ICxxx_interface.py
+Der Transceiver startet mit VFOA und Betriebsart USB; CIV echo wird abgeschaltet und der transceive mode eingeschaltet.
 Nach dem Start geht das erste eingegebene Zeichen verloren. Der Grund dafür ist unklar.
 Während des Remote Betriebs sollten keine manuellen Einstellungen am Gerät vorgenommen werden.
+Die Bedienung erfolgt entweder direkt mit der Tastatur oder per telnet durch Eingabe der Befehle als HEX Werte oder mit dem Webbrowser [15]
+.
+Details zu den verschiedenen Transceivern
 
-Hardwareversion:
+IC7300 (noch nicht mit webserver getestet):
+Bei Betrieb über die USB Schnittstelle muss Menu ? Set ? Connectors ? CI-V ? CI-V USB Port  auf „Unlink from [REMOTE]“ gesetzt werden.
+Weiterhin muss Menu ? set ? Connectors ? USB Serial Function auf CI-V stehen.
+Diese Einstellung ist per remote nur lesbar.
+Als USB Baudrate muss AUTO oder 19200 oder kleiner gewählt werden. Es ist nicht geklärt, warum höhere Baudraten nicht funktionieren
+Ändert man das im Betrieb, ist die USB Schnittstelle nicht mehr verwendbar.
+
+IC9700 (noch nicht mit webserver getestet):
+Grundlage für die Befehlsliste ist das CIV Reference Guide von 2021 Mar
+Auch hier gibt es einige Fehler und Ungereimtheiten.
+Für den Betrieb muss der Transceiver im 1-Kanal Betrieb laufen, da beim 2 Kanal Betrieb die Frequenzen des Bandes des nicht aktiven Kanals nicht eingestellt werden können. Es gibt keinen Befehl zur Einstellung des 1Kanal Betriebs.
+
+Bei Betrieb über die USB Schnittstelle muss Menu ? Set ? Connectors ? CI-V ? CI-V USB Port  auf „Unlink from [REMOTE]“ gesetzt werden.
+Weiterhin muss Menu ? set ? Connectors ? USB Serial Function auf CI-V stehen.
+Diese Einstellung ist per remote nur lesbar.
+Ändert man das im Betrieb, ist die USB Schnittstelle nicht mehr verwendbar.
+
+
+IC705:
+Das Interface verwendet die Befehle der Version des Handbuchs A7560-8EX-6  (Jan 2023)
+Das Programm wurde mit der USB Schnittstelle zum Transceiver getestet. Nach einem „Partial reset“ braucht man keine Änderungen am Transceiver vornehmen.
+Bei Start wird die aktuelle Konfiguration in den ersten Speicherplatz kopiert.
+Mit der Software RS-BA1 Ver2 kann der IC705 auch über WLAN gesteuert werden. Die dazu nötigen Einstellungen am Transceiver sind in dem Handbuch beschrieben. Das Programm stellt einen COM Port zur Verfügung.
+Einige Befehle konnte ich nicht testen, da der Transceiver kein GPS Signal empfangen konnte und kein DV Relais erreichbar war. Einige andere Befehle funktionieren offenbar, ich habe aber keine dazu passende Anzeige gefunden.
+Andererseits gibt es einige Menue Eingaben ohne CIV Befehle (im Bereich picture, DVA-RPLY und DV GW, WLAN and bluetooth configuration)
+Detail dazu stehen im Programm in der Datei „__possible_errors“.
+
+Hardwareversionen:
+
+Die Hardwareversionen werden nicht mehr unterstützt und funktionieren möglicherweise nicht!!
+Die Programme für IC271 und IC1271 wurden soweit ergänzt, dass der Webserver funktioniert. Ein Test mit den Geräten konnte aber nicht mehr gemacht werden.
+Das Interface arbeitet als Slave am I2C Bus oder kann über RS232 /  USB gesteuert werden.
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+Der Transceiver wird über die Remote Buchse angeschlossen. 
 Beim Start des Interfaces muss das Radio an sein und mit dem Interface verbunden sein!
 Das Interface unterstützt keine Kollisionserkennung auf dem ICOM Bus. Daher darf nur 1 Radio an den CIV-Bus angeschlossen werden. Während des Remote Betriebs sollten daher auch keine manuellen Einstellungen am Gerät vorgenommen werden. Die CIV Schnittstelle verwendet 19200 Baud 8N1.
 Vor dem Verbinden des Interfaces mit dem Laptop / PC muss der Transceiver eingeschaltet und verbunden sein. Andernfalls hängt das Programm.
@@ -76,7 +128,7 @@ aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
-Reset (Hardwareversion)
+Reset 
 
 Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
 
@@ -87,28 +139,25 @@ Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für 
 Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFFFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
 Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
 Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein kompletter Restart. Das bedeutet, dass bei einem Kurzschluss auf der I2C Leitung das Interface nicht funktioniert!
-
-
 Software
 
-Die Softwareversion wurde mit Pycharm 2020.3.3 entwickelt
-Bei der Hardwareversion übernimmt die Steuerung ein AVR Mikrocontroller Atmega1284
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284
 Die Software dazu wurde in BASCOM geschrieben
 
-Programmierung des Prozessors (Hardwareversion)
+Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
 Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
 Der Jumper J1 sollte während der Programmierung entfernt werden.
 
-Serielle (RS232 / USB) Schnittstelle (Hardwareversion)
+Serielle (RS232 / USB) Schnittstelle
 
 Schnittstellenparameter: 19k2 8N1
 Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
 Die Stromversorgung erfolgt dann über USB.
 I2C  und RS232 / USB können nicht gleichzeitig verwendet. Der Befehlspuffer wird gelöscht, wenn die Schnittstelle gewechselt wird.
 
-I2C Schnittstelle (Hardwareversion)
+I2C Schnittstelle
 
 Die Default Adresse ist 23 (&H17)
 Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
@@ -123,19 +172,20 @@ SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird ein reset gestartet. Einige I2C-Master setzen nach der Datenübertragung den Bus nicht entsprechend der Spezifikation auf„Idle“ zurück, was zu regelmäßigen resets führt.
 
-SMD (Hardwareversion)
+SMD 
 
 Die Leiterplatte ist teilweise mit SMD bestückt.
 
-Stromversorgung (Hardwareversion)
+Stromversorgung
 
 Die Stromversorgung ist 7- 15V, Stromaufnahme ca. 20mA max. 
 Alternativ erfolgt die Stromversorgung über USB
 
-Bestückung der Leiterplatte (Hardwareversion)
+Bestückung der Leiterplatte
 
 Verwendung von ISP:
 JP6
+
 
 Mit I2C:
 Siehe I2C oben.
@@ -145,7 +195,7 @@ Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alter
 
 SL3 wird nicht bestückt.
 
-Anschlüsse (Hardwareversion)
+Anschlüsse
 
 Power
 Tip	12V
@@ -161,7 +211,7 @@ I2C
 2	SCL
 3	SDA
 
-Jumper (Hardwareversion)
+Jumper 
 
 JP1 		Power
 JP2 		I2C: 3V/5V Umschaltung
@@ -175,48 +225,33 @@ Details zu den verschiedenen Transceivern
 
 Dieses Programm wurde ursprünglich für den IC7300 geschrieben. Die Versionen für die anderen Transceiver wurden daraus abgeleitet.
 
-IC7300 (Hardware und Softwarevariante)
+IC7300
 Das Interface verwendet die Befehle der Version des Handbuchs A7292-4EX-9  (Juli 2020). und den Ergänzungen für Firmware 1.4  Es gibt leichte Änderungen gegenüber älteren Versionen. Daher sollte das Radio auch die neueste Softwareversion haben.
 Diese Version wurde getestet.
 Die CIV Adresse sollte auf 0x94 stehen. Bei anderer Adresse muss die Konfigurationsdatei geändert werden.
 
-Hardwarevariante:
-Diese Hardwarevariante wird nicht weiter entwickelt
 Es muss Menu ? Set ? Connectors ? CI-V ? CI-V USB Port  auf „Link to [REMOTE]“ gesetzt werden.
 Außerdem sollte Menu ? Set ? Connectors ? CI-V CIV tarnsceive off sein
 
-Softwarevariante:
-Bei Betrieb über die USB Schnittstelle muss Menu ? Set ? Connectors ? CI-V ? CI-V USB Port  auf „Unlink from [REMOTE]“ gesetzt werden.
-Weiterhin muss Menu ? set ? Connectors ? USB Serial Function auf CI-V stehen.
-Diese Einstellung ist per remote nur lesbar.
-Als USB Baudrate muss AUTO oder 19200 oder kleiner gewählt werden. Es ist nicht geklärt, warum höhere Baudraten nicht funktionieren
-Ändert man das im Betrieb, ist die USB Schnittstelle nicht mehr verwendbar.
-
-IC7000 (Hardwarevariante)
+IC7000
 Grundlage für die Befehlsliste ist das Benutzerhandbuch A-6478H-1EX. Die Beschreibung der Datenformate einiger Befehle fehlt. Sie wurden wie bei IC7300 gelassen. Es ist teilweise nicht beschrieben, welche Befehle auch als Lesebefehle gelten.
 Die Befehlscodes 06 bis 09 auf Seite 146 sind teilweise doppelt und wahrscheinlich falsch. Sie wurden als 1A06 .. programmiert.
 Diese Version wurde nicht getestet, da die CIV Schnitttstelle meines Transceivers defekt ist.
 
-Icx71 (Hardwarevariante)
+Icx71
 Grundlage für die Befehlsliste ist eine Liste von DF4OR (Tnx!)
-Da die Parameter unterschiedlich sind, gibt es für jeden Ttansceiver eine Firmware.
+Da die Parameter unterschiedlich sind, gibt es für jeden Transceiver eine Firmware.
 Diese Firmware wurde noch nicht getestet, ein IC1271 ist aber noch vorhanden.
 
-IC9700: (Hardwarevariante)
+IC9700:
 Grundlage für die Befehlsliste ist das CIV Reference Guide von 2020 (ohne Nummer).
 Auch hier gibt es einige Fehler und Ungereimtheiten.
-Das Programm wurde noch nicht getestet.
-
-IC705 (Softwarevatiante)
-Das Programm wurde mit der USB Schnittstelle getestet. Nach einem „Partial reset“ braucht man keine Änderungen am Transceiver vornehmen.
-Mit der Software RS-BA1 Ver2 kann der IC705 auch über WLAN gesteuert werden. Die dazu nötigen Einstellungen am Transceiver sind in dem Handbuch beschrieben. Das Programm stellt einen COM Port zur Verfügung.
-
 
 Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V03.2
-Bascom Version V01.3 für alle Transceiver
+Bascom Version V01.3 / V01.4 für alle Transceiver
 Softwareversion (Python) V01.4 für alle Transceiver
 
 
@@ -238,6 +273,8 @@ Referenzen
 [8]	https://dk1ri.de/dhw/IC705_interface_python.zip
 [9]	https://dk1ri.de/dhw/IC7000_interface_bascom.zip
 [10]	https://dk1ri.de/dhw/IC9700_interface_bascom.zip
-[11]	https://dk1ri.de/dhw/IC271_interface_bascom.zip
-[12]	https://dk1ri.de/dhw/IC471_interface_bascom.zip
-[13]	https://dk1ri.de/dhw/IC1271_interface_bascom.zip
+[11]	https://dk1ri.de/dhw/IC9700_interface_python.zip
+[12]	https://dk1ri.de/dhw/IC271_interface_bascom.zip
+[13]	https://dk1ri.de/dhw/IC471_interface_bascom.zip
+[14]	https://dk1ri.de/dhw/IC1271_interface_bascom.zip
+[15]	https://dk1ri.de/myc/webserver.pdf oder https://dk1ri.de/myc/webserver.txt
