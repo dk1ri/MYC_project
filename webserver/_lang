@@ -1,28 +1,20 @@
-languages
-english;deutsch
-add
-+;+
-change
-change;aendern
-device
-device;Gerät
-language
-language;Sprache
-new_data
-get new_data;neue Daten abrufen
-interface
-interface;Schnittstelle
-position
-postion;Position
-read
-read;lesen
-read_data
-read_data;Daten lesen
-send_data
-send data;Daten absenden
-set_default
-set default;Standardwert
-stack
-stack;Stapel
-your_name
-your name;Ihr Name
+language name;english;deutsch
+add;+;+
+change;change;aendern
+device;device;Gerät
+interface;interface;Schnittstelle
+language;language;Sprache
+languages;english;deutsch
+last command;last command;letzter Befehl
+new_data;get new_data;neue Daten abrufen
+position;postion;Position
+read;read;lesen
+read_data;read_data;Daten lesen
+send;send;abschicken
+send_data;send data;Daten absenden
+set_default;set default;Standardwert
+stack;stack;Stapel
+store;store user data; Benutzerdaten speichern
+w1;Write new sequence numbers into the field of the left side and press send;neue Nummer der Reihenfolge links eintragenund abschicken markieren
+w2;if you think, it is ok tick store as well;zum speichern auch dies markieren
+your_name;your name;Ihr Name

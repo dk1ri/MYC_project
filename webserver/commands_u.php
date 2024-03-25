@@ -1,15 +1,11 @@
 <?php
 # commands_u.php
-# DK1RI 20240123
+# DK1RI 20240422
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_ou($basic_tok) {
-    $device = $_SESSION["device"];
+    global $language, $device;
     echo "<div><h3 class='ou'>";
-    echo $_SESSION["des_name"][$device][$basic_tok] . ": ";
-    if (array_key_exists($basic_tok. "m0", $_SESSION["des"][$device])){
-        # one or more stack display elements available
-        selector($basic_tok);
-    }
+    display_start_with_stack($basic_tok);
     $des = explode(",", $_SESSION["des"][$device][$basic_tok."d0"]);
     if (count($des) == 2) {
         echo "<input type='checkbox' id=" . $basic_tok."d0" . " name=" . $basic_tok."d0 value=1>";
@@ -29,7 +25,7 @@ function create_ou($basic_tok) {
 }
 
 function correct_for_send_ou($basic_tok){
-    $device = $_SESSION["device"];
+    global $language, $device;
     $sw_pos_changed = 0;
     if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
     if ($_SESSION["send_ok"]) {
@@ -37,7 +33,7 @@ function correct_for_send_ou($basic_tok){
         # send, if corrected_POST is not idle (no send with change of stack only)
         if ($_POST[$basic_tok."d0"] != 0) {$sw_pos_changed = 1;}
     }
-    if ($_SESSION["send_ok"]) {
+if ($_SESSION["send_ok"]) {
         list($stack, $stack_changed) = handle_stacks($basic_tok);
         if ($stack_changed or $sw_pos_changed) {
             $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);

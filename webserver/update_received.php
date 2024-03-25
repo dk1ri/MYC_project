@@ -1,17 +1,36 @@
 <?php
 # update_received.php
-# DK1RI 20240123
+# DK1RI 20240324
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+function receive_civ(){
+    read_from_device();
+    $i = 0;
+    while ($_SESSION["received_data"] != "" and $i < 100) {
+        # update actual_data by data from device
+        update_received();
+        $i++;
+    }
+    # should never happen
+    if ($i == 100){
+        if ($_SESSION["conf"]["testmode"]){print " error";}
+        $_SESSION["received_data"] = "";
+    }
+
+}
 function update_received(){
     # data from device
+    global $device, $actual_data;
     $from_device = $_SESSION["received_data"];
-    $device = $_SESSION["device"];
+    $error = 0;
     if ($_SESSION["command_len"][$device] == 2) {
+        if (strlen($_SESSION["received_data"]) < 2){return;}
+        # 2 -> 1 byte
         $basic_tok = hexdec(substr($from_device,0, 2));
         $from_device = substr($from_device,2, null);
     }
     else{
-        $basic_tok = hexdec($from_device[0] * 256 + $from_device[1]);
+        if (strlen($_SESSION["received_data"]) < 4){return;}
+        $basic_tok = hexdec(substr($from_device, 0, 2)) * 256 + hexdec(substr($from_device,2,2));
         $from_device = substr($from_device,4, null);
     }
     if( !array_key_exists($basic_tok, $_SESSION["original_announce"][$device])){
@@ -19,7 +38,6 @@ function update_received(){
     }
     $announce = $_SESSION["original_announce"][$device][$basic_tok];
     $ct = explode(",", $announce[0])[0];
-    # characters to delete after handling
     switch ($ct) {
         case "m";
         #   basic command
@@ -44,7 +62,7 @@ function update_received(){
                 $i += 2;
             }
             if($i == 4){
-                $_SESSION["actual_data"][$device][$basic_tok. "a"] = $field[3] . "," . $field[4] . "," . $field[2];
+                $actual_data[$basic_tok. "a"] = $field[3] . "," . $field[4] . "," . $field[2];
             }
             break;
         case "as":
@@ -73,17 +91,25 @@ function update_received(){
             $to_delete = receive_f($basic_tok, $from_device);
             break;
         default:
-            $to_delete = 0;
+            $error = 1;
             break;
     }
     # for one command $from_device should be empty
-    $from_device = substr($from_device, $to_delete, null );
-    print "Restlaenge ".  strlen($from_device)." ";
+    if ($error) {
+        $_SESSION["received_data"] = "";
+        if ($_SESSION["conf"]["testmode"]){print "civ receive error";}
+    }
+    else {
+        $from_device = substr($from_device, $to_delete, null);
+        $missing_revieved = strlen($from_device);
+        $_SESSION["received_data"] = $from_device;
+        if ($_SESSION["conf"]["testmode"]){print "Restlaenge " . $missing_revieved;}
+    }
 }
 
 function update_memory_data($token, $from_device, $length_of_length){
-    # translate (first part of)received hex string depending on type for one element
-    # translated data strat at position "0"
+    # translate (first part of) received hex string depending on type for one element
+    # translated data start at position "0"
     # $length_of_length is used for strings only
     if($from_device == ""){return["",0];}
     $device = $_SESSION["device"];
@@ -111,7 +137,7 @@ function update_memory_data($token, $from_device, $length_of_length){
         case "b":
             $value = substr($from_device, 0, 2);
             $v = hexdec($value);
-            if ($v < 32 or $v > 126) {
+            if ($v < 32 or $v > 126 or $v == 0x7c) {
                 $result = "&H" . $value;
             }
             else{
@@ -170,29 +196,32 @@ function update_memory_data($token, $from_device, $length_of_length){
     return [$result,$bytes_to_delete];
 }
 
-function update_memory_position($basic_tok, $from_device){
+function update_memory_position_stack($basic_tok, $from_device){
+    global $device, $actual_data;
     # used for memory-positions and stacks
-    $device = $_SESSION["device"];
+    # data are correct and stored to actual_data directly but splited as <des...>
     $pos = hexdec(substr($from_device,0,$_SESSION["property_len"][$device][$basic_tok][1]));
-    $pos_with_adder = 0;
     array_key_exists($basic_tok,$_SESSION["a_to_o"][$device]) ? $basic_tok_ = $_SESSION["a_to_o"][$device][$basic_tok]: $basic_tok_ = $basic_tok;
+    $add_found = 0;
     if (array_key_exists($basic_tok_."n0", $_SESSION["max_for_ADD"][$device])){
-        # ADDer possible
+        # with ADDer
         if ($pos > $_SESSION["max_for_ADD"][$device][$basic_tok_."n0"]){
             $i = 0;
             $found = 1;
             while ($found){
-                if (array_key_exists($basic_tok_."m".$i, $_SESSION["actual_data"][$device])){
-                    $_SESSION["actual_data"][$device][$basic_tok_."m".$i] = 0;
+                # set others to 0
+                if (array_key_exists($basic_tok_."m".$i, $actual_data)){
+                    $actual_data[$basic_tok_."m".$i] = 0;
                 }
                 else{$found = 0;}
                 $i++;
             }
-            $_SESSION["actual_data"][$device][$basic_tok_."n0"] = $pos - $_SESSION["max_for_ADD"][$device][$basic_tok_."n0"];
-            $pos_with_adder = 1;
+            $actual_data[$basic_tok_."n0"] = $pos - $_SESSION["max_for_ADD"][$device][$basic_tok_."n0"];
+            $add_found = 1;
         }
+        else{$actual_data[$basic_tok_."n0"] = 0;}
     }
-    if (!$pos_with_adder){
+    if (!$add_found){
         $i = 0;
         $found = 1;
         while ($found){
@@ -201,24 +230,25 @@ function update_memory_position($basic_tok, $from_device){
             $i++;
         }
         $max_i = $i - 2;
-        while ($max_i >= 0){
-            $tok = $basic_tok_."m".$max_i;
-            if (array_key_exists($tok, $_SESSION["des"][$device])) {
-                $divisor = explode(",", $_SESSION["des"][$device][$basic_tok_."m".$max_i])[0];
-                $value = $pos % $divisor;
-                $_SESSION["actual_data"][$device][$basic_tok_ . "m" . $max_i] = $value;
-                $pos = floor($pos / $divisor);
-
+        $i = 0;
+        while ($i <= $max_i){
+            $tok = $basic_tok_."m".$i;
+            $next_tok = $basic_tok_."m".($i + 1);
+            if (array_key_exists($next_tok, $_SESSION["des"][$device])) {
+                $divisor = explode(",",$_SESSION["des"][$device][$next_tok])[0];
+                $value = intdiv($pos , $divisor);
+                $actual_data[$tok] = $value;
+                $pos = ($pos % $divisor);
             }
-            $max_i--;
+            else{$actual_data[$tok] = $pos;}
+            $i++;
         }
     }
 }
 function update_corresponding_opererating($basic_tok, $extension, $data){
-    $device = $_SESSION["device"];
+    global $device, $actual_data;
     array_key_exists($basic_tok, $_SESSION["a_to_o"][$device]) ? $tok = $_SESSION["a_to_o"][$device][$basic_tok]:$tok = $basic_tok;
-    print $tok;
-    $_SESSION["actual_data"][$device][$tok . $extension] = $data;
+    $actual_data[$tok . $extension] = $data;
 }
 
 function convert_hex_to_readable($one_byte){
@@ -227,52 +257,6 @@ function convert_hex_to_readable($one_byte){
         $result = "&H".$one_byte;
     }
     else{$result = chr(hexdec($one_byte));}
-    return $result;
-}
-function retranslate_simple_range($tok, $data){
-    # used for "op" command of received data with <des> translation
-    # return $sum_counts for actual data
-    $device = $_SESSION["device"];
-    $result = $data;
-    if (array_key_exists($tok, $_SESSION["des_range"][$device])){
-        $range = explode(",", $_SESSION["des_range"][$device][$tok]);
-        $i = 0;
-        $found = 0;
-        $result = 0;
-        $sum_counts = 0;
-        while ($i <  count($range) and $found == 0) {
-            if (!strstr($range[$i], "_")) {
-                # single characters
-                if ($data == $sum_counts) {
-                    $found = 1;
-                    $result = $range[$i];
-                }
-                $sum_counts++;
-            } else {
-                # range
-                $step = explode("_", $range[$i])[0];
-                $max = explode("to", $range[$i])[1];
-                $min = explode("to", explode("_", $range[$i])[1])[0];
-                $counts = ($max - $min) / $step;
-                if ($sum_counts + $counts < $data) {
-                    $sum_counts += $counts;
-                } else {
-                    $found = 1;
-                    $co = $min;
-                    $fou = 0;
-                    while ($co < $max and $fou == 0) {
-                        if ($sum_counts == $data) {
-                            $fou = 1;
-                            $result = $co;
-                        }
-                        $co += $step;
-                        $sum_counts++;
-                    }
-                }
-            }
-            $i++;
-        }
-    }
     return $result;
 }
 ?>

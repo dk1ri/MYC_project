@@ -2,10 +2,11 @@
 # for_tests.php
 # DK1RI 20240124
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
-function for_tests($device){
-    create_session_data("$device", "device_list", $_SESSION["device_list"]);
+function for_tests(){
+    global $device;
+    create_session_data_file("$device", "device_list", $_SESSION["device_list"]);
     create_session_data_file_array($device, "original_announce", $_SESSION["original_announce"][$device]);
-    create_session_data_file_array($device, "announce_all", $_SESSION["announce_all"][$device]);
+    create_session_data_file($device, "announce_all", $_SESSION["announce_all"][$device]);
     create_session_data_file_array($device, "chapter_token", $_SESSION["chapter_token"][$device]);
     create_session_data_file($device, "chapter_names", $_SESSION["chapter_names"][$device]);
     create_session_data_file($device, "special_token", $_SESSION["special_token"][$device]);
@@ -14,13 +15,14 @@ function for_tests($device){
     create_session_data_file($device, "unit", $_SESSION["unit"][$device]);
     create_session_data_file($device, "oo_tok", $_SESSION["oo_tok"][$device]);
     create_session_data_file($device, "des_name", $_SESSION["des_name"][$device]);
-    create_session_data_file($device, "des_range", $_SESSION["des_range"][$device]);
-    create_session_data_file($device, "ct_of_as", $_SESSION["ct_of_as"][$device]);
+    create_session_data_file($device, "chapter_names_with_space", $_SESSION["chapter_names_with_space"][$device]);
+    create_session_data_file($device, "ALL", $_SESSION["ALL"][$device]);
     create_session_data_file($device, "max_for_send", $_SESSION["max_for_send"][$device]);
     create_session_data_file($device, "max_for_ADD", $_SESSION["max_for_ADD"][$device]);
     create_session_data_file($device, "to_correct", $_SESSION["to_correct"][$device]);
     create_session_data_file($device, "des", $_SESSION["des"][$device]);
     create_session_data_file($device, "to_correct", $_SESSION["to_correct"][$device]);
+    create_session_data_file($device, "default_value", $_SESSION["default_value"][$device]);
     create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);
     create_session_data_file($device, "type_for_memories", $_SESSION["type_for_memories"][$device]);
     create_session_data_file($device, "a_to_o", $_SESSION["a_to_o"][$device]);
@@ -29,17 +31,12 @@ function for_tests($device){
     create_session_data_file($device, "string_commands", $_SESSION["string_commands"][$device]);
     create_session_data_file("$device", "conf", $_SESSION["conf"]);
     create_session_data_file_array("$device", "chapter_token", $_SESSION["chapter_token"][$device]);
-}
-
-function create_session_data($device, $name, $data){
-  #  print ($name);
-    $file = fopen("./devices/".$device."/session_".$name, "w");
-        fwrite( $file,$data."\n");
-    fclose($file);
+    create_session_data_file("$device", "activ_chapters", $_SESSION["activ_chapters"][$device]);
+    create_session_data_file("$device", "alpha", $_SESSION["alpha"][$device]);
+    create_session_data_file("$device", "rules", $_SESSION["rules"][$device]);
 }
 
 function create_session_data_file($device, $name, $data){
- #    print ($name);
     $file = fopen("./devices/".$device."/session_".$name, "w");
     foreach ($data as $key=> $value){
         fwrite( $file,$key." ".$value."\n");
@@ -48,7 +45,6 @@ function create_session_data_file($device, $name, $data){
 }
 
 function create_session_data_file_array($device, $name, $data){
-  # print($name);
     $file = fopen("./devices/".$device."/session_".$name, "w");
     foreach ($data as $key=> $value){
         $line = $key. ":: ";

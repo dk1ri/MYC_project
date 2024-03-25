@@ -3,7 +3,7 @@
 # DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_ob($basic_tok){
-    $device = $_SESSION["device"];
+    global $language, $device,$actual_data;
     echo "<div><h3 class='ob'>";
     echo $_SESSION["des_name"][$device][$basic_tok] . ":<br>";
     # data
@@ -12,7 +12,7 @@ function create_ob($basic_tok){
             if (!strstr($token, "dx")) {
                 $type = $_SESSION["type_for_memories"][$device][$token];
                 echo find_name_of_type($type). " ";
-                echo "<input type=text name=" . $token . " size =". find_length_of_displayed_vars($type)."  placeholder =" . str_replace(" ","&nbsp;",$_SESSION["actual_data"][$device][$token]) . "><br>";
+                echo "<input type=text name=" . $token . " size =". find_length_of_displayed_vars($type)."  placeholder =" . str_replace(" ","&nbsp;",$actual_data[$token]) . "><br>";
             }
         }
     }
@@ -25,9 +25,9 @@ function create_ob($basic_tok){
         array_splice($range_o0, 0, 1);
         if ($number_of_elements > 1) {
             echo "start at: ";
-            simple_selector($token."m0", $range_m0, $_SESSION["actual_data"][$device][$token."m0"]);
+            simple_selector($token."m0", $range_m0, $actual_data[$token."m0"]);
             echo "number of elements: ";
-            simple_selector($token."o0", $range_o0, $_SESSION["actual_data"][$device][$token."o0"]);
+            simple_selector($token."o0", $range_o0, $actual_data[$token."o0"]);
         }
         display_as($_SESSION["o_to_a"][$device][$basic_tok]);
         echo "<br>";
@@ -36,7 +36,7 @@ function create_ob($basic_tok){
 }
 
 function create_ab($basic_tok) {
-    $device = $_SESSION["device"];
+    global $language, $device,$actual_data;
     echo "<div><h3 class='ab'>";
     echo $_SESSION["des_name"][$device][$basic_tok] . ":<br>";
     # start at
@@ -46,7 +46,7 @@ function create_ab($basic_tok) {
     array_splice($range, 0, 1);
     if ($number_of_elements > 1) {
         echo "start at ";
-        simple_selector($tok, $range, $_SESSION["actual_data"][$device][$tok]);
+        simple_selector($tok, $range, $actual_data[$tok]);
     }
     else {
         # one type of data
@@ -57,21 +57,21 @@ function create_ab($basic_tok) {
     $range = explode(",", $_SESSION["des"][$device][$tok]);
     array_splice($range, 0, 1);
     echo " elements: ";
-    simple_selector($tok, $range, $_SESSION["actual_data"][$device][$tok]);
+    simple_selector($tok, $range, $actual_data[$tok]);
     echo " ";
     # data
     if ($number_of_elements == 1){
-        $data = str_replace(" ", "&nbsp;", $_SESSION["actual_data"][$device][$basic_tok . "d0"]);
+        $data = str_replace(" ", "&nbsp;", $actual_data[$basic_tok . "d0"]);
     }
     else {
         $data = "";
         $i = 0;
-        $j = $_SESSION["actual_data"][$device][$basic_tok . "m0"];
-        while ($i < $_SESSION["actual_data"][$device][$tok]) {
+        $j = $actual_data[$basic_tok . "m0"];
+        while ($i < $actual_data[$tok]) {
             if ($j >= explode(",", $_SESSION["des"][$device][$basic_tok . "m0"])[0]) {
                 $j = 0;
             }
-            $data .= str_replace(" ", "&nbsp;", $_SESSION["actual_data"][$device][$basic_tok . "d" . $j]) . "&nbsp;.&nbsp;";
+            $data .= str_replace(" ", "&nbsp;", $actual_data[$basic_tok . "d" . $j]) . "&nbsp;.&nbsp;";
             $i++;
             $j++;
         }
@@ -85,12 +85,13 @@ function create_ab($basic_tok) {
 function correct_for_send_ob($basic_tok){
     # actual data is not updated
     # transmitted are tok until the first empty tok
-    $device = $_SESSION["device"];
+    global $language, $device;
     check_send_if_a_exists($basic_tok);
     if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
     if ($_SESSION["send_ok"]) {
         # create data to send
-        $data = "";
+        $send_data = "";
+        $display_data = "";
         $stop = 0;
         $start = 0;
         $number_of_elements = 0;
@@ -105,7 +106,7 @@ function correct_for_send_ob($basic_tok){
                         if (array_key_exists($value, $_POST) and $_POST[$value] != "") {
                             # type_for_memories is one char only for $tok.d..
                             $type = $_SESSION["type_for_memories"][$device][$value];
-                            $data .= check_memory_data($value, $device, $type, 0);
+                            list($send_data, $display_data) = check_memory_data($value, $type, 0, $value);
                             $start = 1;
                             $number_of_elements++;
                         } else {
@@ -131,7 +132,7 @@ function correct_for_send_ob($basic_tok){
                             $start_pos++;
                         }
                         if (array_key_exists($value, $_POST) and $_POST[$value] != "") {
-                            $_SESSION["actual_data"][$device][$value] = $_POST[$value];
+                            $actual_data[$value] = $_POST[$value];
                             $start = 1;
                         } else {
                             if ($start == 1) {
@@ -152,15 +153,15 @@ function correct_for_send_ob($basic_tok){
                 $send .= translate_dec_to_hex("n", $start_pos - 1, 2);
                 $send .= translate_dec_to_hex("n", $number_of_elements, 2);
             }
-            $send .= $data;
-            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+            $send .= $send_data;
+            $_SESSION["tok_to_send"][$basic_tok] = 1;
             $_SESSION["send_string_by_tok"][$basic_tok] = $send;
         }
     }
 }
 
 function correct_for_send_ab($basic_tok){
-    $device = $_SESSION["device"];
+    global $language, $device,$actual_data;
     $dat = "";
     if (array_key_exists($basic_tok . "a", $_POST) and $_POST[$basic_tok . "a"] == "1") {
         $m0 = $basic_tok . "m0";
@@ -172,15 +173,15 @@ function correct_for_send_ab($basic_tok){
                 $dat .= translate_dec_to_hex("n", $_POST[$m0], 2);
                 $dat .= translate_dec_to_hex("n", $number, 2);
             }
-            $_SESSION["actual_data"][$device][$m0] = $_POST[$m0];
-            $_SESSION["actual_data"][$device][$o0] = $_POST[$o0];
+            $actual_data[$m0] = $_POST[$m0];
+            $actual_data[$o0] = $_POST[$o0];
         }
         if ($_POST[$o0] > 0) {
             # basic_tok
             $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
             $send .= $dat;
             $_SESSION["read"] = 1;
-            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+            $_SESSION["tok_to_send"][$basic_tok] = 1;
             $_SESSION["send_string_by_tok"][$basic_tok] = $send;
         }
     }
@@ -188,7 +189,7 @@ function correct_for_send_ab($basic_tok){
 
 function receive_b($basic_tok, $from_device){
     # $fromdevice: without basic_tok !!
-    $device = $_SESSION["device"];
+    global $language, $device,$actual_data;
     $max_element_number = count($_SESSION["original_announce"][$device][$basic_tok]) - 2;
     if ($max_element_number > 0){
         # 256 elemnets supported only

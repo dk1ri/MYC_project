@@ -1,58 +1,59 @@
 <?php
 # commands_o.php
-# DK1RI 20240123
+# DK1RI 20240304
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function  create_op_oo($basic_tok){
-    $device = $_SESSION["device"];
+    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
     echo "<div><h3 class='op'>";
-    echo $_SESSION["des_name"][$device][$basic_tok] . ": ";
-    if (array_key_exists($basic_tok. "m0", $_SESSION["des"][$device])){
-        # one or more stack display elements available
-        selector($basic_tok);
-    }
+    display_start_with_stack($basic_tok);
     echo "<br>";
-    $reset_ignore = 0;
+    $reset_or_ignore = 0;
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
         if (strstr($tok, "d")) {
-            if ($_SESSION["announce_all"][$device][$tok][0] == "oo") {
-                if (strstr($tok, "r")) {
-                    if ($_SESSION["des"][$device][$tok] == 0) {
-                        echo "<br>";
-                        $reset_ignore = 1;
-                        $tok_ = substr($tok, 0, strlen($tok) - 1);
-                        if ($_SESSION["des"][$device][$tok_ . "s"] != "0" or $_SESSION["des"][$device][$tok_ . "t"] != "0") {
-                            # reset to default
-                            $label = $_SESSION["des_name"][$device][basic_tok($tok)];
-                            echo $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["set_default"] . ": " . $label . " ";
-                            echo "<input type='checkbox' id=" . $tok . " name=" . $tok . " value=set_def>";
-                        }
-                        # else ignore this dimension
+            # no "a"
+            $des = explode(",", $_SESSION["des"][$device][$tok]);
+            if ($_SESSION["announce_all"][$device][$tok] == "oo") {
+                if (strstr($tok, "r") and $des[0] == 0) {
+                    # special case: command is reset or ...
+                    echo "<br>";
+                    $reset_or_ignore = 1;
+                    $tok_ = substr($tok, 0, strlen($tok) - 1);
+                    if ($_SESSION["des"][$device][$tok_ . "s"] != "0" or $_SESSION["des"][$device][$tok_ . "t"] != "0") {
+                        # reset to default
+                        $label = $_SESSION["des_name"][$device][basic_tok($tok)];
+                        echo $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["set_default"] . ": " . $label . " ";
+                        echo "<input type='checkbox' id=" . $tok . " name=" . $tok . " value=set_def>";
                     }
+                    # else ignore this dimension
                 }
             }
             else{
-                $reset_ignore = 0;
+                $reset_or_ignore = 0;
             }
-            if (!$reset_ignore){
+            if (!$reset_or_ignore){
                 # "op" or other "oo"
-                $des = explode(",", $_SESSION["des"][$device][$tok]);
-                $max = $des[0];
-                array_splice($des, 0, 1);
-                if ($max < $_SESSION["conf"]["selector_limit"]) {
-                    if (strstr($tok, "r")) {
-                        echo "<br>";
+                $number_of_elements = $des[0];
+                $des = array_splice($des, 1);
+                if (strstr($tok, "r")) {
+                    echo "<br>";
+                }
+                if (array_key_exists($tok, $_SESSION["des_name"][$device])){
+                    echo $_SESSION["des_name"][$device][$tok];
+                    if($_SESSION["des_name"][$device][$tok] != " " and $_SESSION["des_name"][$device][$tok] != "") {
+                        echo ":";
                     }
-                    $actual = $_SESSION["actual_data"][$device][$tok];
-                    echo " " . $_SESSION["des_name"][$device][$tok] . ": ";
-                    most_simple_selector($tok, $des, $actual);
+                }
+                if ($number_of_elements < $_SESSION["conf"]["selector_limit"]) {
+                    $actual = $actual_data[$tok];
+                    most_simple_selector_for_simple_des($tok, $des, $actual);
                     if (strstr($tok, "t")) {
                         echo $_SESSION["unit"][$device][$tok] . " ";
                     }
                 }
                 else {
                     # > $_SESSION["conf"]["selector_limit"]
-                    echo " new " . $_SESSION["des_name"][$device][$tok] . ": ";
-                    echo "<input type='text' name = " . $tok . " size = 14 placeholder =" . $_SESSION["actual_data"][$device][$tok] . ">";
+                    $data = retranslate_op_oo($tok);
+                    echo "<input type='text' name = " . $tok . " size = 14 placeholder =" . $data . ">";
                 }
                 if (!strstr($tok, "r") and !strstr($tok, "s") and !strstr($tok, "t")) {
                     echo $_SESSION["unit"][$device][$tok] . "<br>";
@@ -67,20 +68,16 @@ function  create_op_oo($basic_tok){
 }
 
 function create_ap($basic_tok){
-    $device = $_SESSION["device"];
+    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
     echo "<div><h3 class='ap'>";
-    echo $_SESSION["des_name"][$device][$basic_tok]  . ": ";
-    if (array_key_exists($basic_tok. "m0", $_SESSION["des"][$device])) {
-        # one or more stack display elements available
-        selector($basic_tok);
-    }
+    display_start_with_stack($basic_tok);
     echo "read: <input type='checkbox' id=".$basic_tok."a" . " name=".$basic_tok."a value=1>";
-    print "<br>";
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
         if (strstr($tok, "d")) {
             #data
-            echo $_SESSION["des_name"][$device][$tok] . ": ";
-            echo $_SESSION["actual_data"][$device][$tok];
+            if (array_key_exists($tok,$_SESSION["des_name"][$device])){echo $_SESSION["des_name"][$device][$tok] . ": ";}
+            # retranslate always, because no selectors are used
+            echo retranslate_op_oo($tok);
             echo " ".$_SESSION["unit"][$device][$tok]."<br>";
         }
     }
@@ -88,87 +85,212 @@ function create_ap($basic_tok){
 }
 
 function correct_for_send_op($basic_tok){
-    $device = $_SESSION["device"];
+    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
     check_send_if_a_exists($basic_tok);
     if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
-    $data = "";
     $change_found = 0;
+    $translated = "";
     if ($_SESSION["send_ok"]) {
-        foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
-            if (basic_tok($tok) == $basic_tok) {
-                # "op" commands are preferred!
-                if (strstr($tok, "d")) {
-                    if ($_POST[$tok]  != $_SESSION["actual_data"][$device][$tok]) {
-                        $_SESSION["actual_data"][$device][$tok] = $_POST[$tok];
-                        $length = $_SESSION["property_len"][$device][$basic_tok][2];
-                        $data .= translate_dec_to_hex("n", $_SESSION["actual_data"][$device][$tok], $length);
-                        $change_found = 1;
-                    }
-                }
-            }
-        }
+        # create $data for transmit and update actual data if no error
+        list($change_found, $translated) = collect_op($basic_tok);
         if ($change_found == 0){
             # if no op change only !
-            foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
-                if (basic_tok($tok) != $basic_tok) {
-                    # "oo" commands!
-                    if (strstr($tok, "d")) {
-                        if ($_POST[$tok]  != $_SESSION["actual_data"][$device][$tok]) {
-                            $_SESSION["actual_data"][$device][$tok] = $_POST[$tok];
-                            $length = $_SESSION["property_len"][$device][$basic_tok][2];
-                            $data .= translate_dec_to_hex("n", $_SESSION["actual_data"][$device][$tok], $length);
-                            $change_found = 1;
-                        }
+            # find "oo" basic_tok
+            $already_done = [];
+            foreach ($_SESSION["cor_token"][$device][$basic_tok] as $key => $values) {
+                if (!strstr($values,"a")) {
+                    $basic_tok_ = basic_tok($values);
+                    if ($basic_tok_ == $basic_tok) {
+                        continue;
                     }
+                    if (array_key_exists($basic_tok_, $already_done)) {
+                        continue;
+                    }
+                    list($change_found, $translated) = collect_op($basic_tok_);
+                    $already_done[$basic_tok_] = 1;
                 }
             }
         }
     }
     if ($_SESSION["send_ok"]) {
         list($stack, $stack_changed) = handle_stacks($basic_tok);
-        if ($stack_changed or $change_found) {
-            $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
-            $send .= $stack;
-            $send .= $data;
-            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
-            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+        if (!array_key_exists($basic_tok,$_SESSION["ALL"][$device])) {
+            if ($stack_changed or $change_found) {
+                $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+                $send .= $stack;
+                $send .= $translated;
+            }
         }
+        else{
+            # ALL
+            $i = 0;
+            $send = "";
+            foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok){
+                if (strstr($tok,"d")) {
+                    var_dump($tok);
+                    $send .= translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
+                    $send .= $stack;
+                    $send .= translate_dec_to_hex("n", $i, 2);
+                    $send .= translate_dec_to_hex("m", $actual_data[$tok], $_SESSION["property_len"][$device][$basic_tok][$i + 2]);
+                    $i++;
+                }
+            }
+        }
+        $_SESSION["tok_to_send"][$basic_tok] = 1;
+        $_SESSION["send_string_by_tok"][$basic_tok] = $send;
     }
 }
 
 function correct_for_send_ap($basic_tok){
-    $device = $_SESSION["device"];
+    global $device, $actual_data;
     $tok = $basic_tok . "a";
     if (array_key_exists($tok, $_POST) and  $_POST[$tok] == 1){
+        $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
         list($stack, $stack_changed) = handle_stacks($basic_tok);
         $_SESSION["read"] = 1;
-        $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
         $send .= $stack;
-        $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
-        $_SESSION["send_string_by_tok"][$basic_tok]= $send;
+        print " ".$send." ";
+        if (!array_key_exists($basic_tok,$_SESSION["ALL"][$device])) {
+            if (array_key_exists($basic_tok."o0", $actual_data)) {
+                $send .= translate_dec_to_hex("m", $actual_data[$basic_tok . "o0"], $_SESSION["property_len"][$device][$basic_tok][0]);
+            }
+        }
+        # else send no position
+        $_SESSION["tok_to_send"][$basic_tok] = 1;
+        $_SESSION["send_string_by_tok"][$basic_tok] = $send;
     }
 }
 
 function receive_p($basic_tok, $from_device){
-    $device = $_SESSION["device"];
+    global $device, $actual_data;
     $stacklen = $_SESSION["property_len"][$device][$basic_tok][1];
     if ($stacklen > 0) {
-        update_memory_position($basic_tok, $from_device);
+        update_memory_position_stack($basic_tok, $from_device);
         $from_device = substr($from_device,$stacklen);
     }
     $to_delete = 0;
     $i = 0;
+    $pointer = 0;
+    # it is assumed, that the device delivers the correct number of data
     while (array_key_exists($basic_tok."d".$i, $_SESSION["announce_all"][$device])) {
         # for all dimensions
-        # datalenth is the number of chars to delete
+        # data_len is the number of chars to delete
         $data_len = $_SESSION["property_len"][$device][$basic_tok][$i + 2];
-        $data = substr($from_device, $to_delete,$data_len);
+        $data = substr($from_device, $pointer,$data_len);
+        $data = hexdec(($data));
         $to_delete += $data_len;
-        $data = (int)hexdec(retranslate_simple_range($basic_tok, $data));
-        $_SESSION["actual_data"][$device][$basic_tok . "d".$i] = $data;
+        # directly stored
+        $actual_data[$basic_tok . "d".$i] = $data;
         update_corresponding_opererating($basic_tok, "d".$i, $data);
         $i += 1;
+        $pointer += $data_len;
     }
     return $stacklen + $to_delete;
+}
+
+function retranslate_op_oo($tok){
+    # translate actual_data of op /oo to display data using <des>
+    # return integer to display
+    global $device, $actual_data;
+    $data = $actual_data[$tok];
+    $result = $data;
+    if (array_key_exists($tok, $_SESSION["des"][$device])){
+        $range = explode(",", $_SESSION["des"][$device][$tok]);
+        if (count($range) > 1) {
+            $range = array_splice($range, 1);
+            $i = 0;
+            $found = 0;
+            $result = 0;
+            $sum_counts = 0;
+            while ($i < count($range) and $found == 0) {
+                if (!strstr($range[$i], "_")) {
+                    # single number
+                    if (!strstr($range[$i], "_") and $data == $sum_counts) {
+                        $found = 1;
+                        $result = $range[$i];
+                    }
+                    $sum_counts++;
+                } else {
+                    # range
+                    # min, max.. may be float
+                    $step_size = (float)explode("_", $range[$i])[0];
+                    $max = (float)explode("to", $range[$i])[1];
+                    $min = (float)explode("to", explode("_", $range[$i])[1])[0];
+                    $counts = ($max - $min) / $step_size;
+                    if ($sum_counts + $counts < $data) {
+                        $sum_counts += $counts;
+                    } else {
+                        $result = ($data - $sum_counts) * $step_size + $min;
+                        $found = 1;
+                    }
+                }
+                $i ++;
+            }
+            # $data may be higher than $count, so $found = 0
+            # if $sum_counts > 0 $sum_count is returned
+            if (!$found and $sum_counts > 0) {
+                $result = intval($sum_counts);
+            }
+        }
+    }
+    # result is int or string
+    return $result;
+}
+
+function collect_op($basic_tok){
+    # used for "op" command for transmit to device
+    # translate $_POST from actual_data to MYC data for "big values"
+    # collect data for all dimensions
+    # return "" if error or hex string ready for transmit if there was a change by $_POST and no error
+    global $device, $actual_data;
+    $result = "";
+    $i = 0;
+    $found = 0;
+    # check for change
+    while (array_key_exists($basic_tok."d".$i, $_SESSION["des"][$device])) {
+        $tok = $basic_tok . "d" . $i;
+        if ($_SESSION["des"][$device][$tok] > $_SESSION["conf"]["selector_limit"]){
+            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $actual_data[$tok]) {
+                $found = 1;
+            }
+        }
+        else{$found = 1;}
+        $i++;
+    }
+    # for "big values" $_POSt has the real data -> check (translate to MYC values)
+    if ($found){
+        $i = 0;
+        $ok = 1;
+        while (array_key_exists($basic_tok."d".$i, $_SESSION["des"][$device]) and $ok) {
+            $tok = $basic_tok . "d" . $i;
+            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $actual_data[$tok]) {
+                # for big values $_POST[$tok] may have string values -> check and translate to positions
+                $des = explode(",", $_SESSION["des"][$device][$tok]);
+                if ($des[0] > $_SESSION["conf"]["selector_limit"]) {
+                    if (count($des) > 1) {
+                        $range = explode(",", $des[1]);
+                        # translate
+                        list($ok, $_POST[$tok]) = check_translate_range($range, $_POST[$tok], 1);
+                    }
+                }
+            }
+            $i++;
+        }
+        if (!$ok){$found = 0;}
+    }
+    if($found){
+        # modify
+        $i = 0;
+        while (array_key_exists($basic_tok."d".$i, $_SESSION["des"][$device])) {
+            # for each dimension
+            $tok = $basic_tok . "d" . $i;
+            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $actual_data[$tok]) {
+                $actual_data[$tok] = $_POST[$tok];
+            }
+            $result .= translate_dec_to_hex("m", $actual_data[$tok], $_SESSION["property_len"][$device][$basic_tok][2 + $i]);
+            $i++;
+        }
+    }
+    return [$found, $result];
 }
 ?>

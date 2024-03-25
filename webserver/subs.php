@@ -30,7 +30,7 @@ function dec_hex($key, $len){
 }
 
 function length_of_number($data){
-    # number of bytes for transmit
+    # number of characters for transmit as hex (2 characters per byte)
     # include 0!!!
     if (is_numeric($data)){
         $number = (int)$data;
@@ -47,7 +47,6 @@ function length_of_number($data){
     else{
         $len = 0;
     }
-    # dummy
     return $len;
 }
 
@@ -224,16 +223,14 @@ function find_name_of_type($type){
     }
 }
 
-function create_tok_list($device){
-    $_SESSION["tok_list"][$device] = [];
-    foreach ($_SESSION["original_announce"][$device] as $tok => $value) {
-        foreach ($_SESSION["activ_chapters"][$device] as $chapter => $val){
-            if (array_key_exists($tok, $_SESSION["chapter_token"][$device][$chapter])) {
-                if (!array_key_exists($tok, $_SESSION["tok_list"][$device])) {
-                    $_SESSION["tok_list"][$device][$tok] = 1;
-                }
-            }
-        }
+function create_new_sequence_lists(){
+    global $username, $language, $is_lang,$new_sequncelist, $device, $actual_data,$activ_chapters;
+    $new_sequncelist = [];
+    foreach ($_SESSION["chapter_names"][$device] as $value) {
+        $activ_chapters[$value] = [$value];
+    }
+    foreach ($_SESSION["chapter_token"][$device] as $value) {
+        $_SESSION["new_sequncelist"][$device][] = $_SESSION["chapter_token"][$device][$value];
     }
 }
 
@@ -300,47 +297,32 @@ function delete_bracket($data){
     return str_replace($replace,"",$data);
 }
 
-function type_data($typ){
-    # return: type, min, max
-    if (($typ[0]) == "CODING"){
-        switch ($typ[1]) {
-            case "UNIXTIME8":
-                return [$typ[1], 0,1000000000000];
-            case "TIME":
-                return [$typ[1], 0, 86400];
-            case "DAYSEC":
-            case "DAYMIN":
-            case "DAYHOUR":
-                return [$typ[1], 0,60];
-            case "DAY":
-                return [$typ[1], 0,31];
-            case "YEARDAY":
-                return [$typ[1], 0, 365];
-            case "YEARDAY0":
-            case "UNIXTIME4":
-                return [$typ[1], 0, 4294967295];
-            case "MON":
-                return [$typ[1], 0, 12];
-            case "YEAR0":
-                return [$typ[1], 0, 65535];
-            case "YEARNA":
-                return [$typ[1], -2147483648,2147483647];
-        }
+function type_coding($coding){
+    # return: min, max
+    switch ($coding[1]) {
+        case "UNIXTIME8":
+            return [0,1000000000000];
+        case "TIME":
+            return [0, 86400];
+        case "DAYSEC":
+        case "DAYMIN":
+        case "DAYHOUR":
+            return [0,60];
+        case "DAY":
+            return [0,31];
+        case "YEARDAY":
+            return [0, 365];
+        case "YEARDAY0":
+        case "UNIXTIME4":
+            return [0, 4294967295];
+        case "MON":
+            return [0, 12];
+        case "YEAR0":
+            return [0, 65535];
+        case "YEARNA":
+            return [-2147483648,2147483647];
     }
-    else{
-        switch ($typ[0]){
-            case"s":
-            case "d":
-                return [$typ[0],-128, 127];
-            case is_numeric($typ[0]) :
-                # ranges of characters not yet supported
-                return [$typ[0],"a", "z"];
-            default:
-                list($min, $max) = find_allowed($typ[0]);
-                return [$typ[0],$min,$max];
-        }
-    }
-    return ["", 0, 0];
+    return [0, 0];
 }
 
 function stuff_bin($data){
@@ -507,5 +489,46 @@ function convert_bin_hex($value, $type){
         }
     }
     return $result;
+}
+function check_valid_hex($data){
+    # delete 0H
+    $data = substr($data,2);
+    $valid = 1;
+    if ($data != "") {
+        $data = strtoupper($data);
+        $hex_vals = array("1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "A", "B", "C", "D", "E", "F");
+        $i = 0;
+        while ($i < strlen($data) and $valid) {
+            $ch = substr($data, $i, 1);
+            $null = str_replace($hex_vals, "", $ch);
+            if ($null != "") {
+                $valid = 0 ;
+            }
+            $i++;
+        }
+    }
+    else {$valid = 0;}
+    return $valid;
+}
+
+function check_valid_bin($data){
+    # delete 0B
+    $data = substr($data,2);
+    $valid = 1;
+    if ($data != "") {
+        $data = strtoupper($data);
+        $hex_vals = array("1", "0");
+        $i = 0;
+        while ($i < strlen($data) and $valid) {
+            $ch = substr($data, $i, 1);
+            $null = str_replace($hex_vals, "", $ch);
+            if ($null != "") {
+                $valid = 0 ;
+            }
+            $i++;
+        }
+    }
+    else {$valid = 0;}
+    return $valid;
 }
 ?>

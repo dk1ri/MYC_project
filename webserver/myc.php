@@ -3,13 +3,13 @@
     Webserver for MYC system
     myc.php
     Version 1.2 20240123
-    Description: V01.01.06
+    Manual Version: V01.01.06
     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
     For description see detailed_description.php
     ================================================================
     This version is under development
-    only commandstypes f and a are tested (but may have errors !
+    This version may have errors!
     ================================================================
 -->
     <head>
@@ -33,6 +33,7 @@
     </head>
     <body>
         <?php
+        global $username, $language, $is_lang,$new_sequncelist, $device, $actual_data,$activ_chapters;
         session_start();
         include "read_config.php";
         read_config();
@@ -42,17 +43,15 @@
         ?>
         <form action="action.php" method="post">
             <?php
-            $name = $_SESSION["user"]["username"];
-            echo $_SESSION["user"]["language"][$name]["language"] . ": ";
-            simple_selector("languages", $_SESSION["lang_select"], $_SESSION["is_lang"]);
-            echo " " .$_SESSION["user"]["language"][$name]["your_name"] . ": ";
+            echo " " .$language["your_name"] . ": ";
             # name will be used later to create user individual caches
-            echo "<input type='text' name = 'user_name' size = 15 value=" . $_SESSION["user"]["username"] . ">";
-            echo " Interface: <input type='text' name = 'interface' size = 15>";
-            echo $_SESSION["user"]["language"][$name]["device"] . ": ";
-            simple_selector("device",  explode(",", $_SESSION["device_list"]), $_SESSION["actual_data"]["_device_"])
+            echo "<input type='text' name = 'user_name' size = 15 value=" . $username . ">";
+            echo $language["language"] . ": ";
+            array_selector("language", $_SESSION["languages"], $is_lang);
+            echo $language["device"] . ": ";
+            array_selector("device",  $_SESSION["device_list"], $device)
             ?>
-           <p><input type="submit" /></p>
+           <p><input type="submit" value = senden name = 123></p>
         </form>
     </body>
 </html>

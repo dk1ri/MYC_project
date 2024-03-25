@@ -4,7 +4,7 @@
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 #
 function create_of($basic_tok){
-    $device = $_SESSION["device"];
+    global $language, $device,$actual_data;
     echo "<div><h3 class='of'>";
     echo $_SESSION["des_name"][$device][$basic_tok] . ": ";
     $m0 = $basic_tok."m0";
@@ -23,7 +23,7 @@ function create_of($basic_tok){
     echo "<br>";
     stack_memory_selector($basic_tok. "m0");
     if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
-        echo "<marquee>". str_replace(" ","&nbsp;",$_SESSION["actual_data"][$device][$_SESSION["o_to_a"][$device][$basic_tok]."d0"]) . "</marquee>";
+        echo "<marquee>". str_replace(" ","&nbsp;",$actual_data[$_SESSION["o_to_a"][$device][$basic_tok]."d0"]) . "</marquee>";
         # add selector for answer command
         echo " ";
         display_as($_SESSION["o_to_a"][$device][$basic_tok]);
@@ -32,13 +32,13 @@ function create_of($basic_tok){
 }
 
 function create_af($basic_tok){
-    $device = $_SESSION["device"];
+    global $language, $device, $actual_data;
     echo "<div><h3 class='af'>";
     echo $_SESSION["des_name"][$device][$basic_tok] . ":&nbsp;";
     echo "<marquee>";
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $value){
         if (strstr($value, "d")){
-            echo str_replace(" ","&nbsp;",$_SESSION["actual_data"][$device][$value]). "&nbsp;";
+            echo str_replace(" ","&nbsp;",$actual_data[$value]). "&nbsp;";
         }
     }
     echo "</marquee><br>";
@@ -49,7 +49,7 @@ function create_af($basic_tok){
 }
 
 function correct_for_send_of($basic_tok){
-    $device = $_SESSION["device"];
+    global $language, $device;
     check_send_if_a_exists($basic_tok);
     if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = $_POST[$basic_tok."d0"] != "";}
     if ($_SESSION["send_ok"] == 1) {
@@ -58,7 +58,7 @@ function correct_for_send_of($basic_tok){
         # there is one m0 and d0 token only
         $token = $basic_tok . "d0";
         $type = $_SESSION["type_for_memories"][$device][$token];
-        $splitted = split_and_correct_multiple($_POST[$token], $type);
+        $splitted = split_and_correct_multiple($token, $_POST[$token], $type);
         $part_of_string = 0;
         while ($part_of_string < count($splitted)) {
             if ($_SESSION["send_ok"] == 0) {
@@ -66,12 +66,11 @@ function correct_for_send_of($basic_tok){
                 continue;
             }
             if (is_numeric($type) or $type == "b") {
-                # restrictions for numbers are not supported
                 # $splitted[$part_of_string], is string of chrs
                 if ($type == "b" and strlen($splitted[$part_of_string]) > 1) {
                     $_SESSION["send_ok"] = 0;
                 } elseif (strlen($splitted[$part_of_string]) > $type) {
-                    # $type is lenngth of string
+                    # $type is length of string
                     $_SESSION["send_ok"] = 0;
                 } else {
                     if (is_numeric($type)) {
@@ -83,9 +82,8 @@ function correct_for_send_of($basic_tok){
             } else {
                 # $splitted[$part_of_string], is number
                 # check, if number is correct
-                $dat = check_if_number_is_correct($splitted[$part_of_string], $type);
                 if ($_SESSION["send_ok"] == 1) {
-                    $data .= translate_dec_to_hex($type, $dat, $_SESSION["property_len"][$device][$basic_tok][1]);
+                    $data .= translate_dec_to_hex($type, $splitted[$part_of_string], $_SESSION["property_len"][$device][$basic_tok][1]);
                 }
             }
             $part_of_string++;
@@ -97,13 +95,13 @@ function correct_for_send_of($basic_tok){
         # number of elements
         $send .= translate_dec_to_hex("m", count($splitted), $_SESSION["property_len"][$device][$basic_tok][0]);
         $send .= $data;
-        $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+        $_SESSION["tok_to_send"][$basic_tok] = 1;
         $_SESSION["send_string_by_tok"][$basic_tok] = $send;
     }
 }
 
 function correct_for_send_af($basic_tok){
-    $device = $_SESSION["device"];
+    global $language, $device;
     if (array_key_exists($basic_tok . "a", $_POST) and $_POST[$basic_tok . "a"] == 1) {
         if (array_key_exists($basic_tok . "m0", $_POST)) {
             # pure answer command
@@ -135,7 +133,7 @@ function correct_for_send_af($basic_tok){
             $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
             $send .= translate_dec_to_hex("m", $value, $_SESSION["property_len"][$device][$basic_tok][2]);
             $_SESSION["read"] = 1;
-            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
+            $_SESSION["tok_to_send"][$basic_tok] = 1;
             $_SESSION["send_string_by_tok"][$basic_tok] = $send;
         }
     }
@@ -143,7 +141,7 @@ function correct_for_send_af($basic_tok){
 
 function  receive_f($basic_tok, $from_device){
     #  $from_device is without token!!
-    $device = $_SESSION["device"];
+    global $language, $device, $actual_data;
     $number_length = $_SESSION["property_len"][$device][$basic_tok][2];
     # number of elements:
     $number = substr($from_device, 0, $number_length);
@@ -161,9 +159,9 @@ function  receive_f($basic_tok, $from_device){
         $data .= $data_." ";
         $i++;
     }
-   $_SESSION["actual_data"][$device][$basic_tok."d0"] = $data;
-   $_SESSION["actual_data"][$device][$basic_tok."m0"] = $number;
-   # add length of $basictok
-   return $start + $_SESSION["property_len"][$device][$basic_tok][0];
+    $actual_data[$basic_tok."d0"] = $data;
+    $actual_data[$basic_tok."m0"] = $number;
+    # add length of $basictok
+    return $start + $_SESSION["property_len"][$device][$basic_tok][0];
 }
 ?>

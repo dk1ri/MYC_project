@@ -1,6 +1,6 @@
 <?php
 #    detailed description
-#    20231208
+#    20240212
 #    To understand the program, you should be familiar with the announcements and commands of the MYC system (at least)
 #    please read https://dk1ri.de/myc/commands.pdf or https://dk1ri.de/myc/commands.txt
 #
@@ -29,26 +29,26 @@
 # For description of $_SESSION data see below
 
 # detailed_description.php
-# DK1RI 20240124
+# DK1RI 20240324
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
-
-# Then action.php is called always, which is basically one form element
-# action.php is the basic page and call all other functions
-# to store data between the page calls, the SESSION mechanism is used.
-# action.php is the basic page and call all other functions
-# to store data the SESSION mechanism is used, which stores data for the next call of the page.
-# data are stored in $_SESSION["dataname"][$device] independent for each device
+#
+# The programm uses the SESSION mechanism. So data are stored from one call of a page to the next.
+# This works with different users; each getting an individual data set.
+# Some (user-specific) SESSION variables are copied to (global) variables at start of the page and restored to SESSION
+# at the end. This will reduce code length and (hopefully) reduce compute load.
+#
+# Myc.php is called once at start; then action.php is called always, which is basically one form element.
+# action.php is the basic page and call all other functions.
+# user dependent variable are stored as global and updated from _SESSION["user_data"][user_name] at start of action.php
+# Other data, which must be stored between sessions are stored in $_SESSION.... '
+# Data are stored in $_SESSION["dataname"][$device] independent for each device
 # To reduce computing power most of these data are generated with the first call of the page for a device. So this will
 # take some more time with the first call.
-# Most of these data are stored in files "session"dataname" in the devices/"devicename" folder. This may help debugging.
-# testmode must be set to 1 in _config
 # The initialisation and description of these data can be found in read_new_device.php
 # all other data (independent of a device) are initialized and described in read_config.php (called with myc.php)
 
-
 # For testmode testmode must be set to 1 in _config
 # Most of the $_SESSION data are stored in files "session"dataname" in the devices/"devicename" folder. This may help debugging.
-
 
 # Description of $_SESSION data (all per device)
 
@@ -61,28 +61,15 @@
 # -
 # $_SESSION["chapter_token"]
 
-# _POST is not corrected / modified for use by $_SESSION["actual_data]
-# &B and &H values are not modified / converted
-# others may be retranslated (real data -> MYC data) -> contain transmitted data (not the displayed ones)
-# $not_SESSION["corrected_POST"]
-
-# _POST is corrected / modified for transmit
-# $B and &H is converted
-# for multiple data speces are removed
-# stringlength added
-# $_SESSION["corrected_POST_for transmit"]
-
-# original_announce: spltted original announcefile token; array data: array: line split by ";"
+# original_announce: splitted original announcefile token; array data: array: line split by ";"
 # $_SESSION["original_announce"]
 
 # announce_all: commandtype only for all displayed elements by token
-# but: "as" commands have no entry (but a display element). They are handled with the corresponding operate command
-# and get the basic_tok of the operating command
-# token : basic_tok."identifier"
+# token : basic_tok."identifier"."number": example: 256d0
 # identifiers:
-# m selectors for stack, memoryposition
-# n selector for ADD
-# o selector for number of data to send for an / on and am / on commands
+# mx selectors for stack, memoryposition as defined by <des_memory>; one for each MUL
+# n0 additional selector for ADD
+# o0 selector for number of data to send for an / on, ab / ob and ap /op  (with more than one dimension) commands (<des> has max only)
 # d data
 # a answer element
 # $_SESSION["announce_all"]
@@ -96,7 +83,7 @@
 # list of _POST indices, which are not tokens
 # $_SESSION["special_token"]
 
-# length of property (for send data) for each property
+# length of property (for send data) for each property (token)
 # for memorypositions the property may have more than one display elements _ stored in the first element only
 # $_SESSION["property_len"]
 
@@ -111,25 +98,38 @@
 # $_SESSION["cor_token"]
 
 # actual data for each display element
-# number type: numbers separated by space (if applicable)
-# string: printable chars or &Hxx (including space); separated by space (if applicable)
-# ready for display (after space _> to &nbsp; for transmit: &H / $B must be converted to char
-# manual entries of selectors and op command values are corrected to the nearest valid value,
-# invalid manual entries for numbers of memory commands (data) are ignored (display not changed)
-# string restrictions are not supported -> no correction)
-# type a: elementnumber stored with (corresponding) tok."m0"; send data stored with tok."dx" and sent if different to tok."d0|1|2"
+# actual_data contain "MYC" values -> displayed values are corrected before display as per <des>
+# invalid data from POST can occur for manual entries only and are not stored in actual_data.
+# (and not transmitted). Some errors can be corrected
+# number type: multiple numbers separated by space (if applicable for b,n and f commands)
+# string: printable chars or &Hxx; separated by 2 space  (if applicable for b,n and f commands)
+# actual data is ready for display (after space -> to &nbsp; for transmit: &H / $B must be converted to char
+# string restrictions are used, not valid characters are omitted
+# command a: elementnumber stored with (corresponding) tok."m0"; send data stored with tok."dx" and sent if different to tok."d0|1|2"
 #   send with no change anyway
+#   data are maual entried always
 #   received data stored with (corresponding) tok."d0|1|2.."
-#type b: start position stored with tok."m0", number of elements stored with tok,"o0"
+# command b: start position stored with tok."m0", number of elements stored with tok,"o0"
 #   transmitted data use tok."dx" (not displayed) tok."d"-1|2|... are displayed elements for input
 #   received data stored witj tok."d"1|2|...
-# type m: position stored with differnet selectors: tok."mx"
+#   data are manual entries always
+# command m: position stored with different selectors: tok."mx"
 #   data stored in tok."d0"
-# type n: start position stored with tok."m0", number of elements stored with tok,"o0"
+#   data are manual entries always
+# command n: start position stored with tok."m0", number of elements stored with tok,"o0"
 #   data are stored in tok."d0"  (space separated)
-# type f: number of elements stored with (corresponding) tok."m0", send data: not stored; received data stored
+#   data are maual entried always
+# command f: number of elements stored with (corresponding) tok."m0", send data: not stored; received data stored
 #   with (corresponding) tok."d0"
 #   send with no change anyway
+#   data are maual entried always
+# all switches:
+#   stacks (mx) and data (d0): no manual entries: MYC data stored and used for display
+# command op/oo:
+#   stacks (mx): MYC data (positions) are stored and display may be different (stringas well)
+#   data (dx) per dimension: MYC positions are stored.
+#   _POST is checked, if "big values" are used (manual entries)
+#   for big values: displayed (real) values are translated from actual_data; otherwise actual_data are used directly
 # $_SESSION["actual_data"]
 
 # not used ?
@@ -155,14 +155,17 @@
 # token of oo commands
 # $_SESSION["oo_tok"]
 
-# per displaytoken:
-# for memory data :
-#       string: "alpha" (restriction not supported)
-#       small numeric: max,0,0,1,1,2,4....
-#       big numeric: max,<des-range>    (token is in "to_correct")
-# others (all numeric)
-#       small numeric: max,0,0,1,1,2,4....
-#       big numeric: max,<des-range>     (token is in "to_correct")
+# for stacks:
+
+#
+# for memory data (d0,d1,..):
+# string: ",length of string,allowed_characters
+# number: "max_count,allowed_numbers"   -> copy of <des_range>
+#
+# op / oo:
+# small numbers: "max,selectordata"
+#big number: ",max_count_for transmit,allowed_numbers"   -> copy of <des_range>  there is a translation!!
+#
 # $_SESSION["des"]
 
 # names for display elements
@@ -204,7 +207,7 @@
 # default 1; set to "0", if error is detected and data not transmitted and actual data not updated
 # $_SESSION["send_ok"]
 
-# basictok for command to send
+# basictok for commands to ready to send
 # $_SESSION["tok_to_send"]
 
 #sendstring to send

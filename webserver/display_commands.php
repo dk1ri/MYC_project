@@ -5,7 +5,7 @@
 #
 # display one element for each tok (with some exceptions)
 function display_commands(){
-    $device = $_SESSION["device"];
+    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data, $tok_list;
     if ($_SESSION["conf"]["testmode"]){create_session_data_file($device, "actual_data", $_SESSION["actual_data"][$device]);}
     $announcelines = $_SESSION["announce_all"][$device];
     $already_done = "";
@@ -18,12 +18,12 @@ function display_commands(){
                 continue;
             }
         }
-        if (array_key_exists($basic_tok, $_SESSION["tok_list"][$device])){
+        if (array_key_exists($basic_tok, $tok_list)){
             if ($already_done == $basic_tok) {
                 # for same basic_tok
                 continue;
             }
-            if (explode(",",$value[0])[0] == "oo"){
+            if ($value == "oo"){
                 # oo token are handled with op token
                 continue;
             }
@@ -34,10 +34,10 @@ function display_commands(){
             $announce = $_SESSION["announce_all"][$device][$tok];
             echo "<div>";
             # most create_"xx" functions are found in commands_"x".php
-            switch ($announce[0]) {
-                case "m":
-                    create_basic_command($basic_tok);
-                    break;
+            switch ($announce) {
+             #   case "m":
+              #      create_basic_command($basic_tok);
+               #     break;
                 case "os":
                     create_os($basic_tok);
                     break;
@@ -76,9 +76,11 @@ function display_commands(){
                     create_an($basic_tok);
                     break;
                 case "oa":
+                case "ka":
                     create_oa($basic_tok);
                     break;
                 case "aa":
+                case "la":
                     create_aa($basic_tok);
                     break;
                 case "ob":
@@ -101,19 +103,28 @@ function display_commands(){
 }
 
 function create_basic_command($basic_tok){
-    $device = $_SESSION["device"];
+    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
     $field = explode(",", $_SESSION["actual_data"][$device][$basic_tok."a"]);
-    echo "<div>Device: " . $field[0] . ", Version: " . $field[1] . ", Author: ". $field[2];
-    echo "<br>" . $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["new_data"] . ": ";
-    echo "<input type='checkbox' id=".$basic_tok . "a name=".$basic_tok."a value=1>";
-    echo "</div>";
+    echo "<div>Device: " . $field[0] . ", Version: " . $field[1] . ", Author: ". $field[2]."<br></div>";
+}
+
+function display_start_with_stack($basic_tok){
+    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    echo $_SESSION["des_name"][$device][$basic_tok] . ": ";
+    if (array_key_exists($basic_tok."mx", $_SESSION["des_name"][$device])) {
+        echo $_SESSION["des_name"][$device][$basic_tok . "mx"] . ": ";
+        if (array_key_exists($basic_tok . "m0", $_SESSION["des"][$device])) {
+            # one or more stack display elements available
+            selector($basic_tok);
+        }
+    }
 }
 
 function display_as($tok){
     # for "as"token
-    $device = $_SESSION["device"];
+    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
     $tok = basic_tok($tok)."a";
-    echo $_SESSION["user"]["language"][$_SESSION["user"]["username"]]["read_data"] . ": ";
+    echo $language["read"] . ": ";
     echo "<input type='checkbox' id=" . $tok . " name=" . $tok . " value=1>";
     # reset
     $_SESSION["actual_data"][$device][$tok] = 0;

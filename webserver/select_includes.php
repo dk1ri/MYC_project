@@ -4,7 +4,7 @@
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function select_includes(){
 # intention is to load necessary code only
-    $device = $_SESSION["device"];
+    global $language, $device;
     foreach($_SESSION["includes"][$device] as $inc){
         if ($inc == "m"){include "commands_m.php";}
         elseif ($inc == "a"){include "commands_a.php";}

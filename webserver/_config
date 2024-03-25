@@ -1,35 +1,25 @@
-# annoncementfile name
-___announcements
-# dir for data i/o files
-c:\xampp\htdocs\usb_interface\
-# color background basic
- #6C9CCB;
-# color background sub
- #D1F8FF;
-# color background answer
- #D1F8A0;
-# color s
- #000080;
-# color r
- #8080FF;
-# color at
- #FF80FF;
-# color ou
- #800080;
-# color p
- #D08080;
-# color m
- #00FF00;
-# color n
- #000FF80;
-# color a
- #FF0000;
-# color b
- #FF8080;
-# color f
- #FF8000;
-# limit for selectors
-100
-# testmode (write data files)
-1
-
+annoncement file name;___announcements
+data i/o file to device;c:\xampp\htdocs\usb_interface\from_web
+data i/o file from device;c:\xampp\htdocs\usb_interface\to_web
+color background basic;#6C9CCB;
+color background sub;#D1F8FF
+color background answer;#D1F8A0;
+color s;#000080;
+color r;#8080FF;
+color at;#FF80FF;
+color ou;#800080;
+color p;#D08080;
+color m;#00FF00;
+color n;#00FF80;
+color a;#FF0000;
+color b;#FF8080;
+color f;#FF8000;
+limit for selectors (allow one byte) ;260
+testmode (write data files);1
+dir for divices;c:\xampp\htdocs\devices\
+dir for userdata;c:\xampp\htdocs\user_data\
+dir for usb_interface;c:\xampp\htdocs\usb_interface\
+file for alpha (in devices);__alpha
+file for coding;c:\xampp\htdocs\_coding
+file for language;c:\xampp\htdocs\_lang
+dir of user  data;C:\xampp\htdocs\user_data
