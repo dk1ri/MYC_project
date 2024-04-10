@@ -3,7 +3,7 @@
 # DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_os($basic_tok) {
-    global $language, $device, $actual_data;
+    global $language, $device;
     echo "<div><h3 class='op'>";
     display_start_with_stack($basic_tok);
     $tok = $basic_tok."d0";
@@ -16,7 +16,7 @@ function create_os($basic_tok) {
         $value = $field_x[$i];
         if ($value == ""){$value = "x";}
         echo "<option value=" . $pos;
-        if ($pos == $$actual_data[$tok]) {
+        if ($pos == $_SESSION["actual_data"][$device][$tok]) {
             echo " selected";
         }
         echo ">" . $value . "</option>";
@@ -44,62 +44,62 @@ function create_at($basic_tok){
 }
 
 function create_as_at($basic_tok){
-    global $language, $device, $actual_data;
+    global $language, $device;
     if (array_key_exists($basic_tok. "m0", $_SESSION["des"][$device])) {
         # one or more stack display elements available
         selector($basic_tok);
     }
-    $actual = $actual_data[$basic_tok."d0"];
+    $actual = $_SESSION["actual_data"][$device][$basic_tok."d0"];
     $label = explode(",",$_SESSION["des"][$device][$basic_tok."d0"])[2 * ($actual) + 1];
     echo  " ". $label. " read: ";
     echo "<input type='checkbox' id=".$basic_tok."a" . " name=".$basic_tok."a value=1>";
 }
 
 function correct_for_send_os($basic_tok){
-    global $language, $device, $actual_data;
+    global $language, $device, $send_ok, $tok_to_send, $send_string_by_tok;
     check_send_if_a_exists($basic_tok);
-    if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
-    if ($_SESSION["send_ok"]) {
+    if ($send_ok) {$send_ok = check_send_if_change_of_actual_data($basic_tok);}
+    if ($send_ok) {
         $d0 = $basic_tok."d0";
         $sw_pos_changed = 0;
         $max_switches = count(explode(",", $_SESSION["des"][$device][$d0])) / 2;
         if ($_POST[$d0] > $max_switches) {
-            $_SESSION["send_ok"] = 0;
+            $send_ok = 0;
         }
         else{
-            if ($_POST[$d0] != $actual_data[$d0]){
-                $actual_data[$d0] = $_POST[$d0];
+            if ($_POST[$d0] != $_SESSION["actual_data"][$device][$d0]){
+                $_SESSION["actual_data"][$device][$d0] = $_POST[$d0];
                 $sw_pos_changed = 1;
             }
         }
     }
-    if ($_SESSION["send_ok"]) {
+    if ($send_ok) {
         list($stack, $stack_changed) = handle_stacks($basic_tok);
         if ($stack_changed or $sw_pos_changed) {
             $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
             $send .= $stack;
             $send .= translate_dec_to_hex("n", $_POST[$basic_tok."d0"], $_SESSION["property_len"][$device][$basic_tok][2]);
-            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
-            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+            $tok_to_send[$basic_tok] = 1;
+            $send_string_by_tok[$basic_tok] = $send;
         }
     }
 }
 
 function correct_for_send_asat($basic_tok){
-    global $language, $device;
+    global $language, $device, $tok_to_send,$send_string_by_tok;
     $tok = $basic_tok . "a";
     if (array_key_exists($tok, $_POST) and  $_POST[$tok] == 1){
         list($stack, $stack_changed) = handle_stacks($basic_tok);
         $_SESSION["read"] = 1;
         $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
         $send .= $stack;
-        $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
-        $_SESSION["send_string_by_tok"][$basic_tok]= $send;
+        $tok_to_send[$basic_tok] = 1;
+        $send_string_by_tok[$basic_tok]= $send;
     }
 }
 
 function receive_st($basic_tok, $from_device){
-    global $language, $device,$actual_data;
+    global $language, $device;
     $stacklen = $_SESSION["property_len"][$device][$basic_tok][1];
     $switchlen = $_SESSION["property_len"][$device][$basic_tok][2];
     if ($stacklen > 0) {
@@ -108,7 +108,7 @@ function receive_st($basic_tok, $from_device){
     }
     $switchlen == 0 ? $switchlen = 2: $switchlen = $switchlen;
     $data = substr($from_device, 0, $switchlen);
-    $actual_data[$basic_tok. "d0"] = hexdec($data);
+    $_SESSION["actual_data"][$device][$basic_tok. "d0"] = hexdec($data);
     update_corresponding_opererating($basic_tok, "d0", hexdec($data));
     return $stacklen + $switchlen;
 }

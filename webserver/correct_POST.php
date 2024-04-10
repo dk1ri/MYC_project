@@ -3,21 +3,21 @@
 # DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function correct_POST(){
-    global $language, $device;
-    # $_POST values are stored in $_SESSION["actual_data"], even if they are wrong (for manual entries)
+    global $device, $send_ok;
+    # $_POST values are stored in $actual_data, even if they are wrong (for manual entries)
     # for sending:
     # only those $POST commands with manual data entry must be checked
     # -> only those, where $_SESSION["to_correct"][$device][$basictok].*) exists
-    # for invalid data (for manual entries) $_SESSION["send_ok is set to 0
+    # for invalid data (for manual entries) $send_ok is set to 0
     # &B and &H values are checked and converted
     # positive result is in $_SESSION["tok_to_send"]  and $_SESSION["send_string_by_tok"]
     # send of data with no change is decided by commandtype
     $_SESSION["tok_to_send"] = [];
     $_SESSION["send_string_by_tok"] = [];
     foreach ($_POST as $token => $value) {
-        $_SESSION["send_ok"] = 1;
-        # $_POST copied to $_SESSION["actual_data"] without modifications (if copied, see correct_xx)
-        # someting like interface ..:
+        $send_ok = 1;
+        # $_POST copied to $actual_data without modifications (if copied, see correct_xx)
+        # something like interface ..:
         if (!array_key_exists(basic_tok($token), $_SESSION["original_announce"][$device])) {
             # not transmitted
             continue;
@@ -32,12 +32,13 @@ function correct_POST(){
         if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])){
             if (array_key_exists($_SESSION["o_to_a"][$device][$basic_tok] . "a", $_POST)) {
                 if ($_POST[$_SESSION["o_to_a"][$device][$basic_tok] . "a"] == 0) {
-                    $_SESSION["send_ok"] = 0;
+                    $send_ok = 0;
                     continue;
                 }
             }
         }
         if (!array_key_exists($basic_tok, $_SESSION["tok_to_send"])) {
+       #     if (array_key_exists($token, $_SESSION["a_to_o"][$device])){$t}
             $ct = $_SESSION["announce_all"][$device][$token];
             switch ($ct) {
                 case "os":
@@ -100,12 +101,12 @@ function correct_POST(){
 
 function check_send_if_a_exists($basic_tok){
     # for "o" command: do not send, if POST of corresponding "a" command was set
-    global $language, $device;
+    global $device,$send_ok;
     if (array_key_exists($basic_tok, $_SESSION["o_to_a"][$device])) {
         $a_tok = $_SESSION["o_to_a"][$device][$basic_tok]."a";
         # do not send if answer is set
         if (array_key_exists($a_tok, $_POST) and $_POST[$a_tok] == 1) {
-            $_SESSION["send_ok"] = 0;
+            $send_ok = 0;
         }
     }
 }

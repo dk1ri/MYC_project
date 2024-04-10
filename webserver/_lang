@@ -14,7 +14,8 @@ send;send;abschicken
 send_data;send data;Daten absenden
 set_default;set default;Standardwert
 stack;stack;Stapel
-store;store user data; Benutzerdaten speichern
-w1;Write new sequence numbers into the field of the left side and press send;neue Nummer der Reihenfolge links eintragenund abschicken markieren
+store_data;store;speichern
+store;store user data;Benutzerdaten speichern
+w1;Write old sequence numbers to new place of the left side and press send;alte Nummer der Reihenfolge an neue Position eintragen und abschicken
 w2;if you think, it is ok tick store as well;zum speichern auch dies markieren
 your_name;your name;Ihr Name

@@ -2,12 +2,13 @@
 # read_new_device.php
 # DK1RI 20240124
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+
 function read_new_device(){
-    global $username, $language, $is_lang,$new_sequncelist, $device, $actual_data;
+    global $device, $chapter_token;
     # These variables are used for all users and reead at first usage (per device)
     $_SESSION["includes"][$device] = [];
   #  $_SESSION["chapter_index"][$device] = [];
-    $_SESSION["chapter_token"][$device] = [];
+    $chapter_token = [];
     $_SESSION["original_announce"][$device] = [];
     $_SESSION["announce_all"][$device] = [];
     $_SESSION["a_to_o"][$device] = [];
@@ -17,7 +18,6 @@ function read_new_device(){
     $_SESSION["property_len_byte"][$device] = [];
     $_SESSION["cor_token"][$device] = [];
     $_SESSION["chapter_array"][$device] = [];
-    $_SESSION["tok_list"][$device] = [];
     $_SESSION["as_token"][$device] = [];
     $_SESSION["as_token_as_to_basic"][$device] = [];
     $_SESSION["type_for_memories"][$device] = [];
@@ -37,19 +37,19 @@ function read_new_device(){
     $_SESSION["chapter_names_with_space"][$device]["all_basic"] = "all_basic";
     $_SESSION["chapter_names"][$device]["ADMINISTRATION"] = "ADMINISTRATION";
     $_SESSION["chapter_names_with_space"][$device]["ADMINISTRATION"] = "ADMINISTRATION";
-    $_SESSION["chapter_token"][$device]["all_basic"] = [];
-    $_SESSION["chapter_token"][$device]["ADMINISTRATION"] = [];
+    $_SESSION["chapter_token_pure"][$device]["all_basic"] = [];
+    $_SESSION["chapter_token_pure"][$device]["ADMINISTRATION"] = [];
     $_SESSION["rules"][$device] = [];
     $_SESSION["alpha"][$device] = [];
     $_SESSION["ALL"][$device] = [];
     $_SESSION["default_value"][$device] = [];
     $_SESSION["to_correct"][$device] = [];
+    $_SESSION["DEF"][$device] = [];
     #
     if (!is_dir($_SESSION["conf"]["usb_interface_dir"])){mkdir($_SESSION["conf"]["usb_interface_dir"]);}
-    if (!is_dir($_SESSION["conf"]["device_dir"])){mkdir($_SESSION["conf"]["device_dir"]);}
+    if (!is_dir($_SESSION["conf"]["device_dir"])){exit("device directory not found");}
     if (!is_dir($_SESSION["conf"]["user_dir"])){mkdir($_SESSION["conf"]["user_dir"]);}
     create_original_announce();
-    create_alpha();
     split_to_display_objects();
     # as answer token <-> operate token:
     read_a_o();
@@ -61,9 +61,6 @@ function read_new_device(){
     calculate_property_len();
     # list of all token with identical basic token + answertoken + oo token:
     calculate_cor_token();
-    # chapternames without spaces
-    # reduce tok_list, if many chapters are existing
-    restrict_active_chapters();
     # max values for each display element
     max_for_send();
     # calculate max values for ADD
@@ -73,7 +70,7 @@ function read_new_device(){
     # start time events
     # create $_SESSION["to_cerrect"]
     create_to_correct();
-    sort_announce_all();
+    sort_chapzernames();
     start_time_events();
 }
 
@@ -104,28 +101,6 @@ function read_a_o(){
         else{
             $last_tok = $tok;
         }
-    }
-}
-
-function read_special_token(){
-    $device = $_SESSION["device"];
-    $_SESSION["special_token"][$device]["interface"] = 1;
-    $_SESSION["special_token"][$device]["user_name"] = 1;
-    $_SESSION["special_token"][$device]["user"] = 1;
-    $_SESSION["special_token"][$device]["languages"] = 1;
-    $_SESSION["special_token"][$device]["device"] = 1;
-    foreach ($_SESSION["chapter_names"][$device] as $value){
-        $_SESSION["special_token"][$device]["chapter_".$value] = 1;
-    }
-}
-
-function ct_of_as(){
-    # token for as commands are set to "a". <command_type_of_o_command>
-    $device =$_SESSION["device"];
-    foreach ($_SESSION["o_to_a"][$device] as $key => $value) {
-        # there is a "d0" token always
-        $new_ct = "a" . explode(",",$_SESSION["announce_all"][$device][$key . "d0"])[0][1];
-        $_SESSION["ct_of_as"][$device][$value] = $new_ct;
     }
 }
 
@@ -327,24 +302,23 @@ function max_for_ADD(){
 }
 
 function init_data(){
-    global $username, $language, $is_lang,$new_sequncelist, $device, $actual_data,$activ_chapters;
-    # create $actual_data]
-    # actual_data contain real data!
+    global $device;
+    # create $_SESSION["actuadata"][$device]
+    # $_SESSION["actuadata"][$device] contain real data!
     # set data  for all numeric token to "0", strings to "input test"
     # except "big" values for positions stacks (not supported now
     # ranges for memory data not supported
-    global $language, $device;
     foreach ($_SESSION["announce_all"][$device] as $key => $value) {
         if ($key == "0a") {
             # basic command
             $field = $_SESSION["original_announce"][$device][basic_tok($key)];
-           $actual_data[$key] = $field[2] . "," . $field[3] . "," . $field[1];
+            $_SESSION["actual_data"][$device][$key] = $field[2] . "," . $field[3] . "," . $field[1];
         }
         else{
            if (strstr($key,"d")){
                # only "d" toks can have types
-               if (array_key_exists($key,$_SESSION["default_value"][$device])){
-                   $actual_data[$key] = $_SESSION["default_value"][$device][$key];
+               if (array_key_exists($key, $_SESSION["default_value"][$device])){
+                   $_SESSION["actual_data"][$device][$key] = $_SESSION["default_value"][$device][$key];
                }
                else {
                    $ct = $value[1];
@@ -352,19 +326,19 @@ function init_data(){
                        $type = $_SESSION["type_for_memories"][$device][$key][0];
                        if (is_numeric($type)) {
                            # for string data
-                           $actual_data[$key] = "";
+                           $_SESSION["actual_data"][$device][$key] = "";
                        } else {
-                           $actual_data[$key] = "0";
+                           $_SESSION["actual_data"][$device][$key] = "0";
                        }
                    } else {
                        # switches and range commands
-                       $actual_data[$key] = "0";
+                       $_SESSION["actual_data"][$device][$key] = "0";
                    }
                }
            }
            else {
                # others
-               $actual_data[$key] = "0";
+               $_SESSION["actual_data"][$device][$key] = "0";
            }
         }
     }
@@ -386,142 +360,18 @@ function create_to_correct(){
     }
 }
 
-function restrict_active_chapters(){
-    global $language, $device, $activ_chapters;
-    if (count($activ_chapters) > 5) {
-        foreach ($activ_chapters as $tok => $activ) {
-            if ($activ != "all_basic") {
-                unset ($activ_chapters[$tok]);
-            }
-        }
-    }
-}
-
-function sort_announce_all(){
-    # sort announce_all by CHAPTER
-    global $language, $device;
+function sort_chapzernames(){
+    # sort chapter_names by CHAPTER
+    global $device;
     $new_announce =[];
-    foreach ($_SESSION["chapter_names"][$device] as $chapter){
+    $ch = [];
+    foreach ($_SESSION["chapter_names"][$device] as $chapter) {
         if ($chapter != "ADMINISTRATION") {
-            foreach ($_SESSION["announce_all"][$device] as $key => $item) {
-                $basic_tok = basic_tok($key);
-                if (array_key_exists($basic_tok, $_SESSION["chapter_token"][$device][$chapter])) {
-                    $new_announce[$key] = $item;
-                }
-            }
-        }
-        # ADMINISTRATION at the end
-        foreach ($_SESSION["announce_all"][$device] as $key => $item) {
-            $basic_tok = basic_tok($key);
-            if (array_key_exists($basic_tok, $_SESSION["chapter_token"][$device]["ADMINISTRATION"])) {
-                $new_announce[$key] = $item;
-            }
+            $ch[$chapter] = $chapter;
         }
     }
-    $_SESSION["announce_all"][$device] = $new_announce;
-}
-
-function create_alpha(){
-    #
-    global $language, $device;
-    $alpha_file = $_SESSION["conf"]["device_dir"]."/". $device."/".$_SESSION["conf"]["alpha"];
-    if (file_exists($alpha_file)) {
-        $file = fopen ($alpha_file, "r");
-        while (!(feof($file))) {
-            $line = fgets($file);
-            $line = str_replace("\n", '', $line);
-            $line = str_replace("\r", '', $line);
-            $line_ = explode(",", $line);
-            $alpha_name = $line_[0];
-            $_SESSION["alpha"][$device][$alpha_name] = "";
-            $line_ = array_splice($line_,1);
-            # ! may contain ","
-            if (count($line_) > 1){$_SESSION["alpha"][$device][$alpha_name] = ",";}
-            if ($line_ != ""){$_SESSION["alpha"][$device][$alpha_name] .= implode(",",$line_);}
-        }
-        fclose($file);
-    }
-    else{
-        foreach ($_SESSION["original_announce"][$device] as $key => $value) {
-            if ($_SESSION["original_announce"][$device][$key][0] == "id,DEF") {
-                $alpha = explode(",", $_SESSION["original_announce"][$device][$key][1]);
-                $alpha_label = $alpha[0];
-                $_SESSION["alpha"][$device][$alpha_label] = "";
-                $alpha = array_splice($alpha, 1);
-                $result = "";
-                foreach ($alpha as $i => $val){
-                    if ($val == "aa") {
-                        $result .= "abcdefghijklmnopqrstuvwxyz";
-                    } elseif ($val == "AA") {
-                        $result .= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-                    } elseif ($val == "11") {
-                        $result .= "123456789";
-                    } elseif (strstr($val, "_") and strstr($val, "to")) {
-                        $sep = explode("_", $val);
-                        $sep_ = $sep[0];
-                        $numeric = 1;
-                        if (strstr($sep_, "0x")) {
-                            $sep_ = hexdec(substr($sep_, 2));
-                            $numeric = 0;
-                        } elseif (strstr($sep_, "0b")) {
-                            $sep_ = bindec(substr($sep_, 2));
-                            $numeric = 0;
-                        } elseif (is_numeric($sep_) and $sep_ > 9) {
-                            $numeric = 0;
-                        }
-                        $min = explode("to", $sep[1])[0];
-                        if (strstr($min, "0x")) {
-                            $min = hexdec(substr($min, 2));
-                            $numeric = 0;
-                        } elseif (strstr($min, "0b")) {
-                            $min = bindec(substr($min, 2));
-                            $numeric = 0;
-                        } elseif (is_numeric($min) and $min > 9) {
-                            $numeric = 0;
-                        }
-                        $max = explode("to", $sep[1])[1];
-                        if (strstr($max, "0x")) {
-                            $max = hexdec(substr($max, 2));
-                            $numeric = 0;
-                        } elseif (strstr($max, "0b")) {
-                            $max = bindec(substr($max, 2));
-                            $numeric = 0;
-                        } elseif (is_numeric($max) and $max > 9) {
-                            $numeric = 0;
-                        }
-                        if ($numeric == 1) {
-                            $j = $min;
-                            while ($j < $max) {
-                                $result .= chr($j);
-                                $j += $sep_;
-                            }
-                        }
-                        else {
-                            $j = $min;
-                            while ($j < $max) {
-                                $result .= chr($j);
-                                $j += $sep_;
-                            }
-                        }
-                    } elseif (strstr($val, "0x")) {
-                        $result .= chr(hexdec(substr($val, 2)));
-                    } elseif (strstr($val, "0b")) {
-                        $result .= chr(bindec(substr($val, 2)));
-                    } else {
-                        if (!strstr($result,$val)) {
-                            $result .= $val;
-                        }
-                    }
-                }
-                $_SESSION["alpha"][$device][$alpha_label] .= $result;
-            }
-        }
-        $file = fopen($alpha_file, "w");
-            foreach ($_SESSION["alpha"][$device] as $key => $value){
-                fwrite($file,$key.",".$value."\n");
-            }
-        fclose($file);
-    }
+    $ch["ADMINISTRATION"] = "ADMINISTRATION";
+    $_SESSION["chapter_names"][$device] = $ch;
 }
 
 function start_time_events(){

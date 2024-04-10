@@ -5,57 +5,62 @@
 #
 # display one element for each tok (with some exceptions)
 function edit_sequence(){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $language, $device, $activ_chapters;
+    if ($_SESSION["new_sequencelist"] == []) {
+        $i = 0;
+        foreach ($activ_chapters as $ch => $eins) {
+            if ($i == 0) {
+                $_SESSION["new_sequencelist"] = $_SESSION["chapter_token_pure"][$device][$ch];
+            }
+            $i++;
+        }
+    }
     echo $language["w1"]."<br>";
     echo $language["w2"]."<br>";
     echo "<div>";
     echo "<input type='checkbox' id=store_edit name=store_edit value=1>";
-    $announcelines = $_SESSION["announce_all"][$device];
-    $i = 0;
-    $done =  0;
-    foreach ($announcelines as $tok => $value) {
-        $basic_tok = basic_tok($tok);
-        if (array_key_exists($basic_tok, $_SESSION["tok_list"][$device])) {
-            if ($basic_tok != $done) {
+    echo $language["store_data"];
+    $j = 0;
+    # first chapter only
+    foreach ($activ_chapters as $ch => $eins) {
+        if ($j == 0) {
+            $i = 0;
+            foreach ($_SESSION["new_sequencelist"] as $tok => $one) {
                 echo "<div>";
-                echo "<input type=text name=" . $basic_tok . " size=5  placeholder = " . $i, ">";
-                echo " " . $i . " " . $basic_tok . " ";
-                $an = explode(",", $_SESSION["original_announce"][$device][$basic_tok][0]);
+                echo "<input type=text name=" . $tok . " size=5  placeholder = " . $i, ">";
+                echo " " . $i . " " . $tok . " ";
+                $an = explode(",", $_SESSION["original_announce"][$device][$tok][0]);
                 if (count($an) > 1) {
                     echo $an[1];
                 }
                 echo "<br>";
-                $done = $basic_tok;
                 $i++;
             }
         }
+        $j++;
     }
 }
 
 function edit_sequence_post(){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
-    foreach (array_keys($_POST) as $key){
-       if (is_numeric($key)){
-           $i = 0;
-           if ($_POST[$key] != ""){
-                foreach ($new_sequncelist as $tok){
-                    if ($key == $tok and $i = $_POST[$key]){
-                        $new_list[] = $tok;
+    # return at first call:
+    if ($_SESSION["new_sequencelist"] == []){return;}
+    $temp = [];
+    foreach ($_POST as $tok => $new_sequence) {
+        if ($new_sequence != "" and is_numeric($new_sequence)) {
+            $i = 0;
+            $found = 0;
+            $old_sequence = array_keys($_SESSION["new_sequencelist"],$tok );
+            foreach ($_SESSION["new_sequencelist"] as $sequence => $stok) {
+                if ($found == 0) {
+                    if ($i == $old_sequence) {
+                        $found = 1;
+                        $temp[$i] = $tok;
+                    } else {
+                        $temp[$i] = $_SESSION["new_sequencelist"][$i];
                     }
-                    else {
-                        if ($i < $_POST[$key]){
-                            $new_list[] = $tok;
-                        }
-                        else {
-                            $new_list[] = $key;
-                            if ($key != $tok) {
-                                $new_list[] = $tok;
-                            }
-                        }
-                    }
-
                 }
-           }
-       }
-   }
+                $i++;
+            }
+        }
+    }
 }

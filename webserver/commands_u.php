@@ -25,15 +25,15 @@ function create_ou($basic_tok) {
 }
 
 function correct_for_send_ou($basic_tok){
-    global $language, $device;
+    global $device, $send_ok, $tok_to_send, $send_string_by_tok;
     $sw_pos_changed = 0;
-    if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
-    if ($_SESSION["send_ok"]) {
+    if ($send_ok) {$send_ok = check_send_if_change_of_actual_data($basic_tok);}
+    if ($send_ok) {
         # $actual_data is 0 always
         # send, if corrected_POST is not idle (no send with change of stack only)
         if ($_POST[$basic_tok."d0"] != 0) {$sw_pos_changed = 1;}
     }
-if ($_SESSION["send_ok"]) {
+if ($send_ok) {
         list($stack, $stack_changed) = handle_stacks($basic_tok);
         if ($stack_changed or $sw_pos_changed) {
             $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
@@ -41,8 +41,8 @@ if ($_SESSION["send_ok"]) {
             if (count(explode(",", $_SESSION["des"][$device][$basic_tok."d0"])) > 4) {
                 $send .= translate_dec_to_hex("n", $_POST[$basic_tok . "d0"], $_SESSION["property_len"][$device][$basic_tok][2]);
             }
-            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
-            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+            $tok_to_send[$basic_tok] = 1;
+            $send_string_by_tok[$basic_tok] = $send;
         }
     }
 }

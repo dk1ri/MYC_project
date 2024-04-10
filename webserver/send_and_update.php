@@ -5,18 +5,19 @@
 
 # The following are subs used by command send
 function calculate_memory_pos_from_POST($basic_tok){
-    global $language, $device;
+    global $device;
     $error = 0;
     # ADD token ?
     if (array_key_exists($basic_tok. "n0", $_POST)){
         $Add_data = $_POST[$basic_tok."n0"];
         if (!is_numeric($Add_data)){$error = 1;}
         }
-    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"])){
-        $Add_data = $_SESSION["actual_data"][$basic_tok."n0"];
+    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"][$device])){
+        $Add_data = $_SESSION["actual_data"][$device][$basic_tok."n0"];
     }
     else {$Add_data = 0;}
     # with ADDer
+    $tok = $basic_tok . "m0";
     if ($Add_data != 0 and $error == 0){
         $pos = $_SESSION["max_for_ADD"][$device][$basic_tok."n0"];
     }
@@ -25,6 +26,7 @@ function calculate_memory_pos_from_POST($basic_tok){
         $i = 0;
         $found = 0;
         $pos = 0;
+        $value = 0;
         while (!$found) {
             $tok = $basic_tok . "m" . $i;
             if (!array_key_exists($tok, $_SESSION["des"][$device])) {
@@ -51,14 +53,13 @@ function calculate_memory_pos_from_POST($basic_tok){
         $pos = $pos + $Add_data;
     }
     else{
-        $pos = $_SESSION["actual_data"][$tok];
+        $pos = $_SESSION["actual_data"][$device][$tok];
     }
     return $pos + $Add_data;
 }
 
 function check_send_if_change_of_actual_data($basic_tok){
-    # $_POST != $_SESSION{"actual_data"]
-    global $language, $device;
+    global $device;
     $change_found = 0;
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok){
         if (!$change_found) {
@@ -92,8 +93,8 @@ function update_actual_data_from_POST($basic_tok){
 }
 
 function u_a_d_f_($tok){
+    global  $device;
     $found = 1;
-    $device = $_SESSION["device"];
     if (array_key_exists($tok, $_SESSION["actual_data"][$device])) {
         if (array_key_exists($tok, $_POST)){$_SESSION["actual_data"][$device][$tok] = $_POST[$tok];}
     }
@@ -104,7 +105,7 @@ function u_a_d_f_($tok){
 function handle_stacks($basic_tok){
     # create stack (for send) if necessary
     # return: $stack
-    global $language, $device;
+    global $device;
     $stack = "";
     # do nothing, if stacks == 1
     if (explode(",", $_SESSION["original_announce"][$device][$basic_tok][1])[0] == 1){
@@ -145,12 +146,12 @@ function handle_stacks($basic_tok){
         else{$found = 0;}
         $i++;
     }
-    # create stack for transmit rom actual data:
+    # create stack for transmit rom $_SESSION["actual_data"][$device] data:
     # ADD token ?
     if (array_key_exists($basic_tok. "n0", $_POST)){
         $Add_data = $_POST[$basic_tok."n0"];
     }
-    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"])){
+    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"][$device])){
         $Add_data = $_SESSION["actual_data"][$device][$basic_tok."n0"];
     }
     else {$Add_data = 0;}
@@ -185,7 +186,7 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
     # for a b m n commands
     # mode == 0: use $_POST[$tok] to check
     # mode == 1: $tok is part of $_POST[$tok]
-    global $language, $device;
+    global $device, $send_ok;
     if(!$mode) {
         $corrected = $_POST[$tok];
     }
@@ -196,13 +197,13 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
     $corrected = check_data_of_manual_entries($tok_for_des,$corrected);
     $send_data = "";
     $display_data = "";
-    if ($_SESSION["send_ok"]){
+    if ($send_ok){
         $dat = convert_bin_hex($corrected, $type);
         $basic_tok = basic_tok($tok);
         switch ($type) {
             case "b":
                 if (strlen($dat) > 1) {
-                    $_SESSION["send_ok"] = 0;
+                    $send_ok = 0;
                 } else {
                     $send_data .= bin2hex($dat);
                     $display_data = $send_data;
@@ -226,6 +227,7 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
 function split_and_correct_multiple($tok, $value, $type){
     # for manual entries (of f commands) (send)
     # split by "|", spaces of text are entered as &H7C
+    global $send_ok;
     $splitted = explode("|", $value);
     $result = [];
     $i = 0;
@@ -233,7 +235,7 @@ function split_and_correct_multiple($tok, $value, $type){
     while ($i < count($splitted)) {
         if ($splitted[$i] != "") {
             $data= check_data_of_manual_entries($tok, $splitted[$i]);
-            if ($_SESSION["send_ok"]) {
+            if ($send_ok) {
                 $result[$j] = convert_bin_hex($data, $type);
             }
             else {$result = "";}
@@ -248,7 +250,7 @@ function split_and_correct_multiple($tok, $value, $type){
 function check_data_of_manual_entries($tok, $data){
     # $data (for all memory commands is checked for des (ranges)
     # one string or one number
-    global $language, $device;
+    global $device, $send_ok;
     $range = explode(",",$_SESSION["des"][$device][$tok]);
     if ($range[0] == ""){
         # string
@@ -257,7 +259,7 @@ function check_data_of_manual_entries($tok, $data){
     else{
         list($ok,$data) = check_data_of_numbers($tok, $data)();
     }
-    if (!$ok){$_SESSION["send_ok"] = 0;}
+    if (!$ok){$send_ok = 0;}
     return $data;
 }
 
@@ -266,7 +268,7 @@ function check_data_of_strings($tok, $data){
     # data is string
     # non valid characters are skipped
     # if $data is too long -> empty string is returned
-    global $language, $device;
+    global $device;
     $result = "";
     $ok = 0;
     $range = explode(",",$_SESSION["des"][$device][$tok]);
@@ -313,7 +315,7 @@ function check_data_of_numbers($tok, $data){
     # $data for one number is real value and may be wrong.
     # check data
     # convert hex or bin
-    global $language, $device;
+    global $device;
     $range = explode(",", $_SESSION["des"][$device][$tok]);
     $ok = 1;
     if (strlen($data) > 3 and substr($data,0,2) == "0B") {
@@ -372,9 +374,8 @@ function check_translate_range($range, $data, $check_translate){
             else {
                 $max = (float)explode("to", $range_[1])[1];
                 $min = (float)explode("to", $range_[1])[0];
-                $max_count = ($max - $min) / $step_size;
                 # must not be smaller than first $min
-                if ((float)$data < (float)$min) {
+                if ((float)$data < $min) {
                     $found = 1;
                     $ok = 0;
                     # for $check_translate==1: last value of $result is used

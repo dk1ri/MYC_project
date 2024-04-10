@@ -6,7 +6,7 @@ function create_original_announce(){
     # create $_SESSION["original_announce"][$device] from announcements
     # and $_SESSION["chapter_token"][$device]
     # $SESSION[meter][$device]
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $device;
     $last_is_op = 0;
     $last_op_tok = "";
     if (file_exists("devices/".$device."/_announcements")) {$filename = "devices/".$device."/_announcements";}
@@ -27,6 +27,12 @@ function create_original_announce(){
         if ($line[1][0] == "R"){
             $_SESSION["rules"][$device][] = $line[1];
             continue;}
+        $li = explode(";", $line[1]);
+        if ($li[1] == "id,DEF"){
+            $dat = explode(",", $li[2]);
+            create_alpha($dat);
+            continue;
+        }
         $an[] = $line[1];
     }
     fclose($file);
@@ -129,10 +135,10 @@ function create_original_announce(){
                 $ar = explode("CHAPTER", "$line");
                 $chap = explode(",", $ar[1])[1];
                 $chap_no_space = str_replace(" ", "_x_", $chap);
-                $_SESSION["chapter_token"][$device][$chap_no_space][$basic_tok] = 1;
+              #  print $chap_no_space."<br>";
+                $chapter_token[$chap_no_space][$basic_tok] = 1;
                 $_SESSION["chapter_names"][$device][$chap_no_space] = $chap_no_space;
-                $_SESSION["chapter_names_with_space"][$device][$chap_no_space] = $chap;
-                $_SESSION["activ_chapters"][$device][$chap_no_space] = $chap_no_space;
+                $_SESSION["chapter_names_with_space"][$device][$chap] = $chap_no_space;
                 $skip_field++;
             }
             $i += 1;
@@ -152,6 +158,22 @@ function create_original_announce(){
         $length = count($o_a);
         $o_a = array_splice($o_a,0, $length - $skip_field );
         $_SESSION["original_announce"][$device][$basic_tok] = $o_a;
+    }
+    # delete "as" lines for  $chapter_token -> $_SESSION["chapter_token_pure"]
+    $_SESSION["chapter_token_pure"][$device] = [];
+    foreach ($chapter_token as $chapter => $cha){
+        $_SESSION["chapter_token_pure"][$device][$chapter] = [];
+        foreach ($cha as $tok => $one){
+            $as = explode(",",$_SESSION["original_announce"][$device][$tok][0]);
+            if (count($as) > 1) {
+                if (!(substr($as[1], 0, 2) == "as") and !(substr($as[1], 0, 3) == "ext")) {
+                    $_SESSION["chapter_token_pure"][$device][$chapter][$tok] = 1;
+                }
+            }
+            else{
+                $_SESSION["chapter_token_pure"][$device][$chapter][$tok] = 1;
+            }
+        }
     }
 }
 
@@ -754,6 +776,79 @@ function create_des_for_strings($type, $data){
         if ($add_result != ""){$result .= ",".$add_result;}
     }
     return $result;
+}
+
+function create_alpha($line){
+    global $device;
+    $alpha_label = $line[0];
+    $_SESSION["alpha"][$device][$alpha_label] = "";
+    $alpha = array_splice($line, 1);
+    $result = "";
+    foreach ($alpha as $i => $val){
+        if ($val == "aa") {
+            $result .= "abcdefghijklmnopqrstuvwxyz";
+        } elseif ($val == "AA") {
+            $result .= "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        } elseif ($val == "11") {
+            $result .= "123456789";
+        } elseif (strstr($val, "_") and strstr($val, "to")) {
+            $sep = explode("_", $val);
+            $sep_ = $sep[0];
+            $numeric = 1;
+            if (strstr($sep_, "0x")) {
+                $sep_ = hexdec(substr($sep_, 2));
+                $numeric = 0;
+            } elseif (strstr($sep_, "0b")) {
+                $sep_ = bindec(substr($sep_, 2));
+                $numeric = 0;
+            } elseif (is_numeric($sep_) and $sep_ > 9) {
+                $numeric = 0;
+            }
+            $min = explode("to", $sep[1])[0];
+            if (strstr($min, "0x")) {
+                $min = hexdec(substr($min, 2));
+                $numeric = 0;
+            } elseif (strstr($min, "0b")) {
+                $min = bindec(substr($min, 2));
+                $numeric = 0;
+            } elseif (is_numeric($min) and $min > 9) {
+                $numeric = 0;
+            }
+            $max = explode("to", $sep[1])[1];
+            if (strstr($max, "0x")) {
+                $max = hexdec(substr($max, 2));
+                $numeric = 0;
+            } elseif (strstr($max, "0b")) {
+                $max = bindec(substr($max, 2));
+                $numeric = 0;
+            } elseif (is_numeric($max) and $max > 9) {
+                $numeric = 0;
+            }
+            if ($numeric == 1) {
+                $j = $min;
+                while ($j < $max) {
+                    $result .= chr($j);
+                    $j += $sep_;
+                }
+            }
+            else {
+                $j = $min;
+                while ($j < $max) {
+                    $result .= chr($j);
+                    $j += $sep_;
+                }
+            }
+        } elseif (strstr($val, "0x")) {
+            $result .= chr(hexdec(substr($val, 2)));
+        } elseif (strstr($val, "0b")) {
+            $result .= chr(bindec(substr($val, 2)));
+        } else {
+            if (!strstr($result,$val)) {
+                $result .= $val;
+            }
+        }
+    }
+    $_SESSION["alpha"][$device][$alpha_label] .= $result;
 }
 
 ?>

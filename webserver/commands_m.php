@@ -4,7 +4,7 @@
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 #
 function create_om($basic_tok) {
-    global $language, $device, $actual_data;
+    global $language, $device;
     echo "<div><h3 class='om'>";
     echo $_SESSION["des_name"][$device][$basic_tok] . ":<br>";
     if (array_key_exists($basic_tok. "m0", $_SESSION["des"][$device])) {
@@ -14,10 +14,10 @@ function create_om($basic_tok) {
     echo "<br>";
     # data
     $tok = $basic_tok. "d0";
-    if (array_key_exists($tok, $actual_data)){
+    if (array_key_exists($tok, $_SESSION["actual_data"][$device])){
         $type = $_SESSION["type_for_memories"][$device][$tok];
         echo find_name_of_type($type). " ";
-        $data = str_replace(" ","&nbsp;",$actual_data[$tok]);
+        $data = str_replace(" ","&nbsp;",$_SESSION["actual_data"][$device][$tok]);
         $length = find_length_of_displayed_vars($type);
         if (strlen($data) > $length){$length = strlen($data);}
         if ($length > 30){$length = 30;}
@@ -30,7 +30,7 @@ function create_om($basic_tok) {
 }
 
 function create_am($basic_tok){
-    global $language, $device,$actual_data;
+    global $language, $device;
     echo "<div><h3 class='am'>";
     echo $_SESSION["des_name"][$device][$basic_tok] . "<br>";
     if (array_key_exists($basic_tok. "m0", $_SESSION["des"][$device])) {
@@ -39,8 +39,8 @@ function create_am($basic_tok){
     }
     echo "<br>";
     $token = $basic_tok. "d0";
-    if (array_key_exists($token, $actual_data)) {
-        echo "<marquee>" . $actual_data[$token] . "</marquee><br>";
+    if (array_key_exists($token, $_SESSION["actual_data"][$device])) {
+        echo "<marquee>" . $_SESSION["actual_data"][$device][$token] . "</marquee><br>";
         echo " ";
     }
     display_as($token);
@@ -48,15 +48,15 @@ function create_am($basic_tok){
 }
 
 function correct_for_send_om($basic_tok){
-    global $language, $device;
+    global $device, $send_ok, $tok_to_send, $send_string_by_tok;
     check_send_if_a_exists($basic_tok);
-    if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
-    if ($_SESSION["send_ok"] == 1) {
+    if ($send_ok) {$send_ok = check_send_if_change_of_actual_data($basic_tok);}
+    if ($send_ok == 1) {
         $pos = calculate_memory_pos_from_POST($basic_tok);
         $type = $_SESSION["type_for_memories"][$device][$basic_tok . "d0"];
         list($send_data, $display_data) = check_memory_data($basic_tok."d0", $type,0, $basic_tok."d0");
         }
-    if ($_SESSION["send_ok"]) {
+    if ($send_ok) {
         update_actual_data_from_POST($basic_tok);
         # basic_tok
         $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
@@ -64,13 +64,13 @@ function correct_for_send_om($basic_tok){
         $send .= translate_dec_to_hex("m", $pos, $_SESSION["property_len"][$device][$basic_tok][2]);
         # data
         $send .= $send_data;
-        $_SESSION["tok_to_send"][$basic_tok] = 1;
-        $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+        $tok_to_send[$basic_tok] = 1;
+        $send_string_by_tok[$basic_tok] = $send;
     }
 }
 
 function correct_for_send_am($basic_tok){
-    global $language, $device;
+    global $language, $device, $tok_to_send,$send_string_by_tok;
     if (array_key_exists($basic_tok . "a", $_POST) and $_POST[$basic_tok . "a"] == 1) {
         array_key_exists($basic_tok,$_SESSION["a_to_o"][$device]) ? $basic_tok_ = $_SESSION["a_to_o"][$device][$basic_tok]: $basic_tok_ = $basic_tok;
         update_actual_data_from_POST($basic_tok_);
@@ -79,8 +79,8 @@ function correct_for_send_am($basic_tok){
         $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
         $send .= translate_dec_to_hex("m", $pos,$_SESSION["property_len"][$device][$basic_tok_][2]);
         $_SESSION["read"] = 1;
-        $_SESSION["tok_to_send"][$basic_tok] = 1;
-        $_SESSION["send_string_by_tok"][$basic_tok]= $send;
+        $tok_to_send[$basic_tok] = 1;
+        $send_string_by_tok[$basic_tok]= $send;
     }
 }
 

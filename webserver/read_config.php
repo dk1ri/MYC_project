@@ -5,7 +5,8 @@
 # called at start only
 function read_config(){
     # initializing at start
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data,$activ_chapters, $tok_list;
+    global $username, $language, $is_lang, $new_sequncelist, $device, $activ_chapters, $activ_tok_list,$send_ok;
+    global $tok_to_send, $send_string_by_tok, $received_data ;
     $_SESSION = [];
     # contain individual data per user
     $_SESSION["user"] = [];
@@ -14,43 +15,33 @@ function read_config(){
     # command length
     $_SESSION["command_len"] = [];
     $_SESSION["started"] = 0;
-    # not used
-  # $_SESSION["config"] = '';
-    # missing
+    # missing, not used now
     $_SESSION["interface"] = '';
     # answer command sent; read data
     $_SESSION["read"] = 0;
     # last command status ok?
     $_SESSION["last_command_status"] = 0;
-    # not used
- #  $_SESSION["init_read"] = 0;
-    # actual user name
- #   $_SESSION["name"] = '';
     # list of available device; used for display only
     $_SESSION["device_list_with_spaces"] = [];
     # spaces replaced by "_x_"
     $_SESSION["device_list"] = [];
-    # read $_SESSION["device_list"] (dirnames of devices directory)
-    # defaullt (1st) device; device_list: array
-    read_device_list();
     # chapter_token: token: array data: 1
-    $_SESSION["chapter_token"] = [];
+    # without "as" commands
+    $_SESSION["chapter_token_pure"] = [];
     # must be defined here, used before read_new_device
     $_SESSION["announce_all"] = [];
-    # actual_data: used for device and chapter (and commands / per device)
     $_SESSION["actual_data"] = [];
-    $_SESSION["actual_data"]["_device_"] = 0;
-    $_SESSION["actual_data"]["_chapter_"] = 0;
     # reveived data
-    $_SESSION["received_data"] = "";
+    $received_data  = "";
     $_SESSION["edit_operate"] = [];
     $_SESSION["edit_operate"]["operate"] = "operate";
     $_SESSION["edit_operate"]["edit_sequence"] = "edit_sequence";
     $_SESSION["update"] = 0;
-    $_SESSION["send_ok"] = 0;
-    $_SESSION["tok_to_send"] = [];
-    $_SESSION["send_string_by_tok"] = [];
+    $send_ok = 0;
+    $tok_to_send = [];
+    $send_string_by_tok = [];
     $_SESSION["_edit_operate_"] = "operate";
+    $_SESSION["new_sequencelist"] = [];
     #
     $_SESSION["conf"] = [];
     $config = "_config";
@@ -123,17 +114,21 @@ function read_config(){
                 case  19:
                     $_SESSION["conf"]["user_dir"] = $line[1];
                     break;
-                case  20:
-                    $_SESSION["conf"]["usb_interface_dir"] = $line[1];
+                case 20:
+                    $_SESSION["conf"]["alpha"] = $line[1];
                     break;
                 case 21:
-                    $_SESSION["conf"]["alpha"] = $line[1];
-                case 22:
                     $_SESSION["conf"]["coding"] = $line[1];
-                case 23:
+                    break;
+                case 22:
                     $_SESSION["conf"]["language"] = $line[1];
-                case 24:
+                    break;
+                case 23:
                     $_SESSION["conf"]["user_data_dir"] = $line[1];
+                    break;
+                case 24:
+                    $_SESSION["conf"]["usb_interface_dir"] = $line[1];
+                    break;
             }
             $i++;
         }
@@ -141,7 +136,7 @@ function read_config(){
     }
 
     $_SESSION["coding"] = [];
-    $config = "_coding";
+    $config = $_SESSION["conf"]["coding"];
     if (file_exists($config)) {
         $file = fopen($config, "r");
         while (!(feof($file))) {
@@ -156,8 +151,7 @@ function read_config(){
     $_SESSION["lang"] = [];
     # for selection of languages only
     # used for selector
-    $config = "_lang";
-    $islang = "";
+    $config = $_SESSION["conf"]["language"];
     if (file_exists($config)) {
         $file = fopen($config, "r");
         $i = 0;
@@ -187,29 +181,16 @@ function read_config(){
             $i  += 1;
         }
     }
-    $username = "user";
     # defaultname is "user"
-    $_SESSION["user_data"]["user"] = [];
+    $username = "user";
+    $_SESSION["user_data"] = [];
     $is_lang = "english";
-    $_SESSION["user_data"]["user"]["is_lang"] = $is_lang;
-    $_SESSION["user_data"]["user"]["language"] = $_SESSION["lang"][$is_lang];
-    $_SESSION["user_data"]["user"]["device"] = "";
-    $_SESSION["user_data"]["user"]["new_sequncelist"] = [];
-    $_SESSION["user_data"]["user"]["actual_data"] = [];
-    $_SESSION["user_data"]["user"]["activ_chapters"] = [];
-    $_SESSION["user_data"]["user"]["tok_list"] = [];
-    $_SESSION["user_data"]["user"]["activ_chapters"][] = "all_basic";
-    $language= $_SESSION["user_data"]["user"]["language"];
-    $new_sequncelist = $_SESSION["user_data"]["user"]["new_sequncelist"];
-    $actual_data = $_SESSION["user_data"]["user"]["actual_data"];
-    $device = $_SESSION["user_data"]["user"]["device"];
-    $activ_chapters = $_SESSION["user_data"]["user"]["activ_chapters"];
-    $tok_list = $_SESSION["user_data"]["user"]["tok_list"];
-
+    $language = $_SESSION["lang"][$is_lang];
+    read_device_list($_SESSION["conf"]["device_dir"]);
 }
 
-function read_device_list(){
-    $handle = opendir("./devices");
+function read_device_list($device_dir){
+    $handle = opendir($device_dir);
     $i = 0;
     while (($file = readdir($handle)) !== false){
         if ($file != "." and $file != ".." ) {

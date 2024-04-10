@@ -14,12 +14,12 @@ color n;#00FF80;
 color a;#FF0000;
 color b;#FF8080;
 color f;#FF8000;
-limit for selectors (allow one byte) ;260
+limit for selectors (allow one byte);250
 testmode (write data files);1
 dir for divices;c:\xampp\htdocs\devices\
 dir for userdata;c:\xampp\htdocs\user_data\
-dir for usb_interface;c:\xampp\htdocs\usb_interface\
 file for alpha (in devices);__alpha
 file for coding;c:\xampp\htdocs\_coding
 file for language;c:\xampp\htdocs\_lang
 dir of user  data;C:\xampp\htdocs\user_data
+data i/o dir to device;c:\xampp\htdocs\usb_interface

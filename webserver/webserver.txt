@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 Webserver for a MYC System
 
 Author: DK1RI
-Version V01.01.06 20240123
+Version V01.01.07 20240410
 This paper is published in  https://github.com/dk1ri  as well
 
 Introduction
@@ -25,31 +25,31 @@ USB interface to one devices is working (but may be changed)
 
 Some limitations
 
-The commandrouter has no interface to devices yet and a solution without the commandrouter should work as a first step.
+-The commandrouter has no interface to devices yet and a solution without the commandrouter should work as a first step.
 So the webserver has some limitations:
-one device at the same time only.
-It is necessary to start three programs: browser, web-server and a python program for the device interface.
-I did not found a solution to connect the webserver to USB directly. So data exchange is done by filetransfer using an additional python program. This cost time.
-For read commands there is a delay (dead) time of 2 s after a command.
-Windows only is tested (Win10) with firefox browser.
-The MYC protocol has no limitations with the number of elements of some commands and the use of descriptions is not mandatory. With the usage of the webserver descriptions for large memories e.g. are necessary. Before using a device with a webserver it shoiukd be checked, wether there are meaningful results.
+- one device at the same time only.
+- It is necessary to start three programs: browser, web-server and a python program for the device interface (if the device is connected via USB only)
+I did not found a solution to connect the webserver to USB directly. So data exchange is done by filetransfer using the additional python program. This cost time.
+- For read commands there may be a delay (dead) time after a command.
+- Windows only is tested (Win10) with firefox browser.
+- The MYC protocol has no limitations with the number of elements of some commands and the use of descriptions is not mandatory. With the usage of the webserver descriptions for large memories e.g. are necessary. Before using a device with a webserver it should be checked, weather there are meaningful results.
 - ext is not supported
-- ALPHA and restioctions of manual nuric input is not supprted
+- CODING and restrictions of manual numeric input is not supported
 - some OPTIONs are not supported
+- modifying the design of the webpage is not supported / ready
 
 Starting / preparations
 
 The following programs must be installed:
-on the webserver (Win10 tested):
-xampp (standard installation, nothing special [19])
-Enable javascript for the browser
-python (standard installation, nothing special [20]) 
-usbserial is necessary for python
-
 on the client:
 a browser (firefox is used) 
-
-on the webserver:
+on the webserver (Win10 tested):
+xampp (standard installation, nothing special [19])
+Enable javascript for the browser (for later use)
+Your device must provide a filetransfer interface. A device with software interface should have this.
+For a (hardware) device with USB interface the following apply:
+install python (standard installation, nothing special [20]) 
+usbserial is necessary for python:
 open Powershell
 cd  C:\Users\your_name\AppData\Local\Programs\Python\Python_version\Scripts
 (you must replace yourname and version with your data)
@@ -58,9 +58,9 @@ or
 C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe -m pip install usbserial
 
 move the original \xampp\htdocs to another directory, (if you need this for later usage).
-download a new htdocs from [17], unzip and copy to xampp
-create a new  \xampp\htdocs\devices
-download a device from [18], unzip and copy the content to \xampp\htdocs\devices
+download a new htdocs from [17], unzip and copy to \xampp
+create a new  \xampp\htdocs\devices\<device-name> directory
+download the device from [18], unzip and copy the content to \xampp\htdocs\devices<device-name>. The __announcement file is necessary only.
 For most existing devices these data are available.
 
 Actual usage of the SK
@@ -69,9 +69,12 @@ on the webserver:
 call the xampp control Panel
 start modul Apache (at least)
 it may be necessary to enable firewall for Apache web server
-in a powershell:
+if you have a device with software filetranfer: start this programm.
+Otherwise:
+connect the device and find out the USB port <COMport>, the device is connected
+open Powershell
 cd \xampp\htdocs
-C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe USB_serial.py <COMPORT>
+C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe USB_serial.py <COMport>
 
 In a browser (on the same computer as the webserver) call
 localhost/myc.php
@@ -80,19 +83,17 @@ If you use a different (remote) computer replace /localhost by the internetaddre
 Some tips for usage, which may help:
 - to unselect a switch of an or command “control” + mouse-click!
 - for switches and range commands: if you change the stack, the new values are shown and the operating requests are ignored, if a read command is checked.. You must initiate changes of the new stack by another command.
-- Strings (for memory data) can be entered in hex or binary format by starting with &H or &B. If a character not belonging to this format is found the binary / hex format is ended. To enter a “0” when in binary input mode you must enter &T first.
+- Strings (for manual entries) can be entered in hex or binary format by starting with &H or &B for each character. If a character not belonging to this format is found the data are not converted. To enter a “0” when in binary input mode you must enter &T first. Numbers for manual entries can be entered in binary / hex format  as well. The start with &H or &B.
 - Entering numbers manually, the right format must be observed. For some formats negative values are not allowed. Single and double must be (-)0.xxxe(-)xx. Wrong data are ignored.
-- for entering data of commands with more than one value (ob, on, of) the separation character is blank (“ ”). So when you want to enter a “ ” for strings you must write &H20. Received data are printed as printable characters(including space) or &Hxx. Separator for multiple elements of ob / on and f commands is “ . “.
+- for entering data of commands with more than one value (ob, on, of) the separation character is blank (“|”). So when you want to enter a “|” for strings you must write &H7C. Received data are printed as printable characters(including space) or &Hxx. Separator for multiple elements of ob / on and f commands is “ . “.
 - The number of entries for stacks and memory positions is not limited. But it is recommended, that the device delivers suitable descriptions with MUL and ADD using a small number of entries (< 100).
+- if you are testing new devices, the _alpha file is not updated. You must delete it for update with the next run of the program.
 
 Other devices
 For devices not found in [18] you can create your own.
 create the directory \xampp\devices\your_new_device
-copy your announcefile to this directory
-open powershell
-cd \xampp\htdocs
-C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe helper_202210.py
-Syntax errors in the announcement file may create a crash of this program or the webserver.
+copy your announcefile to this directory. The name should be __announcement or announcement.bas.
+Syntax errors in the announcement file may create a crash of the webserver.
 
 Other languages:
 The names for labels given by the announcements cannot be changed yet, but the (default) labels and names defined by the web-server. English and german is available now, others can be added in the _lang file (“;” is the separator)
@@ -118,6 +119,7 @@ Later additions:
 - So the user can define his own colors and view of the functions in the edit mode and use it later on.
 - The result is stored in a user individual config file or data base.
 - For simple usage preconfigured files (skins) can be used.
+
 
 External programs
 

@@ -3,7 +3,7 @@
 # DK1RI 20240304
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function  create_op_oo($basic_tok){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $username, $language, $is_lang, $new_sequncelist, $device;
     echo "<div><h3 class='op'>";
     display_start_with_stack($basic_tok);
     echo "<br>";
@@ -44,7 +44,7 @@ function  create_op_oo($basic_tok){
                     }
                 }
                 if ($number_of_elements < $_SESSION["conf"]["selector_limit"]) {
-                    $actual = $actual_data[$tok];
+                    $actual = $_SESSION["actual_data"][$device][$tok];
                     most_simple_selector_for_simple_des($tok, $des, $actual);
                     if (strstr($tok, "t")) {
                         echo $_SESSION["unit"][$device][$tok] . " ";
@@ -68,7 +68,7 @@ function  create_op_oo($basic_tok){
 }
 
 function create_ap($basic_tok){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $username, $language, $is_lang, $new_sequncelist, $device;
     echo "<div><h3 class='ap'>";
     display_start_with_stack($basic_tok);
     echo "read: <input type='checkbox' id=".$basic_tok."a" . " name=".$basic_tok."a value=1>";
@@ -85,12 +85,12 @@ function create_ap($basic_tok){
 }
 
 function correct_for_send_op($basic_tok){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $device, $send_ok, $tok_to_send, $send_string_by_tok;
     check_send_if_a_exists($basic_tok);
-    if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
+    if ($send_ok) {$send_ok = check_send_if_change_of_actual_data($basic_tok);}
     $change_found = 0;
     $translated = "";
-    if ($_SESSION["send_ok"]) {
+    if ($send_ok) {
         # create $data for transmit and update actual data if no error
         list($change_found, $translated) = collect_op($basic_tok);
         if ($change_found == 0){
@@ -112,7 +112,7 @@ function correct_for_send_op($basic_tok){
             }
         }
     }
-    if ($_SESSION["send_ok"]) {
+    if ($send_ok) {
         list($stack, $stack_changed) = handle_stacks($basic_tok);
         if (!array_key_exists($basic_tok,$_SESSION["ALL"][$device])) {
             if ($stack_changed or $change_found) {
@@ -131,18 +131,18 @@ function correct_for_send_op($basic_tok){
                     $send .= translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
                     $send .= $stack;
                     $send .= translate_dec_to_hex("n", $i, 2);
-                    $send .= translate_dec_to_hex("m", $actual_data[$tok], $_SESSION["property_len"][$device][$basic_tok][$i + 2]);
+                    $send .= translate_dec_to_hex("m", $_SESSION["actual_data"][$device][$tok], $_SESSION["property_len"][$device][$basic_tok][$i + 2]);
                     $i++;
                 }
             }
         }
-        $_SESSION["tok_to_send"][$basic_tok] = 1;
-        $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+        $tok_to_send[$basic_tok] = 1;
+        $send_string_by_tok[$basic_tok] = $send;
     }
 }
 
 function correct_for_send_ap($basic_tok){
-    global $device, $actual_data;
+    global $device, $tok_to_send,$send_string_by_tok;
     $tok = $basic_tok . "a";
     if (array_key_exists($tok, $_POST) and  $_POST[$tok] == 1){
         $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
@@ -151,18 +151,18 @@ function correct_for_send_ap($basic_tok){
         $send .= $stack;
         print " ".$send." ";
         if (!array_key_exists($basic_tok,$_SESSION["ALL"][$device])) {
-            if (array_key_exists($basic_tok."o0", $actual_data)) {
-                $send .= translate_dec_to_hex("m", $actual_data[$basic_tok . "o0"], $_SESSION["property_len"][$device][$basic_tok][0]);
+            if (array_key_exists($basic_tok."o0", $_SESSION["actual_data"][$device])) {
+                $send .= translate_dec_to_hex("m", $_SESSION["actual_data"][$device][$basic_tok . "o0"], $_SESSION["property_len"][$device][$basic_tok][0]);
             }
         }
         # else send no position
-        $_SESSION["tok_to_send"][$basic_tok] = 1;
-        $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+        $tok_to_send[$basic_tok] = 1;
+        $send_string_by_tok[$basic_tok] = $send;
     }
 }
 
 function receive_p($basic_tok, $from_device){
-    global $device, $actual_data;
+    global $device;
     $stacklen = $_SESSION["property_len"][$device][$basic_tok][1];
     if ($stacklen > 0) {
         update_memory_position_stack($basic_tok, $from_device);
@@ -180,7 +180,7 @@ function receive_p($basic_tok, $from_device){
         $data = hexdec(($data));
         $to_delete += $data_len;
         # directly stored
-        $actual_data[$basic_tok . "d".$i] = $data;
+        $_SESSION["actual_data"][$device][$basic_tok . "d".$i] = $data;
         update_corresponding_opererating($basic_tok, "d".$i, $data);
         $i += 1;
         $pointer += $data_len;
@@ -189,10 +189,10 @@ function receive_p($basic_tok, $from_device){
 }
 
 function retranslate_op_oo($tok){
-    # translate actual_data of op /oo to display data using <des>
+    # translate $_SESSION["actual_data"][$device] of op /oo to display data using <des>
     # return integer to display
-    global $device, $actual_data;
-    $data = $actual_data[$tok];
+    global $device;
+    $data = $_SESSION["actual_data"][$device][$tok];
     $result = $data;
     if (array_key_exists($tok, $_SESSION["des"][$device])){
         $range = explode(",", $_SESSION["des"][$device][$tok]);
@@ -239,10 +239,10 @@ function retranslate_op_oo($tok){
 
 function collect_op($basic_tok){
     # used for "op" command for transmit to device
-    # translate $_POST from actual_data to MYC data for "big values"
+    # translate $_POST from $_SESSION["actual_data"][$device] to MYC data for "big values"
     # collect data for all dimensions
     # return "" if error or hex string ready for transmit if there was a change by $_POST and no error
-    global $device, $actual_data;
+    global $device;
     $result = "";
     $i = 0;
     $found = 0;
@@ -250,7 +250,7 @@ function collect_op($basic_tok){
     while (array_key_exists($basic_tok."d".$i, $_SESSION["des"][$device])) {
         $tok = $basic_tok . "d" . $i;
         if ($_SESSION["des"][$device][$tok] > $_SESSION["conf"]["selector_limit"]){
-            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $actual_data[$tok]) {
+            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $_SESSION["actual_data"][$device][$tok]) {
                 $found = 1;
             }
         }
@@ -263,7 +263,7 @@ function collect_op($basic_tok){
         $ok = 1;
         while (array_key_exists($basic_tok."d".$i, $_SESSION["des"][$device]) and $ok) {
             $tok = $basic_tok . "d" . $i;
-            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $actual_data[$tok]) {
+            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $_SESSION["actual_data"][$device][$tok]) {
                 # for big values $_POST[$tok] may have string values -> check and translate to positions
                 $des = explode(",", $_SESSION["des"][$device][$tok]);
                 if ($des[0] > $_SESSION["conf"]["selector_limit"]) {
@@ -284,10 +284,10 @@ function collect_op($basic_tok){
         while (array_key_exists($basic_tok."d".$i, $_SESSION["des"][$device])) {
             # for each dimension
             $tok = $basic_tok . "d" . $i;
-            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $actual_data[$tok]) {
-                $actual_data[$tok] = $_POST[$tok];
+            if (array_key_exists($tok, $_POST) and $_POST[$tok] != "" and $_POST[$tok] != $_SESSION["actual_data"][$device][$tok]) {
+                $_SESSION["actual_data"][$device][$tok] = $_POST[$tok];
             }
-            $result .= translate_dec_to_hex("m", $actual_data[$tok], $_SESSION["property_len"][$device][$basic_tok][2 + $i]);
+            $result .= translate_dec_to_hex("m", $_SESSION["actual_data"][$device][$tok], $_SESSION["property_len"][$device][$basic_tok][2 + $i]);
             $i++;
         }
     }

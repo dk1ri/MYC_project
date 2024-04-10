@@ -3,7 +3,7 @@
 # DK1RI 20240123
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_or($basic_tok){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $device;
     # selecting a switch as operate will toggle the status
     echo "<div><h3 class='or'>";
     display_start_with_stack($basic_tok);
@@ -26,7 +26,7 @@ function create_ar($basic_tok){
 
 function create_or_ar($basic_tok){
     # selecting a switch as operate will toggle the status
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $device;
     echo $_SESSION["des_name"][$device][$basic_tok] . ": ";
     if (array_key_exists($basic_tok. "m0", $_SESSION["des"][$device])){
         # one or more stack display elements available
@@ -35,7 +35,7 @@ function create_or_ar($basic_tok){
     echo "<br>";
     foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
         if (strstr($tok, "d")) {
-            $actual = $actual_data[$tok];
+            $actual = $_SESSION["actual_data"][$device][$tok];
             if($actual == "0"){
                 echo "<strong class = 'red'>";
             }
@@ -50,12 +50,12 @@ function create_or_ar($basic_tok){
 }
 
 function correct_for_send_or($basic_tok){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $device, $send_ok, $tok_to_send, $send_string_by_tok;
     check_send_if_a_exists($basic_tok);
     $sw_changed = 0;
     $positions_to_change = [];
     $add = [];
-    if ($_SESSION["send_ok"]) {
+    if ($send_ok) {
         $i = 0;
         foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok) {
             if (strstr($tok, "d")) {
@@ -70,12 +70,12 @@ function correct_for_send_or($basic_tok){
                         }
                         # send only with change
                         # toggle for operating
-                        if ($actual_data[$tok] == "0") {
+                        if ($_SESSION["actual_data"][$device][$tok] == "0") {
                             $add[$tok] .= "01";
-                            $actual_data[$tok] = "1";
+                            $_SESSION["actual_data"][$device][$tok] = "1";
                         } else {
                             $add[$tok] .= "00";
-                            $actual_data[$tok] = "0";
+                            $_SESSION["actual_data"][$device][$tok] = "0";
                         }
                     }
                 }
@@ -83,7 +83,7 @@ function correct_for_send_or($basic_tok){
             }
         }
     }
-    if ($_SESSION["send_ok"]) {
+    if ($send_ok) {
         $send = "";
         if (!array_key_exists($basic_tok,$_SESSION["ALL"][$device])) {
             foreach ($positions_to_change as $tok) {
@@ -101,18 +101,18 @@ function correct_for_send_or($basic_tok){
                     $send .= translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
                     $send .= $stack;
                     $send .= translate_dec_to_hex("n", $i,2);
-                    $send .= translate_dec_to_hex("n", $actual_data[$tok], 2);
+                    $send .= translate_dec_to_hex("n", $_SESSION["actual_data"][$device][$tok], 2);
                     $i++;
                 }
             }
         }
-        $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
-        $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+        $tok_to_send[$basic_tok] = 1;
+        $send_string_by_tok[$basic_tok] = $send;
     }
 }
 
 function correct_for_send_ar($basic_tok){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $device, $tok_to_send, $send_string_by_tok;
     $tok = $basic_tok . "a";
     if (array_key_exists($tok, $_POST) and  $_POST[$tok] == 1) {
         $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$device][$basic_tok][0]);
@@ -149,14 +149,14 @@ function correct_for_send_ar($basic_tok){
         }
         else{$sw_changed = 1;}
         if ($sw_changed) {
-            $_SESSION["tok_to_send"][(int)$basic_tok] = 1;
-            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
+            $tok_to_send[$basic_tok] = 1;
+            $send_string_by_tok[$basic_tok] = $send;
         }
     }
 }
 
 function receive_r($basic_tok, $from_device){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data;
+    global $username, $language, $is_lang, $new_sequncelist, $device;
     $stacklen = $_SESSION["property_len"][$device][$basic_tok][1];
     $switchlen = $_SESSION["property_len"][$device][$basic_tok][2];
     $position = 0;
@@ -171,7 +171,7 @@ function receive_r($basic_tok, $from_device){
         $from_device = substr($from_device,$switchlen);
     }
     $value = hexdec(substr($from_device, 0, 2));
-    $actual_data[$basic_tok. "d".$position] = $value;
+    $_SESSION["actual_data"][$device][$basic_tok. "d".$position] = $value;
     update_corresponding_opererating($basic_tok, "d".$position, $value);
     return $stacklen + $switchlen + 2;
 }

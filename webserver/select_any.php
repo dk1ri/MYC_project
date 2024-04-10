@@ -99,11 +99,11 @@ function selector($basic_tok){
 
 function stack_memory_selector($ctoken){
     # one display element
-    global $language, $device;
+    global $device;
     $actual = $_SESSION["actual_data"][$device][$ctoken];
     if (array_key_exists($ctoken, $_SESSION["des_name"][$device])) {echo $_SESSION["des_name"][$device][$ctoken] . ": ";}
     $stacks = explode(",", $_SESSION["des"][$device][$ctoken]);
-    $stacks = array_splice($stacks, 0, 1);
+    $stacks = array_splice($stacks, 1);
     if ($stacks[0] < $_SESSION["conf"]["selector_limit"]){
         most_simple_selector_for_simple_des($ctoken, $stacks, $actual);
     }

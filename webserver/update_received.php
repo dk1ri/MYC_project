@@ -3,9 +3,10 @@
 # DK1RI 20240324
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function receive_civ(){
+    global $received_data;
     read_from_device();
     $i = 0;
-    while ($_SESSION["received_data"] != "" and $i < 100) {
+    while ($received_data  != "" and $i < 100) {
         # update actual_data by data from device
         update_received();
         $i++;
@@ -13,23 +14,23 @@ function receive_civ(){
     # should never happen
     if ($i == 100){
         if ($_SESSION["conf"]["testmode"]){print " error";}
-        $_SESSION["received_data"] = "";
+        $received_data  = "";
     }
 
 }
 function update_received(){
     # data from device
-    global $device, $actual_data;
-    $from_device = $_SESSION["received_data"];
+    global $device, $received_data ;
+    $from_device = $received_data ;
     $error = 0;
     if ($_SESSION["command_len"][$device] == 2) {
-        if (strlen($_SESSION["received_data"]) < 2){return;}
+        if (strlen($received_data ) < 2){return;}
         # 2 -> 1 byte
         $basic_tok = hexdec(substr($from_device,0, 2));
         $from_device = substr($from_device,2, null);
     }
     else{
-        if (strlen($_SESSION["received_data"]) < 4){return;}
+        if (strlen($received_data ) < 4){return;}
         $basic_tok = hexdec(substr($from_device, 0, 2)) * 256 + hexdec(substr($from_device,2,2));
         $from_device = substr($from_device,4, null);
     }
@@ -40,7 +41,7 @@ function update_received(){
     $ct = explode(",", $announce[0])[0];
     switch ($ct) {
         case "m";
-        #   basic command
+            # basic command
             $length = hexdec(substr($from_device, 0, 2));
             $line = substr($from_device, 2, $length);
             $to_delete = ($length + 1) * 2;
@@ -62,7 +63,7 @@ function update_received(){
                 $i += 2;
             }
             if($i == 4){
-                $actual_data[$basic_tok. "a"] = $field[3] . "," . $field[4] . "," . $field[2];
+                $_SESSION["actual_data"][$device][$basic_tok. "a"] = "Device: ".$field[3] . " Version: " . $field[4] . " Author: " . $field[2];
             }
             break;
         case "as":
@@ -92,17 +93,18 @@ function update_received(){
             break;
         default:
             $error = 1;
+            $to_delete = 0;
             break;
     }
     # for one command $from_device should be empty
     if ($error) {
-        $_SESSION["received_data"] = "";
+        $received_data  = "";
         if ($_SESSION["conf"]["testmode"]){print "civ receive error";}
     }
     else {
         $from_device = substr($from_device, $to_delete, null);
         $missing_revieved = strlen($from_device);
-        $_SESSION["received_data"] = $from_device;
+        $received_data  = $from_device;
         if ($_SESSION["conf"]["testmode"]){print "Restlaenge " . $missing_revieved;}
     }
 }
@@ -111,8 +113,8 @@ function update_memory_data($token, $from_device, $length_of_length){
     # translate (first part of) received hex string depending on type for one element
     # translated data start at position "0"
     # $length_of_length is used for strings only
+    global $device;
     if($from_device == ""){return["",0];}
-    $device = $_SESSION["device"];
     $bytes_to_delete = 0;
     $type = $_SESSION["type_for_memories"][$device][$token];
     $result = "";
@@ -197,9 +199,9 @@ function update_memory_data($token, $from_device, $length_of_length){
 }
 
 function update_memory_position_stack($basic_tok, $from_device){
-    global $device, $actual_data;
+    global $device;
     # used for memory-positions and stacks
-    # data are correct and stored to actual_data directly but splited as <des...>
+    # data are correct and stored to $_SESSION["actual_data"][$device] directly but splited as <des...>
     $pos = hexdec(substr($from_device,0,$_SESSION["property_len"][$device][$basic_tok][1]));
     array_key_exists($basic_tok,$_SESSION["a_to_o"][$device]) ? $basic_tok_ = $_SESSION["a_to_o"][$device][$basic_tok]: $basic_tok_ = $basic_tok;
     $add_found = 0;
@@ -210,16 +212,16 @@ function update_memory_position_stack($basic_tok, $from_device){
             $found = 1;
             while ($found){
                 # set others to 0
-                if (array_key_exists($basic_tok_."m".$i, $actual_data)){
-                    $actual_data[$basic_tok_."m".$i] = 0;
+                if (array_key_exists($basic_tok_."m".$i, $_SESSION["actual_data"][$device])){
+                    $_SESSION["actual_data"][$device][$basic_tok_."m".$i] = 0;
                 }
                 else{$found = 0;}
                 $i++;
             }
-            $actual_data[$basic_tok_."n0"] = $pos - $_SESSION["max_for_ADD"][$device][$basic_tok_."n0"];
+            $_SESSION["actual_data"][$device][$basic_tok_."n0"] = $pos - $_SESSION["max_for_ADD"][$device][$basic_tok_."n0"];
             $add_found = 1;
         }
-        else{$actual_data[$basic_tok_."n0"] = 0;}
+        else{$_SESSION["actual_data"][$device][$basic_tok_."n0"] = 0;}
     }
     if (!$add_found){
         $i = 0;
@@ -237,18 +239,18 @@ function update_memory_position_stack($basic_tok, $from_device){
             if (array_key_exists($next_tok, $_SESSION["des"][$device])) {
                 $divisor = explode(",",$_SESSION["des"][$device][$next_tok])[0];
                 $value = intdiv($pos , $divisor);
-                $actual_data[$tok] = $value;
+                $_SESSION["actual_data"][$device][$tok] = $value;
                 $pos = ($pos % $divisor);
             }
-            else{$actual_data[$tok] = $pos;}
+            else{$_SESSION["actual_data"][$device][$tok] = $pos;}
             $i++;
         }
     }
 }
 function update_corresponding_opererating($basic_tok, $extension, $data){
-    global $device, $actual_data;
+    global $device;
     array_key_exists($basic_tok, $_SESSION["a_to_o"][$device]) ? $tok = $_SESSION["a_to_o"][$device][$basic_tok]:$tok = $basic_tok;
-    $actual_data[$tok . $extension] = $data;
+    $_SESSION["actual_data"][$device][$tok . $extension] = $data;
 }
 
 function convert_hex_to_readable($one_byte){

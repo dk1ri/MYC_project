@@ -2,7 +2,7 @@
 <!--
     Webserver for MYC system
     myc.php
-    Version 1.2 20240123
+    Version 1.2 20240331
     Manual Version: V01.01.06
     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
@@ -33,8 +33,8 @@
     </head>
     <body>
         <?php
-        global $username, $language, $is_lang,$new_sequncelist, $device, $actual_data,$activ_chapters;
         session_start();
+        global $username, $language, $is_lang, $device, $activ_chapters, $tok_to_send;
         include "read_config.php";
         read_config();
         $date = new DateTime();

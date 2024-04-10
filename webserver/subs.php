@@ -223,17 +223,6 @@ function find_name_of_type($type){
     }
 }
 
-function create_new_sequence_lists(){
-    global $username, $language, $is_lang,$new_sequncelist, $device, $actual_data,$activ_chapters;
-    $new_sequncelist = [];
-    foreach ($_SESSION["chapter_names"][$device] as $value) {
-        $activ_chapters[$value] = [$value];
-    }
-    foreach ($_SESSION["chapter_token"][$device] as $value) {
-        $_SESSION["new_sequncelist"][$device][] = $_SESSION["chapter_token"][$device][$value];
-    }
-}
-
 function translate_dec_to_hex($type, $data, $length){
     # $type is a MYC datatype
     # $type == m is unsigned number with $length (if $lenth > 0)

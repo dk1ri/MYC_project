@@ -3,13 +3,55 @@
 # DK1RI 20240423
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function read_user_data(){
-    global $username, $language, $is_lang,$new_sequncelist, $device, $actual_data,$activ_chapters, $tok_list;;
-    if ($username == ""){$username = "uswer";}
-    $user_data = $_SESSION["conf"]["user_data_dir"]."\\".$username;
-    if (array_key_exists($username, $_SESSION["user_data"])){
+    global $username, $language, $is_lang;
+    if ($username == ""){$username = "user";}
+    # userdata are: $language, $is_lang
+    # and per devive: $active_chapters, $tok_list(all toks, sorted per chapter)
+    # $device is not stored, because the stored may be not available
+    $user_dir = $_SESSION["conf"]["user_data_dir"] . "\\" . $username;
+    if (array_key_exists($username, $_SESSION["user_data"])) {
         read_from_session();
+        # exist device_dir?
+        read_device_from_session();
     }
-    elseif (file_exists($user_data)) {
+    elseif (is_dir($user_dir)) {
+        # check file
+        read_from_file();
+        # exist device_dir
+        read_device_from_file();
+    }
+    else {
+        # default
+        # create new $_SESSION[>"user"} is done at end of action.php
+        $is_lang = "english";
+        $language = $_SESSION["lang"][$is_lang];
+        get_default_for_device();
+    }
+}
+
+function read_from_session(){
+    global $username, $device, $language, $is_lang;
+    $language = $_SESSION["user_data"][$username]["language"];
+    $is_lang = $_SESSION["user_data"][$username]["is_lang"];
+    if ($device == "") {$device = $_SESSION["user_data"][$username]["device"];}
+}
+
+function read_device_from_session(){
+    global $username, $device, $activ_chapters, $activ_tok_list;
+    if (array_key_exists($device, $_SESSION["user_data"][$username])) {
+        $activ_chapters = $_SESSION["user_data"][$username][$device]["activ_chapters"];
+        $activ_tok_list = $_SESSION["user_data"][$username][$device]["activ_tok_list"];
+    }
+    else{
+        get_default_for_device();
+    }
+}
+
+function  read_from_file(){
+    global $username, $language, $is_lang;
+    $user_data = $_SESSION["conf"]["user_data_dir"] . "\\" . $username."\\data";
+    if (file_exists($user_data)){
+        # file exits
         $file = fopen($user_data, "r");
         $i = 0;
         while (!(feof($file))) {
@@ -23,79 +65,124 @@ function read_user_data(){
                 case  1:
                     $is_lang = $line;
                     break;
-                case 2:
-                    $new_sequncelist = hex_to_array($line);
-                    break;
-                case 3:
-                    $device = $line;
-                    break;
-                case 4:
-                    $actual_data = hex_to_array($line);
-                    break;
-                case 5:
-                    $activ_chapters = hex_to_array($line);
-                    break;
-                case 6:
-                    $tok_list = hex_to_array($line);
-                    break;
             }
             $i++;
         }
+        fclose($file);
+    }
+    write_to_session();
+}
+
+function read_device_from_file(){
+    global $username, $device, $activ_chapters, $activ_tok_list;
+    $device_dir = $_SESSION["conf"]["user_data_dir"] . "\\" . $username."\\".$device;
+    if (is_dir($device_dir)){
+        $file_name = $device_dir."\\". "activ_chapters";
+        $file = fopen($file_name, "r");
+        $line = fgets($file);
+        $activ_chapters = hex_to_array($line);
+        fclose($file);
+        $file_name = $device_dir."\\". "activ_tok_list";
+        $file = fopen($file_name, "r");
+        $line = fgets($file);
+        $activ_tok_list = hex_to_array($line);
+        fclose($file);
     }
     else{
-        write_user_data($user_data);
+        # not yet saved for user -> default
+        get_default_for_device();
+    }
+}
+function write_to_session(){
+    global $username, $device, $language, $is_lang;
+    # store actual data to$SESSION
+    $_SESSION["user_data"][$username]["language"] = $language;
+    $_SESSION["user_data"][$username]["is_lang"] = $is_lang;
+    $_SESSION["user_data"][$username]["device"] = $device;
+}
+
+function write_device_to_session(){
+    global $username, $device, $activ_chapters, $activ_tok_list;
+    if (!array_key_exists($device, $_SESSION["user_data"][$username])) {
+        $_SESSION["user_data"][$username][$device]["activ_chapters"][$device] = [];
+    }
+    $_SESSION["user_data"][$username][$device]["activ_chapters"] = $activ_chapters;
+    $_SESSION["user_data"][$username][$device]["activ_tok_list"] = $activ_tok_list;
+}
+function write_to_file(){
+    global $username, $device,$language, $is_lang;
+    $user_data = $_SESSION["conf"]["user_data_dir"] . "\\" . $username."\\".$device;
+    # store actual data to username
+    $file = fopen($user_data, "w");
+    fwrite($file,$language."\r\n");
+    fwrite($file,$is_lang."\r\n");
+    fclose($file);
+    write_to_session();
+}
+
+function get_default_for_device(){
+    global $device, $activ_chapters;
+    $activ_chapters = [];
+    if (count($_SESSION["chapter_names"][$device]) > 5) {
+        $activ_chapters["all_basic"] = "all_basic";
+        $activ_chapters["ADMINISTRATION"] = "ADMINISTRATION";
+    }
+    else{
+        foreach ($_SESSION["chapter_names"][$device] as $ch) {
+            $activ_chapters[$ch] = $ch;
+        }
+    }
+    create_tok_list();
+}
+function create_tok_list(){
+    # $activ_tok_list contain basic_tok for activ chapters
+    global $device,$activ_chapters, $activ_tok_list;
+    $activ_tok_list = [];
+    foreach ($_SESSION["chapter_token_pure"][$device] as  $chapter => $data) {
+        if (array_key_exists($chapter, $activ_chapters)){
+            foreach ($_SESSION["chapter_token_pure"][$device][$chapter] as $basic_tok => $val){
+                if (!array_key_exists($basic_tok, $activ_tok_list)) {
+                    $ct = explode(",", $_SESSION["original_announce"][$device][$basic_tok][0]);
+                    if (count($ct) > 1) {$activ_tok_list[$basic_tok] =  $ct[0];}
+                }
+            }
+        }
     }
 }
 
 function hex_to_array($line){
+    # convert hex string of datafile to array
     # sequence is: key;data,data...;key, data
     $i = 0;
     $key = "";
     $is_data = 0;
-    while ($i < strlen($line)){
-        $hex_character = substr($line,$i, 2);
+    $ar = [];
+    $data = "";
+    while ($i < strlen($line)) {
+        $hex_character = substr($line, $i, 2);
         $char = hexdec($hex_character);
-        if ($char == 59){
+        if ($char == 59) {
             # ;
             $ar[$key][] = $data;
-            $data = "";
             $key = "";
             $is_data = 0;
-        }
-        elseif ($char == 44) {
-            if ($data == ""){
+        } elseif ($char == 44) {
+            if ($data == "") {
                 $is_data = 1;
-            }
-            else{
+            } else {
                 $ar[$key][] = $data;
                 $data = "";
             }
-        }
-        else{
-            if ($is_data == 0){
+        } else {
+            if ($is_data == 0) {
                 $key .= chr($char);
-            }
-            else{
+            } else {
                 $data .= chr($char);
             }
         }
         $i += 2;
     }
     return $ar;
-}
-function write_user_data($user_data){
-    global $language, $is_lang,$new_sequncelist, $device, $actual_data, $activ_chapters, $tok_list;
-    # store actual data to new name
-    $file = fopen($user_data, "w");
-    fwrite($file,$language."\r\n");
-    fwrite($file,$is_lang."\r\n");
-    fwrite($file,array_to_hex($new_sequncelist)."\r\n");
-    fwrite($file,$device."\r\n");
-    fwrite($file,array_to_hex($actual_data)."\r\n");
-    fwrite($file,array_to_hex($activ_chapters)."\r\n");
-    fwrite($file,array_to_hex($tok_list)."\r\n");
-    fclose($file);
-    write_to_session();
 }
 
 function array_to_hex($array){
@@ -116,50 +203,4 @@ function array_to_hex($array){
     }
 }
 
-function write_to_session(){
-    global $username, $language, $is_lang,$new_sequncelist, $device, $actual_data, $activ_chapters,$tok_list;
-    # store actual data to$SESSION
-    $_SESSION["user_data"][$username]["language"] = $language;
-    $_SESSION["user_data"][$username]["$is_lang"] = $is_lang;
-    $_SESSION["user_data"][$username]["new_sequncelist"] = $new_sequncelist;
-    $_SESSION["user_data"][$username]["device"] = $device;
-    $_SESSION["user_data"][$username]["actual_data"][] = $actual_data;
-    $_SESSION["user_data"]["user"]["activ_chapters"] = $activ_chapters;
-    $_SESSION["user_data"]["user"]["tok_list"] = $tok_list;
-}
-
-function read_from_session(){
-    global $username, $language, $is_lang, $new_sequncelist, $device, $actual_data, $activ_chapters, $tok_list;
-    $language = $_SESSION["user_data"][$username]["language"];
-    $is_lang = $_SESSION["user_data"][$username]["is_lang"];
-    $new_sequncelist = $_SESSION["user_data"][$username]["new_sequncelist"];
-    $device = $_SESSION["user_data"][$username]["device"];
-    $actual_data = $_SESSION["user_data"][$username]["actual_data"];
-    $activ_chapters = $_SESSION["user_data"]["user"]["activ_chapters"];
-    $tok_list = $_SESSION["user_data"]["user"]["tok_list"];
-}
-
-function create_active_chapters(){
-    # initially set all chapters active with all_basic and ADMINISTATION
-    global $username, $activ_chapters;
-    $activ_chapters["all_basic"] = 1;
-    $activ_chapters["ADMINISTRATION"] = 1;
-    $_SESSION["user_data"][$username]["activ_chapters"] = $activ_chapters;
-}
-
-function create_tok_list(){
-    # $tok_list contain basic_tok for activ chapters in the sequnce of $new_sequencelist
-    global $device,$activ_chapters, $tok_list;
-    foreach ($_SESSION["chapter_token"][$device] as  $chapter => $data) {
-        if (array_key_exists($chapter, $activ_chapters)){
-            foreach ($_SESSION["chapter_token"][$device][$chapter] as $key => $val){
-                if (!array_key_exists($key, $tok_list)) {
-                    $tok_list[$key] = 1;
-                }
-            }
-        }
-    }
-}
 ?>
-
->
