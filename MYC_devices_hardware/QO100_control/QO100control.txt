@@ -2,28 +2,46 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC QO100 Trx Steuerung
 
-Author DK1RI, Version V02.0, 20231014
+Author DK1RI, Version V02.2, 20240410
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
-Dieses Device steuert die Stromversorgung meiner QO100 Station.
+Dieses Device steuert die Stromversorgung meiner QO100 Station für SSB und DATV Betrieb.
 Die Steuerung erfolgt über USB.
 Diese Steuerung kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben. Auch ohne USB Schnittstelle kann der NB/WB Mode und die PTT mit zwei Schaltern geschaltet werden.
 Zur Steuerung mit einem Browser: siehe [7].
-Die Hardware der Steuerung kann mehr Funktionen steuern, als zur Zeit verwendet.
+Die Hardware der Steuerung kann mehr Funktionen steuern, als zur Zeit verwende; aber alle Anschlüsse sind steuerbar.
 Details siehe unter Anschlüsse.
 
 Beschreibung
 
 Die Eagledaten stehen bei [1].
-Diese Beschreibung gibt für meinen aktuellen Betrieb.
-Nach dem Einschalten sind GPS, Pluto NB und Upconverter eingeschaltet. Nach circa 3 Sekunden ist Betrieb möglich, allerdings benötigt der von mir verwendete GPS Empfänger ca 15 Mituten zur Synchronisation.
+Diese Beschreibung gilt für meinen aktuellen Betrieb.
+Nach dem Einschalten sind GPS, und Pluto NB eingeschaltet. Nach circa 2 Sekunden ist Betrieb möglich, allerdings benötigt der von mir verwendete GPS Empfänger ca 15 Minuten zur Synchronisation.
 Nach einer NB / WB Umschaltung ist die Sendefunktion immer abgeschaltet.
-Der Upconverter benötigt ca 2 Sekunden zum Starten. Nach dem Umschalten auf NB kann die PTT erst nach dieser Zeit aktiviert werden. 
+Der Upconverter benötigt ca 2 Sekunden zum Starten. Nach dem Umschalten auf NB kann in dieser Zeit kein andrer Befehl eingegeben werden. 
 Das Schalten der PTT und die Umschaltung auf WB dauert circa 200ms.
 Im WB Betrieb läuft der Lüfter immer.
-Die Stromversorgung erfolgt über den 12V Anschluss. Der Ruhestrom (ohne angeschlossene Geräte) beträgt circa 70mA.
+Die Stromversorgung erfolgt über den 12V Anschluss. Der Ruhestrom (ohne angeschlossene Geräte) beträgt circa 75mA.
+Spannung an den Ausgängen (V):
+			off	NB	WB	WBRX	NB mit PTT	WB mit PTT
+Minitiouner		0	0	5	5		0		5
+Koaxrelais		0	0	5	5		0		5
+BiasT			0	12	17	17		12		17
+13cmPATx		0	0	0	0		0		12
+Fan			0	0	5	0		0		5
+Pttout			0	0	0	0		5		0
+USB 1WPPA1		0	0	5	0		0		5
+USB 1WPA2		0	0	5	0		0		5
+USB Pluto_WB	0	0	5	0		0		5
+Upconverter		0	12	0	0		12		0
+12VDATV		0	0	12	0		0		12
+28DATV_1 (20A)	0	0	28	28		0		28
+28DATV_2 (5A)	0	0	28	0		0		28
+
+GPS, 5V und USB Pluto_NB: immer 5V.
+Die Abfrage der Werte des Upconverter funktioniert nicht. Der Grund ist unklar.
 
 Einbindung in das MYC System
 
@@ -62,7 +80,7 @@ Der Jumper J1 sollte während der Programmierung entfernt werden.
 
 Serielle RS232 / USB Schnittstelle
 
-RS232 Schnittstelle zur Steuerung des Upconverters: Schnittstellenparameter: 19k2 8N1. Die alte Firmware des Upconverter verwendet 115kB/s!!
+RS232 Schnittstelle zur Steuerung des Upconverters: Schnittstellenparameter: 9k6 8N1. Die alte Firmware des Upconverter verwendet 115kB/s!!
 Steuerung des gesamten Devices: Es wird die USB Platine UM2102 von ELV verwendet.
 Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Device müssen voneinander isoliert werden.
 
@@ -88,11 +106,11 @@ X1:
 1: 	28V GND 		28V /20A Netzteil
 2: 	28V_in		28V /20A Netzteil
 3: 	28V GND		für  DATV PA
-4: 	28V_DATV_1		für  DATV PA; dass verwendete Relais schaltet bis zu 16A
+4: 	28VDATV_1		für  DATV PA; dass verwendete Relais schaltet bis zu 16A
 
 X2:
 1: 	28V GND		nicht verwendet
-2: 	28V_DATV_2		nicht verwendet
+2: 	28VDATV_2		nicht verwendet
 3: 	12V GND		für Kuhne Upconverter
 4: 	Upconverter		für Kuhne Upconverter; 12V 7A bei 20W output
 
@@ -100,7 +118,7 @@ X3:
 1: 	12V GND 		12V / 20A Netzteil
 1: 	12V_in 		12V / 20A Netzteil
 3: 	12V GND		12V DATV
-3: 	12V_DATV_OUT	12V DATV
+3: 	12VDATV		12V DATV
 
 X5: 
 5V 	USB			für PlutoNB
@@ -125,17 +143,17 @@ JP10; Temp
 3; 	5V			für externen Temperatursensor LM135Z 
 Wenn R20  bestückt ist, wird JP10 pin3 nicht verwendet
 
-JP11: F/R
+JP11: in_F/R
 1: 	GND
 2: 	F			SWR 10W PA (nicht verwendet)
 3: 	R			SWR 10W PA (nicht verwendet)
 
-JP12: T/err
+JP12: in_Kerr/T
 1: 	GND
-2: 	T			für 10W PA (nicht verwendet)
-3: 	K_Err			für 10W PA (nicht verwendet)
+2: 	K_err			für 10W PA (nicht verwendet)
+3: 	T			für 10W PA (nicht verwendet)
 
-JP13: PA1
+JP13: in_PA1/SWR
 1: 	GND
 2: 	PA1_1			nicht verwendet 
 3: 	SWR			SWR 28V PA
@@ -145,26 +163,26 @@ JP14: PA2
 2: 	PA2_1			nicht verwendet
 3: 	PA2_2			nicht verwendet
 
-JP15: PTT/MB/WB
+JP15: in_PTT_NB/WB
 1: 	GND
 2: 	PTT			externe PTT, „0“ aktiv
 3: 	NB/WB		externe Umschaltung NB / WB NB: offen WB: verbunden mit GND
 
 JP16: PTTout
 1,2: 	GND
-3: 	PTT_out		für Upconverter
+3: 	Pttout			für Upconverter
 
 JP17: FAN
 1,2: 	GND
-3: 	FAN			12V für PA Lüfter	
+3: 	Fan			für PA Lüfter	
 
 JP18: 
 1,2: 	GND
-3: 	13cmPA_PTT		12V TX für 13cm PA	
+3: 	13cmPATX		TX für 13cm PA	
 
 JP19: 5V
 1,2: 	GND
-3: 	5V			 fürUSB Hub
+3: 	5V			 für USB Hub
 
 JP20: BiasT
 1,2: 	GND
@@ -172,14 +190,14 @@ JP20: BiasT
 	
 JP21: GPS
 1,2: 	GND
-3 	12V			für GPS
+3 	GPS			für GPS
 
 JP22: Minitiouner
 1,2: 	GND
 3: 	Minitiouner		12V für Minitiouner	
 
 JP23: Koaxrelais
-1,2: 	Relais			für Koaxrelais
+1,2: 	Koaxrelais		für Koaxrelais
 3: 	12V			für Koaxrelais
 
 weitere Jumper
@@ -192,8 +210,8 @@ JP7		Anschluss für USB Modul
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 02.2
-Bascom Version 01.0
+Leiterplattenversion 02.3
+Bascom Version 01.2
 
 Copyright
 
@@ -201,6 +219,8 @@ Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit 
 Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie / Gewährleistung / Produkthaftung  übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
+
+
 
 Referenzen
 
