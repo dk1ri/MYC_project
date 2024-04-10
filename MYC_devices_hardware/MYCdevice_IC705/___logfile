@@ -46,3 +46,34 @@ Tue Mar 19 16:31:58 2024 commandnumber: 2 : wrong command: 65530
 Tue Mar 19 16:31:58 2024 commandnumber: 2 : Parameter error for input (hex): 0xff0xfa
 Tue Mar 19 16:41:28 2024 commandnumber: 3 : wrong command: 65530
 Tue Mar 19 16:41:28 2024 commandnumber: 3 : Parameter error for input (hex): 0xff0xfa
+Sat Mar 30 12:13:44 2024 commandnumber: 1 : com port COM6 not found
+Sat Mar 30 12:17:44 2024 commandnumber: 1 : telnet server started
+Sun Mar 31 14:41:17 2024 commandnumber: 1 : com port COM6 not found
+Sun Mar 31 14:41:35 2024 commandnumber: 1 : com port COM6 not found
+Sun Mar 31 15:27:28 2024 commandnumber: 1 : telnet server started
+Sun Mar 31 16:38:40 2024 commandnumber: 1 : telnet server started
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:04:01 2024 commandnumber: 1 : telnet server started
+Mon Apr  1 10:04:20 2024 commandnumber: 2 : civ Parameter not valid for commmand 257
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : civ Parameter not valid for commmand 0
+Mon Apr  1 10:05:06 2024 commandnumber: 1 : telnet server started
+Mon Apr  1 10:06:22 2024 commandnumber: 1 : telnet server started
+Mon Apr  1 17:46:11 2024 commandnumber: 1 : telnet server started
+Thu Apr  4 11:04:26 2024 commandnumber: 1 : com port COM6 not found
+Thu Apr  4 11:04:38 2024 commandnumber: 1 : com port COM6 not found
+Thu Apr  4 11:05:09 2024 commandnumber: 1 : telnet server started
+Thu Apr  4 17:07:12 2024 commandnumber: 1 : telnet server started
