@@ -89,7 +89,7 @@ Data "13;aa,FWversion;12;13,CHAPTER,configuration"
 'Befehl &H0E
 'Integrationszeit
 'integration time
-Data "14;op,integration time;1;586,1_1to586;lin;ms;13,CHAPTER,configuration"
+Data "14;op,integration time;1;586,,1_1to586;lin;ms;13,CHAPTER,configuration"
 '
 'Announce15:
 'Befehl &H0F
@@ -101,7 +101,7 @@ Data "15;ap,as14"
 'Befehl &H10
 'Temperatur
 'temperature
-Data "16;aa,temperature;b"
+Data "16;aP,temperature;1;100;lin;degC"
 '
 'Announce17:
 'Befehl &H11
