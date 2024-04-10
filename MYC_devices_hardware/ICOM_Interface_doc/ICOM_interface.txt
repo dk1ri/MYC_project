@@ -2,12 +2,12 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 Icom Interfaces für das MYC Protokoll
 
-Author DK1RI, Version V04.0 20240422
+Author DK1RI, Version V04.0 20240410
 This paper is published in https://github.com/dk1ri  as well.
 
 Einleitung
 
-Dies ist die Beschreibung eines Interfaces für einige ICOM (TM) Transceiver; siehe auch: Details zu den einzelnen Tranceivern
+Dies ist die Beschreibung eines Interfaces für einige ICOM (TM) Transceiver; siehe auch: Details zu den einzelnen Transceivern
 Dieses Interface kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder über einen Webbrowser gesteuert werden.
 
 Beschreibung
@@ -27,7 +27,6 @@ Die Befehlsbeschreibung steht in der Datei __announcements im Programm.
 Die Steuerung mit einem Webbrowser ist für die Softwareversionen möglich.
 
 Hinweise zur Bedienung
-
 Die Befehle sind meist eine direkte Übersetzung der CIV Befehle. Daraus ergeben sich Einschränkungen bei der Bedienung:
 Einige Befehle arbeiten abhängig von den aktuellen Einstellungen: Dies ist in den Regeln abgebildet (soweit ich das erkannt habe :) ). Das Interface blockiert falsche Eingaben nicht und liefert auch keine Fehlermeldung. Das Interface erwartet, dass die Regeln beachtet werden..
 Für einige Befehle sind weitere Hardware Voraussetzungen nötig, die aber nicht abgefragt werden können (SD Karte, Antennentuner). Dann wird eine Fehlermeldung als Info gesendet.
@@ -37,9 +36,10 @@ Aktuelle Versionen der Dokumentation wurden nicht mehr überprüft.
 Die Befehlseingabe zum Interface erfolgt binär. Der Wertebereich der Befehlsparameter ist bei den Befehlsbeschreibungen angegeben. Bei der Eingabe über Dateien oder Telnet werden die Bytes hexadezimal übertragen.
 
 
+
 Softwareversionen:
 
-Die Softwareversionen wurden mit Pycharm 2022.2.1 entwickelt
+Die Softwareversionen wurden mit Pycharm 2023.3.6 entwickelt.
 
 Die aktuellen Versionen (ab 2024) werden nur mit dem Webserver getestet; bisher nur für IC705.
 
