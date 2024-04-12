@@ -41,7 +41,7 @@ Data"5;os,change frequency;1;0,+100;1,-100;2,+500;3,-500"
 'Befehl &H06    0 to 4
 'startet scan,  command #1 2 3 5 6 0
 'start scan
-Data"6;os,scan;0,medium up;1;1,fast up;2,medium down;3,fast down;4,stop"
+Data"6;os,scan;1;0,idle;1,fast up;2,medium down;3,fast down;4,stop"
 '
 'Announce7:
 'Befehl &H07   0 to 99
