@@ -20,7 +20,7 @@ Data "2;oa,send dtmf;252"
 'Befehl  &H03
 'schaltet MYC / no_MYC mode
 'switches MYC / no_MYC mode
-Data "3;os,no_myc;1:0,MYC;1,no MYC"
+Data "3;os,no_myc;1;0,MYC;1,no MYC"
 '
 'Befehl  &H04
 'liest MYC / no_MYC mode
