@@ -17,7 +17,7 @@ Data "1;aa,RC5 buffer;80"
 'Befehl &H02   0-31
 'RC5 Adresse schreiben
 'write RC5 adress
-Data "2;op,rc5adress;32,address;lin;-"
+Data "2;op,rc5adress;1;32,;lin;-"
 '
 'Announce3:
 'Befehl &H03
@@ -29,7 +29,7 @@ Data "3;ap,as2"
 'Befehl  &H04
 'schaltet MYC / no_MYC mode
 'switches MYC / no_MYC mode
-Data "4;os,no_myc;1;0,MYC;1,no MYC"
+Data "4;os,myc;1;0,MYC;1,no MYC"
 '
 'Announce5:
 'Befehl  &H05
