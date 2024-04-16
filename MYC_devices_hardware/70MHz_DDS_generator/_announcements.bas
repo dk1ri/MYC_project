@@ -5,7 +5,7 @@ Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;70MHz DDS Sender;V03.1;1;180;1;29;1-1"
+Data "0;m;DK1RI;70MHz DDS Sender;V02.0;1;180;1;29;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -107,7 +107,7 @@ Data "16;op,Tc measurement frequency at tmax;1;70000000;lin;Hz;13,CHAPTER,config
 'Befehl &H11
 'Abweichung durch Tempratur
 'Tc
-Data "17;ap,Tc: deviation at 70MHz;1;65536,{1_-32768to32767};lin;Hz;13,CHAPTER,configuration"
+Data "17;ap,Tc deviation at 70MHz;1;65536,,{1_-32768to32767};lin;Hz;13,CHAPTER,configuration"
 '
 'Announce18:
 'Befehl &H12
@@ -125,7 +125,7 @@ Data "19;aa,as18"
 'Befehl &H14
 'RC5 Codes
 'RC5 Codes
-Data "20;om,RC5 Codes;b,code,{1_0to20};b,key,{1_1to19};13,CHAPTER,configuration"
+Data "20;om,RC5 Codes 0 to 20;b,{1_0to20};20,key;13,CHAPTER,configuration"
 '
 'Announce21:
 'Befehl &H15
