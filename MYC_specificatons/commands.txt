@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V03.00.02 20240416
+Version V03.00.03 20240415
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -18,13 +18,14 @@ see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 Announcements
 
 An announcement line uses a readable string using all characters except “. Some other characters have a special function: see definition of the sm format for strings. So the number of the command token is a readable figure, 1 eg for a hex 0x01 command.
-A complete announcement of a device consist of one line with the basic announcement, lines of command announcements, lines for the reserved tokens,  lines of rules and a one line I-announcement; in this sequence.
+A complete announcement of a device consist of one line with the basic announcement, lines of command announcements, lines for the reserved tokens,  lines of rules , lines for translation and a one line I-announcement; in this sequence.
 The command announcements describe the commands the device will understand.
 Lines with the basic announcement, lines of command announcements and lines for the reserved tokens contain:
 <command_token>;<commandtype>;<parameter>;<OPTION>
 Two of the reserved tokens are used by the CR to identify a device, also, if more than one of the same device-group (same hardware and firmware) exist. (command_token 0x00, 0xxxff)
 The basic announcement (command_token 0x00,) contains the description of the device. For details see [5]
 The rules describe the restrictive conditions, when and how commands will not work for a device. By default any command is working at any time.
+Translation lines give a translation of names use in the announcements to other lanuages.
 The CR concatenate the announcements of the devices to a full announce-list.
 The I-announcement is inserted by the CR to the full announce-list for each device. It shows some individual parameters of the device, so that RU and SK can identify the device in all cases.
 Some operating commands may have an influence on the status of other commands. This can be handled by rules as well.
@@ -32,6 +33,14 @@ Rules lines start with R”, “S”, “Q” or “T”. “R” rules of devices are included in
 “Q” rules are sent by the RU to the command-router. They are used for user management.
 “S” rules are used by devices during configuration and are not included in the full announcement list. They are used during configuration.
 “T” rules are sent by the RU to the command-router. These are optional translations of the descriptions within announcements. They can be used to handle other languages or modify the semantic function of a device. For details see [8].
+Translation lines start with “L”. The first “L” line contain the languages as name in this language as:
+L;english;deutsch;francais
+The first language is the language used in the announcements.
+Other lines contain the translated words in the sequence of the first “L” line as:
+L;switch;Schalter;bouton;pressure,Druck;pression;
+L;speed;Geschwindigkeit;vitesse
+Do not forget the “;” at the end of the first line.
+Predefined words like ANNOUNCEMENTS should not be added.
 
 Each command announcement line contain the unique command-number, the command-type and properties as necessary; in this sequence. A special type of properties are optional <OPTION>. Some <OPTION> will not result in transmitted data and will be at the end of a line. The first <des> of
  these properties is the uppercase name for the <OPTION>, followed by other parameters.
@@ -238,7 +247,7 @@ announce:	<c>;id;DEF;xx,{<s>}					definition of a string. xx is a name; unique w
 									The CR may rename the definition in case of conflict eith different devices.
 									The CR may insert the definition into the commands before distributing.
 
-example:	200;id;DEF;alpha,{11,1_0x20to0x24,),0x19}	Definition of an alphabet for restriction of allowed characters, 
+example:	200;id;DEF;alpha,11,1_0x20to0x24,),0x19		Definition of an alphabet for restriction of allowed characters, 
 									reserved values are	AA for upper case letters
 												aa for lower case letters
 												11 for figures
@@ -370,7 +379,7 @@ announce:	<c>;xm[<,des_c>]; <ty>[,<des_type>];m_positions[,<des_memory>	write a 
 operate command or answer / info:	<c><m><data>					write to / answer for position n
 answer command:			<c><m>						read position <n> (“0” based)
 
-announce:	<c>;xn,[,des_c]...[,<label>]; <ty>[,<des_type>];m_positions[,<des_memory>;n_elements[,<label>]
+announce:	<c>;xn,[,des_c]; <ty>[,<des_type>];m_positions[,<des_memory>;n_elements[,<label>]
 												sequential access of i (i <= m)elements for memory starting
 												with position j. (j < = n_positions)
 												may can work as extension to a xm command 
@@ -389,7 +398,7 @@ announce:	<c>;xf[,<des_c>];<ty>[,<des_type>];<m>[,<label>]			FIFO, stack, stream
 operate command or answer / info:	<c>2<data><data>					2 elements are sent / read
 answer command:	<c><n>								n elements are expected
 
-announce:	<c>;xa[,<des_c>];<ty>[,<label>][,<des_range>][<ty>[,<label>][,<des_range>]…		
+announce:	<c>;xa[,<des_c>];<ty>[,<des_type>][<ty>[,<des_type>]]…		
 												array of different elements of type <ty>
 												For more than 255 elements use additional command.
 												for one element only n is not transmitted
@@ -397,7 +406,7 @@ operate command or answer / info:	<c><m><data>					write one element to (read fr
  												(“0” based)
 answer command:	<c><m>								m is the mth element (“0” based)
 
-announce:	<c>;xb[,<des_c>];<ty>[,<des_type>][;<ty>[,<label>][,<des_range>]...	
+announce:	<c>;xb[,<des_c>];<ty>[,<des_type>][;<ty>[,<des_type>]]...	
 												sequential access mode for array 
 												can work as extension to a oa command 
 												for one element only n and m is not transmitted
@@ -463,7 +472,7 @@ Usually any button of switches has one label. {des_range} is not allowed.
 
 Descriptions for type of memory commands (om, am, om, an, of, af, oa, aa, ob, ab) <des_type>:
 For all memory data:
- [<label>][,<des_range>]
+ [<label>][,default_value][,<des_range>]	<default_value> must not contain „{„ . <default_value require <label>.
 
 Details for <label>:
 Uppercase names should be used for reserved words (as labels) only.
