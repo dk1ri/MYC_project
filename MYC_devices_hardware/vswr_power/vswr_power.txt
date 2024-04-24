@@ -1,0 +1,194 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/vswr_power.pdf
+
+MYC SWR Leistungs Messgerät
+
+Author DK1RI, Version V01.0 20240424
+This paper is published in https://github.com/dk1ri  as well (not yet)
+
+Einleitung
+
+Vor einiger Zeit wollte ich einen 2.3GHz Verstärker messen und habe festgestellt, das ein passendes Leistungsmessgerät fehlt. Die Messung funktionierte allerdings auch mit einem geeigneten Spektrumanalyzer. In einer Amsat-DL Veröffentlichung wurde ein Leistungsmessgerät mit AD8318 beschrieben. Es gibt fertige Module mit diesem IC; ich verwende den Modul von MikroE RF Meter Click (bei Mouser: MikroE 2034) Das Ansteuerprotokoll ist sehr einfach, und es gibt einige MYC devices mit ähnlicher Grundfunktionalität: ich wollte wissen, wie lange die Entwicklung eines solchen Boards dauert.
+Der (erste) Entwicklungsaufwand (Leiterplatte, Firmware, Dokumentation) betrug circa 6 Stunden.
+3 Monate später: Überprüfung und kleinere Korrekturen, Bestellung der Module und der LP: 3 Stunden; die übrigen Bauteile waren vorhanden.
+Aufbau von 2 Boards (mit und ohne 12V Versorgung); Korrektur des Leiterplattendesigns wegen kleiner Fehler (2 Widerstände überflüssig, 2 kleinere mechanische Fehler: 2 Stunden.
+Test: kleinere Firmware Korrekturen. Das Clocksignal war auch zu kurz. Das hat die meiste Zeit gedauert: insgesamt 8 Stunden.
+Weitere Tests, upload der Daten, etc…: 2 Stunden
+VSWR Test fehlt noch.
+Die Benutzerschnittstelle für den Web Browser erzeugt sich sowieso automatisch. Da der Webserver bereits installiert ist, musste nur der announcefile in ein neues Verzeichnis kopiert werden.
+Eine solche (kleine) Schaltung kann also in 3 Tagen fertig gestellt werden. Die Hardware und Firmware ist eben weitestgehend standardisiert und die Entwicklung der Benutzerschnittstelle entfällt.
+
+Beschreibung
+
+Allgemeines:
+
+Die Eagle Daten für die Leiterplatte stehen unter  [1].
+Die Stromversorgung ist 12V +-10%, Stromaufnahme ca. 230mA max oder über USB
+Die Steuerung kann über I2C, USB oder RS232 erfolgen.
+Dieses Device kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser gesteuert werden. 
+Das Device verwendet einen Module mit AD8318 für die Leistungsmessung oder zwei für die Funktion als Stehwellenmessgerät (VSWR).
+Die maximale Eingangsleistung beträgt 1mW (0dBm); die minimale -60dBm. Wie höhere Leistungen verwendet werden können steht bei „äußere Beschaltung“.
+Die maximale Frequenz beträgt laut Datenblatt 8GHz. Ich kann allerdings nur bis 3GHz messen.
+Wie ein Richtkoppler angeschlossen steht auch bei „äußere Beschaltung“
+
+Genauigkeit und Grenzwerte
+Testsender: Hameg HM8135 (bis 3GHz)
+Die Temperatur des Moduls erhöht sich in den ersten 5 Minuten um circa 5 Grad. Der ausgelesene Wert de AD Wandlers steigt in dieser Zeit um circa 1%.
+Ich habe 4 Module gemessen:
+		1	2	3		4
+Is		99	110	74/101		94/100
+0dBm		957	943	923		931
+-60dBm	3207	3248	3173		3266
+T		42,9	43,9	43,4		43,4	
+Die Temperatur stimmt eher nicht (zu hoch); Der absolute Werte ist aber auch nicht wesentlich.
+Auffällig war, dass der Stromverbrauch von zwei Moduln während des Betrieb (ohne Abfrage von Daten) variierte (und damit die Temperatur). Der Grund ist unklar.
+Die Unterschiede der Messwerte sind bei 0dBm +-1,8%, bei -60dBm bei + - 1,4%. Das liegt im Rahmen der Daten des Datenblatts.
+Die Firmware liefert bei Pegel kleiner -60dBm „0“ (-60dBm); Der maximal erlaubte Pegel laut Datenblatt ist +12dBm; allerdings steigt oberhalb von 0dBm der Fehler stark an.
+
+Einbindung in das MYC System
+
+Details zum MYC System stehen in [3].
+Die komplette Liste der Befehle steht in der Datei _announcements.bas im Bascom Programm 
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
+
+Reset
+
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+
+Watchdog
+
+Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega328.
+Das aktuelle Bascom Programm verwendet einen Atmega328P.
+Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [8] in das Verzeichnis mit dem Programm kopiert werden
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 sollte während der Programmierung entfernt werden. 
+
+Serielle (RS232 / USB) Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die 5V Stromversorgung erfolgt dann über USB.
+
+I2C Schnittstelle 
+
+Die Default Adresse ist 39 (&H27)
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [10, 11].
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt.
+
+
+Stromversorgung
+
+Die Stromversorgung ist 12V, Stromaufnahme ca. 220mA oder über USB.
+
+Aufbau
+
+Die Schaltung arbeitet mit 5V. Der Jumper auf den Moduln muss von 3.3V auf 5V umgelötet werden!!
+
+Bestückung der Leiterplatte 
+
+Verwendung von ISP:
+JP6 
+
+Mit I2C:
+Siehe I2C oben.
+
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC2, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden. X1, D1 und C1 darf dann auch nicht bestückt werden.
+Bei normalem Betrieb muss JP1 (Power) gesteckt sein.
+
+Der USB Modul wird isoliert auf der Bestückungsseite angebracht.
+
+Die AD8318 Moduln werden nach Beschriftung bestückt. Die SMA Buchsen zeigen nach außen.
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+RS232 (Buchse)
+5	GND
+2	TX (PC Eingang)
+3	RX (PC Ausgang)
+
+I2C
+1	GND
+2	SCL
+3	SDA
+
+
+Die äußere Beschaltung
+Ich habe einen Richtkoppler HZ547 ohne getrennte Messausgänge. Die angegebene maximale Eingangsleistung ist 26dBm.
+Für normale Messungen mit höherer Leistung wird vor die Eingänge ein geeignetes Dämpfungsglied geschaltet. Damit die Anzeige stimmt, kann der Dämpfungswert über die Device Schnittstelle eingetragen werden. 
+Für VSWR Messung im Betrieb mit hoher Leistung wird ein Messsignal abgegriffen. Dabei soll der normale Signalweg möglichst nicht beeinflusst werden. Am „reflected“Ausgang des Richtkoppler kann man ein geeignetes normales Dämpfungsglied anschließen und mit dem Messeingang verbinden. Achtung! Dieses Dämpfungslied muss die maximale Leistung aufnehmen können!!
+
+Der Messabgriff für die „forward“ Leistung ist - insbesondere für hohe Eingangsleistung un hohe Frequenzen nicht so einfach (und nicht fertig).
+
+Hat man einen anderen Richtkoppler mit Messausgängen mit reduziertem Pegel, kann man die möglicherweise direkt an das Device anschließen.
+
+Eichung
+
+Durch Eingabe von Werten für die zusätzliche Dämpfung kann man eine Eichung vornehmen. Dies kann auch dann notwendig sein, wenn man  bei unterschiedlichen Frequenzen misst.
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion V01.1
+Bascom Version V01.0
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie / Gewährleistung / Produkthaftung  übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+
+Referenzen
+
+[1]	https://www.dk1ri.de/dhw/vswr_power_eagle.zip
+[2]	https://www.dk1ri.de/dhw/vswr_power_bascom.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder   https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions.txt oder https://dk1ri.de/myc/Definitions.pdf (englisch)
+[6]	https://dk1ri.de/myc/Definitions.pdf (englisch)
+[8]	https://dk1ri.de/dhw/common_1.13.zip
+[9]	
+[10]	https://dk1ri.de/myc/webserver.pdf oder https://dk1ri.de/myc/webserver.txt 
+[11]	https://dk1ri.de/w_dat.htm
