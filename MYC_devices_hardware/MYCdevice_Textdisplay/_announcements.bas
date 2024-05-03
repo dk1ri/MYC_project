@@ -5,7 +5,7 @@ Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C buffer or output
-Data "0;m;DK1RI;Textdisplay;V04.0;1;230;1;11;1-1"
+Data "0;m;DK1RI;textdisplay;V04.0;1;230;1;15;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -13,10 +13,10 @@ Data "0;m;DK1RI;Textdisplay;V04.0;1;230;1;11;1-1"
 'write LCD
 '*********************************
 ' for 16x2 Display
-Data "1;oa,write text;32"
+'Data "1;oa,write text;32"
 '*********************************
 ' for 20x2 Display
-'Data "1;oa,write text;40"
+Data "1;oa,write text;40"
 '*********************************
 '
 'Announce2:
@@ -25,10 +25,10 @@ Data "1;oa,write text;32"
 'goto position and write
 '*********************************
 ' for 16x2 Display
-Data "2;om,write to position;32;32"
+'Data "2;om,write to position;32;32"
 '*********************************
 ' for 20x2 Display
-'Data "2;om,write to position;40;40"
+Data "2;om,write to position;40;40"
 '*********************************
 '
 'Announce3:
@@ -47,7 +47,7 @@ Data "3;op,cursorposition;1;32;lin;-"
 'Befehl &H04
 'Anzeige loeschen
 'clear screen
-Data "4;ou,CLS;0,idle;1,clear display"
+Data "4;ou,CLS1;1;0,idle;1,clear display"
 '
 'Announce5:
 'Befehl &H05
@@ -65,7 +65,7 @@ Data "6;ap,as5"
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;230;11,start at;11,lines;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;230;15,start at;15,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce18:                                                  '
 'Befehl &HFC
@@ -91,3 +91,11 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{1
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '
+'Announce 12:
+Data "L;language names;english;deutsch"
+'
+Announce13:
+Data "L;textdisplay;text display; Text Anteige;write text;write text;Text schreiben;write to position;write to position;an Position schreiben;cursorposition;go to cursorposition;zu Position;"
+'
+'Announce 14:
+Data "L;CLS;clear screen;Anzeige loeschen;contrast;contrast;Kontrast"
