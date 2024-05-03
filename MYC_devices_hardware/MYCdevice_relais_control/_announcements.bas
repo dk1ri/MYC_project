@@ -192,3 +192,9 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{1
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,8,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
+'
+'Announce32:
+Data "L;language names;english;deutsch"
+'
+'Anoounce33:
+Data "L;4 relais Bord;4 relais Bord;4 Relais Karte;all;all;alles;relais1;relais1;Relais 1;relais2;relais2;Relais 2;relais3;relais3;Relais 3;relais4;relais4;Relais 4;reference;reference;Referenz"
