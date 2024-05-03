@@ -1,11 +1,11 @@
 ' annoucements
-' 20220705
+' 20240415
 '
 Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Klimasensor;V04.0;1;145;1;21;1-1"
+Data "0;m;DK1RI;sensor for climate;V04.0;1;145;1;23;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -95,13 +95,13 @@ Data "14;aa,read ID;b"
 'Befehl &H0F
 'Reset
 'Reset
-Data "15;ou,reset;0;1,reset"
+Data "15;ou,reset;1;0,idle;1,reset"
 '
 'Announce16:
 'Befehl &HF0<n><m>
 'liest announcements
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;145;21,start at;21,lines;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;23,start at;23,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce17:
 'Befehl &HFC
@@ -127,3 +127,8 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,22,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '
+'Announce21:
+Data "L;language name;english;deutsch"
+'
+'Announce22:
+Data "L;sensor for climate;sensor for climate;Klimasensor;temperature;temperature;Temperatur;humidity;humidity;Feuchtigkeit;pressure;pressure;Druck;non activ time;non activ time;Pause Zeit;filter;filter;Filter"
