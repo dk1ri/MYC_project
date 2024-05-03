@@ -29,7 +29,7 @@ Data "3;ap,VSWR;1;251,,{0.1_0.000to25.0};lin;-"
 'Befehl &H04
 'schreibt Daempfung forward
 'write attenuation forward
-Data "4;op,attenuation forward;1;1000,,{0.1_0to100.0;lin;dB"
+Data "4;op,attenuation forward;1;1000,,{0.1_0to100.0};lin;dB"
 '
 'Announce5:
 'Befehl &H05
@@ -41,7 +41,7 @@ Data "5;ap,as4"
 'Befehl &H06
 'schreibt Daempfung reflected
 'write attunuation reflected
-Data "5;op,attenuation reflected;1;1000,,{0.1_0to100.0;lin;dB"
+Data "6;op,attenuation reflected;1;1000,,{0.1_0to100.0};lin;dB"
 '
 'Announce7:
 'Befehl &H07
@@ -52,12 +52,12 @@ Data "7;ap,as6"
 'Announce8
 'liest Temperatur
 'read temperature
-Data "8;op,temperature forward;1;801,,{0.1_0to80.0};lin;deg"
+Data "8;ap,temperature forward;1;801,,{0.1_0to80.0};lin;deg"
 '
 'Announce9
 'liest Temperatur
 'read temperature
-Data "8;op,temperature reflected;1;801,,{0.1_0to80.0};lin;deg"
+Data "9;ap,temperature reflected;1;801,,{0.1_0to80.0};lin;deg"
 '
 'Announce10:
 'Befehl &HF0
@@ -90,10 +90,10 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '
 'Announce15
-Data "L:english;deutsch"
+Data "L;language name;english;deutsch"
 '
 'Announce16
-Data "VSWR / power meter;VSWR /Leistngs Messgeraet;forward;vorwaerts;reflected;reflektiert;attenuation forward;Daempfung vorwaerts;"
+Data "L;VSWR / power meter;VSWR / power meter;VSWR /Leistungs Messgeraet;forward;forward;vorwaerts;reflected;reflected;reflektiert;attenuation forward;attenuation forward;Daempfung vorwaerts;"
 '
 'Announce 17:
-Data "attenuation reflected;Daempfung reflektiert;temperature forward;Temperatur  vorwaerts;temperature reflected;Temperatur reflektiert"
+Data "L;attenuation reflected;attenuation reflected;Daempfung reflektiert;temperature forward;temperature forward;Temperatur vorwaerts;temperature reflected;temperature reflected;Temperatur reflektiert"
