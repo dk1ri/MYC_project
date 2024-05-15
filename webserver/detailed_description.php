@@ -32,10 +32,20 @@
 # DK1RI 20240324
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 #
-# The programm uses the SESSION mechanism. So data are stored from one call of a page to the next.
+#T he program do not use globals, because i do not know, weather different users use the dame globals in a multithread environment
+# when sending a commnand at the same time. SESSION are simmilat to globals
+# The programm uses the SESSION mechanism. So data are stored from one call of a page to the next individually for each user.
 # This works with different users; each getting an individual data set.
+# 3 types of SESSION data:
+# - device specific data are generated once only and store in files. $_SESSION[...][$device] stored in the device directory
+# - exception: actual_data: these are variable data. These are not stored in files, because each user can update the data
+# - user specific data stored in user_data per user. default user "user" cannot store data.
+# - other data, which are used in the next call of the page.
+# this is done by read_user_data() in action.php:
 # Some (user-specific) SESSION variables are copied to (global) variables at start of the page and restored to SESSION
 # at the end. This will reduce code length and (hopefully) reduce compute load.
+# if $SESSION variables are empty, and a username is set, data are loaded file(if existing)
+# for username = user default data are loaded to the global variables at start (and stored to SESSION at the end)
 #
 # Myc.php is called once at start; then action.php is called always, which is basically one form element.
 # action.php is the basic page and call all other functions.

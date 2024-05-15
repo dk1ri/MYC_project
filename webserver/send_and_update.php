@@ -5,21 +5,20 @@
 
 # The following are subs used by command send
 function calculate_memory_pos_from_POST($basic_tok){
-    global $device;
     $error = 0;
     # ADD token ?
     if (array_key_exists($basic_tok. "n0", $_POST)){
         $Add_data = $_POST[$basic_tok."n0"];
         if (!is_numeric($Add_data)){$error = 1;}
         }
-    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"][$device])){
-        $Add_data = $_SESSION["actual_data"][$device][$basic_tok."n0"];
+    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"][$_SESSION["device"]])){
+        $Add_data = $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok."n0"];
     }
     else {$Add_data = 0;}
     # with ADDer
     $tok = $basic_tok . "m0";
     if ($Add_data != 0 and $error == 0){
-        $pos = $_SESSION["max_for_ADD"][$device][$basic_tok."n0"];
+        $pos = $_SESSION["max_for_ADD"][$_SESSION["device"]][$basic_tok."n0"];
     }
     else {
         # no ADDer
@@ -29,7 +28,7 @@ function calculate_memory_pos_from_POST($basic_tok){
         $value = 0;
         while (!$found) {
             $tok = $basic_tok . "m" . $i;
-            if (!array_key_exists($tok, $_SESSION["des"][$device])) {
+            if (!array_key_exists($tok, $_SESSION["des"][$_SESSION["device"]])) {
                 $found = 1;
             }
             else {
@@ -42,8 +41,8 @@ function calculate_memory_pos_from_POST($basic_tok){
                     }
                 }
                 $pos += $value;
-                if (array_key_exists($basic_tok."m".($i+1), $_SESSION["des"][$device])){
-                   $pos *= (int)explode(",",$_SESSION["des"][$device][$basic_tok."m".($i+1)])[0];
+                if (array_key_exists($basic_tok."m".($i+1), $_SESSION["des"][$_SESSION["device"]])){
+                   $pos *= (int)explode(",",$_SESSION["des"][$_SESSION["device"]][$basic_tok."m".($i+1)])[0];
                 }
             }
             $i++;
@@ -53,18 +52,17 @@ function calculate_memory_pos_from_POST($basic_tok){
         $pos = $pos + $Add_data;
     }
     else{
-        $pos = $_SESSION["actual_data"][$device][$tok];
+        $pos = $_SESSION["actual_data"][$_SESSION["device"]][$tok];
     }
     return $pos + $Add_data;
 }
 
 function check_send_if_change_of_actual_data($basic_tok){
-    global $device;
     $change_found = 0;
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $tok){
+    foreach ($_SESSION["cor_token"][$_SESSION["device"]][$basic_tok] as $tok){
         if (!$change_found) {
-            if (array_key_exists($tok, $_POST) and array_key_exists($tok, $_SESSION["actual_data"][$device])and $_POST[$tok]!= "") {
-                if ($_POST[$tok] != $_SESSION["actual_data"][$device][$tok]) {
+            if (array_key_exists($tok, $_POST) and array_key_exists($tok, $_SESSION["actual_data"][$_SESSION["device"]])and $_POST[$tok]!= "") {
+                if ($_POST[$tok] != $_SESSION["actual_data"][$_SESSION["device"]][$tok]) {
                     $change_found = 1;
                 }
             }
@@ -93,10 +91,9 @@ function update_actual_data_from_POST($basic_tok){
 }
 
 function u_a_d_f_($tok){
-    global  $device;
     $found = 1;
-    if (array_key_exists($tok, $_SESSION["actual_data"][$device])) {
-        if (array_key_exists($tok, $_POST)){$_SESSION["actual_data"][$device][$tok] = $_POST[$tok];}
+    if (array_key_exists($tok, $_SESSION["actual_data"][$_SESSION["device"]])) {
+        if (array_key_exists($tok, $_POST)){$_SESSION["actual_data"][$_SESSION["device"]][$tok] = $_POST[$tok];}
     }
     else{$found = 0;}
     return  $found;
@@ -105,17 +102,16 @@ function u_a_d_f_($tok){
 function handle_stacks($basic_tok){
     # create stack (for send) if necessary
     # return: $stack
-    global $device;
     $stack = "";
     # do nothing, if stacks == 1
-    if (explode(",", $_SESSION["original_announce"][$device][$basic_tok][1])[0] == 1){
+    if (explode(",", $_SESSION["original_announce"][$_SESSION["device"]][$basic_tok][1])[0] == 1){
         return $stack;
     }
-    if (array_key_exists($basic_tok, $_SESSION["a_to_o"][$device])) {
+    if (array_key_exists($basic_tok, $_SESSION["a_to_o"][$_SESSION["device"]])) {
         # use all (identical) data of corresponding o token
-        $basic_tok = $_SESSION["a_to_o"][$device][$basic_tok];
+        $basic_tok = $_SESSION["a_to_o"][$_SESSION["device"]][$basic_tok];
     }
-    # update $_SESSION["actual_data"][$device]
+    # update $_SESSION["actual_data"][$_SESSION["device"]]
     # the key of the number_of_selects array is 0, 1, ... (as tokenbx)
     $i = 0;
     $found = 1;
@@ -124,9 +120,9 @@ function handle_stacks($basic_tok){
         # all m token only
         $c_token = $basic_tok."m".$i;
         if (array_key_exists($c_token, $_POST)) {
-            if ($_POST[$c_token] != $_SESSION["actual_data"][$device][$c_token]) {
+            if ($_POST[$c_token] != $_SESSION["actual_data"][$_SESSION["device"]][$c_token]) {
                 $stack_changed = 1;
-                $_SESSION["actual_data"][$device][$c_token] = $_POST[$c_token];
+                $_SESSION["actual_data"][$_SESSION["device"]][$c_token] = $_POST[$c_token];
             }
         }
         else{$found = 0;}
@@ -138,26 +134,26 @@ function handle_stacks($basic_tok){
         # all n token only
         $c_token = $basic_tok."n".$i;
         if (array_key_exists($c_token, $_POST)) {
-            if ($_POST[$c_token] != $_SESSION["actual_data"][$device][$c_token]) {
+            if ($_POST[$c_token] != $_SESSION["actual_data"][$_SESSION["device"]][$c_token]) {
                 $stack_changed = 1;
-                $_SESSION["actual_data"][$device][$c_token] = $_POST[$c_token];
+                $_SESSION["actual_data"][$_SESSION["device"]][$c_token] = $_POST[$c_token];
             }
         }
         else{$found = 0;}
         $i++;
     }
-    # create stack for transmit rom $_SESSION["actual_data"][$device] data:
+    # create stack for transmit rom $_SESSION["actual_data"][$_SESSION["device"]] data:
     # ADD token ?
     if (array_key_exists($basic_tok. "n0", $_POST)){
         $Add_data = $_POST[$basic_tok."n0"];
     }
-    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"][$device])){
-        $Add_data = $_SESSION["actual_data"][$device][$basic_tok."n0"];
+    elseif(array_key_exists($basic_tok. "n0",$_SESSION["actual_data"][$_SESSION["device"]])){
+        $Add_data = $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok."n0"];
     }
     else {$Add_data = 0;}
     # with ADDer
     if ($Add_data != 0){
-        $stack = $_SESSION["max_for_ADD"][$device][$basic_tok."n0"] + $Add_data;
+        $stack = $_SESSION["max_for_ADD"][$_SESSION["device"]][$basic_tok."n0"] + $Add_data;
     }
     else {
         # no ADDer
@@ -165,19 +161,19 @@ function handle_stacks($basic_tok){
         $i = 0;
         while (!$found) {
             $tok = $basic_tok . "m" . $i;
-            if (!array_key_exists($tok, $_SESSION["des"][$device])) {
+            if (!array_key_exists($tok, $_SESSION["des"][$_SESSION["device"]])) {
                 $found = 1;
             } else {
-                array_key_exists($tok, $_POST) ? $value = $_POST[$tok] : $value = $_SESSION["actual_data"][$device][$tok];
+                array_key_exists($tok, $_POST) ? $value = $_POST[$tok] : $value = $_SESSION["actual_data"][$_SESSION["device"]][$tok];
                 $stack += $value;
-                if (array_key_exists($basic_tok . "m" . ($i + 1), $_SESSION["des"][$device])) {
-                    $stack *= (int)explode(",", $_SESSION["des"][$device][$basic_tok . "m" . ($i + 1)])[0];
+                if (array_key_exists($basic_tok . "m" . ($i + 1), $_SESSION["des"][$_SESSION["device"]])) {
+                    $stack *= (int)explode(",", $_SESSION["des"][$_SESSION["device"]][$basic_tok . "m" . ($i + 1)])[0];
                 }
             }
             $i++;
         }
     }
-    $stack_len = $_SESSION["property_len"][$device][$basic_tok][1];
+    $stack_len = $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][1];
     $stack = dec_hex($stack,$stack_len);
     return [$stack, $stack_changed];
 }
@@ -186,7 +182,6 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
     # for a b m n commands
     # mode == 0: use $_POST[$tok] to check
     # mode == 1: $tok is part of $_POST[$tok]
-    global $device, $send_ok;
     if(!$mode) {
         $corrected = $_POST[$tok];
     }
@@ -197,20 +192,20 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
     $corrected = check_data_of_manual_entries($tok_for_des,$corrected);
     $send_data = "";
     $display_data = "";
-    if ($send_ok){
+    if ($_SESSION["send_ok"]){
         $dat = convert_bin_hex($corrected, $type);
         $basic_tok = basic_tok($tok);
         switch ($type) {
             case "b":
                 if (strlen($dat) > 1) {
-                    $send_ok = 0;
+                    $_SESSION["send_ok"] = 0;
                 } else {
                     $send_data .= bin2hex($dat);
                     $display_data = $send_data;
                 }
                 break;
             case is_numeric($type):
-                $send_data .= dec_hex(strlen($dat), $_SESSION["property_len"][$device][$basic_tok][1]);
+                $send_data .= dec_hex(strlen($dat), $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][1]);
                 $send_data .= bin2hex($dat);
                 $display_data = $dat;
                 break;
@@ -227,7 +222,6 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
 function split_and_correct_multiple($tok, $value, $type){
     # for manual entries (of f commands) (send)
     # split by "|", spaces of text are entered as &H7C
-    global $send_ok;
     $splitted = explode("|", $value);
     $result = [];
     $i = 0;
@@ -235,7 +229,7 @@ function split_and_correct_multiple($tok, $value, $type){
     while ($i < count($splitted)) {
         if ($splitted[$i] != "") {
             $data= check_data_of_manual_entries($tok, $splitted[$i]);
-            if ($send_ok) {
+            if ($_SESSION["send_ok"]) {
                 $result[$j] = convert_bin_hex($data, $type);
             }
             else {$result = "";}
@@ -250,8 +244,7 @@ function split_and_correct_multiple($tok, $value, $type){
 function check_data_of_manual_entries($tok, $data){
     # $data (for all memory commands is checked for des (ranges)
     # one string or one number
-    global $device, $send_ok;
-    $range = explode(",",$_SESSION["des"][$device][$tok]);
+    $range = explode(",",$_SESSION["des"][$_SESSION["device"]][$tok]);
     if ($range[0] == ""){
         # string
         list($ok,$data) = check_data_of_strings($tok, $data);
@@ -259,7 +252,7 @@ function check_data_of_manual_entries($tok, $data){
     else{
         list($ok,$data) = check_data_of_numbers($tok, $data)();
     }
-    if (!$ok){$send_ok = 0;}
+    if (!$ok){$_SESSION["send_ok"] = 0;}
     return $data;
 }
 
@@ -268,10 +261,9 @@ function check_data_of_strings($tok, $data){
     # data is string
     # non valid characters are skipped
     # if $data is too long -> empty string is returned
-    global $device;
     $result = "";
     $ok = 0;
-    $range = explode(",",$_SESSION["des"][$device][$tok]);
+    $range = explode(",",$_SESSION["des"][$_SESSION["device"]][$tok]);
     # range[1] (length) exists always
     if (strlen($data) <=  $range[1]) {
         if (count($range) == 3) {
@@ -315,8 +307,7 @@ function check_data_of_numbers($tok, $data){
     # $data for one number is real value and may be wrong.
     # check data
     # convert hex or bin
-    global $device;
-    $range = explode(",", $_SESSION["des"][$device][$tok]);
+    $range = explode(",", $_SESSION["des"][$_SESSION["device"]][$tok]);
     $ok = 1;
     if (strlen($data) > 3 and substr($data,0,2) == "0B") {
         $valid = check_valid_bin($data);

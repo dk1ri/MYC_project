@@ -17,16 +17,15 @@ function send_to_device($data){
 
 function read_from_device(){
     # check serialread always
-    global $received_data;
     # check serialread at start as well
-    $received_data = "";
+    $_SESSION["received_data"] = "";
     if (!$_SESSION["read"]){
         if (file_exists($_SESSION["conf"]["serialread"])) {
             $file = fopen($_SESSION["conf"]["serialread"], "r");
-            $received_data  = fgets($file);
+            $_SESSION["received_data"]  = fgets($file);
             fclose($file);
             unlink($_SESSION["conf"]["serialread"]);
-            if ($received_data  == "") {
+            if ($_SESSION["received_data"]  == "") {
                 # error
                 $_SESSION["last_command_status"] = 1;
             }
@@ -40,10 +39,10 @@ function read_from_device(){
                 usleep(5000);
             } else {
                 $file = fopen($_SESSION["conf"]["serialread"], "r");
-                $received_data  = fgets($file);
+                $_SESSION["received_data"]  = fgets($file);
                 fclose($file);
                 $found = 1;
-                if ($received_data  == ""){
+                if ($_SESSION["received_data"]  == ""){
                     # error
                     $_SESSION["last_command_status"] = 1;
                 }
@@ -53,13 +52,13 @@ function read_from_device(){
         # the device write to file with append -> delete file
         if (file_exists($_SESSION["conf"]["serialread"])) {unlink($_SESSION["conf"]["serialread"]);}
     }
-    if ($_SESSION["conf"]["testmode"]){print " from device: ".$received_data ." ";}
+    if ($_SESSION["conf"]["testmode"]){print " from device: ".$_SESSION["received_data"] ." ";}
     # convert 2 byte each to 1 byte char
- #   $string = $received_data
-  #  $received_data  = "";
+ #   $string = $_SESSION["received_data"]
+  #  $_SESSION["received_data"]  = "";
    # $offset = 0;
     #while ($offset < strlen($string)){
-     #   $received_data  .= chr(hexdec(substr($string,$offset, 2)));
+     #   $_SESSION["received_data"]  .= chr(hexdec(substr($string,$offset, 2)));
       #  $offset += 2;
 #
  #   }

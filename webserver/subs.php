@@ -15,6 +15,7 @@ function basic_tok($o_tok){
     $tok = explode("n", $tok)[0];
     # for on elements
     $tok = explode("o", $tok)[0];
+    if (!is_numeric($tok)){$tok = "";}
     return $tok;
 }
 
@@ -519,5 +520,34 @@ function check_valid_bin($data){
     }
     else {$valid = 0;}
     return $valid;
+}
+
+function checkusername($username){
+    $i = 0;
+    $s = "";
+    while ($i < strlen($username)){
+        $chr = substr($username,$i, 1);
+        if (is_numeric($chr)){$s .=$chr;}
+        elseif (ord($chr) > 63 and ord($chr)< 91){$s .= $chr;}
+        elseif (ord($chr) > 96 and ord($chr)< 123){$s .= $chr;}
+        $i++;
+    }
+    if ($username == ""){$username = "user";}
+    return $username;
+}
+
+function tr($label){
+    # translate
+    if (array_key_exists($_SESSION["is_lang"],$_SESSION["translate"])) {
+        if (array_key_exists($label, $_SESSION["translate"][$_SESSION["is_lang"]])) {
+            return $_SESSION["translate"][$_SESSION["is_lang"]][$label];
+        }
+    }
+    if (array_key_exists($_SESSION["is_lang"],$_SESSION["additional_language"])) {
+        if (array_key_exists($label, $_SESSION["additional_language"][$_SESSION["is_lang"]])) {
+            return $_SESSION["additional_language"][$_SESSION["is_lang"]][$label];
+        }
+    }
+    return $label;
 }
 ?>

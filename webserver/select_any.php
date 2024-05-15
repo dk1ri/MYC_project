@@ -89,8 +89,7 @@ function selector_with_Labels($token, $range, $actual){
 function selector($basic_tok){
     # create stack / memory display elements
     # 0 for m n token, 1 for o token
-    global $language, $device;
-    foreach ($_SESSION["cor_token"][$device][$basic_tok] as $ctoken) {
+    foreach ($_SESSION["cor_token"][$_SESSION["device"]][$basic_tok] as $ctoken) {
         if (strstr($ctoken, "m") or strstr($ctoken, "n")) {
             stack_memory_selector($ctoken);
         }
@@ -99,16 +98,15 @@ function selector($basic_tok){
 
 function stack_memory_selector($ctoken){
     # one display element
-    global $device;
-    $actual = $_SESSION["actual_data"][$device][$ctoken];
-    if (array_key_exists($ctoken, $_SESSION["des_name"][$device])) {echo $_SESSION["des_name"][$device][$ctoken] . ": ";}
-    $stacks = explode(",", $_SESSION["des"][$device][$ctoken]);
+    $actual = $_SESSION["actual_data"][$_SESSION["device"]][$ctoken];
+    if (array_key_exists($ctoken, $_SESSION["des_name"][$_SESSION["device"]])) {echo $_SESSION["des_name"][$_SESSION["device"]][$ctoken] . ": ";}
+    $stacks = explode(",", $_SESSION["des"][$_SESSION["device"]][$ctoken]);
     $stacks = array_splice($stacks, 1);
     if ($stacks[0] < $_SESSION["conf"]["selector_limit"]){
         most_simple_selector_for_simple_des($ctoken, $stacks, $actual);
     }
     else{
-        echo "<input type=text name=" . $ctoken . " size = 20 placeholder =" . str_replace(" ","&nbsp;",$_SESSION["actual_data"][$device][$ctoken]) . "><br>";
+        echo "<input type=text name=" . $ctoken . " size = 20 placeholder =" . str_replace(" ","&nbsp;",$_SESSION["actual_data"][$_SESSION["device"]][$ctoken]) . "><br>";
     }
     echo " ";
 }

@@ -5,187 +5,112 @@
 # called at start only
 function read_config(){
     # initializing at start
-    global $username, $language, $is_lang, $new_sequncelist, $device, $activ_chapters, $activ_tok_list,$send_ok;
-    global $tok_to_send, $send_string_by_tok, $received_data ;
     $_SESSION = [];
+    # must be defined here, used before read_new_device
+    $_SESSION["activ_chapters"] = [];
+    $_SESSION["actual_data"] = [];
+    $_SESSION["announce_all"] = [];
     # contain individual data per user
-    $_SESSION["user"] = [];
-    $_SESSION["languages"] = [];
-    #
+    $_SESSION["colornames"] = [];
     # command length
     $_SESSION["command_len"] = [];
-    $_SESSION["started"] = 0;
-    # missing, not used now
-    $_SESSION["interface"] = '';
-    # answer command sent; read data
-    $_SESSION["read"] = 0;
-    # last command status ok?
-    $_SESSION["last_command_status"] = 0;
-    # list of available device; used for display only
-    $_SESSION["device_list_with_spaces"] = [];
     # spaces replaced by "_x_"
     $_SESSION["device_list"] = [];
-    # chapter_token: token: array data: 1
-    # without "as" commands
-    $_SESSION["chapter_token_pure"] = [];
-    # must be defined here, used before read_new_device
-    $_SESSION["announce_all"] = [];
-    $_SESSION["actual_data"] = [];
-    # reveived data
-    $received_data  = "";
+    # list of available device; used for display only
+    $_SESSION["device_list_with_spaces"] = [];
     $_SESSION["edit_operate"] = [];
     $_SESSION["edit_operate"]["operate"] = "operate";
     $_SESSION["edit_operate"]["edit_sequence"] = "edit_sequence";
-    $_SESSION["update"] = 0;
-    $send_ok = 0;
-    $tok_to_send = [];
-    $send_string_by_tok = [];
+    $_SESSION["edit_operate"]["edit_color"] = "edit_color";
+    $_SESSION["edit_operate"]["edit_language"] = "edit_language";
     $_SESSION["_edit_operate_"] = "operate";
+    # missing, not used now
+    $_SESSION["interface"] = '';
+    $_SESSION["known_devices"] = "";
+    $_SESSION["languages"] = [];
+    # last command status ok?
+    $_SESSION["last_command_status"] = 0;
     $_SESSION["new_sequencelist"] = [];
+    # answer command sent; read data
+    $_SESSION["read"] = 0;
+    $_SESSION["started"] = 0;
+    $_SESSION["update"] = 0;;
+    $_SESSION["user_data"] = [];
     #
+    # read config
     $_SESSION["conf"] = [];
-    $config = "_config";
-    if (file_exists($config)) {
-        $file = fopen($config, "r");
-        $i = 0;
-        while (!(feof($file))) {
-            $line = fgets($file);
-            $line = str_replace("\r", "", $line);
-            $line = str_replace("\n", "", $line);
-            $line = explode(";", $line);
-            switch ($i) {
-                case  0:
-                    $_SESSION["conf"]["announcefile"] = $line[1];
-                    break;
-                case  1:
-                    $_SESSION["conf"]["serialwrite"] = $line[1];
-                    break;
-                case  2:
-                    $_SESSION["conf"]["serialread"] = $line[1];
-                    break;
-                case  3:
-                    $_SESSION["conf"]["bgb"] = $line[1];
-                    break;
-                case  4:
-                    $_SESSION["conf"]["bgs"] = $line[1];
-                    break;
-                case  5:
-                    $_SESSION["conf"]["bga"] = $line[1];
-                    break;
-                case  6:
-                    $_SESSION["conf"]["s"] = $line[1];
-                    break;
-                case  7:
-                    $_SESSION["conf"]["r"] = $line[1];
-                    break;
-                case  8:
-                    $_SESSION["conf"]["at"] = $line[1];
-                    break;
-                case  9:
-                    $_SESSION["conf"]["ou"] = $line[1];
-                    break;
-                case  10:
-                    $_SESSION["conf"]["p"] = $line[1];
-                    break;
-                case  11:
-                    $_SESSION["conf"]["m"] = $line[1];
-                    break;
-                case  12:
-                    $_SESSION["conf"]["n"] = $line[1];
-                    break;
-                case  13:
-                    $_SESSION["conf"]["a"] = $line[1];
-                    break;
-                case  14:
-                    $_SESSION["conf"]["b"] = $line[1];
-                    break;
-                case  15:
-                    $_SESSION["conf"]["f"] = $line[1];
-                    break;
-                case  16:
-                    $_SESSION["conf"]["selector_limit"] = $line[1];
-                    break;
-                case  17:
-                    $_SESSION["conf"]["testmode"] = $line[1];
-                    break;
-                case  18:
-                    $_SESSION["conf"]["device_dir"] = $line[1];
-                    break;
-                case  19:
-                    $_SESSION["conf"]["user_dir"] = $line[1];
-                    break;
-                case 20:
-                    $_SESSION["conf"]["alpha"] = $line[1];
-                    break;
-                case 21:
-                    $_SESSION["conf"]["coding"] = $line[1];
-                    break;
-                case 22:
-                    $_SESSION["conf"]["language"] = $line[1];
-                    break;
-                case 23:
-                    $_SESSION["conf"]["user_data_dir"] = $line[1];
-                    break;
-                case 24:
-                    $_SESSION["conf"]["usb_interface_dir"] = $line[1];
-                    break;
-            }
-            $i++;
-        }
-        fclose($file);
+    $c = read_from_file("_config", 1);
+    $_SESSION["conf"]["bas_dir"] = $c[0][1];
+    $_SESSION["conf"]["sys"] = $_SESSION["conf"]["bas_dir"].$c[1][1];
+    $_SESSION["conf"]["usb_interface_dir"] = $_SESSION["conf"]["bas_dir"].$c[2][1];
+    $_SESSION["conf"]["device_dir"] = $_SESSION["conf"]["bas_dir"].$c[3][1];
+    $_SESSION["conf"]["user_dir"] = $_SESSION["conf"]["bas_dir"].$c[4][1];
+    $_SESSION["conf"]["announcefile"] = $_SESSION["conf"]["sys"].$c[5][1];
+    $_SESSION["conf"]["serialwrite"] = $_SESSION["conf"]["usb_interface_dir"].$c[6][1];
+    $_SESSION["conf"]["serialread"] = $_SESSION["conf"]["usb_interface_dir"].$c[7][1];
+    $_SESSION["conf"]["selector_limit"] = $c[8][1];
+    $_SESSION["conf"]["testmode"] = $c[9][1];
+    $_SESSION["conf"]["alpha"] = $_SESSION["conf"]["bas_dir"].$c[10][1];
+    $_SESSION["conf"]["coding"] = $_SESSION["conf"]["bas_dir"].$c[11][1];
+    $_SESSION["conf"]["translate"] = $_SESSION["conf"]["sys"].$c[12][1];
+    $_SESSION["conf"]["actual_data"] = $_SESSION["conf"]["sys"].$c[13][1];
+    $_SESSION["conf"]["known_devices"] = $_SESSION["conf"]["sys"].$c[14][1];
+    $_SESSION["conf"]["default_color"] = $_SESSION["conf"]["bas_dir"].$c[15][1];
+    $_SESSION["conf"]["default_translate"] = $_SESSION["conf"]["bas_dir"].$c[16][1];
+    $_SESSION["additional_language"] = [];
+    # language used in edit_language
+    $_SESSION["edit_language"] = "";
+    #
+    # check, if essential dirs exist
+    if (!dir($_SESSION["conf"]["sys"])){mkdir($_SESSION["conf"]["sys"]);}
+    if (!dir($_SESSION["conf"]["usb_interface_dir"])){mkdir($_SESSION["conf"]["usb_interface_dir"]);}
+    if (!dir($_SESSION["conf"]["device_dir"])){mkdir($_SESSION["conf"]["device_dir"]);}
+    if (!dir($_SESSION["conf"]["user_dir"])){mkdir($_SESSION["conf"]["user_dir"]);}
+    #
+    $_SESSION["default_color"] = [];
+    $c = read_from_file($_SESSION["conf"]["default_color"], 1);
+    foreach ($c as $line){
+        $_SESSION["default_color"][strtolower($line[0])] = $line[1];
     }
-
+    $_SESSION["color"] = $_SESSION["default_color"];
+    #
     $_SESSION["coding"] = [];
-    $config = $_SESSION["conf"]["coding"];
-    if (file_exists($config)) {
-        $file = fopen($config, "r");
-        while (!(feof($file))) {
-            $line = fgets($file);
-            $line = str_replace("\r", "", $line);
-            $line = str_replace("\n", "", $line);
-            $_SESSION["coding"][$line] = $line;
-        }
-        fclose($file);
+    $c = read_from_file($_SESSION["conf"]["coding"],1);
+    $i = 0;
+    foreach ($c as $line){
+        $_SESSION["coding"][$c[$i][0]] = $c[$i][0];
+        $i++;
     }
-    # language
-    $_SESSION["lang"] = [];
-    # for selection of languages only
-    # used for selector
-    $config = $_SESSION["conf"]["language"];
-    if (file_exists($config)) {
-        $file = fopen($config, "r");
-        $i = 0;
-        while (!(feof($file))) {
-            # 1st line: item
-            $line = fgets($file);
-            $line = str_replace("\r", "", $line);
-            $line = str_replace("\n", "", $line);
-            $li = explode(";",$line);
-            if ($i == 0){
-                $j = 1;
-                while ($j < count($li)) {
-                    $_SESSION["lang"][$li[$j]] = [];
-                    $pointer[$j] = $li[$j];
-                    $_SESSION["languages"][] = $li[$j];
-                    $j++;
-                }
+    #
+    $_SESSION["translate"] = [];
+    $filename = $_SESSION["conf"]["translate"];
+    if (!file_exists($filename)) {
+        copy($_SESSION["conf"]["default_translate"],$filename);
+    }
+    $c = read_from_file($_SESSION["conf"]["translate"], 1);
+    $i = 0;
+    foreach ($c as $line){
+        if ($i == 0){
+            $j = 1;
+            while ($j < count($line)) {
+                $_SESSION["translate"][$line[$j]] = [];
+                $pointer[$j] = $line[$j];
+                $_SESSION["languages"][$line[$j]] = $line[$j];
+                $j++;
             }
-            else{
-                $j = 1;
-                while ($j < count($li)) {
-                    $l = $pointer[$j];
-                    $_SESSION["lang"][$l][$li[0]]= $li[$j];
-                    $j++;
-                }
-            }
-            $i  += 1;
         }
+        else{
+            $j = 1;
+            while ($j < count($line)) {
+                $_SESSION["translate"][$pointer[$j]][$line[0]]= $line[$j];
+                $j++;
+            }
+        }
+        $i  += 1;
     }
     # defaultname is "user"
-    $username = "user";
-    $_SESSION["user_data"] = [];
-    $is_lang = "english";
-    $language = $_SESSION["lang"][$is_lang];
+    $_SESSION["username"] = "user";
+    $_SESSION["is_lang"] = "english";
     read_device_list($_SESSION["conf"]["device_dir"]);
 }
 
@@ -197,9 +122,11 @@ function read_device_list($device_dir){
             $replaced = str_replace(" ","_x_", $file);
             $_SESSION["device_list"][$replaced] = $replaced;
             $_SESSION["device_list_with_spaces"][$replaced] = $file;
-            If ($i == 0){$_SESSION["device"] = $replaced;}
+            if ($i == 0){
+                $_SESSION["device"] = $replaced;
+            }
+            $i++;
         }
-        $i++;
     }
     closedir($handle);
 }

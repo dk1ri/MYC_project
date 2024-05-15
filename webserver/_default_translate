@@ -1,0 +1,38 @@
+language name;english;deutsch
+ADMINISTRATION;ADMINISTRATION;VERWALTUNG
+LAST ERROR;LAST ERROR;LETZTER FEHLER
+INDIVIDUALIZATION;INDIVIDUALIZATION;INDIVIDUALISIERUNG
+add;+;+
+all_basic;all basic;Basisbefehle
+author;author;Author
+change;change;aendern
+config;configuration;Konfiguration
+device;device;Gerät
+edit_color; edit color; Farben aendern
+edit_language; edit language;neue Sprache
+edit_sequence;edit_sequence;Reihenfolge aendern
+interface;interface;Schnittstelle
+language;language;Sprache
+languages;english;deutsch
+last command;last command;letzter Befehl
+last_commnd_ok;last read command ok;letzter Lesebefehl iO
+last_commnd_nok;last read command not ok;letzter Lesebefehl nicht iO
+new_data;get new_data;neue Daten abrufen
+new_language;new lanuage;neue Sprache
+operate;operate;Anwendung
+position;position;Position
+read;read;lesen
+read_data;read_data;Daten lesen
+send;send;abschicken
+send_data;send data;Daten absenden
+set_default;set default;Standardwert
+stack;stack;Stapel
+store_data;store;speichern
+store;store user data;Benutzerdaten speichern
+version;version;Version
+w1;Write new sequence number to the left side of the old placeand press send;neue Nummer der Reihenfolge an alte Position eintragen und abschicken
+w2;if you think, it is ok tick store as well;zum speichern auch dies markieren
+w3;The top line must contain anew name of the language;Die oberste Zeile muss einen Namen für die neue Sprache enthalten
+w4;write the translation to the left side;Die Uebersezung wird liks neben das Original geschrieben
+w5;The following names are allowed as well:;Folgende Farbnamen sind erlaubt:
+your_name;your name;Ihr Name

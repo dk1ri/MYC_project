@@ -1,0 +1,15 @@
+background_flex;#6c9ccb;
+background_flex_container;#f1ffff;
+background_basic;#6C9CCB;
+background_sub;#D1F8FF;
+background_answer;#D1F8A0;
+switch_command_s;#000080;
+switch_command_r;#8080FF;
+switch_command_at;#FF80FF;
+switch_command_ou;#800080;
+range_command_p;#D08080;
+memory_command_m;#00FF00;
+memory_command_n;#00FF80;
+memory_command_a;#FF0000;
+memory_command_b;#FF8080;
+memory_command_f;#FF8000;

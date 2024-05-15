@@ -2,7 +2,7 @@
 <!--
     Webserver for MYC system
     myc.php
-    Version 1.2 20240331
+    Version 1.2 202420
     Manual Version: V01.01.06
     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
@@ -12,6 +12,16 @@
     This version may have errors!
     ================================================================
 -->
+    <?php
+    session_start();
+    include "read_config.php";
+    include "file_handling.php";
+    include "subs.php";
+    read_config();
+    $date = new DateTime();
+    $act_date = $date->getTimestamp();
+    include "select_any.php";
+    ?>
     <head>
         <title>MYC Apache Server</title>
         <meta name="author" content="DK1RI">
@@ -32,26 +42,17 @@
         </style>
     </head>
     <body>
-        <?php
-        session_start();
-        global $username, $language, $is_lang, $device, $activ_chapters, $tok_to_send;
-        include "read_config.php";
-        read_config();
-        $date = new DateTime();
-        $act_date = $date->getTimestamp();
-        include "select_any.php";
-        ?>
         <form action="action.php" method="post">
             <?php
-            echo " " .$language["your_name"] . ": ";
+            echo " " .tr("your_name") . ": ";
             # name will be used later to create user individual caches
-            echo "<input type='text' name = 'user_name' size = 15 value=" . $username . ">";
-            echo $language["language"] . ": ";
-            array_selector("language", $_SESSION["languages"], $is_lang);
-            echo $language["device"] . ": ";
-            array_selector("device",  $_SESSION["device_list"], $device)
+            echo "<input type='text' name = 'user_name' size = 15 value=" . $_SESSION["username"] . ">";
+            echo tr("language") . ": ";
+            array_selector("language", $_SESSION["languages"], $_SESSION["is_lang"]);
+            echo tr("device") . ": ";
+            array_selector("device",  $_SESSION["device_list"], $_SESSION["device"]);
+            echo "<p><input type='submit' value = " . tr("send") . "></p>";
             ?>
-           <p><input type="submit" value = senden name = 123></p>
         </form>
     </body>
 </html>
