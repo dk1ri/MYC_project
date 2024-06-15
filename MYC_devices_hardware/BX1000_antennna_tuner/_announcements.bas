@@ -5,7 +5,7 @@ Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Matchbox FA BX1000;V02.0;1;150;1;35;1-1"
+Data "0;m;DK1RI;Matchbox FA BX1000;V02.1;1;150;1;44;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -35,7 +35,7 @@ Data "4;ap,C;1;7505;lin;pF"
 'Befehl &H05
 'schreibt Konfiguration
 'write configuration
-Data "5;os,set configuration;1;0,C-L;1,C1-L-C;2,C2-L-C;3,50Ohm straight"
+Data "5;os;configuration;1;0,C-L;1,C1-L-C;2,C2-L-C;3,50Ohm straight"
 '
 'Announce6:
 'Befehl &H06
@@ -47,7 +47,7 @@ Announce7:
 'Befehl &H07
 'schaltet weitere  Relais
 'switch additional relais
-Data "7;or,set additional relais;1;0,1;1,2;2,3;3,4"
+Data "7;or,additional relais;1;0,1;1,2;2,3;3,4"
 '
 'Announce8:
 'liest status weiterer  Relais
@@ -56,24 +56,24 @@ Data "8;aa,relaisstatus;4"
 '
 'Announce9:
 'Befehl &H09
-'schaltet L aufwärts
+'schaltet L aufw rts
 'switch L upward
 Data "9;ou,start / stop L upwards;1;0,idle;1,stop;2,every;3,every second;4,+50;5,+100"
 '
 'Announce10:
 'Befehl &H0A
-'schaltet L abwärts
+'schaltet L abw rts
 'switch L downward
 Data "10;ou,start / stop L downwards;1;0,idle;1,stop;2,every;3,every second;4,-50;5,-100"
 '
 'Befehl &H0B
-'schaltet C aufwärts
+'schaltet C aufw rts
 'switch C upward
 Data "11;ou,start / stop C upwards;1;0,idle;1,stop;2,every;3,every second;4,+50;5,+100"
 '
 'Announce12:
 'Befehl &H0C
-'schaltet C abwärts
+'schaltet C abw rts
 'switch C downward
 Data "12;ou,start / stop C downwards;1;0,idle;1,stop;2,every;3,every second;4,-50;5,-100"
 '
@@ -105,7 +105,7 @@ Data "16;ap,SWR;1;51,{0.1_0.0to25.0};lin;-"
 ' Befehl &H11
 ' setzt Frequenz
 ' Set frequency
-Data "17;op,set frequency;1;26101,{1_1800to29700};lin;kHz"
+Data "17;op,frequency;1;26101,{1_1800to29700};lin;kHz"
 '
 ' Announce18:
 ' Befehl &H12
@@ -117,7 +117,7 @@ Data "18;ap,as17"
 'Befehl &H13
 'liest aktuellen Kanal
 'read actual chanal
-Data "19;ap,read actual chanal;1;679,{1_1to679};lin;-"
+Data "19;ap,actual chanal;1;679,{1_1to679};lin;-"
 '
 'Announce20:
 'Befehl &H14
@@ -133,7 +133,7 @@ Data "21;ou,store L/C to actual frequency;1;0,idle;1,store"
 '
 'Announce22:
 'Befehl &H16
-'Stellung der Relais für aktuelle Frequenz setzen vom Speicher
+'Stellung der Relais f r aktuelle Frequenz setzen vom Speicher
 'set relais chanal from memory for actual frequency
 Data "22;ou,load L/C values for actual frequency;1;0,idle;1,load"
 '
@@ -141,13 +141,13 @@ Data "22;ou,load L/C values for actual frequency;1;0,idle;1,load"
 'Befehl &H17
 'Speicher auf default setzen
 'set memory to default
-Data "23,ou,set actual chanal to default;1;0,idle;1,clear chanal"
+Data "23,ou,actual chanal to default;1;0,idle;1,clear chanal"
 '
 'Announce24:
 'Befehl &H18
 'default fuer aktuellen Kanal
 'default for actual chanal
-Data "24;ou,set default;1;0,idle;1;set default"
+Data "24;ou,default;1;0,idle;1;set default"
 '
 'Announce25:
 'Befehl &H19
@@ -171,13 +171,13 @@ Data "27;ap,voltage;1;1500,{0.01_0to15.00;lin;V"
 'Befehl &H1C
 'liest Temperature
 'read temperature
-Data "28;ap,Temperature;1;101;lin;degC"
+Data "28;ap,temperature;1;101;lin;degC"
 '
 'Announce29:
 'Befehl &HF0
 'announcement aller Befehle lesen
 'read announcement lines
-Data "240;an,ANNOUNCEMENTS;150;35,start at;35,elements;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;150;44,start at;44,elements;14,CHAPTER,ADMINISTRATION"
 '
 'Announce30:                                            '
 'Befehl &HFC
@@ -203,6 +203,33 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,SERIAL,1;14,CHAPTER
 'read indivdualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '
-Announce34:
+'Announce34:
+Data "L;language name;english;deutsch"
+'
+'Announce35:
+Data "L;Inductance;Inductance;Induktivitaet;capacitance;capacitance;Kapazitaet;configuration;configuration;Konfiguration;additional relais;additional relais;weitere Relais;"
+'
+'Announce36:
+Data "start / stop C upwards;start / stop C upwards;start / stop C aufwaerts;start / stop C downwardsstart / stop C downwards;start / stop C abwaert;"
+'
+'Announce37:
+Data "start / stop L upwards;start / stop L upwards;start / stop L aufwaerts;start / stop L downwardsstart / stop L downwards;start / stop L abwaert;"
+'
+'Announce38:
+Data "up_down status;up_down status;aufwaerts abwaerts status;forward;forward;vorwaerts;reflected;reflected;reflektiert;frequency;frequency;Frequenz;"
+'
+'Announce39:
+Data "actual chanal;actual chanal;aktueller Kanal;actual band;actual  band;aktuelles Band;store L/C to actual frequency;store L/C to actual frequency;"
+'
+'Announce40:
+Data "L/C zu aktueller Frequenz speichern;load L/C values for actual frequency;load L/C values for actual frequency;L / C von aktueller Frequenz lesen;"
+'
+'Announce41:
+Data "actual chanal to default;actual chanal to default;Grundwerte fÃ¼r aktuellen Kanal;default;default;Grundwerte;force fan;force fanMLuefter ein;"
+'
+'Announce42:
+Data "fan;fan;Luefter;voltage;voltage;Spannung;temperature;temperature;Temperatur"
+'
+'Announce43:
 ' Switch off up /down if Power > 12W
 Data "R $15 = 1 IF $19 > 0 AND $14 > 100"

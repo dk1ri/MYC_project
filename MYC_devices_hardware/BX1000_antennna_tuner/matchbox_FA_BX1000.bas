@@ -1,5 +1,5 @@
 'name : matchbox_FA_BX1000.bas
-'Version V02.0, 20230921
+'Version V02.1, 20240611
 'purpose : programm for controlling a 1kW matchbox FA BX1000
 'This Programm uses the serial interface for communication
 'This firmware replaces the original firmware of the matchbox
@@ -228,7 +228,7 @@ $baud = 19200
 '
 ' Adress of external EEPROM, no MYC communication via I2C (not used)
 Const I2c_address = &B10100000
-Const No_of_announcelines = 35
+Const No_of_announcelines = 44
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
