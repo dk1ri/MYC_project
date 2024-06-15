@@ -5,7 +5,7 @@ Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Airsensor;V01.1;1;145;1;18;1-1"
+Data "0;m;DK1RI;Airsensor;V01.0;1;145;1;20;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -89,7 +89,7 @@ Data "13;os,mode;1;0,idle;1,1s;2,20s;3,60s;13,CHAPTER,configuration"
 'Befehl &HF0
 'announcement aller Befehle lesen
 'read announcement lines
-Data "240;ln,ANNOUNCEMENTS;100;18,start;8,elements;14.CHAPTER,ADMINISTRATION"
+Data "240;ln,ANNOUNCEMENTS;100;20,start;20,elements;14.CHAPTER,ADMINISTRATION"
 '
 'Announce14:                                                  '
 'Befehl &HFC
@@ -113,5 +113,10 @@ Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1;14,
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,17;14.CHAPTER,ADMINISTRATION"
+Data "255;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,17;14,CHAPTER,ADMINISTRATION"
 '
+'Announce18:
+Data "L;language name;english;deutsch"
+'
+'Announce19:
+Data "L;Airsensor;Airsensor;Luftsensor"

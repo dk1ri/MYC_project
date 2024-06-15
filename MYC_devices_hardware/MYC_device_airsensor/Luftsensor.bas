@@ -1,5 +1,5 @@
 'name : Luftsensor
-'Version V01.0, 20231019
+'Version V01.2, 20240609
 'purpose : Program for Adafruit CCS811 airsensor (TM)
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware Klimasensor V02.1 by DK1RI
@@ -43,7 +43,7 @@ $crystal = 10000000
 '
 ' not used
 Const I2c_address = &H0
-Const No_of_announcelines = 18
+Const No_of_announcelines = 20
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
