@@ -1,5 +1,5 @@
 ' annoucements
-' 20230920
+' 20240611
 '
 Announce:
 'Befehl &H00
@@ -210,25 +210,25 @@ Data "L;language name;english;deutsch"
 Data "L;Inductance;Inductance;Induktivitaet;capacitance;capacitance;Kapazitaet;configuration;configuration;Konfiguration;additional relais;additional relais;weitere Relais;"
 '
 'Announce36:
-Data "start / stop C upwards;start / stop C upwards;start / stop C aufwaerts;start / stop C downwardsstart / stop C downwards;start / stop C abwaert;"
+Data "L;start / stop C upwards;start / stop C upwards;start / stop C aufwaerts;start / stop C downwardsstart / stop C downwards;start / stop C abwaert;"
 '
 'Announce37:
-Data "start / stop L upwards;start / stop L upwards;start / stop L aufwaerts;start / stop L downwardsstart / stop L downwards;start / stop L abwaert;"
+Data "L;start / stop L upwards;start / stop L upwards;start / stop L aufwaerts;start / stop L downwardsstart / stop L downwards;start / stop L abwaert;"
 '
 'Announce38:
-Data "up_down status;up_down status;aufwaerts abwaerts status;forward;forward;vorwaerts;reflected;reflected;reflektiert;frequency;frequency;Frequenz;"
+Data "L;up_down status;up_down status;aufwaerts abwaerts status;forward;forward;vorwaerts;reflected;reflected;reflektiert;frequency;frequency;Frequenz;"
 '
 'Announce39:
-Data "actual chanal;actual chanal;aktueller Kanal;actual band;actual  band;aktuelles Band;store L/C to actual frequency;store L/C to actual frequency;"
+Data "L;actual chanal;actual chanal;aktueller Kanal;actual band;actual  band;aktuelles Band;store L/C to actual frequency;store L/C to actual frequency;"
 '
 'Announce40:
-Data "L/C zu aktueller Frequenz speichern;load L/C values for actual frequency;load L/C values for actual frequency;L / C von aktueller Frequenz lesen;"
+Data "L;L/C zu aktueller Frequenz speichern;load L/C values for actual frequency;load L/C values for actual frequency;L / C von aktueller Frequenz lesen;"
 '
 'Announce41:
-Data "actual chanal to default;actual chanal to default;Grundwerte für aktuellen Kanal;default;default;Grundwerte;force fan;force fanMLuefter ein;"
+Data "L;actual chanal to default;actual chanal to default;Grundwerte für aktuellen Kanal;default;default;Grundwerte;force fan;force fanMLuefter ein;"
 '
 'Announce42:
-Data "fan;fan;Luefter;voltage;voltage;Spannung;temperature;temperature;Temperatur"
+Data "L;fan;fan;Luefter;voltage;voltage;Spannung;temperature;temperature;Temperatur"
 '
 'Announce43:
 ' Switch off up /down if Power > 12W
