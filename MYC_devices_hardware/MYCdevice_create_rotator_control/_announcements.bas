@@ -1,17 +1,17 @@
 ' announcements
-' 20230806
+' 20240611
 '
 Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RC5 rotator control;V07.0;1;145;1;26:1-1"
+Data "0;m;DK1RI;RC5 rotator control;V07.2;145;1;31;1-1"
 '
 'Announce1:
 'Befehl &H01
 'Motorsteuerung aus / an schalten
 'control off / on
-Data "1;os,Device;1;0,off;1,on"
+Data "1;os,control;1;0,off;1,on"
 '
 'Announce2":
 'Befehl &H02"
@@ -51,19 +51,19 @@ Data "7;ap,as6"
 'Befehl &H08
 'manuell startet den Motor ccw
 'manual start motor ccw
-Data "8;ou,Motor ccw;1;0,idle;1,ccw"
+Data "8;ou,motor ccw;1;0,idle;1,ccw"
 '
 'Announce9:
 'Befehl &H09
 'manuell stoppt den Motor
 'manual stops motor
-Data "9;ou,Motor stop;1;0;idle;1,stop"
+Data "9;ou,motor stop;1;0;idle;1,stop"
 '
 'Announce10:
 'Befehl &H0A
 'manuell startet den Motor cw
 'manual start motor cw
-Data "10;ou,Motor cw;1;0,idle;1,cw"
+Data "10;ou,motor cw;1;0,idle;1,cw"
 '
 'Announce11:
 'Befehl &H0B
@@ -81,13 +81,13 @@ Data "12;ap,as11"
 'Befehl &H0D
 'liest Werte
 'read values
-Data "13;aa,Values 1;a,controlon;a,Motor_cw;a,Motor_ccw"
+Data "13;aa,values 1;a,controlon;a,Motor_cw;a,Motor_ccw"
 '
 'Announce14:
 'Befehl &H0E
 'liest Werte
 'read values
-Data "14;aa,values 2;w,Ccw_correction;w,Cw_correction,w,rotator_direction;w,rotator_preset_direction;13,CHAPTER,configuration"
+Data "14;aa,values 2;w,Ccw_correction;w,Cw_correction,w,rotator_direction;w,rotator_preset_direction"
 '
 'Announce15:
 'Befehl &H0F
@@ -111,7 +111,7 @@ Data "17;as,at limit;1;0,ok;1,at limit"
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;145;26,start at;26,lines;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;31,start at;31,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce19:                                                  '
 'Befehl &HFC
@@ -137,14 +137,29 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8N1;14,CHAPTER,ADMINISTRATION"
 '
-'Announce23:
+'Announce24:
+Data "L;language name;english;deutsch"
+'
+'Announce35:
+Data "L;RC5 rotator control;RC5 rotator control;RC5 Rotorsteuerung;control;control;Steuerung;antenna position;antenna position;Antennen Position;"
+'
+'Announce25:
+Data "L;operation;operation;Bedienung;preset position;preset position;Vorgabe Position;motor ccw;motor ccw;Motor ccw;motor cw;motor cw;Motor cw;"
+'
+'Announce26:
+Data "L;motor stop;motor stop;stoppt Motor;antenna direction limit;antenna direction limit;Grenze fuer Antennen Richtung;values 1;values 1;Werte 1;"
+'
+'Announce27:
+Data "L;values 2;values 2;Werte 2;calibration;calibration;Eichung;at limit;at limit;an der Grenze"
+'
+'Announce28:
 ' - no operate command is done before Control_on is set
 Data "R !$4 !$5 !$6 !$8 IF $2=0"
 '
-'Announce24:
+'Announce29:
 ' - motor at limit will switch off , no need for logic device to send switch off command
 Data "R $7 IF $15=1"
 '
-'Announce25:
+'Announce30:
 'No Preset If hardwarelimit
 Data "R !$4 IF $15=1"

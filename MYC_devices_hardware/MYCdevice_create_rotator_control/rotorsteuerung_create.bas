@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rotorsteuerung_create_bascom.bas
-'Version V07.0, 20230806
+'Version V07.2, 20240611
 'purpose : Programm for control a Create RC5 Rotator
 'Can be used with hardware rotorsteuerung_create V04.0 by DK1RI
 '
@@ -36,7 +36,7 @@ $include "common_1.13\_Processor.bas"
 '
 '1...127:
 Const I2c_address = 2
-Const No_of_announcelines = 26
+Const No_of_announcelines = 31
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32

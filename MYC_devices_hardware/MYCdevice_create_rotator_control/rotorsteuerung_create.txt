@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
  
 MYC Interface für RC5A3 Rotorsteuerung von Create
 
-Author DK1RI, Version V07.0 20230807
+Author DK1RI, Version V07.2 20240618
 This project can be found in https://www.github.com/dk1ri
 
 Einleitung
@@ -21,7 +21,6 @@ Das Interface soll in das Originalgehäuse passen.
 Beschreibung und Bedienungshinweise
 
 Allgemeines:
-
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung (12V) liefert das Steuergerät. Benötigt werden maximal 80mA zusätzlich.
 Die Steuerung kann über I2C, USB oder RS232 erfolgen.
@@ -29,7 +28,6 @@ Die numerische ID des Interfaces ist auf 1 gesetzt; der Name auf „Device 1“.
 Diese Werte können verändert werden.
 
 Details:
-
 Wenn die Motorsteuerung des Interfaces aktiv ist, schaltet ein Relais um von Durchleitung von Originalsteuerung zum Motor auf die Interfacesteuerung zum Motor.
 Dazu  muss nach dem Einschalten ein Aktivierungsbefehl (&H0101) gegeben werden. Dann funktionieren die CW/CCW und Preseteinstellung der Originalsteuerung nicht mehr. 
 Die Werte des Interface können aber immer abgefragt werden, Die Kompassanzeige funktioniert auch unverändert immer.
@@ -80,12 +78,10 @@ Der AD Wandler selbst hat eine Genauigkeit von ca. 0,4 Grad. Da die 360 Grad abe
 Außerdem gibt es einen systembedingten Linearitätsfehler (<1 %) durch die Art der Messschaltung, da der schaltungstechnische Ersatzwiderstand des  Rotor-Potentiometers nicht konstant ist. Durch die hohen Werte von R9 - R11, Ry wird der Effekt verringert. Dieser Fehler wird auch weitestgehend durch die Firmware kompensiert. Bei Verwendung anderer Widerstände muss diese Korrektur neu berechnet werden. Wer das rechnen will, kann zum Beispiel das LTSpice (TM) Modell und die Tabelle verwenden [7]. 
 Der größte Fehler dürfte aber durch die Nichtlinearität des Potentiometers entstehen. Die Genauigkeit des Interface ist also nicht viel besser als die des Originalgeräts.
 
-
 Einbindung in das MYC System
 
 Details zum MYC System stehen in [3].
 Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
-
 
 Fehlermeldungen
 
@@ -121,9 +117,8 @@ Der Jumper J1 sollte während der Programmierung entfernt werden.
 
 Serielle (RS232 / USB) Schnittstelle
 
-Schnittstellenparameter: 19k2 8N1
-Statt des MAX3232 kann auch MAX232 verwendet werden. Dann müssen die 220nF Kondensatoren durch 22uF ersetzt werden.
-Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Schnittstellenparameter: 19k2 8N1 TTL Pegel. Für RS232 Pegel ist ein exterener Pegelwandler nötig.
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird auf der Unterseite der Interfaces verlötet: der USB Stecker zeigt nach innen und die Bauteileseite des UM2102 nach außen. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
 Die Stromversorgung erfolgt dann über USB.
 
 I2C Schnittstelle 
@@ -207,7 +202,9 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion 4.0
-Bascom Version V07.0 
+Bascom Version V07.2
+
+
 
 Copyright
 
