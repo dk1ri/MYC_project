@@ -34,8 +34,9 @@ function read_config(){
     # answer command sent; read data
     $_SESSION["read"] = 0;
     $_SESSION["started"] = 0;
-    $_SESSION["update"] = 0;;
+    $_SESSION["update"] = 0;
     $_SESSION["user_data"] = [];
+    $_SESSION["default_lang"] = "english";
     #
     # read config
     $_SESSION["conf"] = [];
@@ -57,6 +58,7 @@ function read_config(){
     $_SESSION["conf"]["known_devices"] = $_SESSION["conf"]["sys"].$c[14][1];
     $_SESSION["conf"]["default_color"] = $_SESSION["conf"]["bas_dir"].$c[15][1];
     $_SESSION["conf"]["default_translate"] = $_SESSION["conf"]["bas_dir"].$c[16][1];
+    $_SESSION["conf"]["other_POSTS"] = $_SESSION["conf"]["bas_dir"].$c[17][1];
     $_SESSION["additional_language"] = [];
     # language used in edit_language
     $_SESSION["edit_language"] = "";
@@ -73,6 +75,12 @@ function read_config(){
         $_SESSION["default_color"][strtolower($line[0])] = $line[1];
     }
     $_SESSION["color"] = $_SESSION["default_color"];
+    #
+    $_SESSION["other_POSTS"] = [];
+    $c = read_from_file($_SESSION["conf"]["other_POSTS"], 1);
+    foreach ($c as $line){
+        $_SESSION["other_POSTS"][$line[0]] = $line[0];
+    }
     #
     $_SESSION["coding"] = [];
     $c = read_from_file($_SESSION["conf"]["coding"],1);
@@ -110,7 +118,7 @@ function read_config(){
     }
     # defaultname is "user"
     $_SESSION["username"] = "user";
-    $_SESSION["is_lang"] = "english";
+    $_SESSION["is_lang"] = $_SESSION["default_lang"];
     read_device_list($_SESSION["conf"]["device_dir"]);
 }
 

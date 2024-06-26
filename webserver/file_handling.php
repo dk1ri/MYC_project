@@ -57,20 +57,26 @@ function  read_from_file($filename, $array){
 }
 
 function check_user_dir_exist(){
-    if (!is_dir($_SESSION["conf"]["user_data_dir"])){mkdir($_SESSION["conf"]["user_data_dir"]);}
-    if (!is_dir($_SESSION["conf"]["user_data_dir"]."/".$_SESSION["username"])){
-        mkdir($_SESSION["conf"]["user_data_dir"]."/".$_SESSION["username"]);
+    if (!is_dir($_SESSION["conf"]["user_dir"])){mkdir($_SESSION["conf"]["user_dir"]);}
+    if (!is_dir($_SESSION["conf"]["user_dir"]."/".$_SESSION["username"])){
+        mkdir($_SESSION["conf"]["user_dir"]."/".$_SESSION["username"]);
     }
-    if (!is_dir($_SESSION["conf"]["user_data_dir"]."/".$_SESSION["username"]."/".$_SESSION["device"])){
-        mkdir($_SESSION["conf"]["user_data_dir"]."/".$_SESSION["username"]."7". $_SESSION["device"]);
+    if (!is_dir($_SESSION["conf"]["user_dir"]."/".$_SESSION["username"]."/".$_SESSION["device"])){
+        mkdir($_SESSION["conf"]["user_dir"]."/".$_SESSION["username"]."/". $_SESSION["device"]);
     }
 }
 
 function create_data_file($name, $userdata){
     if ($userdata){
         check_user_dir_exist();
-        $file = fopen($_SESSION["conf"]["user_data"][$_SESSION["username"]] . $_SESSION["device"] . $name, "w");
-        $data = $_SESSION["user_data"][$_SESSION["username"]][$_SESSION["device"]][$name];
+        if (array_key_exists($name, $_SESSION["user_data"][$_SESSION["username"]][$_SESSION["device"]])) {
+            $file = fopen($_SESSION["conf"]["user_dir"].$_SESSION["username"] ."/". $_SESSION["device"] . "/".$name, "w");
+            $data = $_SESSION["user_data"][$_SESSION["username"]][$_SESSION["device"]][$name];
+        }
+        else{
+            $file = fopen($_SESSION["conf"]["user_dir"].$_SESSION["username"] ."/". $name, "w");
+            $data = $_SESSION["user_data"][$_SESSION["username"]][$name];
+        }
     }
     else {
         $file = fopen($_SESSION["conf"]["device_dir"] . $_SESSION["device"] . "/session_" . $name, "w");
@@ -93,7 +99,7 @@ function create_data_file($name, $userdata){
 function create_data_file_array($name, $userdata){
     if ($userdata){
         check_user_dir_exist();
-        $file = fopen($_SESSION["conf"]["user_data_dir"][$_SESSION["username"]] . "/" . $_SESSION["device"] . "/". $name, "w");
+        $file = fopen($_SESSION["conf"]["user_dir"].$_SESSION["username"] . "/" . $_SESSION["device"] . "/". $name, "w");
         $data = $_SESSION["user_data"][$_SESSION["username"]][$_SESSION["device"]][$name];
     }
     else {
@@ -162,7 +168,7 @@ function read_data_file($name, $userdata){
     $device = $_SESSION["device"];
     if ($userdata){
         $_SESSION["user_data"][$_SESSION["username"]][$name] = [];
-        $filename = $_SESSION["conf"]["user_data_dir"] . $_SESSION["username"] . "/" . $_SESSION["device"]. "/" . $name;
+        $filename = $_SESSION["conf"]["user_dir"] . $_SESSION["username"] . "/" . $device. "/" . $name;
     }
     else {
         $_SESSION[$name][$_SESSION["device"]] = [];
@@ -184,7 +190,7 @@ function read_data_file($name, $userdata){
             }
         }
     }
-    if ($userdata){$_SESSION["user_data"][$_SESSION["username"]][$device][$name] = $_SESSION[$name][$device];}
+  #  if ($userdata){$_SESSION["user_data"][$_SESSION["username"]][$device][$name] = $_SESSION[$name][$device];}
 }
 
 function read_data_file_array($name, $userdata){

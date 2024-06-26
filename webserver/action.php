@@ -96,7 +96,6 @@
     if ($_SESSION["conf"]["testmode"]){
         include "for_tests.php";
     }
-    $_SESSION["tok_to_send"] = [];
     $_SESSION["send_string_by_tok"] = [];
     $_SESSION["send_ok"] = 1;
     if (array_key_exists("language", $_POST) and $_POST["language"] != "") {
@@ -125,9 +124,18 @@
     # username, language and device is never empty
     if (array_key_exists("user_name", $_POST) and $_POST["user_name"] != "") {
         $uname = checkusername($_POST["user_name"]);
-        if ($uname != $_POST["user_name"]) {
-            # load new user data
-            read_user_data();
+        if ($uname != $_SESSION["username"]){
+            $_SESSION["username"] = $uname;
+            if ($uname != "user") {
+                # load new user data
+                read_user_data();
+            }
+            else{
+                $_SESSION["color"] = $_SESSION["default_color"];
+                $_SESSION["is_lang"] = $_SESSION["default_lang"];
+                # device and activ_chapters not changed
+                create_tok_list();
+            }
         }
     }
     if (array_key_exists("store_user_data", $_POST) and $_POST["store_user_data"] = 1) {
@@ -171,6 +179,7 @@
                 $_SESSION["activ_chapters"][$device][$ch] = $ch;
             }
         }
+        if ($operate_not_changed){correct_POST();}
         # one command only
         if (count($_SESSION["tok_to_send"])) {
             reset($_SESSION["tok_to_send"]);
@@ -184,7 +193,6 @@
         }
         if ($_SESSION["read"]) {receive_civ();}
         $_SESSION["read"] = 0;
-        if ($operate_not_changed){correct_POST();}
     }
     elseif ($_SESSION["_edit_operate_"] == "edit_sequence") {
         $chapter_changed = 0;
@@ -207,6 +215,7 @@
     elseif ($_SESSION["_edit_operate_"] == "edit_language") {
         if ($edit_language_not_changed) {edit_language_post();}
     }
+    if (!array_key_exists($_SESSION["device"], $_SESSION["command_len"])){create_command_len();}
     # automatic update tested, but not ok
     #     while (1){
     #       stop php

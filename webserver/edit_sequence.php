@@ -13,7 +13,7 @@ function edit_sequence(){
     echo "<input type='checkbox' id=store_edit name=store_edit value=1>";
     echo tr("store_data");
     $i = 0;
-    foreach ($_SESSION["new_sequencelist"][$device][$chapter] as $sequence => $tok) {
+    foreach ($_SESSION["new_sequencelist"][$device][$chapter] as $tok) {
         echo "<div>";
         echo "<input type=text name=" . $i . " size=5  placeholder = " . $i, ">";
         echo " " . $i . " " . $tok . " ";
@@ -33,26 +33,52 @@ function edit_sequence_post(){
     foreach ($_SESSION["chapter_for_edit_sequence"][$device]as $ch){$chapter = $ch;}
     if ($_SESSION["new_sequencelist"][$device] == []){return;}
     $temp = [];
-    $count = count($_SESSION["new_sequencelist"][$device][$chapter]);
+    $count = count($_SESSION["new_sequencelist"][$device][$chapter]);print "sss";
     foreach ($_POST as $original_sequence => $new_sequence) {
-        print $new_sequence." ";
         # avoid device language etc
-        if ($new_sequence != "" and is_numeric($new_sequence)) {
+        if ($new_sequence == "" or !is_numeric($new_sequence)  or $new_sequence > $count) {continue;}
+        if ($new_sequence < 0){continue;}
+        $new_sequence = abs($new_sequence);
+        if ($original_sequence != $new_sequence){
             $i = 0;
-            # original:
-            $j = 0;
             while ($i < $count) {
-                if ($j == $new_sequence) {
+                print $i."1 ";
+                if ($i < $original_sequence) {
+                    if ($i < $new_sequence) {
+                        print $i."<< ";
+                        $temp[$i] = $i;
+                    } elseif ($i == $new_sequence) {
+                        print $i."<= ";
                         $temp[$i] = $original_sequence;
-                        $temp[$i+1]= $j;
-                        $i++;
+                    } else {
+                        print $i."<> ";
+                        $temp[$i] = $i - 1;
+                    }
+                }
+                elseif ($i == $original_sequence) {
+                    if ($i < $new_sequence) {
+                        print $i."=< ";
+                        $temp[$i] = $i+ 1;
+                    } elseif ($i == $new_sequence) {
+                        print $i."== ";
+                        $temp[$i] = $i + 1;
+                    } else {
+                        print $i."=> ";
+                        $temp[$i] = $i - 1;
+                    }
                 }
                 else {
-                    $temp[$i] = $j;
+                    if ($i < $new_sequence) {
+                        $temp[$i] = $i + 1;
+                        print $i.">< ";
+                    } elseif ($i == $new_sequence) {
+                        $temp[$i] = $original_sequence;
+                        print $i.">= ";
+                    } else {
+                        $temp[$i] = $i;
+                        print $i.">> ";
+                    }
                 }
-                if($original_sequence == $i){$j++;}
-             #   else{$j--;}
-                $j++;
                 $i++;
             }
         }
@@ -60,7 +86,7 @@ function edit_sequence_post(){
     var_dump($temp);
     if ($temp != []) {
         $i = 0;
-        while ($i < $count) {
+        while ($i < count($temp)) {
             $n = $temp[$i];
             $t[$i] = $_SESSION["new_sequencelist"][$device][$chapter][$n];
             $i++;
@@ -68,22 +94,13 @@ function edit_sequence_post(){
         $_SESSION["new_sequencelist"][$device][$chapter] = $t;
     }
     if (array_key_exists("store_edit", $_POST) and $_POST["store_edit"]){
-        if ($_SESSION["username"] != "user"){
-            $user_dir = $_SESSION["conf"]["user_data_dir"] . "\\" . $_SESSION["username"];
-            if (!file_exists($user_dir)) {
-                mkdir($user_dir);
-            }
-            $user_dir = $_SESSION["conf"]["user_data_dir"] . "\\" . $_SESSION["username"]."\\".$device;
-            if (!file_exists($user_dir)) {
-                mkdir($user_dir);
-            }
-            $user_data = $user_dir."\\".$_SESSION["actual_chapter"];
-            # store actual data to username
-            $file = fopen($user_data, "w");
-            foreach ($_SESSION["new_sequencelist"][$device][$chapter] as $seq => $tok) {
-                fwrite($file, $seq . "," . $tok . "\r\n");
-            }
-            fclose($file);
+        check_user_dir_exist();
+        $user_data = $_SESSION["conf"]["user_dir"] . "\\" . $_SESSION["username"]."\\".$device."\\new_sequencelist";
+        # store actual data to username
+        $file = fopen($user_data, "w");
+        foreach ($_SESSION["new_sequencelist"][$device][$chapter] as $seq => $tok) {
+            fwrite($file, $seq . "," . $tok . "\r\n");
         }
+        fclose($file);
     }
 }

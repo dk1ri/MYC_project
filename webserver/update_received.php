@@ -21,14 +21,14 @@ function update_received(){
     # data from device
     $from_device = $_SESSION["received_data"] ;
     $error = 0;
-    if ($_SESSION["command_len"][$_SESSION["device"]] == 2) {
-        if (strlen($_SESSION["received_data"] ) < 2){return;}
+    if ($_SESSION["command_len"][$_SESSION["device"]] == 1) {
+        if (strlen($_SESSION["received_data"] ) < 4){return;}
         # 2 -> 1 byte
         $basic_tok = hexdec(substr($from_device,0, 2));
-        $from_device = substr($from_device,2, null);
+        $from_device = substr($from_device,2, null );
     }
     else{
-        if (strlen($_SESSION["received_data"] ) < 4){return;}
+        if (strlen($_SESSION["received_data"] ) < 6){return;}
         $basic_tok = hexdec(substr($from_device, 0, 2)) * 256 + hexdec(substr($from_device,2,2));
         $from_device = substr($from_device,4, null);
     }

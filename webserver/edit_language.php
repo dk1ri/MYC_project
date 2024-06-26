@@ -46,7 +46,6 @@ function edit_language_post(){
     $new_language = "";
     if(array_key_exists("new_language1", $_POST)){
         $new_language = $_POST["new_language1"];
-        print $new_language;
         if (array_key_exists($new_language, $_SESSION["languages"]) or $new_language == "" or $new_language == "language_name"){
             $new_language = "";
             $_SESSION["edit_language"] = $_SESSION["is_lang"];
@@ -56,8 +55,6 @@ function edit_language_post(){
             $_SESSION["edit_language"] = $new_language;
         }
     }
-    var_dump($_SESSION["languages"]);
-    print $new_language."nl";
     # ignore all if no valid other language
     if ($new_language == ""){return;}
     foreach ($_POST as $original => $new_lang) {

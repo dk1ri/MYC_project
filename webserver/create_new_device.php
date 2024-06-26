@@ -317,6 +317,7 @@ function init_data(){
     # set data  for all numeric token to "0", strings to "input test"
     # except "big" values for positions stacks (not supported now
     # ranges for memory data not supported
+    print $_SESSION["device"];
     foreach ($_SESSION["announce_all"][$_SESSION["device"]] as $key => $value) {
         if ($key == "0a") {
             # basic command

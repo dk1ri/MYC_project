@@ -11,6 +11,8 @@
     This version is under development
     This version may have errors!
     ================================================================
+    known errors
+    as command not working (hang) not in _POST ???
 -->
     <?php
     session_start();

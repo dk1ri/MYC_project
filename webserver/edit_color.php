@@ -7,9 +7,7 @@ function edit_color(){
     if ($_SESSION["colornames"] == []) {
         $config = "_colornames";
         if (file_exists($config)) {
-            print "2";
             $file = fopen($config, "r");
-            $i = 0;
             while (!(feof($file))) {
                 $line = fgets($file);
                 $line = str_replace("\r", "", $line);
@@ -56,13 +54,11 @@ function edit_color_post(){
             }
         }
     }
-    if (array_key_exists("store_edit", $_POST) and $_POST["store_color"]){
+    $_SESSION["user_data"]["color"] = $_SESSION["color"];
+    if (array_key_exists("store_color", $_POST) and $_POST["store_color"]){
         if ($_SESSION["username"] != "user"){
-            $user_dir = $_SESSION["conf"]["user_data_dir"] . "\\" . $_SESSION["username"];
-            if (!file_exists($user_dir)) {
-                mkdir($user_dir);
-            }
-            $user_data = $user_dir."\\color";
+            check_user_dir_exist();
+            $user_data = $_SESSION["conf"]["user_dir"] . "\\" . $_SESSION["username"]."\\color";
             $file = fopen($user_data, "w");
             foreach ($_SESSION["color"] as $colorname => $color) {
                 fwrite($file, $colorname . ";" . $color . "\r\n");

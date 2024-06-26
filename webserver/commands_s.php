@@ -50,7 +50,7 @@ function create_as_at($basic_tok){
     $actual = $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok."d0"];
     $label = explode(",",$_SESSION["des"][$_SESSION["device"]][$basic_tok."d0"])[2 * ($actual) + 1];
     echo  " ". $label. " read: ";
-    echo "<input type='checkbox' id=".$basic_tok."a" . " name=".$basic_tok."a value=1>";
+    echo "<input type='checkbox'id='".$basic_tok."a' name='".$basic_tok."a' value='1'>";;
 }
 
 function correct_for_send_os($basic_tok){
@@ -77,7 +77,7 @@ function correct_for_send_os($basic_tok){
             $send .= $stack;
             $send .= translate_dec_to_hex("n", $_POST[$basic_tok."d0"], $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][2]);
             $_SESSION["tok_to_send"][$basic_tok] = 1;
-            $_SESSION["send_string_by_toko_send"][$basic_tok] = $send;
+            $_SESSION["send_string_by_tok"][$basic_tok] = $send;
         }
     }
 }
@@ -90,7 +90,7 @@ function correct_for_send_asat($basic_tok){
         $send = translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][0]);
         $send .= $stack;
         $_SESSION["tok_to_send"][$basic_tok] = 1;
-        $_SESSION["send_string_by_toko_send"][$basic_tok]= $send;
+        $_SESSION["send_string_by_tok"][$basic_tok]= $send;
     }
 }
 
@@ -101,7 +101,7 @@ function receive_st($basic_tok, $from_device){
         update_memory_position_stack($basic_tok, $from_device);
         $from_device = substr($from_device,$stacklen);
     }
-    $switchlen == 0 ? $switchlen = 2: $switchlen = $switchlen;
+    if ($switchlen == 0){$switchlen = 2;}
     $data = substr($from_device, 0, $switchlen);
     $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok. "d0"] = hexdec($data);
     update_corresponding_opererating($basic_tok, "d0", hexdec($data));

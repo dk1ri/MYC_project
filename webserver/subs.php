@@ -550,4 +550,19 @@ function tr($label){
     }
     return $label;
 }
+
+function ignore_some_POSTs($data){
+    if(array_key_exists($data,$_SESSION["other_POSTS"])){return 1;}
+    else{return 0;}
+}
+
+function create_command_len(){
+    $device = $_SESSION["device"];
+    if (array_key_exists("65520", $_SESSION["original_announce"][$device])){
+        $_SESSION["command_len"][$device] = 2;
+    }
+   else {
+       $_SESSION["command_len"][$device] = 1;
+   }
+}
 ?>
