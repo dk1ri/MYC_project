@@ -1,11 +1,11 @@
 ' announcements
-' 20231006
+' 20240624
 '
 Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RS232_I2C_interface Master;V07.0;1;220;1;11;1-1"
+Data "0;m;DK1RI;RS232_I2C_interface Master;V07.0;1;220;1;13;1-1"
 '
 'Announce1:
 'Befehl &H01 <s>
@@ -41,7 +41,7 @@ Data "5;aa,as4"
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;220;11,start at;11,elements;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;220;13,start at;13,elements;14,CHAPTER,ADMINISTRATION"
 '
 'Announce7:                                                 '
 'Befehl &HFC
@@ -67,3 +67,8 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,SERIAL,1;14,CHAPTER
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,SERIAL,1;b,BAUDRATE,0,19200;3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '
+Announce11:
+Data "L;language name;english;deutsch"
+'
+'Announce12:
+Data "L;to i2c;to i2c;nach I2C;from (MYC) i2c;from (MYC) i2c;von (MYC) i2c;from i2c;from i2c;von I2c;I2C adress;I2C adress;I2C Adresse"

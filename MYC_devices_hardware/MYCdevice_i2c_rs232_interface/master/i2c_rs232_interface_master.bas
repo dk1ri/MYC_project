@@ -1,5 +1,5 @@
 'name : rs232_i2c_interface_master.bas
-'Version V07.0, 20231127
+'Version V07.1, 20240624
 'purpose : Programm for serial to i2c Interface for test of MYC devices
 'This Programm workes as I2C master
 'Can be used with hardware rs232_i2c_interface Version V05.1 by DK1RI
@@ -41,7 +41,7 @@ $lib "i2c_twi.lbx"
 Const I2c_address = 0
 ' for I2c control (8 bit address!) )is 1 as 7 bit)
 Const I2c_adress_ = 2
-Const No_of_announcelines = 10
+Const No_of_announcelines = 13
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
 Const S_length = 32
