@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : rs232_i2c_interface_slave.bas
-'Version V07.0, 20231127
+'Version V07.1, 20240624
 'purpose : I2C-RS232_interface Slave
 'This Programm workes as I2C slave
 'Can be used with hardware rs232_i2c_interface Version V05.1 by DK1RI
@@ -36,7 +36,7 @@ $include "common_1.13\_Processor.bas"
 '
 ' 1 ... 127:
 Const I2c_address = 1
-Const No_of_announcelines = 8
+Const No_of_announcelines = 10
 Const Tx_factor = 15
 ' For Test:10 (~ 10 seconds), real usage:2 (~ 1 second)
 '
