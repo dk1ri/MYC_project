@@ -1,5 +1,5 @@
 'name : lightsensor
-'Version V01.0, 20231123
+'Version V01.1, 20240624
 'purpose : Program for Adafruit AS7262 lightsensor (TM)
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware Klimasensor V02.1 or Airsensor V01.0 by DK1RI
@@ -46,7 +46,7 @@ $crystal = 10000000
 '
 ' not used
 Const I2c_address = &H0
-Const No_of_announcelines = 33
+Const No_of_announcelines = 32
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
