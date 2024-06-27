@@ -1,5 +1,5 @@
 'name : Feinstaubsensor.bas
-'Version V03.3, 20240314
+'Version V03.4, 20240627
 
 'purpose : Program for Sensitron SPS30 Feinstaubsensor
 'This Programm workes as I2C slave or with serial protocol
@@ -27,6 +27,7 @@ $include "common_1.13\_Introduction_master_copyright.bas"
 '
 '------------------------------------------------------
 ' Detailed description
+' F0 command deliveres 247 byte only (max). This may be less than requested
 '
 '----------------------------------------------------
 $regfile = "m1284pdef.dat"
@@ -41,7 +42,7 @@ $Baud1 = 115200
 '
 '1...127:
 Const I2c_address = 28
-Const No_of_announcelines = 37
+Const No_of_announcelines = 46
 'announcements start with 0 -> minus 1
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)

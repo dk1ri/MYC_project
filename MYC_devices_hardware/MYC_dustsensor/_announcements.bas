@@ -1,11 +1,11 @@
 ' announcements
-' 20240417
+' 2024040627
 '
 Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;Feinstaubsensor;V01.1;1;145;1;38;1-1"
+Data "0;m;DK1RI;dust sensor;V03.4;1;145;1;46;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -173,7 +173,7 @@ Data "27;ou,start cleaning;1;0,idle;1,start"
 'Befehl &H1C
 'Product Typ
 'Product type
-Data "28;aa,Product type;31"
+Data "28;aa,product type;31"
 '
 'Announce29:
 'Befehl &H1D
@@ -203,7 +203,7 @@ Data "32;aa,status register;20;14,CHAPTER,ADMINISTRATION"
 'Befehl &HF0
 'liest announcements
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;145;38,start at;38,elements;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;46,start at;46,elements;14,CHAPTER,ADMINISTRATION"
 '
 'Announce34:
 'Befehl &HFC
@@ -229,3 +229,26 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,28,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '
+'Announce38;
+Data "L;original;english;deutsch"
+'
+'Announce39;
+Data "L;dust sensor;dust sensor;Feinstaubsensor;mass concentration 1.0;mass concentration 1.0;Masse Konzentration 1.0;mass concentration 2.5;mass concentration 2.5;Masse Konzentration 2.5;"
+'
+'Announce40
+Data "L;mass concentration 4.0;mass concentration 4.0;Masse Konzentration 4.0;mass concentration 10;mass concentration 10;Masse Konzentration 10;"
+'
+'Announce41:
+Data "L;number concentration 0.5;number concentration 0.5;Teilchenzahl 0.5;number concentration 1.0;number concentration 1.0;Teilchenzahl 1.0;"
+'
+'Announce42:
+Data "L;number concentration 2.5;number concentration 2.5;Teilchenzahl 2.5;number concentration 4.0;number concentration 4.0;Teilchenzahl 4.0;"
+'
+'Announce43:
+Data "L;number concentration 10;number concentration 10;Teilchenzahl 10;typical size;typical size;typische Groesse;memorypointer;memorypointer;Speicherzeiger;"
+'
+'Announce44:
+Data "L;stop/start measurement;stop/start measurement;Messung stop/start;measuring time;measuring time;Messzeit;cleaning interval;cleaning interval;Reinigungsintervall;"
+'
+'Announce45
+Data "L;start cleaning;start cleaning;startet Reinigung;product type;product type;Typ;serial number;serial number;Seriennummer;version;version; Version;"
