@@ -1,17 +1,17 @@
 ' annoucements
-' 20230723
+' 20240627
 '
 Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;70MHz DDS Sender;V02.0;1;180;1;29;1-1"
+Data "0;m;DK1RI;70MHz DDS geneato V03.2r;180;1;35;1-1"
 '
 'Announce1:
 'Befehl &H01
 'Frequenz
 'frequency
-Data "1;op,frequency;1;70000000;lin;Hz"
+Data "1;op,frequency;1;70000000,;lin;Hz"
 '
 'Announce2:
 'Befehl &H01
@@ -59,13 +59,13 @@ Data "8;as,as7"
 'Befehl &H09
 'Temperatur
 'temperature
-Data "9;ap,temperature;1;1024,{0.1_0.0to102.3};lin;C"
+Data "9;ap,temperature;1;1024,,{0.1_0.0to102.3};lin;C"
 '
 'Announce10:
 'Befehl &H0A
 'Eichung
 'calibrate
-Data "10;oa,calibrate;w,{1_-20000to20000};13,CHAPTER,configuration"
+Data "10;oa,calibrate;w,,{1_-20000to20000};13,CHAPTER,configuration"
 '
 'Announce11:
 'Befehl &H0B
@@ -155,7 +155,7 @@ Data "24;os,predefined;1;0,F2;1,F3;2,F4;3,F5;4,F6;5,F7;6;F8;7,F9;8,F10;9,F11;10;
 'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;100;29,start at;29,lines;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;100;35,start at;35,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce24:                                                  '
 'Befehl &HFC
@@ -181,5 +181,23 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,37,{
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,37,{1_0to127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;14,CHAPTER,ADMINISTRATION"
 '
-Announce28:
+'Announce28:
 Data"R $22 IF $20 = 1"
+'
+'Announce29;
+Data "L;original;english;deutsch"
+'
+'Announce30;
+Data "L;70MHz DDS geneator;70MHz DDS geneator;70MHz DDS Sender;frequency;frequency;Frequenz;switch;switch;Schalter;relais;relais;Relais;temperature;temperature;Temperatur;"
+'
+'Announce31:
+Data "L;calibrate;calibrate;eichen;store calibrate;store calibrate;Eichung speichern;Tc measurement;Tc measurement;Tk Messung;Tc measurement temperature;Tc measurement temperature;Tk Messung Temperatur;"
+'
+'Announce32:
+Data "L;Tc measurement frequency at tmin;Tc measurement frequency at tmin;TK Messung Frequenz bei tmin;Tc measurement frequency at tmax;Tc measurement frequency at tmax;TK Messung Frequenz bei tmax;"
+'
+'Announce33:
+Data "L;Tc deviation at 70MHz;Tc deviation at 70MHz;Tk Abweichung bei 70MHz;RC5 adress;RC5 adress;RC5 Adressde;RC5 Codes 0 to 20;RC5 Codes 0 to 20;RC5 Codes 0 bis 20;"
+'
+'Announce34:
+Data "L;mode;mode;Betriebsart;predefined;predefined;voreingestellt"

@@ -1,5 +1,5 @@
 'name : 70MHZ DDS Sender
-'Version V03.1, 20230723
+'Version V03.2, 20240627
 'purpose : Program for 70MHz DDS sender with AD9851
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware 70_Hz_dds_sender_eagle Version V02.1 by DK1RI
@@ -96,7 +96,7 @@ Const F20 = 50100000
 '
 ' 1 ... 127:
 Const I2c_address = 37
-Const No_of_announcelines = 29
+Const No_of_announcelines = 35
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
