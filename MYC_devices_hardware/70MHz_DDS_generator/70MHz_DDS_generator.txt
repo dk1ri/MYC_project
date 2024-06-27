@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 70MHz DDS Generator
 
-Author DK1RI, Version V03.1, 20230723
+Author DK1RI, Version V03.2, 20240627
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -171,9 +171,9 @@ Bestückung der Leiterplatte
 Verwendung von ISP:
 JP6
 
-Den Quarzoszillator gibt es für verschiedene Versorgungsspannungen. Wird ein 5V Typ verwendet, muss IC3 entfallen. Pin1 und Pin2 wird dann überbrückt. I2C mit 3V ist dann nicht möglich.
+Den Quarzoszillator gibt es für verschiedene Versorgungsspannungen. Wird ein 5V Typ verwendet, muss IC9 entfallen. Pin1 und Pin2 wird dann überbrückt. I2C mit 3V ist dann nicht möglich.
 
-Wird für IC3 (MCP1700-3302) ein 78L03 kompatibler Regler verwendet, ist  die Reihenfolge der pins unterschiedlich !!!
+Wird für IC9 (MCP1700-3302) ein 78L03 kompatibler Regler verwendet, ist  die Reihenfolge der pins unterschiedlich !!!
 
 Der Bestückungsaufdruck der Temperatursensors ist falsch (um 180 Grad gedreht)!
 
@@ -271,7 +271,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V03.0
-Bascom Version V03.1
+Bascom Version V03.2
 
 Copyright
 
