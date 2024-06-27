@@ -1,6 +1,6 @@
 '-----------------------------------------------------------------------
 'name : electronic_load.bas
-'Version V05.0, 20230723
+'Version V05.2, 20240625
 'purpose : This is a electronic load for 7 fets IRFP150
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware electronic_load V04.1 by DK1RI
@@ -130,7 +130,7 @@ $initmicro
 '
 '1...127:
 Const I2c_address = 21
-Const No_of_announcelines = 50
+Const No_of_announcelines = 63
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32

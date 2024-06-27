@@ -1,53 +1,53 @@
 ' announcements
-' 20230515
+' 20240625
 '
 Announce:
 'Befehl &H00; 1 byte / 1 byte + string
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;electronic load for 7 IRFP150;V05.0;1;145;1;50;1-1"
+Data "0;m;DK1RI;electronic load for 7 IRFP150;V05.0;1;145;1;63;1-1"
 '
 'Announce1:
 'Befehl &H01
 'lese aktuelle Spannung
 'read actual voltage
-Data "1;ap,read actual voltage;1;90001,{0.001_0.000to90.000};lin;V"
+Data "1;ap,actual voltage;1;90001,,{0.001_0.000to90.000};lin;V"
  '
 'Announce2:
 'Befehl &H02
 'liest gesamten Strom (1Bit -> 1mA)
 'read all current
-Data "2;ap,read actual current;1;175001,{0.001_0.000to175.000};lin;A"
+Data "2;ap,actual current;1;175001,,{0.001_0.000to175.000};lin;A"
 '
 'Announce3:
 'Befehl &H03
 'liest aktuellen Strom eines FETs
 'read actual current of a FET
-Data "3;ap,read actual current;7,FET;25001,{0.001_0.000to25.000};lin;A"
+Data "3;ap,actual current;7,FET;25001,,{0.001_0.000to25.000};lin;A"
 '
 'Announce4:
 'Befehl &H04
 'liest gesamte Leistung
 'read all power
-Data "4;ap,read actual power;1;350001,{0.001_0.000to350.000};lin;W"
+Data "4;ap,actual power;1;350001,,{0.001_0.000to350.000};lin;W"
 '
 'Announce5:
 'Befehl &H05
 'liest aktuelle Leistung eines FETs
 'read actual power of a FET
-Data "5;ap,read actual power;7,FET;5001,{0.001_0.000to50.000};lin;W"
+Data "5;ap,actual power;7,FET;5001,,{0.001_0.000to50.000};lin;W"
 '
 'Announce6:
 'Befehl &H06
 'liest aktuellen Widerstand
 'read actual resistor
-Data "6;ap,read actual resistor;1;120000000;lin;mOhm"
+Data "6;ap,actual resistor;1;120000000;lin;mOhm"
 '
 'Announce7:
 'Befehl &H07
 'gewuenschte Spannung schreiben
 'write required voltage
-Data "7;op,reqired voltage;1;89601,{0.001_0.4to90.000};lin;V"
+Data "7;op,required voltage;1;89601,,{0.001_0.4to90.000};lin;V"
 '
 'Announce8:
 'Befehl &H08
@@ -59,7 +59,7 @@ Data "8;ap,as7"
 'Befehl &H09
 'gewuenschten Strom
 'required current
-Data "9;op,required current;1;154001,{0.001_0.00to154.000};lin;A"
+Data "9;op,required current;1;154001,,{0.001_0.00to154.000};lin;A"
 '
 'Announce10:
 'Befehl &H0A
@@ -71,7 +71,7 @@ Data "10;ap,as9"
 'Befehl &H0B
 'gewuenschte Leistung
 'required power
-Data "11;op,required power;1;300001,{0.001_0.00to300.000};lin;W"
+Data "11;op,required power;1;300001,,{0.001_0.00to300.000};lin;W"
 '
 'Announce12:
 'Befehl &H0C
@@ -83,7 +83,7 @@ Data "12;ap,as11"
 'Befehl &H0D
 'gewuenschten Widerstand schreiben
 'write required resistor
-Data "13;op,required resistor;1;119999990,{0.001_0.00to120000.000};lin;Ohm"
+Data "13;op,required resistor;1;119999990,,{0.001_0.00to120000.000};lin;Ohm"
 '
 'Announce14:
 'Befehl &H0E
@@ -107,7 +107,7 @@ Data "16;ar,as15"
 'Befehl &H11
 'Wechsellast schreiben
 'write on - off mode
-Data "17;op,time for on off mode;1;1000,{0.01_0.01to10.00};lin;s"
+Data "17;op,time for on off mode;1;1000,,{0.01_0.01to10.00};lin;s"
 '
 'Announce18:
 'Befehl &H12
@@ -131,7 +131,7 @@ Data "20;ou,switch off;1;0,idle;1,off"
 'Befehl &H15
 'Hysterese schreiben
 'write hysteresys
-Data "21;op,hysteresys;1;101,{0.1_0.01to10};lin;%"
+Data "21;op,hysteresys;1;101,,{0.1_0.01to10};lin;%"
 '
 'Announce22:
 'Befehl &H16
@@ -143,7 +143,7 @@ Data "22;ap,as21"
 'Befehl &H17
 'Aktive FETs binaer schreiben
 'write active FETS binary
-Data "23;oa,available FETs;7,xxxx000;14,CHAPTER,ADMINISTRATION"
+Data "23;oa,available FETs;7,;13,CHAPTER,configuration"
 '
 'Announce24:
 'Befehl &H18
@@ -161,7 +161,7 @@ Data "25;aa,number of available FETs;1"
 'Befehl &H1A
 'Maximale Leistung pro Fet
 'maximum power per FET
-Data "26;op,maximum power per FET;1;150;lin;Watt;13,CHAPTER,configuration"
+Data "26;op,maximum power per FET;1;150,;lin;Watt;13,CHAPTER,configuration"
 '
 'Announce27:
 'Befehl &H1B
@@ -173,7 +173,7 @@ Data "27;ap,as26"
 'Befehl &H1C
 'Fet control register einstellen
 'set fet control register
-Data "28;om,fet control register;w,{1_0to4095};6;13,CHAPTER,configuration"
+Data "28;om,control register;w,{1_0to4095};6;13,CHAPTER,configuration"
 '
 'Announce29:
 'Befehl &H1D
@@ -203,7 +203,7 @@ Data "32;ou,calibrate voltage;1;0,idle;1,calibrate voltage;13,CHAPTER,configurat
 'Befehl &H1F
 'Spannungseichung lesen
 'read voltage calibration
-Data "33;ap,read voltage calibration;1;4000,{0.001_0.8000to1.2000};lin;-;13,CHAPTER,configuration"
+Data "33;ap,voltage calibration;1;4000,,{0.001_0.8000to1.2000};lin;-;13,CHAPTER,configuration"
 '
 'Announce34:
 'Befehl &H22
@@ -233,13 +233,13 @@ Data "37;ou,calibrate current;1;0,idle;1,FET1;2,FET2;3,FET3;4,FET4;5,FET5;6,FET6
 'Befehl &H26
 'Stromeichung lesen
 'read current calibration
-Data "38;ap,read current calibration;7,FET;4000,{0.001_0.8000to1.2000};lin;-;13,CHAPTER,configuration"
+Data "38;ap,current calibration;7,FET;4000,,{0.001_0.8000to1.2000};lin;-;13,CHAPTER,configuration"
 '
 'Announce39:
 'Befehl &HF0
 'liest announcements
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;145;50,start at;50;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;63,start at;63,elements;14,CHAPTER,ADMINISTRATION"
 '
 'Announce40:
 'Befehl &HFA
@@ -293,3 +293,39 @@ Data "R $20=1! IF $2&*>150000"
 '
 'Announce50:
 Data "R !E8 IF $1<400"
+'
+'Announce51;
+Data "L;original;english;deutsch"
+'
+'Announce52:
+Data "L;electronic load for 7 IRFP150;electronic load for 7 IRFP150;elektronische Last fuer 7 IRFP150;"
+'
+'Announce53:
+Data "L;actual voltage;actual voltage;aktuelle Spannung;actual current;actual current; aktueller Strom;"
+'
+'Announce54:
+Data "L;actual power;actual power;aktuelle Leistung;actual resistor;actual resistor;aktueller Widerstand;"
+'
+'Announce55:
+Data "L;required voltage;required voltage;minimale Spannung;required current;required current;minimaler Strom;"
+'
+'Announce56;
+Data "L;required power;required power;minimale Leistung;required resistor;required resistor; minimaler Widerstand;"
+'
+'Announce57:
+Data "L;time for on off mode;time for on off mode;Zeit fuer Ein/Aus mode;switch off;switch off;Aus;"
+'
+'Anoounce58:
+Data "L;hysteresys;hysteresys;Hysterese;available FETs;available FETs;verfuegbare FERs; "
+'
+'Announce59:
+Data "L;number of available FETs;number of available FETs;Zahl der FETs;maximum power per FET;maximum power per FET;Leistung der FETs;"
+'
+'Announce60:
+Data "L;control register;control register;Steuerregister;calibration voltage;calibration voltage;Eichspannung;"
+'
+'Announce61:
+Data "L;calibrate voltage;calibrate voltage;Spannung eichen;current for calibration;current for calibration;Eichstrom;shorten Fet;shorten Fet;FET kurzschliessen;"
+'
+'Announce62:
+Data "L;calibrate current;calibrate current;Strom eichen;current calibration;current calibration;Stromeichung"
