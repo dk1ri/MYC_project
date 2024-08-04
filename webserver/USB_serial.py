@@ -31,7 +31,6 @@ else:
 dir = "/xampp/htdocs/usb_interface"
 if  not os.path.exists(dir):
     os.mkdir(dir)
-#print (serial.version)
 ser = serial.Serial(comport, 19200, timeout=1.0)
 to_web = dir + "/to_web"
 from_web = dir + "/from_web"

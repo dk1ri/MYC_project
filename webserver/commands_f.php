@@ -131,7 +131,7 @@ function correct_for_send_af($basic_tok){
             $send .= translate_dec_to_hex("m", $value, $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][2]);
             $_SESSION["read"] = 1;
             $_SESSION["tok_to_send"][$basic_tok] = 1;
-            $_SESSION["send_string_by_tok"] = $send;
+            $_SESSION["send_string_by_tok"][$basic_tok_] = $send;
         }
     }
 }

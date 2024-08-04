@@ -110,7 +110,6 @@ function correct_for_send_op($basic_tok){
         }
     }
     if ($_SESSION["send_ok"]) {
-        print "ssssssss";
         list($stack, $stack_changed) = handle_stacks($basic_tok);
         if (!array_key_exists($basic_tok,$_SESSION["ALL"][$_SESSION["device"]])) {
             if ($stack_changed or $change_found) {
@@ -145,7 +144,6 @@ function correct_for_send_ap($basic_tok){
         list($stack, $stack_changed) = handle_stacks($basic_tok);
         $_SESSION["read"] = 1;
         $send .= $stack;
-        print " ".$send." ";
         if (!array_key_exists($basic_tok,$_SESSION["ALL"][$_SESSION["device"]])) {
             if (array_key_exists($basic_tok."o0", $_SESSION["actual_data"][$_SESSION["device"]])) {
                 $send .= translate_dec_to_hex("m", $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok . "o0"], $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][0]);

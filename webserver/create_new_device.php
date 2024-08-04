@@ -122,7 +122,6 @@ function calculate_property_len(){
     # length of all properties for data transmission for basic_tok
     $device = $_SESSION["device"];
     $tok_len = length_of_number(count($_SESSION["original_announce"][$device]));
-    $_SESSION["command_len"][$device] = $tok_len;
     $_SESSION["property_len_byte"][$device] = [];
     foreach ($_SESSION["original_announce"][$device] as $key => $value) {
         $_SESSION["property_len"][$device][$key][] = $tok_len;
@@ -317,7 +316,6 @@ function init_data(){
     # set data  for all numeric token to "0", strings to "input test"
     # except "big" values for positions stacks (not supported now
     # ranges for memory data not supported
-    print $_SESSION["device"];
     foreach ($_SESSION["announce_all"][$_SESSION["device"]] as $key => $value) {
         if ($key == "0a") {
             # basic command

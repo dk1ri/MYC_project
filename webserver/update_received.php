@@ -21,13 +21,14 @@ function update_received(){
     # data from device
     $from_device = $_SESSION["received_data"] ;
     $error = 0;
-    if ($_SESSION["command_len"][$_SESSION["device"]] == 1) {
+    if ($_SESSION["command_len"][$_SESSION["device"]] == 0) {
         if (strlen($_SESSION["received_data"] ) < 4){return;}
-        # 2 -> 1 byte
+        # 0-> 1 byte
         $basic_tok = hexdec(substr($from_device,0, 2));
         $from_device = substr($from_device,2, null );
     }
     else{
+        # 2 byte
         if (strlen($_SESSION["received_data"] ) < 6){return;}
         $basic_tok = hexdec(substr($from_device, 0, 2)) * 256 + hexdec(substr($from_device,2,2));
         $from_device = substr($from_device,4, null);
@@ -198,7 +199,7 @@ function update_memory_data($token, $from_device, $length_of_length){
 function update_memory_position_stack($basic_tok, $from_device){
     # used for memory-positions and stacks
     # data are correct and stored to $_SESSION["actual_data"][$_SESSION["device"]] directly but splited as <des...>
-    $pos = hexdec(substr($from_device,0,$_SESSION["property_len"][$_SESSION["device"]][$basic_tok][1]));
+    $pos = hexdec(substr($from_device,0,$_SESSION["property_len"][$_SESSION["device"]][$basic_tok][2]));
     array_key_exists($basic_tok,$_SESSION["a_to_o"][$_SESSION["device"]]) ? $basic_tok_ = $_SESSION["a_to_o"][$_SESSION["device"]][$basic_tok]: $basic_tok_ = $basic_tok;
     $add_found = 0;
     if (array_key_exists($basic_tok_."n0", $_SESSION["max_for_ADD"][$_SESSION["device"]])){

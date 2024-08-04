@@ -83,7 +83,6 @@ function edit_sequence_post(){
             }
         }
     }
-    var_dump($temp);
     if ($temp != []) {
         $i = 0;
         while ($i < count($temp)) {

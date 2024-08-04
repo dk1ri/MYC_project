@@ -16,7 +16,7 @@
 -->
     <?php
     session_start();
-    include "read_config.php";
+    include "read_confighp";
     include "file_handling.php";
     include "subs.php";
     read_config();

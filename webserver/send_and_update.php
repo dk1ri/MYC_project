@@ -244,106 +244,96 @@ function split_and_correct_multiple($tok, $value, $type){
 function check_data_of_manual_entries($tok, $data){
     # $data (for all memory commands is checked for des (ranges)
     # one string or one number
+    $ok = 0;
     $range = explode(",",$_SESSION["des"][$_SESSION["device"]][$tok]);
-    if ($range[0] == ""){
+    if ($range[0] == "") {
         # string
-        list($ok,$data) = check_data_of_strings($tok, $data);
+        # $data is checked for des (ranges)
+        # data is string
+        # non valid characters are skipped
+        # if $data is too long -> empty string is returned
+        $result = "";
+        $ok = 0;
+        $range = explode(",", $_SESSION["des"][$_SESSION["device"]][$tok]);
+        # range[1] (length) exists always
+        if (strlen($data) <= $range[1]) {
+            if (count($range) == 3) {
+                #  range[2] is alpharestriction
+                $i = 0;
+                while ($i < strlen($data)) {
+                    $done = 0;
+                    if ($i < (strlen($data) - 4) and (substr($data, $i, 2) == "0H")) {
+                        $valid = check_valid_bin(substr($data, $i, 4));
+                        if ($valid) {
+                            $result .= hexdec(substr($data, $i, 4));
+                            $i += 3;
+                            $done = 1;
+                        }
+                    } elseif ($i < (strlen($data) - 10) and (substr($data, $i, 2) == "0B")) {
+                        $valid = check_valid_bin(substr($data, $i, 4));
+                        if ($valid) {
+                            $result .= hexdec(substr($data, $i, 4));
+                            $i += 9;
+                            $done = 1;
+                        }
+                    }
+                    if (!$done) {
+                        if (strstr($range[2], substr($data, $i, 1))) {
+                            $result .= substr($data, $i, 1);
+                        }
+                    }
+                    $i++;
+                }
+            } else {
+                # no restriction
+                $result = $data;
+            }
+            $ok = 1;
         }
+    }
     else{
-        list($ok,$data) = check_data_of_numbers($tok, $data)();
+        # $data for one number is real value and may be wrong.
+        # check data
+        # convert hex or bin
+        $range = explode(",", $_SESSION["des"][$_SESSION["device"]][$tok]);
+        $ok = 1;
+        if (strlen($data) > 3 and substr($data,0,2) == "0B") {
+            $valid = check_valid_bin($data);
+            if ($valid) {
+                $data = hexdec($data);
+            } else {
+                $ok = 0;
+            }
+        }
+        elseif (strlen($data) > 3 and substr($data,0,2) == "0H") {
+            $valid = check_valid_hex($data);
+            if ($valid) {
+                $data = bindec($data);
+            }
+            else {
+                $ok = 0;
+            }
+        }
+        if ($ok){
+            # $data is number now
+            # number must exactly match the range
+            list($min, $max) = find_allowed($range[0]);
+            if ($data < $min or $data > $max){
+                $ok = 0;
+            }
+            if ($ok) {
+                # int or float
+                # <codingname> not yet supported
+                list($ok_, $data) = check_translate_range($range, $data, 0);
+                if (!$ok_){$ok = 0;}
+            }
+            if (!$ok) {
+                $data = 0;
+            }
+        }
     }
     if (!$ok){$_SESSION["send_ok"] = 0;}
     return $data;
-}
-
-function check_data_of_strings($tok, $data){
-    # $data is checked for des (ranges)
-    # data is string
-    # non valid characters are skipped
-    # if $data is too long -> empty string is returned
-    $result = "";
-    $ok = 0;
-    $range = explode(",",$_SESSION["des"][$_SESSION["device"]][$tok]);
-    # range[1] (length) exists always
-    if (strlen($data) <=  $range[1]) {
-        if (count($range) == 3) {
-            #  range[2] is alpharestriction
-            $i = 0;
-            while ($i < strlen($data)) {
-                $done = 0;
-                if ($i < (strlen($data) - 4) and (substr($data, $i,2) == "0H")){
-                    $valid = check_valid_bin(substr($data,$i,4));
-                    if ($valid){
-                        $result.= hexdec(substr($data,$i,4));
-                        $i+=3;
-                        $done = 1;
-                    }
-                }
-                elseif ($i < (strlen($data) - 10) and (substr($data, $i,2) == "0B")){
-                    $valid = check_valid_bin(substr($data,$i,4));
-                    if ($valid){
-                        $result.= hexdec(substr($data,$i,4));
-                        $i+=9;
-                        $done = 1;
-                    }
-                }
-                if (!$done){
-                    if (strstr($range[2], substr($data, $i, 1))) {
-                        $result .= substr($data, $i, 1);
-                    }
-                }
-                $i++;
-            }
-        } else {
-            # no restriction
-            $result = $data;
-        }
-        $ok = 1;
-    }
-    return[$ok,$result];
-}
-
-function check_data_of_numbers($tok, $data){
-    # $data for one number is real value and may be wrong.
-    # check data
-    # convert hex or bin
-    $range = explode(",", $_SESSION["des"][$_SESSION["device"]][$tok]);
-    $ok = 1;
-    if (strlen($data) > 3 and substr($data,0,2) == "0B") {
-        $valid = check_valid_bin($data);
-        if ($valid) {
-            $data = hexdec($data);
-        } else {
-            $ok = 0;
-        }
-    }
-    elseif (strlen($data) > 3 and substr($data,0,2) == "0H") {
-        $valid = check_valid_hex($data);
-        if ($valid) {
-            $data = bindec($data);
-        }
-        else {
-            $ok = 0;
-        }
-    }
-    if ($ok){
-        # $data is number now
-        # number must exactly match the range
-        list($min, $max) = find_allowed($range[0]);
-        if ($data < $min or $data > $max){
-            $ok = 0;
-        }
-        if ($ok) {
-            # int or float
-            # <codingname> not yet supported
-            list($ok_, $data) = check_translate_range($range, $data, 0);
-            if (!$ok_){$ok = 0;}
-        }
-        if (!$ok) {
-            $data = 0;
-        }
-    }
-    return[$ok, $data];
 }
 
 function check_translate_range($range, $data, $check_translate){

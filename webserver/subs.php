@@ -559,10 +559,11 @@ function ignore_some_POSTs($data){
 function create_command_len(){
     $device = $_SESSION["device"];
     if (array_key_exists("65520", $_SESSION["original_announce"][$device])){
-        $_SESSION["command_len"][$device] = 2;
+        $_SESSION["command_len"][$device] = 1;
     }
    else {
-       $_SESSION["command_len"][$device] = 1;
+       # default 1 byte
+       $_SESSION["command_len"][$device] = 0;
    }
 }
 ?>
