@@ -1,13 +1,14 @@
 ' additional reset
 ' 20210908
 '
+Ir_mode_e = Ir_mode_default
 Correct_eeram = Correct_default
-Temp_measure_eeram = 250
+Temp_measure_eram = 250
 ' 25.0C
 Tk_eeram = Tk_default
 Sensor_eeram = 0
-Correct_eeram = Correct_default
-Rc5_adress_soll_eeram = Rc5_address_def
+With_amp_eram = 1
+Rc5_adress_soll_eram = Rc5_address_def
 Rc5_code_eeram(1) = Comm1
 Rc5_code_eeram(2) = Comm2
 Rc5_code_eeram(3) = Comm3
@@ -28,3 +29,24 @@ Rc5_code_eeram(17) = Comm17
 Rc5_code_eeram(18) = Comm18
 Rc5_code_eeram(19) = Comm19
 Rc5_code_eeram(20) = Comm20
+'
+Freqe(1) = F1
+Freqe(2) = F2
+Freqe(3) = F3
+Freqe(4) = F4
+Freqe(5) = F5
+Freqe(6) = F6
+Freqe(7) = F7
+Freqe(8) = F8
+Freqe(9) = F9
+Freqe(10) = F10
+Freqe(11) = F11
+Freqe(12) = F12
+Freqe(13) = F13
+Freqe(14) = F14
+Freqe(15) = F15
+Freqe(16) = F16
+Freqe(17) = F17
+Freqe(18) = F18
+Freqe(19) = F19
+Freqe(20) = F20
