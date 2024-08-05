@@ -3,51 +3,53 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 70MHz DDS Generator
 
-Author DK1RI, Version V03.2, 20240627
+Author DK1RI, Version V03.4, 20240805
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
 
-Dies ist die Beschreibung eines 70MHz DDS Generators.
-Dieses Gerät kann als Sender für einzelne Frequenzen mit Infrarotsteuerung oder kann als universeller Sender mit Steuerung mit serieller Schnittstelle / I2C verwendet werden.
+Dies ist die Beschreibung eines 70MHz DDS Generators mit dem AD9851 von Analog Devices.
+Dieses Gerät kann als universeller Sender mit Steuerung mit serieller Schnittstelle / I2C verwendet werden. Die Steuerung über Infrarot ist zur Zeit nicht aktiv.
 Das Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
-Zur Steuerung mit einem Browser: siehe [10]
+Zur Steuerung mit einem Browser: siehe [10] und [11]
 Das Interface arbeitet als Slave am I2C Bus oder kann über RS232 / (USB) gesteuert werden.
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
 
 Beschreibung und Bedienung
 
 Allgemeines:
-
 Ursprünglich benötigte ich einen Steuersender, der wenige einzelne Frequenzen in den Amateurfunkbändern liefert. Dieser sollte einen 10W Verstärker [7] ansteuern, um die Abstimmung eines automatischen Antennen - Anpassgerätes zu ermöglichen. 
 Der Betrieb in dieser Form ist eine gültige Amateurfunklizenz erforderlich!
-Für diesen Zweck wird die Schaltung nur teilweise bestückt und die Steuerung erfolgt mit einer Infrarot Fernbedienung ähnlich der Idee nach [8]
-Das Gerät kann auch in einen MYC Umfeld als universell steuerbarer Generator verwendet werden..
+Das Gerät kann auch als universell steuerbarer Generator verwendet werden..
 Die Eagle Daten für die Leiterplatte stehen unter  [1].
 Die Stromversorgung ist 12V +-10%, Stromaufnahme ca. 140 mA max. Hinzu kommt der Strom des 10W Verstärkers (<2A) und des Relais.
 Die Steuerung kann über I2C, USB oder RS232 oder (eingeschränkt) Infrarot erfolgen.
 
 Details:
+Der Befehl &H03 bestimmt, ob der Verstärker ausgeschaltet ist und das Signal von „from_TX“ nach „PAout“ durchgeschaltet wird; oder das verstärkte Signal des Generators an „PAout“ erscheint.	
+Mit Verstärker ist „Sinusout“ mit dem Eingang des Verstärkers verbunden; der Ausgang mit „Out“:
+Beim ersten Einschalten sendet der Generator bei 10MHz.
+Der Generator ist nicht abschaltbar.
 
-Die Stellung des Schalter an SL11 bestimmt, ob das Interface im Infrarotmode oder MYC Mode arbeitet. Ohne Schalter oder „Schalter aus“ ergibt den MYC Mode.
-Im MYC Mode ist die Steuerung über Infrarot abgeschaltet. Im Infrarot Mode werden die RC5 Codes über die serielle Schnittstelle / USB ausgegeben.
-Das Umschalten der beiden Modes im Betrieb ist möglich.
-Beim Einschalten ist der Generator abschaltet, auch nach dem Umschalten des Mode. Relais und Endstufe sind im Infrarot Mode immer eingeschaltet.
+Als Testsender
+Der automatische Antennenanpassgerät MFJ 998RT benötigt zur Abstimmung eine Spannung, die einer Leistung von 5 – 8W entspricht. Wenn das Anpassgerät schon auf eine Antenne abgestimmt war, geht die Anpassung an eine geänderte Frequenz zwar sehr schnell. Die verwendete Endstufe SPE, 1,3kW schaltet bei Fehlanpassung aber schneller ab und auch der Transceiver IC705 regelt zu weit zurück, und das Anpassgerät funktioniert so nicht. Daher wird ein Sender verwendet, der nicht zurückgeregelt und bei Fehlanpassung nicht zerstört wird.
+Nach dem Einschalten soll das Relais ausgeschaltet sein. Das Sendesignal wird von SL7 auf SL6 durchgeleitet. Dort ist ddie Endstufe mit dem Anpassgerät angeschlossen. Dies ist die Einstellung für den normalen Sendebetrieb.
+Bei Fehlanpassung schaltet die Endstufe ab und auf Durchgang oder man schaltet sie manuell auf Durchgang. Das Relais wird eingeschaltet, die LED geht an.Der Verstärker schaltet ein. Der DDS Generator gibt eine geeignete Frequenz aus. Das Ausgangssignal an SL4 geht auf einen 10W QRP Verstärker [7], der nicht zurückregelt. Das Ausgangssignal des Verstärkers geht über SL5 – SL6 durch die Endstufe an das Anpassgerät. Die maximale Eingangleistung der Endstufe (10W) wird auch nicht überschritten, falls die Endstufe nicht abgeschaltet wurde. 
+Nach dem Abstimmvorgang wird der Verstärker wieder abgeschaltet (Relais aus)
+In der bestehenden Softwareversion sind 19 voreingestellte  Frequenzen vorgesehen.
+Der verwendete Verstärker benötigt 400mVpp (140mVeff) zur Aussteuerung bei 10MHz, bei 30MHz etwa 1Vpp.
+Der Ausgangspegel des DDS Generators beträgt 1Vpp an 50Ohm. Mit R6 = R7 = 100Ohm ergibt sich 1Vpp an 50Ohm. Dieser Pegel kann direkt verwendet werden: (R8 = 0 Ohm R9 = -)
 
-Steuerung mit Infrarot
-Der automatische Antennenanpassgerät MFJ 998RT benötigt zur Abstimmung eine Spannung, die einer Leistung von 5 – 8W entspricht. Wenn das Anpassgerät schon auf eine Antenne abgestimmt war, geht die Anpassung an eine geänderte Frequenz zwar sehr schnell. Die verwendete Endstufe SPE, 1,3kW schaltet bei Fehlanpassung aber schneller ab und auch der Transceiver IC705 regelt zu weit zurück, und das Anpassgerät funktioniert nicht. Daher wird ein Sender verwender, der nicht zurückgeregelt und bei Fehlanpassung nicht zerstört wird.
-Nach dem Einschalten im MYC Mode ist der DDS Sender und die Endstufe abgeschaltet. Das Sendesignal des IC705 wird von SL7 auf SL6 durchgeleitet. Dort ist die Endstufe mit dem Anpassgerät angeschlossen. Dies ist die Einstellung für den normalen Sendebetrieb.
-Bei Fehlanpassung schaltet die Endstufe ab und auf Durchgang oder man schaltet sie manuell auf Durchgang. Das Interface wird in den Infrarot Mode geschaltet, die LED geht an.Die Endstufe schaltet ein. Der DDS Generator wird durch Auswahl einer geeigneten Frequenz mit der Infrarot Fernbedienung eingeschaltet. Das Ausgangssignal an SL4 geht auf einen 10W QRP Verstärker [7], der nicht zurückregelt. Das Ausgangssignal der Endstufe geht über SL5 – SL6 durch die Endstufe an das Anpassgerät. Die maximale Eingangleistung der Endstufe (10W) wird auch nicht überschritten, falls die Endstufe nicht abgeschaltet wurde. 
-Nach dem Abstimmvorgang wird der DDS Sender mit dem ersten Ifrarotcode wieder abgeschaltet  oder mit dem Schalter an SL11 wieder in den MYC mode gebracht.
-In der bestehenden Softwareversion sind 19 Frequenzen vorgesehen. Um alle Frequenzen einzustellen, ist eine Fernbedienung mit 20 Tasten nötig. 
-Die Software hat vorgegeben Infrarotcodes zur Einstellung der Frequenzen. Diese können aber geändert werden.
-Zunächst muss man die RC5 Adresse und die Kommandonummern zu den Tasten herausfinden.  Der DDS Generator gibt Adresse und Kommandonummern einer vorhandenen Fernbedienung auf der seriellen Schnittstelle / USB als MYC info aus, Diese Schnittstelle muss dann aber bestückt werden:
-Die Adresse wird eingebeben mit 0x14<adresse> (im Hex format)
-zum Beispiel: &H1200
-Der code mit &H1<position><code> (im Hex format)
+Infrarot:
+Die Steuerung per Infrarot ist zur Zeit deaktiviert
+Zunächst muss man dazu die RC5 Adresse und die Kommandonummern zu den Tasten herausfinden.  
+Den zuletzt empfangene Adresse und den Code kann man mit  &H11 auslesen.
+Die Adresse wird eingegeben mit 0x11<adresse> (im Hex format)
+zum Beispiel: &H1100
+Der code mit &H13<position><code> (im Hex format)
 
 <position>					default code
-&H00:		Code zum Abschalten		1
+&H00:		Code für 10000000Hz	1		1
 &H01:		Code für 151000 Hz		2
 &H02:		Code für 3510000 Hz		3
 &H03:		Code für 3650000 Hz		4
@@ -70,16 +72,12 @@ Der code mit &H1<position><code> (im Hex format)
 
 RC5 Adresse und  Kommandonummern können über die Schnittstellen /Browser geändert werden.
 Werden weniger Frequenzen benötigt, werden bei den nicht benötigten Commx ungültige RC5 Codes eingetragen.
-Die verwendete Endstufe benötigt 400mVpp (140mVeff) zur Aussteuerung bei 10MHz, bei 30MHz etwa 1Vpp.
-Der Ausgangspegel des DDS Generators beträgt 1Vpp an 50Ohm. Mit R6 = R7 = 100Ohm ergibt sich 1Vpp an 50Ohm. Dieser Pegel kann direkt verwendet werden: (R8 = 0 Ohm R9 = -)
 
-Im MYC System
-Die Bedienung mit dem Browser ist weitestgehend selbsterklärend. Die folgenden Befehlsangaben gelten bei Steuerung über die serielle /I2C Schnittstelle.
-Neben den Standardbefehlen sind 23 weitere Befehle vorgesehen: für das Einstellen der Frequenz, das Schalten des Relais / der PA, die Eichung und die Eingabe der RC5-Adressen. Weiterhin einige Befehle zum Auslesen der Daten.
-Der Generator beim Start eingeschaltet.
-Ist der Generator bereits eingeschaltet, stellt &H0301 die letzte gespeicherte Frequenz ein.
+Universeller Generator
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend. Die folgenden Befehlsangaben gelten bei Steuerung über die serielle / I2C Schnittstelle.
+Neben den Standardbefehlen sind 27 weitere Befehle vorgesehen: für das Einstellen der Frequenz, das Schalten des Relais / des Verstärkers, die Eichung und die Eingabe der RC5-Adressen. Weiterhin einige Befehle zum Auslesen der Daten.
 Wenn der Temperatursensor eingebaut ist und mit &H0701 aktiviert wurde, wird die Temperatur circa alle 30 Sekunden gemessen. Wenn ein Temperaturkoeffizient des Oszillators eingegeben wurde, wird dieser bei jeder Änderung der Frequenz und Temperatur berücksichtigt.
-Das Relais kann auch bedient werden. Im IR Mode kann die Frequenz zusaätzlich mit der Fernbedienung geändert werden.
+Mit dem Relais wird der Verstärker aktiviert.
 Weitere Details stehen bei „ Eichung“.
 Es wird empfohlen, ein abschirmendes Gehäuse zu verwenden.
 
@@ -109,7 +107,7 @@ Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller Atmega168 oder größer.
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega328 oder größer.
 Das aktuelle Bascom Programm verwendet einen Atmega328P.
 Die Software wurde in BASCOM geschrieben [2]
 Um das Programm zu kompilieren, muss das Verzeichnis common_1.13 [6] in das Verzeichnis mit dem Programm kopiert werden
@@ -139,11 +137,12 @@ SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
 
+
 Browser Schnittstelle
 
 Es gibt einen (Windows) Webserver, an das Gerät angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
-Details dazu stehen in [7].
-Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+Details dazu stehen in [10].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [11] und [12].
 
 SMD
 
@@ -156,22 +155,21 @@ Die Stromversorgung ist 12V +-10%, Stromaufnahme ca. 140mA + Strom der PA + Rela
 Eichung
 
 Die Eichung sollte zumindest einmal durchgeführt werden.
-Eine definierte möglichst hohe Frequenz wird gemessen und mit &H0Axxxxxx auf Sollfrequenz
-korrigiert,
-Der Defaultwert ist 200000. Höhere Werte verringern die Frequenz. Der Bereich der Änderung beträgt circa +- 2,7%. &H0C speichert den Korrektur-wert und gegebenenfalls die zugehörige Temperatur. Die Einstellgenauigkeit beträgt < 1Hz bei 70MHz.
-Ein Temperatursensor ist zur Temperaturkompensation vorgesehen. Dieser muss bestückt und aktiviert sein (&H0801)
-Die Temperatur wird mit &H09 in 1/10 Grad  ausgelesen.
+Eine definierte möglichst hohe Frequenz wird eingestellt und gemessen und mit &H08xxxxxx eingegeben.
+&H0A speichert den Wert der Abweichung, der dann immer verwendet wird. Gegebenenfalls wird die zugehörige Temperatur gespeichert.
+Ein Temperatursensor ist zur Temperaturkompensation vorgesehen. Dieser muss bestückt und aktiviert sein (&H0501).
+Die Temperatur wird mit &H07 in 1/10 Grad  ausgelesen.
 Die gemessene Temperatur ist etwa 25 Grad höher als die Umgebungstemperatur nach einigen Minuten Betrieb.
-Zur Messung der Temperaturdrift muss Tkmessung eingeschaltet sein: &H1201; damit ist eine eventuell bestehende Temperaturkompensation nicht aktiv.
-Die Temperatur und die Frequenz wird bei zwei möglichst weit auseinanderliegenden Temperaturen und möglichst hoher Frequenz gemessen und eingetragen. Der daraus berechnete Wert wird sofort berücksichtigt, wenn der Wert < +- 1/10 %/K ist und die Tkmessusung wieder abgeschaltet ist.
-Der Temperatursensor hat eine gewisse Trägheit. Es dauert circa 1 Minute, bis eine Temperatur richtig gemessen wird und die Frequenz richtig kompensiert wird. Dies ist besonders beim Einschalten zu beachten.
+Zur Messung der Temperaturdrift muss Tkmessung eingeschaltet sein: &H0A01; damit ist eine eventuell bestehende Temperaturkompensation nicht aktiv.
+Die Temperatur und die Frequenz wird bei zwei möglichst weit auseinanderliegenden Temperaturen und möglichst hoher Frequenz gemessen und eingetragen. Die Temperaturen werden mit &0C00 (niedrige Temperatur) und 0H0C01 (hohe Temperatur)  gemessen. Die gemessenen Frequenzen werden mit &H0D (bei Tmin) und &H0E (bei Tmax) eingegeben. Der Temperaturkoeffizient wird mit &H0F berechnet und kann mit 0H10 ausgelesen werden. Der Wert wird sofort berücksichtigt, wenn der Wert < +- 1/10 %/K ist und die Tkmessung wieder abgeschaltet ist.
+Der Temperatursensor hat eine gewisse Trägheit. Es dauert circa 1 Minute, bis eine Temperatur richtig gemessen wird.
 
 Bestückung der Leiterplatte
 
 Verwendung von ISP:
 JP6
 
-Den Quarzoszillator gibt es für verschiedene Versorgungsspannungen. Wird ein 5V Typ verwendet, muss IC9 entfallen. Pin1 und Pin2 wird dann überbrückt. I2C mit 3V ist dann nicht möglich.
+Den 30MHz Quarzoszillator gibt es für verschiedene Versorgungsspannungen. Wird ein 5V Typ verwendet, muss IC9 (3,3V Regler) entfallen. Pin2 und Pin3 von IC9 wird dann überbrückt. I2C mit 3V ist dann nicht möglich.
 
 Wird für IC9 (MCP1700-3302) ein 78L03 kompatibler Regler verwendet, ist  die Reihenfolge der pins unterschiedlich !!!
 
@@ -184,17 +182,11 @@ Mit serieller Schnittstelle:
 Bei Verwendung der RS232 Schnittstelle wird IC4, C6 – C9 und SL3 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden.
 Der USB Modul wird isoliert auf der Bestückungsseite angebracht,. Die mittleren 4 Anschlüsse werden mit JP8 verlötet.
 
-Wenn das Relais und die Endstufensteuerung und die LED nicht benötigt wird, wird kann K2 T1 – T3, D5, R14, R17, R50, SL5, SL6, SL7, SL9, SL10 entfallen.
+Wenn das Relais und der Verstärker nicht benötigt wird, wird kann K2 T1 – T3, D5, R14, R17, R50, SL5, SL6, SL7, SL9, SL10 entfallen.
 Der Transistor T3 kann bis zu 4A schalten (IRLML2244). Das reicht für eine 10W Endstufe.
 Die Diode D1 muss auch eine entsprechende Strombelastbarkeit haben und kann auch überbrückt werden. Dabei entfällt aber der Verpolungsschutz.
+Mit Verstärker wird der Eingang mit SL4 verbunden; der Ausgang mit SL6.
 Das DDS Sinusausgangssignal liegt an SL4, das Rechtecksignal an SL6.
-
-Nur Infrarot mode:
-
-Folgende Bauteile brauchen nicht bestückt werden:
-SL1, SL2, SL6, JP2, JP3, JP4, IC5, R1 – R4
-IC4, C6 – C9, SL3: siehe oben
-Da die nicht gemessen wird, kann der Temperatursensor IC8 entfallen.
 
 Anschlüsse
 
@@ -214,15 +206,15 @@ RS232 (SL3)
 2	Eingang
 3	Ausgang
 
-Sinusout (SL4)
+Sinusout (SL4 zum Verstärker oder direkter Ausgang)
 1	GND
 2	Signal
 
-PA_Out (SL5)
+PA_Out (SL5  zur Matchbox)
 1	GND
 2	Signal
 
-Out (SL6)
+Out (SL6  vom Verstärker)
 1	GND
 2	Signal
 
@@ -236,7 +228,7 @@ COM_Out (SL8)
 2	Signal
 3	Signal invertiert
 
-12VPA (SL9)
+12VPA (SL9 für Verstärker)
 1	GND
 2	-
 3	12V  geschaltet
@@ -246,7 +238,7 @@ LED	(SL10)
 2	-
 3	LED
 
-IR_Myc (SL11)
+Relais (SL11, schaltet Relais und Verstärker)
 1	GND
 2	-
 3	Signal
@@ -264,14 +256,13 @@ JP3		SDA Überbrückung (ohne IC3)
 JP4		SCL Überbrückung (ohne IC3)
 JP5		Reset
 JP6		ISP 
-JP7		Testeingang für Filter
 JP8		Anschluss für USB Modul
 
 Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V03.0
-Bascom Version V03.2
+Bascom Version V03.4
 
 Copyright
 
@@ -281,7 +272,6 @@ The ideas of this document can be used under GPL (Gnu Public License V2) as long
 The usage of this document is on own risk, there is no warranty.
 
 Referenzen
-
 [1]	https://www.dk1ri.de/dhw/70MHz_DDS_generator_eagle.zip
 [2]	https://www.dk1ri.de/dhw/70MHz_DDS_generator_bascom.zip
 [3]	https://www.dk1ri.de/myc/MYC.pdf 
@@ -292,4 +282,5 @@ Referenzen
 [8]	https://www.elektronik-labor.de/AVR/dds/AD9850.html
 [9]	https://dk1ri.de/dhw/infrarot_tester.zip
 [10]	https://dk1ri.de/myc/webserver.pdf
-[11]	https://dk1ri.de/w_dat.htm
+[11]	https://dk1ri.de/myc/wb0013.jpg
+[12]	https://dk1ri.de/myc/wd0013.zip
