@@ -1,59 +1,58 @@
 ' additional configs
-'202240405
+'202240806
 
 ' outputs are set by init_micro
 '
-' external Temp Sensor (analog Innput)
-Temp Alias PinA.0
+' PinA0: external Temp Sensor (analog Innput)
 '
-R Alias PinA.1
+''PinA.1  reflected (analog)input)
 '
-F Alias PinA.2
+'  PinA.2    forward (analog Input)
 '
-T Alias Pina.3
-Config T = Input
-Set PortA.3
+' error Signal for Kuhne Upconverter
+K_err Alias Pina.3
+Config K_err = Input
+Set K_err
 '
-' swr of 28V PA (analog Input)
-Swr Alias Pina.4
+' Pin A.4 swr of 28V PA (analog Input)
 '
-'PA1
+' PA1  general purpose in
 PA1_ Alias Pina.5
 Config PA1_ = Input
-Set PortA.5
+Set PA1_
 '
-'PA2.2
+'PA2.2  general purpose  in
 PA2_2 Alias Pina.6
 Config PA2_2 = Input
-Set PortA.6
+Set PA2_2
 '
-'PA2.1
+' PA2.1 general purpose
 PA2_1 Alias Pina.7
 Config PA2_1 = Input
-Set PortA.7
+Set PA2_1
 '
-'12V_DATV PortB.0
+'12V_DATV PortB.0  output
 '
-'Kerr
-Kerr Alias Pinb.1
-Config Kerr = Input
-Set Portb.1
+'T
+T Alias Pinb.1
+Config T = Input
+Set T
 '
-'1WPA2 PinB.2
+'1WPA2 PinB.2  output
 '
-'BiasT PortB.3
+'BiasT PortB.3  output
 '
-'PlutoWB PortC.0
+'PlutoWB PortC.0 output
 '
-'LED_ PortC.1
+'LED_ PortC.1 output
 '
-'1WPA1 PortC.2
+'1WPA1 PortC.2  output
 '
-'Relais PortC.3
+'Relais PortC.3   output
 '
 '13cmPA_PTT PortC.4
 '
-'Ptt_out_ PinC.5
+'Ptt_out_ PinC.5 output
 '
 'Ptt_in
 Ptt_in Alias PinC.6
@@ -63,7 +62,6 @@ Set PortC.6
 'NB_WB_in
 NB_WB_IN Alias PinC.7
 Config NB_WB_in = Input
-' NB
 Set PortC.7
 '
 'Minitiouner PortD.5
@@ -90,6 +88,6 @@ On Timer3 Check_serial_timeout
 Stop Timer3
 
 ' Com2 must be a hardware UART!
-' Other than document<tion (old) new firmware has 19200 as Baudrate
+' Other than documentation (old) new firmware has 19200 as Baudrate
 Config Com2 = 9600 , Synchrone = 0 , Parity = None , Stopbits = 1 , Databits = 8 , Clockpol = 0
 Open "Com2:" For Binary As #2

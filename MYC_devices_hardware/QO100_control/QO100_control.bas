@@ -1,8 +1,8 @@
 'name QO100_control
-'Version V01.2, 20240408
+'Version V01.4, 20240811
 'purpose : Program for power controlboard for QO100
 'This Programm workes with serial protocol
-'Can be used with hardware power_schalter Version V02.3 by DK1RI
+'Can be used with hardware power_schalter Version V02.4 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ' To run the compiler the directory comon_1.13 with includefiles must be copied to the directory of this file!
@@ -26,7 +26,7 @@ $include "common_1.13\_Introduction_master_copyright.bas"
 ' Detailed description
 ' At start everything is switched off
 '
-' Only those connected equipment is switched, which is actually used (see manual)
+' Only those connected equipment is switched on, which is actually used (see manual)
 '
 '----------------------------------------------------
 $regfile = "m1284pdef.dat"
@@ -45,7 +45,7 @@ $initmicro
 '
 ' not used:
 Const I2c_address = 1
-Const No_of_announcelines = 26
+Const No_of_announcelines = 32
 Const Tx_factor = 15
 ' for Timer (LED) 1 : 20000000 / 1024 / 19500 = 1 -> 1sec
 Const Timer1_stop = 65535 - 19500
@@ -54,6 +54,8 @@ Const Wait_1s = 1
 Const Wait_2s = 2
 Const Wait_4s = 4
 Const Wait_7s = 7
+'55 degC:
+Const  Switch_off_temp_default = 55
 '
 Const S_length = 32
 ' Timer3 tick : 20MHz / 1024 = 19,5kHz  -> T = 51,2us
@@ -61,17 +63,16 @@ Const S_length = 32
 ' but there is a delay at atsrt: -> 20000 -> 2s
 Const Serial_timeout = 64935 - 10000
 '
-Dim NB_WB_pin_ As Byte
-Dim NB_WB_pin_old_ As Byte
-Dim Ptt_pin_ As Byte
-Dim Ptt_pin_old_ As Byte
+'Dim NB_WB_pin_ As Byte
+Dim NB_WB_pin_last As Byte
+Dim Ptt_pin_last As Byte
 Dim Timer_store As Word
 ' 0: off, 1: NB, 2: WB
 Dim NB_WB_ As Byte
 Dim Ptt_ As Byte
 Dim Adc_value As Word
 Dim Si_temp1 As Single
-Dim Temperature As Word
+Dim Temperature As Byte
 Dim Up_pointer As Byte
 Dim Up_string As String * 8
 Dim Up_string_b(7)As Byte At Up_string Overlay
@@ -80,6 +81,8 @@ Dim Up_r As Byte
 Dim Ser2_valid As Byte
 Dim Wait_led As Byte
 Dim Timeout_flag As Byte
+Dim Switch_off_temp As Byte
+Dim Switch_off_temp_eram As ERAM Byte
 '----------------------------------------------------
 $include "__use.bas"
 $include "common_1.13\_Constants_and_variables.bas"
@@ -94,11 +97,17 @@ $include "common_1.13\_Config.bas"
 '----------------------------------------------------
 $include "common_1.13\_Main.bas"
 '
+Waitms 100
 Gosub Switch_off
 '----------------------------------------------------
 $include "common_1.13\_Loop_start.bas"
 '
 Gosub Check_external_switches
+Gosub  Read_temperature
+If Temperature > Switch_off_temp Then
+   Gosub 13cmPA_ptt_off
+   Gosub PTT_out_off
+End If
 '
 $include "common_1.13\_Main_end.bas"
 '
@@ -122,58 +131,61 @@ _init_micro:
 ' 12V_DATV
 12V_DATV Alias PortB.0
 Config 12V_DATV = Output
+Reset 12V_DATV
 
 '1WPA2
 1WPA2 Alias PortB.2
 Config 1WPA2 = Output
+Set 1WPA2
 '
 Biast Alias PortB.3
 Config Biast = Output
+Reset Biast
 '
 ' Pluto WB
 PlutoWB Alias PortC.0
 Config PlutoWB = Output
+Set PlutoWB
 '
 'LED
 Led_ Alias Portc.1
 Config LED_ = Output
-Set PortC.1
+Set Led_
 '
 '1WPA1
 1WPA1 Alias PortC.2
 Config 1WPA1 = Output
-Set PortC.2
+Set 1WPA1
 '
 'relais
 Relais Alias PortC.3
 Config Relais = Output
-Set PortC.3
-Relais = 0
+Reset Relais
 '
 '13cmPA_Ptt
 13cmPA_Ptt Alias Portc.4
 Config 13cmPA_Ptt = Output
-Set PortC.4
+Reset 13cmPA_Ptt
 '
 'Pttout_
 Pttout_ Alias PortC.5
 Config Pttout_ = Output
-Set PortC.5
+Reset Pttout_
 '
 'Minitiouner
 Minitiouner Alias PortD.5
 Config Minitiouner = Output
-Set PortD.5
+Reset Minitiouner
 '
 ' Upcon
 Upcon Alias PortD.6
 Config Upcon = Output
-Reset PortD.6
+Reset Upcon
 '
 ' FAN
-FAN Alias PortD.7
+Fan Alias PortD.7
 Config FAN = Output
-Set PortD.7
+Reset Fan
 Return
 '
 12v_datv_off:
@@ -184,16 +196,6 @@ Return
 12v_datv_on:
 '12V DATV
 Set 12V_datv
-Return
-'
-1WPA1_off:
-'1WPA1
-Set 1WPA1
-Return
-'
-1WPA1_on:
-'1WPA1
-Reset 1WPA1
 Return
 '
 1WPA2_off:
@@ -216,8 +218,6 @@ Biast_17:
 Set Biast
 Return
 '
-' Pluto_nb is on always
-'
 Pluto_wb_off:
 'Pluto_wb
 Set Plutowb
@@ -226,6 +226,16 @@ Return
 Pluto_wb_on:
 'Pluto_wb
 Reset Plutowb
+Return
+'
+1WPA1_off:
+'1WPA1
+Set 1WPA1
+Return
+'
+1WPA1_on:
+'1WPA1
+Reset 1WPA1
 Return
 '
 Relais_off:
@@ -264,16 +274,6 @@ printbin #2,&H50; &H31; &H0D;
 Ptt_ = 1
 Return
 '
-PA2_2_off:
-'for tests
-Reset PA2_2
-Return
-'
-PA2_2_on:
-'for tests
-Set PA2_2
-Return
-'
 Minitiouner_off:
 'Minitiouner                                               q
 Reset Minitiouner
@@ -293,7 +293,7 @@ Return
 Upconverter_on:
 ' Upconverter power on
 Set Upcon
-' wait for Upcon to accexpt serial data
+' wait for Upcon to accept serial data
 Stop Watchdog
 Wait 2
 printbin #2,&H4F; &H31; &H0D;
@@ -312,46 +312,55 @@ Return
 '
 Check_external_switches:
    ' switch:0: WB 1 (open): NB
-    B_temp1 = NB_WB_in
-    If B_temp1 <> NB_WB_pin_old_ Then
-      Gosub Switch_off
-       NB_WB_pin_old_ = B_temp1
-       If NB_WB_pin_old_ = 0 Then
-          Gosub Start_WB
-       Else
-          Gosub Start_NB
-       End If
-    End If
-   ' external PTT is 0 active !
-   ' only in NB or WB mode
-   If NB_WB_ = 1 or NB_WB_ = 2 Then
-      B_temp1 = Ptt_in
-      If B_temp1 <> Ptt_pin_old_ Then
-         Ptt_pin_old_ = Ptt_in
-         If Ptt_pin_old_ = 1 Then
-            Gosub End_transmit
-         Else
-            Gosub Start_transmit
+   B_temp1 = NB_WB_in
+   If B_temp1 <> NB_WB_pin_last Then
+      Waitms 50
+      B_temp1 = NB_WB_in
+      If B_temp1 <> NB_WB_pin_last Then
+         NB_WB_pin_last = B_temp1
+          ' change
+         If B_temp1 <>  NB_WB_pin_last Then
+            Gosub Switch_off
+            NB_WB_pin_last = B_temp1
+            If B_temp1 = 0 Then
+               Gosub Start_WB
+               NB_WB_= 2
+            Else
+               Gosub Start_NB
+               NB_WB_ = 1
+            End If
          End If
       End If
-   Else
-      Not_valid_at_this_time
+   End If
+   ' external PTT is 0 active !
+   ' only in NB or WB mode
+   B_temp1 = Ptt_in
+   If B_temp1 <> Ptt_pin_last Then
+      Waitms 50
+      If B_temp1 <> Ptt_pin_last Then
+         If NB_WB_ = 1 or NB_WB_ = 2 Then
+            Ptt_pin_last = B_temp1
+               If B_temp1 = 1 Then
+                  Gosub End_transmit
+               Else
+                  Gosub Start_transmit
+              End If
+          Else
+            Not_valid_at_this_time
+         End If
+      End If
    End If
 Return
 '
 Start_transmit:
-   Ptt_ = 1
    If NB_WB_ = 1 Then Gosub Ptt_out_on
    If NB_WB_ = 2 Then Gosub 13cmPA_Ptt_on
-   If NB_WB_ = 0 Or NB_WB_ = 3 Then
-      Not_valid_at_this_time
-   End If
 Return
 '
 End_transmit:
    Ptt_ = 0
-   If NB_WB_ = 1 Then Gosub Ptt_out_off
-   If NB_WB_ = 2 Then Gosub 13cmPA_Ptt_off
+   Gosub Ptt_out_off
+   Gosub 13cmPA_Ptt_off
 Return
 '
 Switch_off:
@@ -369,14 +378,12 @@ Switch_off:
     Gosub Minitiouner_off
     Gosub Fan_off
     Wait_led = Wait_2s
-    NB_WB_ = 0
     Ptt_ = 0
 Return
 '
 Start_NB:
    Gosub Biast_12
    Gosub Upconverter_on
-   NB_WB_ = 1
    Wait_led = Wait_4s
 Return
 '
@@ -389,7 +396,6 @@ Start_WB:
     Gosub 12V_datv_on
     Gosub Fan_on
     Gosub Minitiouner_on
-    NB_WB_ = 2
     Wait_led = Wait_7s
 Return
 '
@@ -397,7 +403,6 @@ Start_DATV_RX:
    Gosub Minitiouner_on
    Gosub Biast_17
    Gosub Relais_on
-   NB_WB_ = 3
    Wait_led = Wait_1s
 Return
 '
@@ -405,7 +410,6 @@ Get_serial_2:
    Stop Watchdog
    Ser2_valid = 0
    Up_pointer = 1
-   Up_string = ""
    Up_string = String (6, 0)
    TCNT3 = Serial_timeout
    Timeout_flag = 0
@@ -442,6 +446,27 @@ Check_number:
    End If
 Return
 '
+Read_temperature:
+'external Temperatur sensor
+' LM135 0 -> -263 degc; 10mV / degc  2980mV -> 25 degc
+' adc resolution 5V / 1024  -> 5mV abt  -> 0.5 degc resolution
+'
+ ' Temp: external Temp sensor of 23cm PA
+   W_temp1 = Getadc(0)
+   If W_temp1 > 1000 Then Return
+   If W_temp1 < 559 Then
+      Temperature = 0
+      Return
+   End If
+   'T / degC = W_temp1 / 1024 * 5 - 2.731
+   Si_temp1 = W_temp1 * 5
+   ' mV:
+   Si_temp1 = Si_temp1 / 1024
+   Si_temp1 = Si_temp1 - 2.731
+   Si_temp1 = Si_temp1 * 100
+   Temperature = Si_temp1
+ Return
+ '
 Sub Timer1_int():
    ' for LED
    Incr Timer_store

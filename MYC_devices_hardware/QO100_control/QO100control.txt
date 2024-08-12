@@ -1,35 +1,36 @@
 Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/powerschalter.pdf
 
-MYC QO100 Trx Steuerung
+MYC QO100 TRX Steuerung
 
-Author DK1RI, Version V02.2, 20240410
+Author DK1RI, Version V02.4, 20240808
 This project can be found in https://www.github.com/dk1ri also.
 
 Einleitung
 
 Dieses Device steuert die Stromversorgung meiner QO100 Station für SSB und DATV Betrieb.
-Die Steuerung erfolgt über USB.
-Diese Steuerung kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben. Auch ohne USB Schnittstelle kann der NB/WB Mode und die PTT mit zwei Schaltern geschaltet werden.
+Die Steuerung erfolgt über USB oder seriell.
+Diese Steuerung kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben. Auch ohne USB /serielle Schnittstelle kann der NB/WB Mode und die PTT mit zwei Schaltern geschaltet werden.
 Zur Steuerung mit einem Browser: siehe [7].
-Die Hardware der Steuerung kann mehr Funktionen steuern, als zur Zeit verwende; aber alle Anschlüsse sind steuerbar.
-Details siehe unter Anschlüsse.
+Die Hardware der Steuerung kann mehr Funktionen steuern, als ich zur Zeit verwende.
+Bei Verwendung von andrer Hardware müssen die announcemnts geändert werden. Bei Verwendung des Webservers können nicht verwendete Funktionen ausgeblendet werden. Details siehe unter Anschlüsse.
 
 Beschreibung
 
 Die Eagledaten stehen bei [1].
 Diese Beschreibung gilt für meinen aktuellen Betrieb.
-Nach dem Einschalten sind GPS, und Pluto NB eingeschaltet. Nach circa 2 Sekunden ist Betrieb möglich, allerdings benötigt der von mir verwendete GPS Empfänger ca 15 Minuten zur Synchronisation.
+Nach dem Einschalten alles ausgeschaltet. Nach circa 2 Sekunden ist Einschalten möglich, allerdings benötigt der von mir verwendete GPS Empfänger ca 15 Minuten zur Synchronisation.
 Nach einer NB / WB Umschaltung ist die Sendefunktion immer abgeschaltet.
-Der Upconverter benötigt ca 2 Sekunden zum Starten. Nach dem Umschalten auf NB kann in dieser Zeit kein andrer Befehl eingegeben werden. 
-Das Schalten der PTT und die Umschaltung auf WB dauert circa 200ms.
+Der Kuhne Upconverter benötigt ca 2 Sekunden zum Starten. Nach dem Umschalten auf NB kann in dieser Zeit kein andrer Befehl eingegeben werden. Nach dem Einschalten sollte auch gewartet werden, bis das GPS synchronisiert. Das kann aber abgefragt werden. Bei Verwendung der DxPatrol Groundstation ist keine Abfrage möglich.
+Das Schalten der PTT und die Umschaltung auf WB mit den Schaltern dauert circa 200ms.
 Im WB Betrieb läuft der Lüfter immer.
-Die Stromversorgung erfolgt über den 12V Anschluss. Der Ruhestrom (ohne angeschlossene Geräte) beträgt circa 75mA.
+Die Stromversorgung erfolgt über den 12V Anschluss. Der Ruhestrom (ohne angeschlossene Geräte) beträgt circa 85mA.
+Der Anfangswert für die Temperaturabschaltung ist 55 Grad. Der Temperatursensor sollte die Temperatur der DATV Endstufe messen.
 Spannung an den Ausgängen (V):
 			off	NB	WB	WBRX	NB mit PTT	WB mit PTT
 Minitiouner		0	0	5	5		0		5
 Koaxrelais		0	0	5	5		0		5
 BiasT			0	12	17	17		12		17
-13cmPATx		0	0	0	0		0		12
+13cmPATX1		0	0	0	0		0		12
 Fan			0	0	5	0		0		5
 Pttout			0	0	0	0		5		0
 USB 1WPPA1		0	0	5	0		0		5
@@ -99,6 +100,7 @@ Bestückung der Leiterplatte
 Verwendung von ISP: JP6
 Als externer Temperatursensor wird ein LM135Z verwendet, der an JP10 pin1 / 2 angeschlossen wird
 Die LED wird nur für Test verwendet. R20 – R27, C30 – C38 schützen die Eingänge des Prozessors. Die Werte müssen an die Funktion und die verwendete Leitungslänge angepasst werden.
+Wird andere Hardware verwendet, ist möglicherweise Teilbestückung möglich.
 
 Anschlüsse
 
@@ -109,8 +111,7 @@ X1:
 4: 	28VDATV_1		für  DATV PA; dass verwendete Relais schaltet bis zu 16A
 
 X2:
-1: 	28V GND		nicht verwendet
-2: 	28VDATV_2		nicht verwendet
+1: 	28V GND		28V DATV28V DATVnicht verwendet
 3: 	12V GND		für Kuhne Upconverter
 4: 	Upconverter		für Kuhne Upconverter; 12V 7A bei 20W output
 
@@ -145,23 +146,23 @@ Wenn R20  bestückt ist, wird JP10 pin3 nicht verwendet
 
 JP11: in_F/R
 1: 	GND
-2: 	F			SWR 10W PA (nicht verwendet)
-3: 	R			SWR 10W PA (nicht verwendet)
+2: 	F			SWR 10W PA
+3: 	R			SWR 10W PA
 
 JP12: in_Kerr/T
 1: 	GND
-2: 	K_err			für 10W PA (nicht verwendet)
-3: 	T			für 10W PA (nicht verwendet)
+2: 	K_err			für 10W PA
+3: 	T			für 10W PA
 
 JP13: in_PA1/SWR
 1: 	GND
-2: 	PA1_1			nicht verwendet 
+2: 	PA1_1			Schalteingang
 3: 	SWR			SWR 28V PA
 
 JP14: PA2
 1: 	GND
-2: 	PA2_1			nicht verwendet
-3: 	PA2_2			nicht verwendet
+2: 	PA2_1			Schalteingang
+3: 	PA2_2			Schalteingang
 
 JP15: in_PTT_NB/WB
 1: 	GND
@@ -177,8 +178,9 @@ JP17: FAN
 3: 	Fan			für PA Lüfter	
 
 JP18: 
-1,2: 	GND
-3: 	13cmPATX		TX für 13cm PA	
+1: 	GND
+2:	13cmPATX2		TX für 13cm PA (open collector)
+3: 	13cmPATX1		TX für 13cm PA (12V)
 
 JP19: 5V
 1,2: 	GND
@@ -210,8 +212,8 @@ JP7		Anschluss für USB Modul
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion 02.3
-Bascom Version 01.2
+Leiterplattenversion 02.4
+Bascom Version 01.4
 
 Copyright
 
@@ -219,7 +221,6 @@ Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit 
 Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garantie / Gewährleistung / Produkthaftung  übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
-
 
 
 Referenzen

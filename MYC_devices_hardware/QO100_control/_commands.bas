@@ -4,31 +4,22 @@
 01:
 ' NB / WB
    If Command_pointer >= 2 Then
-      If Command_b(2) <> NB_WB_ Then
-         If Command_b(2) < 4 Then
+      If Command_b(2) < 4 Then
+         If NB_WB_ <>  Command_b(2) Then
             NB_WB_ = Command_b(2)
+            Gosub Switch_off
             Select Case NB_WB_
-               Case 0:
-                  Gosub Switch_off
                Case 1
-                  ' Upconverter was off before -> no blockrequest
-                  Gosub Switch_off
                   Gosub Start_nb
-                  ' 2 s for serial switch on
-                  Stop Watchdog
-                  Wait 2
-                  Start Watchdog
                Case 2:
-                  Gosub Switch_off
-                  ' 13cm PA will be powered but not switched on (requires 13cmPA_ptt_on)
+                  ' 13cm PA will be powered but (depending on PA) not switched on (requires 13cmPA_ptt on)
                   Gosub Start_WB
                Case 3:
-                  Gosub Switch_off
                   Gosub Start_DATV_RX
             End Select
-         Else
-            Parameter_error
          End If
+      Else
+         Parameter_error
       End If
       Gosub Command_received
    End If
@@ -199,31 +190,13 @@ Return
    Else
       Not_valid_at_this_time
    End If
+   Gosub Command_received
 Return
 '
 10:
-'external Temperatur sensor
-' LM35Z 0 -> 0 degc; 10mV / degc  < 150 degc
-' adc resolution 5V / 1024  -> 5mV abt  -> 0.5 degc resolution
-'
- ' Temp: external Temp sensor of 23cm PA
-   'T / degC = W_temp1 * (5V / 1024)/(10mV /degK)
-   W_temp1 = Getadc(0)
-   'T / degC = W_temp1 * (5V / 1024)/(1mV /degK) - 2731
-   ' 2731: due to resolution of 1/10 deg
-   Si_temp1 = W_temp1 * 5000
-   ' mV:
-   Si_temp1 = Si_temp1 / 1024
-   Si_temp1 = Si_temp1 - 2731.5
-   ' thenth deg:
-   Temperature = Si_temp1
-   Tx_time = 1
    Tx_b(1) = &H0A
-   Tx_b(2) = High(Temperature)
-   Tx_b(3) = Low(Temperature)
-   Tx_write_pointer = 4
-   If Command_mode = 1 Then Gosub Print_tx
-   Gosub Command_received
+   Tx_b(2) = Temperature
+   Gosub Read_2
 Return
 '
 11:
@@ -249,23 +222,15 @@ Return
 Return
 '
 13:
-   W_temp1 = Getadc(3)
-   Tx_time = 1
    Tx_b(1) = &H0D
-   Tx_b(2) = High(W_temp1)
-   Tx_b(3) = Low(W_temp1)
-   Tx_write_pointer = 4
-   If Command_mode = 1 Then Gosub Print_tx
-   Gosub Command_received
+   Tx_b(2) = T
+   Gosub Read_2
 Return
 '
 14:
-   Tx_time = 1
    Tx_b(1) = &H0E
-   Tx_b(2) = Kerr
-   Tx_write_pointer = 3
-   If Command_mode = 1 Then Gosub Print_tx
-   Gosub Command_received
+   Tx_b(2) = K_err
+   Gosub Read_2
 Return
 '
 15:
@@ -280,27 +245,49 @@ Return
 Return
 '
 16:
-   Tx_time = 1
    Tx_b(1) = &H10
-   Tx_b(2) = PA1
-   Tx_write_pointer = 3
-   If Command_mode = 1 Then Gosub Print_tx
-   Gosub Command_received
+   Tx_b(2) = PA1_
+   Gosub Read_2
 Return
 '
 17:
-   Tx_time = 1
    Tx_b(1) = &H11
    Tx_b(2) = PA2_1
-   Tx_write_pointer = 3
-   If Command_mode = 1 Then Gosub Print_tx
-   Gosub Command_received
+   Gosub Read_2
 Return
 '
 18:
-   Tx_time = 1
    Tx_b(1) = &H12
    Tx_b(2) = PA2_2
+   Gosub Read_2
+Return
+'
+19:
+  If Command_pointer >= 2 Then
+      If Command_b(2) <71 Then
+      ' -> real Temp
+         Switch_off_temp = Command_b(2) + 30
+      Else
+          Parameter_error
+      End If
+      Gosub Command_received
+   End If
+Return
+'
+20:
+   Tx_b(1) = &H14
+   Tx_b(2) =  Switch_off_temp - 30
+  Gosub Read_2
+Return
+'
+21:
+  Tx_time = 1
+   Tx_b(1) = &H15
+   If Temperature > Switch_off_temp Then
+      Tx_b(2) = 1
+   Else
+      Tx_b(2) = 0
+   End If
    Tx_write_pointer = 3
    If Command_mode = 1 Then Gosub Print_tx
    Gosub Command_received
