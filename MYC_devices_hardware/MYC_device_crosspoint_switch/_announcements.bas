@@ -1,11 +1,11 @@
 ' annoucements
-' 20230705
+' 20240812
 '
 Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;crosspoint;V02.0;1;180;1;22"
+Data "0;m;DK1RI;crosspoint;V03.0;1;180;1;24"
 '
 'Announce1:
 'Befehl &H01
@@ -57,7 +57,7 @@ Data "8;os,out8;1;0,GND;1,1;2,2;3,3;4,4;5,5;6,6;7,7;8,8"
 '
 'Announce9:
 'Befehl  &H09
-'liest Status der Ausgänge
+'liest Status der Ausg nge
 'read status
 Data "9;aa,status;8,{1_0to8}"
 '
@@ -65,7 +65,7 @@ Data "9;aa,status;8,{1_0to8}"
 'Befehl  &H0A
 'schreibt mode
 'write mode
-Data "10;os,mode;1;0,8x8;1,8x4;2,4x4,1;14,CHAPTER,ADMINISTRATION"
+Data "10;os,mode;1;0,8x8;1,8x4;2,4x4;14,CHAPTER,ADMINISTRATION"
 '
 'Announce11:
 'Befehl  &H0B
@@ -101,7 +101,7 @@ Data "15;ou,reset;1;0,idle;1,reset all"
 'Befehl &HF0<n><m>
 'announcement aller Befehle lesen
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;180;22,start at;22,lines;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;180;24,start at;24,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce17:                                                  '
 'Befehl &HFC
@@ -126,3 +126,12 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,27,{
 'eigene Individualisierung lesen
 'read individualization
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,27,{1_0to127};a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;14,CHAPTER,ADMINISTRATION"
+'
+'Announce 21
+Data "L;original;english;deutsch"
+'                                                                                                                                                                                            7
+'Announce22;
+Data "L;crosspoint;crosspoint;Koppelpunkt;out1;out1;Ausgang 1;out2;ou21;Ausgang21;out3;out3;Ausgang 3;out4;ou41;Ausgang 4;out5;out5;Ausgang 5;out6;out6;Ausgang 6;out7;out7;Ausgang 7;"
+'
+'Announce23:
+Data "L;out8;out8;Ausgang 8;set default;set default;Anfangswert setzen;define as default;define as default;als Anfangswert festlegen;reset;reset;Reset"

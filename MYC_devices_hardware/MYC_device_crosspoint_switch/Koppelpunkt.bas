@@ -1,15 +1,15 @@
 'name : Koppelpunkt_bascom.bas
-'Version V02.0, 20230515
+'Version V03.1, 20240812
 'purpose : Program for 8x8crosspoint switch
 'This Programm workes as I2C slave or with serial protocol
 'Can be used with hardware koppelpunkt_eagle Version V01.1 (V02.0) by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.12 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.12\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -33,7 +33,7 @@ $regfile = "m328pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.12\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 $initmicro
 '
@@ -41,14 +41,14 @@ $initmicro
 '
 ' 1 ... 127
 Const I2c_address = 27
-Const No_of_announcelines = 22
+Const No_of_announcelines = 24
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 32
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.12\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 Dim K_mode As Byte
 ' 0: 8x8; 1: 8x4; 2: 4x4
@@ -70,32 +70,32 @@ Dim Used(3) As Byte
 Waitms 10
 
 '----------------------------------------------------
-$include "common_1.12\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.12\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Init.bas"
+$include "common_1.13\_Init.bas"
 '
 '----------------------------------------------------
-$include "common_1.12\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 _init_micro:
@@ -222,9 +222,9 @@ Return
 '
 '----------------------------------------------------
 $include "_Commands.bas"
-$include "common_1.12\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 '
-$include "common_1.12\_Commandparser.bas"
+$include "common_1.13\_Commandparser.bas"
 '
 '-----------------------------------------------------
 ' End

@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 8 x 8 Audio / Video Koppelpunkt
 
-Author DK1RI, Version V02.1, 20230705
+Author DK1RI, Version V03.1, 20230813
 This paper is published in https://github.com/dk1ri  as well
 
 Einleitung
@@ -166,6 +166,11 @@ I2C (SL1, SL2)
 2	SCL
 3	SDA
 
+RS232 (SL3)
+1	GND
+2	Data in (zum Koppelpunkt)
+3	Data out (zum Rechner)
+
 		Eingang	Lötbrücke 	Ausgang
 Kanal1:	X11		SJ1		X21
 Kanal2:	X12		SJ2		X22
@@ -191,7 +196,7 @@ Versionen
 
 Diese Beschreibung gilt für die
 Leiterplattenversion V02.0 (V01.1)
-Bascom Version V02.1
+Bascom Version V03.1
 
 Copyright
 

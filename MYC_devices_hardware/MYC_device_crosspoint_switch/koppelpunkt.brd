@@ -80,8 +80,8 @@
 <text x="70.8025" y="33.9725" size="1.016" layer="1">1</text>
 <hole x="55.5625" y="7.62" drill="3.2"/>
 <text x="2.54" y="10.16" size="1.778" layer="16" rot="MR90">8x8Koppelpunkt</text>
-<text x="2.54" y="30.48" size="1.778" layer="16" rot="MR90">V01.1</text>
 <text x="2.54" y="39.37" size="1.778" layer="16" rot="MR90">DK1RI</text>
+<text x="3.4925" y="35.2425" size="1.778" layer="16" rot="MR270">V02.0</text>
 </plain>
 <libraries>
 <library name="linear">
