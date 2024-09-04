@@ -1,6 +1,6 @@
 <?php
-# translate.php
-# DK1RI 20240123
+# correct_POST.php
+# DK1RI 20240902
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function correct_POST(){
     # $_POST values are stored in $actual_data, even if they are wrong (for manual entries)
@@ -40,7 +40,7 @@ function correct_POST(){
                 }
             }
             if (!array_key_exists($basic_tok, $_SESSION["tok_to_send"])) {
-                $ct = $_SESSION["announce_all"][$device][$token];
+                $ct = explode(",",$_SESSION["original_announce"][$device][$basic_tok][0])[0];
                 switch ($ct) {
                     case "os":
                         correct_for_send_os($basic_tok);

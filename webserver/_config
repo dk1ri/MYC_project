@@ -12,7 +12,7 @@ file for alpha (in devices);__alpha
 file for coding;_coding
 file for translate;_translate
 file for actual data;_actual_data
-file for known_devices;_known_devices
 default_color;_default_color
-default_lang;_default_translate
+_default_translate;_default_translate
 other_POSTS;_other_POSTS
+with_command_router;0

@@ -1,6 +1,6 @@
 <?php
 # action.php
-# DK1RI 20240506
+# DK1RI 20240901
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 ?>
 <html lang = "de">
@@ -80,10 +80,11 @@
     include "edit_sequence.php";
     include "edit_color.php";
     include "edit_language.php";
+    include "edit_ignore.php";
     include "user_data.php";
     include "create_new_device.php";
     include "split_to_display_objects.php";
-    # must be included always (no simple check after loading device from file)
+    # must be included always (no simple check after loading device from file):
     include "commands_a.php";
     include "commands_b.php";
     include "commands_m.php";
@@ -101,26 +102,20 @@
     if (array_key_exists("language", $_POST) and $_POST["language"] != "") {
         $_SESSION["is_lang"] = $_POST["language"];
     }
-    $new = 0;
     if (!$_SESSION["started"]) {
         $_SESSION["started"] = 1;
-        $new = 1;
-        # read data from device (may exist at 1st start)
-        # send one command (usually there is one command only)
-        receive_civ();
+        $_SESSION["device"] = $_POST["device"];
+        create_new_device();
     }
-    if (array_key_exists("device", $_POST) and $_POST["device"] != "") {
+    elseif (array_key_exists("device", $_POST) and $_POST["device"] != "") {
         if ($_SESSION["device"] != $_POST["device"]) {
-            $new = 1;
             $_SESSION["device"] = $_POST["device"];
+            create_new_device();
             # do nohting else
             $_POST = [];
-            # in edit_sequence mode $_SESSION["new_sequencelist"] must be reset
-            $_SESSION["chapter_for_edit_sequence"][$_SESSION["device"]]["all_basic"]  = "all_basic";
         }
     }
     $device = $_SESSION["device"];
-    if ($new){create_new_device(1);}
     # username, language and device is never empty
     if (array_key_exists("user_name", $_POST) and $_POST["user_name"] != "") {
         $uname = checkusername($_POST["user_name"]);
@@ -133,53 +128,44 @@
             else{
                 $_SESSION["color"] = $_SESSION["default_color"];
                 $_SESSION["is_lang"] = $_SESSION["default_lang"];
+                $_SESSION["toks_to_ignore"] = [];
                 # device and activ_chapters not changed
-                create_tok_list();
             }
         }
-    }
-    if (array_key_exists("store_user_data", $_POST) and $_POST["store_user_data"] = 1) {
-        write_user_data_to_file();
     }
     # the following are the basic functions used
-    $operate_not_changed = 1;
     $edit_sequence_not_changed = 1;
-    $edit_color_not_changed = 1;
-    $edit_language_not_changed = 1;
-    if (array_key_exists("_edit_operate_", $_POST)) {
-        if ($_SESSION["_edit_operate_"] != $_POST["_edit_operate_"]) {
-            # change of mode
-            $_SESSION["_edit_operate_"] = $_POST["_edit_operate_"];
-            if ($_SESSION["_edit_operate_"] == "operate") {
-                $operate_not_changed = 0;
-            }
-            elseif ($_SESSION["_edit_operate_"] == "edit_sequence") {
-                if ($_SESSION["chapter_for_edit_sequence"][$device] == []){$_SESSION["chapter_for_edit_sequence"][$device]["all_basic"] = "all_basic";}
-                $edit_sequence_not_changed = 0;
-            }
-            elseif ($_SESSION["_edit_operate_"] == "edit_color") {
-                $edit_color_not_changed = 0;
-            }
-            elseif ($_SESSION["_edit_operate_"] == "edit_language") {
-                $edit_language_not_changed = 0;
-            }
+    if (array_key_exists("select_mode", $_POST)) {
+       $_SESSION["select_mode"] = $_POST["select_mode"];
+    }
+
+    $chapters = [];
+    foreach ($_POST as $key => $value) {
+        if (strstr($key, "chapter_")) {
+            $dat = explode("chapter_", $key)[1];
+            $chapters[$dat] = $dat;
         }
     }
-    if ($_SESSION["_edit_operate_"] == "operate") {
-        $chapters = [];
-        foreach ($_POST as $key => $value) {
-            if (strstr($key, "chapter_")) {
-                $chapters[] = explode("chapter_", $key)[1];
+    if ($chapters != []) {
+        $chapter_old =  $_SESSION["activ_chapters"][$device];
+        $_SESSION["activ_chapters"][$device] = [];
+        foreach ($_SESSION["chapter_names"][$device] as $chap) {
+            if (array_key_exists($chap, $chapters)){
+                if (!array_key_exists($chap, $chapter_old)){
+                    $_SESSION["activ_chapters"][$device][$chap] = $chap;
+                }
+            }
+            else {
+                if (array_key_exists($chap, $chapter_old)){
+                    $_SESSION["activ_chapters"][$device][$chap] = $chap;
+                }
             }
         }
-        if ($chapters != []) {
-            $_SESSION["activ_chapters"][$device] = [];
-            foreach ($chapters as $chap) {
-                $ch = $_SESSION["chapter_names"][$device][$chap];
-                $_SESSION["activ_chapters"][$device][$ch] = $ch;
-            }
-        }
-        if ($operate_not_changed){correct_POST();}
+        create_final_actual_sequencelist();
+    }
+
+    if ($_SESSION["select_mode"] == "operate") {
+        correct_POST();
         # one command only
         if (count($_SESSION["tok_to_send"])) {
             reset($_SESSION["tok_to_send"]);
@@ -194,26 +180,28 @@
         if ($_SESSION["read"]) {receive_civ();}
         $_SESSION["read"] = 0;
     }
-    elseif ($_SESSION["_edit_operate_"] == "edit_sequence") {
-        $chapter_changed = 0;
-        $found = 0;
-        $_SESSION["chapter_for_edit_sequence"][$device] = [];
-        foreach ($_POST as $key => $value) {
-            if (!$found and strstr($key, "chapter_")) {
-                $chapter_name = explode("chapter_", $key)[1];
-                $_SESSION["chapter_for_edit_sequence"][$device][$chapter_name] = $chapter_name;
-                $found = 1;
-                $chapter_changed = 1;
+    elseif ($_SESSION["select_mode"] == "edit_sequence") {
+        if ($_SESSION["select_mode"] == $_SESSION["last_mode"]) {
+            $chapter_changed = 0;
+            $found = 0;
+            foreach ($_POST as $key => $value) {
+                if (!$found and strstr($key, "chapter_names")) {
+                    $_SESSION["edit_chapter_name"] = $value;
+                    $found = 1;
+                    $chapter_changed = 1;
+                }
             }
+            if ($edit_sequence_not_changed and $chapter_changed == 0) {edit_sequence_post();}
         }
-        if ($_SESSION["chapter_for_edit_sequence"][$device] == []){$_SESSION["chapter_for_edit_sequence"][$device]["all_basic"] = "all_basic";}
-        if ($edit_sequence_not_changed and $chapter_changed == 0) {edit_sequence_post();}
     }
-    elseif ($_SESSION["_edit_operate_"] == "edit_color") {
-        if($edit_color_not_changed) {edit_color_post();}
+    elseif ($_SESSION["select_mode"] == "edit_color") {
+        if ($_SESSION["select_mode"] == $_SESSION["last_mode"]){edit_color_post();}
     }
-    elseif ($_SESSION["_edit_operate_"] == "edit_language") {
-        if ($edit_language_not_changed) {edit_language_post();}
+    elseif ($_SESSION["select_mode"] == "edit_language") {
+        if ($_SESSION["select_mode"] == $_SESSION["last_mode"]) {edit_language_post();}
+    }
+    elseif ($_SESSION["select_mode"] == "edit_toks_to_ignore") {
+        if ($_SESSION["select_mode"] == $_SESSION["last_mode"]) {edit_toks_to_ignore_post();}
     }
     if (!array_key_exists($_SESSION["device"], $_SESSION["command_len"])){create_command_len();}
     # automatic update tested, but not ok
@@ -232,44 +220,60 @@
     <?php
     echo "<input type='button' onclick='do_action()' value=".tr("send").">";
     echo "</div><div>";
-    array_selector("_edit_operate_", $_SESSION["edit_operate"], $_SESSION["_edit_operate_"]);
+    if($_SESSION["username"] != "user"){
+        $_SESSION["edit_operate"]["store_permanent"] = "store_permanent";
+    }
+    else {
+        if (array_key_exists("store_permanent", $_SESSION["edit_operate"])) {unset($_SESSION["edit_operate"]["store_permanent"]);}
+    }
+    array_selector("select_mode", $_SESSION["edit_operate"], $_SESSION["select_mode"]);
     echo "</div><div>";
     echo " " .tr("your_name") . ": ";
     # name will be used later to create user individual caches
     echo "<input type='text' name = 'user_name' size = 15 value=" . $_SESSION["username"] . ">";
-    echo tr("store") . " <input type='checkbox' id='store_user_data' name= 'store_user_data' value=1>";
     echo "</div><div>";
     echo tr("language") . ": ";
     array_selector("language", $_SESSION["languages"], $_SESSION["is_lang"]);
     echo "</div><div>";
     array_selector("device", $_SESSION["device_list"], $device);
-    echo "</div><div>";
-    if ($_SESSION["last_command_status"]){
-        echo "<strong class = 'red'>".tr("last_command_nok")."</strong>";
-    }
-    else{
-        echo "<strong class = 'green'>".tr("last_commnd_ok")."</strong>";
-    }
-    echo "</div><div>";
-    create_basic_command();
+    # create_basic_command();
     echo "</div>";
-    if($_SESSION["_edit_operate_"] == "operate") {
-        display_chapter($_SESSION["activ_chapters"][$device]);
+    if($_SESSION["select_mode"] == "operate") {
+        # echo "</div><div>";
+        if ($_SESSION["last_command_status"]){
+            echo "<strong class = 'red'>".tr("last_command_nok")."</strong>";
+        }
+        else{
+            echo "<strong class = 'green'>".tr("last_commnd_ok")."</strong>";
+        }
+        echo "<div>";
+        display_chapter();
+        echo "</div>";
         display_commands();
     }
-    elseif($_SESSION["_edit_operate_"] == "edit_sequence") {
-        display_chapter($_SESSION["chapter_for_edit_sequence"][$device]);
+    elseif($_SESSION["select_mode"] == "edit_sequence") {
         edit_sequence();
     }
-    elseif($_SESSION["_edit_operate_"] == "edit_color") {
+    elseif($_SESSION["select_mode"] == "edit_color") {
         edit_color();
     }
-    elseif($_SESSION["_edit_operate_"] == "edit_language") {
+    elseif($_SESSION["select_mode"] == "edit_language") {
         edit_language();
     }
+    elseif($_SESSION["select_mode"] == "edit_toks_to_ignore") {
+        edit_toks_to_ignore();
+    }
+    elseif($_SESSION["select_mode"] == "store_permanent") {
+        store_permanent();
+        echo "<div>";
+        display_chapter();
+        echo "</div>";
+        display_commands();
+    }
+    $_SESSION["last_mode"] = $_SESSION["select_mode"];
     echo "</form>";
     echo"</div>";
-# automatic update tested, but not o
+# automatic update tested, but not ok
 #         sleep(5);
 #        ob_flush();
 #    }

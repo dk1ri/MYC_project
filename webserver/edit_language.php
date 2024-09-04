@@ -1,80 +1,65 @@
 <?php
-# edit_color.php
-# DK1RI 20240514
+# edit_language.php
+# DK1RI 2024815
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
 function edit_language(){
-    # collect all translate items
-    foreach ($_SESSION["languages"] as $lang){
-        if (array_key_exists($lang, $_SESSION["translate"])){
-            foreach ($_SESSION["translate"][$lang] as $key => $item) {
-                $all_keys[] = $key;
-            }
-        }
-        if (array_key_exists($lang, $_SESSION["additional_language"])){
-            foreach ($_SESSION["additional_language"][$lang] as $key => $item) {
-                if(!array_key_exists($key, $all_keys)) {
-                    $all_keys[] = $key;
-                }
-            }
-        }
-    }
     if ($_SESSION["edit_language"] == ""){$_SESSION["edit_language"] = $_SESSION["is_lang"];}
     echo tr("w3")."<br>";
     echo tr("w4")."<br>";
     echo "&nbsp;<br>";
     echo "<div>";
-    echo "<input type='checkbox' id=store_translate name = store_translate value=1>";
-    echo tr("store_data") ." ". tr("new_language").": ";
-    echo "<input type='text' id='new_language1' name='new_language1' size=15  placeholder = ".$_SESSION["edit_language"]. "><br>";
-    foreach ($all_keys as $name) {
+    echo "<input type='text' id='new_language' name='new_language' size=15  placeholder = ".$_SESSION["edit_language"]. "><br>";
+    foreach ($_SESSION["translate_by_language"][$_SESSION["edit_language"]] as $key => $name) {
         if ($name != "language_name") {
-            if (array_key_exists($name, $_SESSION["additional_language"])){
-                $data = $_SESSION["additional_language"][$name];
-            }
-            else{
-                $data = $name;
-            }
-            echo "<input type=text name=" . $name . " size=15  placeholder = " . $data, ">";
-            echo " " . tr($name);
+           # $mod_name = str_replace(" ", "&nbsp;", tr($name));
+            echo "<input type=text name=edit_language_".$key . " size=15  placeholder = " . $name, ">";
+            echo " " . $key;
             echo "<br>";
         }
+    }
+    if (count($_SESSION["additional_languages"]) != 1) {
+        echo "</div><div>";
+        echo tr("w6");
+        array_selector("delete_language", $_SESSION["additional_languages"], $_SESSION["actual_additional_language"]);
     }
 }
 
 function edit_language_post(){
-    $new_language = "";
-    if(array_key_exists("new_language1", $_POST)){
-        $new_language = $_POST["new_language1"];
-        if (array_key_exists($new_language, $_SESSION["languages"]) or $new_language == "" or $new_language == "language_name"){
-            $new_language = "";
-            $_SESSION["edit_language"] = $_SESSION["is_lang"];
-        }
-        else{
-            $_SESSION["languages"][] = $new_language;
-            $_SESSION["edit_language"] = $new_language;
+    if(array_key_exists("new_language", $_POST) and $_POST["new_language"] != ""){
+        # new_language is not stored with the device
+        $_SESSION["languages"][] = $_POST["new_language"];
+        $newkey = str_replace(" ", "&nbsp;", $_POST["new_language"]);
+        $_SESSION["translate_by_language"][$newkey] = $_SESSION["translate_by_language"][$_SESSION["edit_language"]];
+        $_SESSION["edit_language"] = $_POST["new_language"];
+        $_SESSION["additional_languages"][] = $_POST["new_language"];
+    }
+    foreach ($_POST as $tok => $value) {
+        if (substr($tok, 0, 14) == "edit_language_") {
+            if ($value != "") {
+                $key_for_translate = substr($tok, 14);
+                if ($value != $_SESSION["translate_by_language"][$_SESSION["edit_language"]][$key_for_translate]) {
+                    $_SESSION["translate_by_language"][$_SESSION["edit_language"]][$key_for_translate] = $value;
+                }
+            }
         }
     }
-    # ignore all if no valid other language
-    if ($new_language == ""){return;}
-    foreach ($_POST as $original => $new_lang) {
-        if ($original == "language_name"){continue;}
-        if($new_lang != ""){
-            $_SESSION["additional_language"][$new_language][$original] = $new_lang;
+    if (array_key_exists("delete_language", $_POST) and $_POST["delete_language"] != "-"){
+        $i = 0;
+        foreach ($_SESSION["languages"] as $l){
+            if ($l == $_POST["delete_language"]){
+                array_splice($_SESSION["languages"], $i,1);
+                continue;
+            }
+            $i++;
         }
-    }
-    if (array_key_exists("store_translate", $_POST) and $_POST["store_translate"]){
-        if ($_SESSION["username"] != "user"){
-            $user_dir = $_SESSION["conf"]["user_data_dir"] . "\\" . $_SESSION["username"];
-            if (!file_exists($user_dir)) {
-                mkdir($user_dir);
+        $i = 0;
+        foreach ($_SESSION["additional_languages"] as $l){
+            if ($l == $_POST["delete_language"]){
+                array_splice($_SESSION["additional_languages"], $i,1);
+                continue;
             }
-            $user_data = $user_dir."\\translate";
-            $file = fopen($user_data, "w");
-            foreach ($_SESSION["translate"] as $translate_name => $tr) {
-                fwrite($file, $translate_name . ";" . $tr . "\r\n");
-            }
-            fclose($file);
+            $i++;
         }
     }
 }

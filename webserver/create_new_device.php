@@ -3,28 +3,16 @@
 # DK1RI 20240124
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
-function create_new_device($new){
-    # not actually used devices are not deleted from $SESSION
+function create_new_device(){
+    # not actually used devices were not deleted from $SESSION
+    $device = $_SESSION["device"];
     if (array_key_exists($_SESSION["device"], $_SESSION["announce_all"])) {return;}
-    if ($_SESSION["known_devices"] == ""){
-        if (file_exists($_SESSION["conf"]["known_devices"])){
-            $_SESSION["known_devices"] = read_one_item_from_file($_SESSION["conf"]["known_devices"]);
-        }
-    }
-    $devices = explode(";",$_SESSION["known_devices"]);
-    if (array_search($_SESSION["device"], $devices) == "") {
-        create_new_device_first_time();
-        # add device to $_SESSION["known_devices"]
-        if ($_SESSION["known_devices"] == ""){
-            $_SESSION["known_devices"] = $_SESSION["device"];
-        }
-        else{
-            $_SESSION["known_devices"] .= ";" . $_SESSION["device"];
-        }
-        write_file_one_item($_SESSION["conf"]["known_devices"], $_SESSION["known_devices"]);
-    }
-    else {
+    if (file_exists("devices\\".$device."\\session_original_announce")){
+        # data already available
         read_device_from_file();
+    }
+    else{
+        create_new_device_first_time();
     }
 }
 
@@ -32,7 +20,6 @@ function create_new_device_first_time(){
     # this device is not available
     # read as new device once oly
     $device = $_SESSION["device"];
-    $_SESSION["activ_chapters"][$device] = [];
     $_SESSION["activ_tok_list"][$device] = [];
     $_SESSION["actual_data"][$device] = [];
     $_SESSION["ALL"][$device] = [];
@@ -47,7 +34,6 @@ function create_new_device_first_time(){
     $_SESSION["default_value"][$device] = [];
     $_SESSION["des"][$device] = [];
     $_SESSION["des_name"][$device] = [];
-    $_SESSION["individual_tok_list"][$device] = [];
     $_SESSION["max_for_ADD"][$device] = [];
     $_SESSION["max_for_send"][$device] = [];
     $_SESSION["meter"][$device] = [];
@@ -62,11 +48,15 @@ function create_new_device_first_time(){
     $_SESSION["to_correct"][$device] = [];
     $_SESSION["type_for_memories"][$device] = [];
     $_SESSION["unit"][$device] = [];
-    $_SESSION["chapter_for_edit_sequence"][$device] = [];
-    $_SESSION["new_sequencelist"][$device] = [];
+  #  $_SESSION["chapter_for_edit_sequence"] = [];
+    $_SESSION["actual_sequencelist"][$device] = [];
+    $_SESSION["actual_sequencelist_by_sequence"][$device] = [];
+    $_SESSION["final_actual_sequencelist_by_sequence"][$device]= [];
+    $_SESSION["toks_to_ignore"][$device] = [];
+    $_SESSION["dev"][$device] = [];
+    $_SESSION["edit_toks_to_ignore"][$_SESSION["device"]] = [];
     #
     create_original_announce();
-    split_to_display_objects();
     # as answer token <-> operate token:
     read_a_o();
     # length of properties
@@ -82,9 +72,11 @@ function create_new_device_first_time(){
     # create $_SESSION["to_cerrect"]
     create_to_correct();
     sort_chapternames();
-    create_default_chapter_names();
-    create_tok_list();
+    create_actual_sequence_list();
+    create_final_actual_sequencelist();
     write_device_to_file();
+    # default: all chapters are activ
+ #   $_SESSION["activ_chapters"][$device] = $_SESSION["chapter_names"][$device];
 }
 
 function read_a_o(){
@@ -104,14 +96,17 @@ function read_a_o(){
                 if ($a_e_tok == $last_tok) {
                     $_SESSION["a_to_o"][$_SESSION["device"]][$tok] = $last_tok;
                     $_SESSION["o_to_a"][$_SESSION["device"]][$last_tok] = $tok;
+                    $_SESSION["edit_toks_to_ignore"][$_SESSION["device"]][$last_tok] = 1;
                 }
             }
             else{
                 $last_tok = $tok;
+                $_SESSION["edit_toks_to_ignore"][$_SESSION["device"]][$tok] = 1;
             }
         }
         else{
             $last_tok = $tok;
+            $_SESSION["edit_toks_to_ignore"][$_SESSION["device"]][$tok] = 1;
         }
     }
 }
@@ -311,8 +306,8 @@ function max_for_ADD(){
 }
 
 function init_data(){
-    # create $_SESSION["actuadata"][$_SESSION["device"]]
-    # $_SESSION["actuadata"][$_SESSION["device"]] contain real data!
+    # create $_SESSION["actualdata"][$_SESSION["device"]]
+    # $_SESSION["actualdata"][$_SESSION["device"]] contain real data!
     # set data  for all numeric token to "0", strings to "input test"
     # except "big" values for positions stacks (not supported now
     # ranges for memory data not supported
@@ -369,14 +364,31 @@ function create_to_correct(){
 
 function sort_chapternames(){
     # sort chapter_names by CHAPTER
+    $device = $_SESSION["device"];
     $ch = [];
-    foreach ($_SESSION["chapter_names"][$_SESSION["device"]] as $chapter) {
+    foreach ($_SESSION["chapter_names"][$device] as $chapter) {
         if ($chapter != "ADMINISTRATION") {
             $ch[$chapter] = $chapter;
+            $_SESSION["edit_chapter_to_ignore"][$device][$chapter] = 1;
         }
     }
     $ch["ADMINISTRATION"] = "ADMINISTRATION";
+    $_SESSION["edit_chapter_to_ignore"][$device]["ADMINISTRATION"] = 1;
     $_SESSION["chapter_names"][$_SESSION["device"]] = $ch;
+}
+
+function create_actual_sequence_list(){
+    $device = $_SESSION["device"];
+    $i = 0;
+    foreach ($_SESSION["chapter_token_pure"][$device] as $dev => $dat1){
+        foreach ($dat1 as $chapter => $dat2){
+            foreach ($dat2 as $tok){
+                $_SESSION["actual_sequencelist"][$device][$tok] = $i;
+                $_SESSION["actual_sequencelist_by_sequence"][$device][$i] = $tok;
+                $i++;
+            }
+        }
+    }
 }
 
 function start_time_events(){

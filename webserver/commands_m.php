@@ -15,7 +15,12 @@ function create_om($basic_tok) {
     $tok = $basic_tok. "d0";
     if (array_key_exists($tok, $_SESSION["actual_data"][$_SESSION["device"]])){
         $type = $_SESSION["type_for_memories"][$_SESSION["device"]][$tok];
-        echo find_name_of_type($type). " ";
+        if (array_key_exists($tok,$_SESSION["des_name"][$_SESSION["device"]])){
+            echo $_SESSION["des_name"][$_SESSION["device"]][$tok]." ";
+        }
+        else{
+            echo find_name_of_type($type). " ";
+        }
         $data = str_replace(" ","&nbsp;",$_SESSION["actual_data"][$_SESSION["device"]][$tok]);
         $length = find_length_of_displayed_vars($type);
         if (strlen($data) > $length){$length = strlen($data);}

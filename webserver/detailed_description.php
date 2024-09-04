@@ -32,29 +32,37 @@
 # DK1RI 20240324
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 #
-#T he program do not use globals, because i do not know, weather different users use the dame globals in a multithread environment
-# when sending a commnand at the same time. SESSION are simmilat to globals
-# The programm uses the SESSION mechanism. So data are stored from one call of a page to the next individually for each user.
+#The program do not use globals, because I do not know, weather different users use the same globals in a multithread environment
+# when sending a command at the same time. SESSION are simmilar to globals
+# The program uses the SESSION mechanism. So data are stored from one call of a page to the next individually for each user.
 # This works with different users; each getting an individual data set.
+# about device:
+# different devices are used without usage of the devicerouter. different devices can be selected but the diferent interface
+# must be selected by the eyternal program serial.py.
+# Using the commandrouter (defined in the config file) has one device only (the commandrouter) The different devices are
+# stored in  $_SESSION["dev"]. In the GUI the commands of different devices start with the description of the device,
+# Individual user data (color, translation, sequence..) are valid for all devices, because they are store with ...["device"
+#
 # 3 types of SESSION data:
 # - device specific data are generated once only and store in files. $_SESSION[...][$device] stored in the device directory
 # - exception: actual_data: these are variable data. These are not stored in files, because each user can update the data
 # - user specific data stored in user_data per user. default user "user" cannot store data.
+# those are: color, translation, ignore_toks, sequence...
 # - other data, which are used in the next call of the page.
 # this is done by read_user_data() in action.php:
-# Some (user-specific) SESSION variables are copied to (global) variables at start of the page and restored to SESSION
+# Some (user-specific) SESSION variables are copied to variables at start of the page and restored to SESSION
 # at the end. This will reduce code length and (hopefully) reduce compute load.
-# if $SESSION variables are empty, and a username is set, data are loaded file(if existing)
-# for username = user default data are loaded to the global variables at start (and stored to SESSION at the end)
+# for username = user default data are loaded at start (and not stored)
 #
 # Myc.php is called once at start; then action.php is called always, which is basically one form element.
 # action.php is the basic page and call all other functions.
-# user dependent variable are stored as global and updated from _SESSION["user_data"][user_name] at start of action.php
-# Other data, which must be stored between sessions are stored in $_SESSION.... '
-# Data are stored in $_SESSION["dataname"][$device] independent for each device
+# user dependent variables are updated from _SESSION["user_data"][user_name] at start of action.php, if a user is given and
+# data exist.
+# Other data, which are stored between sessions in $_SESSION.... '
+# Device dependent data are stored in $_SESSION["dataname"][$device] for each device
 # To reduce computing power most of these data are generated with the first call of the page for a device. So this will
 # take some more time with the first call.
-# The initialisation and description of these data can be found in read_new_device.php
+# The initialisation of these data is done in read_new_device.php
 # all other data (independent of a device) are initialized and described in read_config.php (called with myc.php)
 
 # For testmode testmode must be set to 1 in _config
@@ -62,7 +70,7 @@
 
 # Description of $_SESSION data (all per device)
 
-# for including necessary code for commandtypes only
+# for including necessary code for commandtypes only (not used anymore)
 # $_SESSION["includes"]
 
 # -
@@ -145,7 +153,7 @@
 # not used ?
 # $_SESSION["chapter_array"]
 
-# actual tokens, depend on selected chapters
+# actual tokens, depend on selected chapters and toks_to_ignore and device_to_ignre
 # $_SESSION["tok_list"]
 
 # commandtype of "os" commands used but may be error -> to check
@@ -220,6 +228,6 @@
 # basictok for commands to ready to send
 # $_SESSION["tok_to_send"]
 
-#sendstring to send
-# $_SESSION["send_string_ny_tok"]
+# sendstring to send
+# $_SESSION["send_string_by_tok"]
 ?>

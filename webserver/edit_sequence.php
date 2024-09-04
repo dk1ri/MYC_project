@@ -5,101 +5,128 @@
 
 function edit_sequence(){
     $device = $_SESSION["device"];
-    # one element only
-    foreach ($_SESSION["chapter_for_edit_sequence"][$device]as $ch){if($ch != ""){$chapter = $ch;}}
-    echo tr("w1")."<br>";
-    echo tr("w2")."<br>";
+    $username = $_SESSION["username"];
     echo "<div>";
-    echo "<input type='checkbox' id=store_edit name=store_edit value=1>";
-    echo tr("store_data");
+    echo tr("w1")."<br>";
     $i = 0;
-    foreach ($_SESSION["new_sequencelist"][$device][$chapter] as $tok) {
-        echo "<div>";
+    foreach ($_SESSION["actual_sequencelist"][$device] as $tok => $value) {
         echo "<input type=text name=" . $i . " size=5  placeholder = " . $i, ">";
         echo " " . $i . " " . $tok . " ";
         $an = explode(",", $_SESSION["original_announce"][$device][$tok][0]);
         if (count($an) > 1) {
             echo tr($an[1]);
         }
+        else{
+            echo $an[0];
+        }
         echo "<br>";
         $i++;
+    }
+    echo "</div><div>";
+    echo tr("save_as"). " ";
+    echo "<input type=text name= sequncelist_name size=7>";
+    echo "<input type='checkbox' id=store_sequencelist name=store_sequencelist value=1>";
+    if (array_key_exists($device, $_SESSION["named_tok_lists"])) {
+        if (array_key_exists($username, $_SESSION["named_tok_lists"][$device])) {
+            if (count($_SESSION["named_tok_lists"][$device][$username]) > 0) {
+                echo "<br><br>";
+                # find first element
+                $listnames = [];
+                foreach ($_SESSION["named_tok_lists"][$device][$username] as $listname => $dat) {
+                    $listnames[] = $listname;
+                }
+                array_selector("sequencelist_to_delete_or_load", $listnames, $listnames[0]);
+                echo "<br>" . tr("w7") . " ";
+                echo "<input type='checkbox' id=delete_sequencelist name=delete_sequencelist value=1>";
+                echo "<br>" . tr("w8"). " ";
+                echo "<input type='checkbox' id=load_sequencelist name=load_sequencelist value=1>";
+            }
+        }
     }
 }
 
 function edit_sequence_post(){
     # return at first call:
     $device = $_SESSION["device"];
+    $username = $_SESSION["username"];
     # one element only
-    foreach ($_SESSION["chapter_for_edit_sequence"][$device]as $ch){$chapter = $ch;}
-    if ($_SESSION["new_sequencelist"][$device] == []){return;}
     $temp = [];
-    $count = count($_SESSION["new_sequencelist"][$device][$chapter]);print "sss";
+    $count = count($_SESSION["actual_sequencelist"][$device]);
     foreach ($_POST as $original_sequence => $new_sequence) {
         # avoid device language etc
         if ($new_sequence == "" or !is_numeric($new_sequence)  or $new_sequence > $count) {continue;}
+        if ($original_sequence == "" or !is_numeric($original_sequence)  or $original_sequence > $count) {continue;}
         if ($new_sequence < 0){continue;}
         $new_sequence = abs($new_sequence);
         if ($original_sequence != $new_sequence){
             $i = 0;
             while ($i < $count) {
-                print $i."1 ";
                 if ($i < $original_sequence) {
                     if ($i < $new_sequence) {
-                        print $i."<< ";
                         $temp[$i] = $i;
                     } elseif ($i == $new_sequence) {
-                        print $i."<= ";
                         $temp[$i] = $original_sequence;
                     } else {
-                        print $i."<> ";
                         $temp[$i] = $i - 1;
                     }
                 }
                 elseif ($i == $original_sequence) {
                     if ($i < $new_sequence) {
-                        print $i."=< ";
                         $temp[$i] = $i+ 1;
                     } elseif ($i == $new_sequence) {
-                        print $i."== ";
                         $temp[$i] = $i + 1;
                     } else {
-                        print $i."=> ";
                         $temp[$i] = $i - 1;
                     }
                 }
                 else {
                     if ($i < $new_sequence) {
                         $temp[$i] = $i + 1;
-                        print $i.">< ";
                     } elseif ($i == $new_sequence) {
                         $temp[$i] = $original_sequence;
-                        print $i.">= ";
                     } else {
                         $temp[$i] = $i;
-                        print $i.">> ";
                     }
                 }
                 $i++;
             }
         }
     }
+    #store old list
+    $old_list = $_SESSION["actual_sequencelist"][$device];
+    $_SESSION["actual_sequencelist"][$device]= [];
+    $_SESSION["actual_sequencelist_by_sequence"][$device] = [];
     if ($temp != []) {
-        $i = 0;
-        while ($i < count($temp)) {
-            $n = $temp[$i];
-            $t[$i] = $_SESSION["new_sequencelist"][$device][$chapter][$n];
-            $i++;
+        foreach ($temp as $new => $old){
+            $key = "";
+            foreach ($old_list as $tok => $sequence){
+                if ($sequence == $old){$key = $tok;}
+            }
+            if( $key!= "") {
+                $_SESSION["actual_sequencelist"][$device][$key] = $new;
+                $_SESSION["actual_sequencelist_by_sequence"][$device][$new] = $key;
+            }
         }
-        $_SESSION["new_sequencelist"][$device][$chapter] = $t;
     }
-    if (array_key_exists("store_edit", $_POST) and $_POST["store_edit"]){
-        check_user_dir_exist();
-        $user_data = $_SESSION["conf"]["user_dir"] . "\\" . $_SESSION["username"]."\\".$device."\\new_sequencelist";
-        # store actual data to username
-        $file = fopen($user_data, "w");
-        foreach ($_SESSION["new_sequencelist"][$device][$chapter] as $seq => $tok) {
-            fwrite($file, $seq . "," . $tok . "\r\n");
+    create_final_actual_sequencelist();
+    #
+    if (array_key_exists("store_sequencelist", $_POST) and $_POST["store_sequencelist"]){
+        if (array_key_exists("sequncelist_name", $_POST) and $_POST["sequncelist_name"] != "") {
+            $_SESSION["named_tok_lists"][$device][$username][$_POST["sequncelist_name"]] = $_SESSION["actual_sequencelist"][$device];
         }
-        fclose($file);
+    }
+    elseif (array_key_exists("load_sequencelist", $_POST) and $_POST["load_sequencelist"]){
+        if (array_key_exists("sequencelist_to_delete_or_load", $_POST) and $_POST["sequencelist_to_delete_or_load"] != "") {
+            if ($_SESSION["username"] == "user") {
+                $_SESSION["actual_sequencelist"][$device] = $_SESSION["named_tok_lists"][$device][$username][$_POST["sequencelist_to_delete_or_load"]];
+            }
+        }
+    }
+    elseif (array_key_exists("delete_sequencelist", $_POST) and $_POST["delete_sequencelist"]){
+        if (array_key_exists("sequencelist_to_delete_or_load", $_POST) and $_POST["sequencelist_to_delete_or_load"] != "") {
+            if ($_SESSION["username"] == "user") {
+                unset ($_SESSION["named_tok_lists"][$device][$device][$username][$_POST["sequencelist_to_delete_or_load"]]);
+            }
+        }
     }
 }

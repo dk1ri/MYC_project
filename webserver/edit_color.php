@@ -29,8 +29,6 @@ function edit_color(){
         $i++;
     }
     echo "<div>";
-    echo "<input type='checkbox' id=store_color name=store_color value=1>";
-    echo tr("store_data");
     foreach ($_SESSION["color"] as $name => $color) {
         echo "<div>";
         echo "<input type=text name=" . $name . " size=15  placeholder = " . $color, ">";
@@ -55,15 +53,4 @@ function edit_color_post(){
         }
     }
     $_SESSION["user_data"]["color"] = $_SESSION["color"];
-    if (array_key_exists("store_color", $_POST) and $_POST["store_color"]){
-        if ($_SESSION["username"] != "user"){
-            check_user_dir_exist();
-            $user_data = $_SESSION["conf"]["user_dir"] . "\\" . $_SESSION["username"]."\\color";
-            $file = fopen($user_data, "w");
-            foreach ($_SESSION["color"] as $colorname => $color) {
-                fwrite($file, $colorname . ";" . $color . "\r\n");
-            }
-            fclose($file);
-        }
-    }
 }

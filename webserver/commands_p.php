@@ -87,6 +87,7 @@ function correct_for_send_op($basic_tok){
     if ($_SESSION["send_ok"]) {$_SESSION["send_ok"] = check_send_if_change_of_actual_data($basic_tok);}
     $change_found = 0;
     $translated = "";
+    $send = "";
     if ($_SESSION["send_ok"]) {
         # create $data for transmit and update actual data if no error
         list($change_found, $translated) = collect_op($basic_tok);
@@ -94,7 +95,7 @@ function correct_for_send_op($basic_tok){
             # if no op change only !
             # find "oo" basic_tok
             $already_done = [];
-            foreach ($_SESSION["cor_token"][$_SESSION["device"]][$basic_tok] as $key => $values) {
+            foreach ($_SESSION["cor_token"][$_SESSION["device"]][$basic_tok] as $values) {
                 if (!strstr($values,"a")) {
                     $basic_tok_ = basic_tok($values);
                     if ($basic_tok_ == $basic_tok) {
@@ -121,7 +122,6 @@ function correct_for_send_op($basic_tok){
         else{
             # ALL
             $i = 0;
-            $send = "";
             foreach ($_SESSION["cor_token"][$_SESSION["device"]][$basic_tok] as $tok){
                 if (strstr($tok,"d")) {
                     $send .= translate_dec_to_hex("m", $basic_tok, $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][0]);
@@ -197,7 +197,7 @@ function retranslate_op_oo($tok){
             while ($i < count($range) and $found == 0) {
                 if (!strstr($range[$i], "_")) {
                     # single number
-                    if (!strstr($range[$i], "_") and $data == $sum_counts) {
+                    if ($data == $sum_counts) {
                         $found = 1;
                         $result = $range[$i];
                     }

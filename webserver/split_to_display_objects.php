@@ -1,41 +1,55 @@
 <?php
 # split_to_display_objects.php
-# DK1RI 20240124
+# DK1RI 20240903
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 function create_original_announce(){
     # create $_SESSION["original_announce"][$_SESSION["device"]] from announcements
     # and $_SESSION["chapter_token"][$_SESSION["device"]]
     # $SESSION[meter][$_SESSION["device"]]
+    $device = $_SESSION["device"];
     $last_is_op = 0;
     $last_op_tok = "";
-    if (file_exists("devices/".$_SESSION["device"]."/_announcements")) {$filename = "devices/".$_SESSION["device"]."/_announcements";}
-    elseif (file_exists($_SESSION["conf"]["device_dir"].$_SESSION["device"]."/__announcements")) {$filename =$_SESSION["conf"]["device_dir"].$_SESSION["device"]."/__announcements";}
-    elseif (file_exists($_SESSION["conf"]["device_dir"].$_SESSION["device"]."/___announcements")) {$filename = $_SESSION["conf"]["device_dir"].$_SESSION["device"]."/___announcements";}
-    elseif (file_exists($_SESSION["conf"]["device_dir"].$_SESSION["device"]."/_announcements.bas")) {$filename = $_SESSION["conf"]["device_dir"].$_SESSION["device"]."/_announcements.bas";}
-    elseif (file_exists($_SESSION["conf"]["device_dir"].$_SESSION["device"]."/__announcements.bas")) {$filename = $_SESSION["conf"]["device_dir"].$_SESSION["device"]."/__announcements.bas";}
-    elseif (file_exists($_SESSION["conf"]["device_dir"].$_SESSION["device"]."/___announcements.bas")) {$filename = $_SESSION["conf"]["device_dir"].$_SESSION["device"]."/___announcements.bas";}
+    $fn = $_SESSION["conf"]["device_dir"].$device;
+    if (file_exists("devices/".$_SESSION["device"]."/_announcements.bas")) {$filename = "devices/".$_SESSION["device"]."/_announcements.bas";}
+    elseif (file_exists($fn."/__announcements")) {$filename =$fn."/__announcements";}
+    elseif (file_exists($fn."/___announcements")) {$filename = $fn."/___announcements";}
+    elseif (file_exists($fn."/_announcements")) {$filename = $fn."/_announcements";}
+    elseif (file_exists($fn."/__announcements.bas")) {$filename = $fn."/__announcements.bas";}
+    elseif (file_exists($fn."/___announcements.bas")) {$filename = $fn."/___announcements.bas";}
     else{echo "no anouncement file found";return;}
     $file = fopen($filename, "r");
     $an = [];
+    $transl = [];
     while (!(feof($file))) {
         $pure = fgets($file);
+        if ($pure ==  ""){continue;}
         if ($pure[0] != "D"){continue;}
         $pure = str_replace("\n", '', $pure);
         $line = str_replace("\r", '', $pure);
         $line = explode("\"", $line);
-        if ($line[1][0] == "R"){
-            $_SESSION["rules"][$_SESSION["device"]][] = $line[1];
-            continue;}
-        $li = explode(";", $line[1]);
-        if ($li[1] == "id,DEF"){
-            $dat = explode(",", $li[2]);
-            create_alpha($dat);
-            continue;
+        $l_line = explode(";",$line[1]);
+        if ($l_line[1] == "m"){
+            # basic command
+            $_SESSION["dev"][$device][$l_line[0]] = $l_line[3];
+            $an[] = $line[1];
         }
-        $an[] = $line[1];
+        elseif ($l_line[0] == "R"){
+            $_SESSION["rules"][$device][] = $line[1];}
+        elseif ($l_line[1] == "id,DEF"){
+            $dat = explode(",", $l_line[2]);
+            create_alpha($dat);
+            }
+        elseif ($l_line[0] == "L") {
+            # skip "L;" of original line
+            $transl[] = $line[1];
+        }
+        else{
+            $an[] = $line[1];
+        }
     }
     fclose($file);
-    read_translate_lines($an);
+    read_translate_lines($transl);
+    add_indiv_name_to_dev($an);
     # concatenate lines with same token:
     $last_line = "";
     $last_token = "";
@@ -107,15 +121,24 @@ function create_original_announce(){
         $i += 1;
     }
     #
-    $chapter_token = [];
+    # count number of $dev ("m")
+    $number_of_dev = 0;
     foreach ($ann as $line) {
         $field = explode(";", $line);
+        if ($field[1] == "m") {$number_of_dev++;}
+    }
+    $dev_name = "";
+    foreach ($ann as $line) {
+        $field = explode(";", $line);
+        if ($field[1] == "m"){
+            $dev_name = $_SESSION["dev"][$device][$field[0]];
+        }
         $basic_tok = $field[0];
         $i = 2;
         $skip_field = 0;
         while ($i < count($field)) {
             if (strstr($field[$i], "0,ALL")) {
-                $_SESSION["ALL"][$_SESSION["device"]][$basic_tok] = 1;
+                $_SESSION["ALL"][$device][$basic_tok] = 1;
                 $skip_field++;
             }
             if (strstr($field[$i], ",METER,")) {
@@ -124,23 +147,24 @@ function create_original_announce(){
                 if (count(explode(",", $field[$i])) > 2) {
                     $meter_time = explode(",", $field[$i])[2];
                 }
-                $_SESSION["meter"][$_SESSION["device"]][$basic_tok] = $meter_time;
-                $_SESSION["meter_announce_line"][$_SESSION["device"]][$basic_tok] = $line;
-                if ($_SESSION["meter_min_time"][$_SESSION["device"]] == 0) {
-                    $_SESSION["meter_min_time"][$_SESSION["device"]] = $meter_time;
-                } elseif ($_SESSION["meter_min_time"][$_SESSION["device"]] < $meter_time) {
-                    $_SESSION["meter_min_time"][$_SESSION["device"]] = $meter_time;
+                $_SESSION["meter"][$device][$basic_tok] = $meter_time;
+                $_SESSION["meter_announce_line"][$device][$basic_tok] = $line;
+                if ($_SESSION["meter_min_time"][$device] == 0) {
+                    $_SESSION["meter_min_time"][$device] = $meter_time;
+                } elseif ($_SESSION["meter_min_time"][$device] < $meter_time) {
+                    $_SESSION["meter_min_time"][$device] = $meter_time;
                 }
                 $skip_field++;
             }
             elseif (strstr($field[$i], ",CHAPTER,")) {
                 $ar = explode("CHAPTER", "$line");
                 $chap = explode(",", $ar[1])[1];
-                $chap_no_space = str_replace(" ", "_x_", $chap);
-                $chapter_token[$chap_no_space][$basic_tok] = 1;
-                $_SESSION["chapter_names"][$_SESSION["device"]][$chap_no_space] = $chap_no_space;
-                $_SESSION["chapter_names_with_space"][$_SESSION["device"]][$chap] = $chap_no_space;
-                $_SESSION["activ_chapters"][$chap_no_space] = $chap_no_space;
+                $chap_no_space =  str_replace(" ", "_x_", $dev_name) . str_replace(" ", "_x_", $chap);
+                $chapter_token[$dev_name][$chap_no_space][$basic_tok] = $basic_tok;
+                $_SESSION["chapter_names"][$device][$chap_no_space] = $chap_no_space;
+                if($number_of_dev > 1){$_SESSION["chapter_names_with_space"][$device][$chap_no_space] = $dev_name." ".$chap;}
+                else{$_SESSION["chapter_names_with_space"][$device][$chap_no_space] = $chap;}
+                $_SESSION["activ_chapters"][$device][$chap_no_space] = $chap_no_space;
                 $skip_field++;
             }
             $i += 1;
@@ -151,7 +175,7 @@ function create_original_announce(){
             $last_op_tok = $basic_tok;
         } elseif ($ct == "oo") {
             if ($last_is_op == 1) {
-                $_SESSION["oo_tok"][$_SESSION["device"]][$basic_tok] = $last_op_tok;
+                $_SESSION["oo_tok"][$device][$basic_tok] = $last_op_tok;
             }
         } else {
             $last_is_op = 0;
@@ -159,21 +183,29 @@ function create_original_announce(){
         $o_a = array_splice($field, 1);
         $length = count($o_a);
         $o_a = array_splice($o_a,0, $length - $skip_field );
-        $_SESSION["original_announce"][$_SESSION["device"]][$basic_tok] = $o_a;
+        $_SESSION["original_announce"][$device][$basic_tok] = $o_a;
+        $_SESSION["toks_to_ignore"][$_SESSION["device"]][$basic_tok] = 1;
     }
+    create_chapter_token_pure($chapter_token);
+    split_to_display_objects();
+}
+
+function create_chapter_token_pure($chapter_token){
     # delete "as" lines for  $chapter_token -> $_SESSION["chapter_token_pure"]
-    $_SESSION["chapter_token_pure"][$_SESSION["device"]] = [];
-    foreach ($chapter_token as $chapter => $cha){
-        $_SESSION["chapter_token_pure"][$_SESSION["device"]][$chapter] = [];
-        foreach ($cha as $tok => $one){
-            $as = explode(",",$_SESSION["original_announce"][$_SESSION["device"]][$tok][0]);
-            if (count($as) > 1) {
-                if (!(substr($as[1], 0, 2) == "as") and !(substr($as[1], 0, 3) == "ext")) {
-                    $_SESSION["chapter_token_pure"][$_SESSION["device"]][$chapter][] = $tok;
+    $device = $_SESSION["device"];
+    $_SESSION["chapter_token_pure"][$device] = [];
+    foreach ($chapter_token as $dev => $dat1) {
+        foreach ($dat1 as $chapter => $dat2) {
+            foreach ($dat2 as $tok){
+                $as = explode(",", $_SESSION["original_announce"][$device][$tok][0]);
+                if (count($as) > 1) {
+                    if (!(substr($as[1], 0, 2) == "as") and !(substr($as[1], 0, 3) == "ext")) {
+                        $_SESSION["chapter_token_pure"][$device][$dev][$chapter][$tok] = $tok;
+                    }
                 }
-            }
-            else{
-                $_SESSION["chapter_token_pure"][$_SESSION["device"]][$chapter][] = $tok;
+                else {
+                    $_SESSION["chapter_token_pure"][$device][$dev][$chapter][$tok] = $tok;
+                }
             }
         }
     }
@@ -202,7 +234,7 @@ function split_to_display_objects(){
             expand_o($basic_tok, $announce, $ct);
         }
         if ($ctm == "m" or $ctm == "n") {
-            expand_m_n($basic_tok, $announce, $ct, $ctm);
+            expand_m_n($basic_tok, $announce, $ct);
         }
         if ($ctm == "a" or $ctm == "b") {
             expand_a_b($basic_tok, $announce, $ct, $ctm);
@@ -356,7 +388,7 @@ function expand_o($basic_tok, $announce, $ct){
     }
 }
 
-function expand_m_n($basic_tok, $announce, $ct, $ctm){
+function expand_m_n($basic_tok, $announce, $ct){
     # create display-object for each row, column and data
     count(explode(",",$announce[0])) > 1 ? $name = explode(",",$announce[0])[1] : $name = "memory";
     $_SESSION["des_name"][$_SESSION["device"]][$basic_tok] = $name;
@@ -480,7 +512,7 @@ function des_type($tok,$announce){
         $_SESSION["des"][$_SESSION["device"]][$tok] = create_des_for_strings($type, $ra);
     }
     else {
-        list($min, $max) = find_allowed($type);
+   #     list($min, $max) = find_allowed($type);
         # without restrictions:
         if (count($ann) > 0) {
             if (!strstr($ann[0], "{")) {
@@ -826,82 +858,59 @@ function create_alpha($line){
     $_SESSION["alpha"][$_SESSION["device"]][$alpha_label] .= $result;
 }
 
-function read_translate_lines($an){
-    $translations= "";
-    $number_of_new_languages = 0;
+function read_translate_lines($transl){
+    # default $_SESSION["translate_by_language"] exist already
+    $device_lang_line = explode(";", $transl[0]);
+    $dla = [];
     $i = 0;
-    # read to one lines from announcefile
-    foreach ($an as $line) {
-        if ($line[0] == "L") {
-            if ($i == 0) {
-                $line = explode(";", $line);
-                $new_languages = array_splice($line, 2);
-                $number_of_new_languages = count($new_languages);
-            } else {
-                $translations .= substr($line, 2);
-            }
-            $i++;
+    foreach ($device_lang_line as $dl){
+        if ($i != 0) {
+            $dla[$dl] = $dl;
         }
-    }
-    if ($translations == ""){return;}
-    # sort data to array $translation
-    # key is the first dataelement
-    $i = 0;
-    $translat = explode(";",$translations);
-    $translation = [];
-    $i = 0;
-    $j = 0;
-    while ($i < count($translat)){
-        if ($j == 0) {
-            $keyword = $translat[$i];
-        }
-        else {
-            $translation[$new_languages[$j -1]][$keyword] = $translat[$i];
-        }
-        $j++;
-        if($j == $number_of_new_languages + 1){$j = 0;}
         $i++;
     }
-    # additional languge ? -> add
-    foreach ($new_languages as $lang) {
-        if (!array_key_exists($lang, $_SESSION["languages"])) {
-            # add
-            $_SESSION["languages"][] = $lang;
-        }
-    }
-    $lang_org = $_SESSION["translate"];
-    # add translations to $_SESSION["translate" (no overwrite)
-    foreach ($new_languages as $lang) {
-        foreach ($translation[$lang] as $key => $value){
-            if (!array_key_exists($key, $lang_org[$lang])) {
-                $lang_org[$lang][$key] = $value;
-            }
-        }
-    }
-    $_SESSION["translate"] = $lang_org;
-    $l = "language name";
-    foreach ($new_languages as $lang) {
-        $l .= ";" . $lang;
-    }
-    $s = [];
+    $device_lang_line = $dla;
+    # add default (englisch) for additional languages and new language to $_SESSION["languages"]
+    $languages = $_SESSION["languages"];
+    #
+    $pos = [];
     $i = 0;
-    foreach ($new_languages as $lang) {
-        foreach ($_SESSION["translate"][$lang] as $key => $data) {
-            if ($i == 0) {
-                $s[$key] = $key . ";" . $data;
-            }
-            else{
-                $s[$key] .= ";" . $data;
+    foreach ($device_lang_line as $l){
+        # new language
+        $l = str_replace(" ", "&nbsp;", $l);
+        $pos[$l] = $i;
+        if (!array_key_exists($l, $languages)) {
+            $languages[$l] = $l;
+            $_SESSION["additional_languages"][$l] = $l;
+            $_SESSION["actual_additional_language"] = $l;
+            # add english as default
+            $_SESSION["translate_by_language"][$l] = $_SESSION["translate_by_language"]["english"];
+        }
+        $i++;
+    }
+    #
+    $i = 0;
+    $_SESSION["languages"] = $languages;
+    foreach ($transl as $transline){
+        if ($i != 0) {
+            # ignore language names
+            $transline_array = explode(";", $transline);
+            $key = $transline_array[0];
+            array_splice($transline_array,  0, 1);
+            # no key in $transline_array
+            foreach ($languages as $lang) {
+                if (array_key_exists($lang, $device_lang_line)) {
+                    $_SESSION["translate_by_language"][$lang][$key] = $transline_array[$pos[$lang]];
+                }
             }
         }
         $i++;
     }
-    $translate_file = $_SESSION["conf"]["translate"];
-    $file = fopen($translate_file, "w");
-    fwrite($file, $l . "\r\n");
-    foreach ($s as $key => $string) {
-        fwrite($file, $string."\r\n");
+    # some elements of $_SESSION["translate_by_language" may be missing -> set to ""
+    foreach ($languages as $lang){
+        foreach ($_SESSION["translate_by_language"][$lang] as $key => $value){
+            if (!array_key_exists($key, $_SESSION["translate_by_language"][$lang])){$_SESSION["translate_by_language"][$lang][$key] = "";}
+        }
     }
-    fclose($file);
 }
 ?>

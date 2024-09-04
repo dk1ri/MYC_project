@@ -6,11 +6,13 @@ add;+;+
 all_basic;all basic;Basisbefehle
 author;author;Author
 change;change;aendern
+chappter;chapter;Kapitel
 config;configuration;Konfiguration
 device;device;Gerät
 edit_color; edit color; Farben aendern
 edit_language; edit language;neue Sprache
 edit_sequence;edit_sequence;Reihenfolge aendern
+ignore_toks;toks to ignore;ausgeblendete Token
 interface;interface;Schnittstelle
 language;language;Sprache
 languages;english;deutsch
@@ -23,16 +25,21 @@ operate;operate;Anwendung
 position;position;Position
 read;read;lesen
 read_data;read_data;Daten lesen
+save_as;save_as;speichern als
 send;send;abschicken
 send_data;send data;Daten absenden
 set_default;set default;Standardwert
 stack;stack;Stapel
 store_data;store;speichern
 store;store user data;Benutzerdaten speichern
+token;token;Befehlsnummer
 version;version;Version
-w1;Write new sequence number to the left side of the old placeand press send;neue Nummer der Reihenfolge an alte Position eintragen und abschicken
+w1;Write new sequence number to the left side of the old place and press send;neue Nummer der Reihenfolge an alte Position eintragen und abschicken
 w2;if you think, it is ok tick store as well;zum speichern auch dies markieren
-w3;The top line must contain anew name of the language;Die oberste Zeile muss einen Namen für die neue Sprache enthalten
-w4;write the translation to the left side;Die Uebersezung wird liks neben das Original geschrieben
+w3;The top line may contain a new name of the language;Die oberste Zeile kann einen Namen für eine neue Sprache enthalten
+w4;write the translation to the left side;Die Uebersezung wird links neben das Original geschrieben
 w5;The following names are allowed as well:;Folgende Farbnamen sind erlaubt:
+w6;delete additonal languages;zusaetzliche Sprachen loeschen
+w7;delete sequencelist;Liste mit Reihenfolge loeschen
+w8;load sequencelist;Liste mit Reihenfolge laden
 your_name;your name;Ihr Name

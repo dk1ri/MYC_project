@@ -2,7 +2,7 @@
 <!--
     Webserver for MYC system
     myc.php
-    Version 1.2 202420
+    Version 1.2 202408
     Manual Version: V01.01.06
     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
@@ -12,17 +12,18 @@
     This version may have errors!
     ================================================================
     known errors
-    as command not working (hang) not in _POST ???
+
 -->
     <?php
     session_start();
-    include "read_confighp";
+    include "read_config.php";
     include "file_handling.php";
     include "subs.php";
+    include "select_any.php";
     read_config();
+    read_translate_lines_default();
     $date = new DateTime();
     $act_date = $date->getTimestamp();
-    include "select_any.php";
     ?>
     <head>
         <title>MYC Apache Server</title>

@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 Webserver for a MYC System
 
 Author: DK1RI
-Version V01.01.07 20240410
+Version V01.01.08 20240904
 This paper is published in  https://github.com/dk1ri  as well
 
 Introduction
@@ -21,31 +21,38 @@ Status
 
 Apache webserver (XAMPP) on windows set up
 All commands are working; may be with some restrictions.
-USB interface to one devices is working (but may be changed)
+USB interface to one device is working.
+Some user definable GUI setting (color, sequence, ignore commands or chapter, individual language) are implemented
+The webserver can handle announcelists with more than one device, as necessary, when using a commandouter.
+Individual data can be stored by user
+Attention: The syntax for rules was harmonized (“R “ was changed to “R;”), This may produce an error, when starting the webserver but has no influence to other function  The devices will be modified in next future (202408).
 
 Some limitations
 
--The commandrouter has no interface to devices yet and a solution without the commandrouter should work as a first step.
-So the webserver has some limitations:
-- one device at the same time only.
+- The idea is, that the communication to the webserver is without errors and the announcementfile has correct syntax.
+The webserver make some basic checks of the announcementfile, but most probably syntax errors will produce errors or crash the program.
+In this case, correct the announcement file and delete the file session_original_announce in the device directory. Than new data will be generated with the next start.
+- The commandrouter has interface to one device.
+As a solution without the commandrouter different devices can be selected when commandrouter is set to 0 in the configfile.
 - It is necessary to start three programs: browser, web-server and a python program for the device interface (if the device is connected via USB only)
 I did not found a solution to connect the webserver to USB directly. So data exchange is done by filetransfer using the additional python program. This cost time.
 - For read commands there may be a delay (dead) time after a command.
-- Windows only is tested (Win10) with firefox browser.
+- Windows only is tested (Win11) with firefox browser.
 - The MYC protocol has no limitations with the number of elements of some commands and the use of descriptions is not mandatory. With the usage of the webserver descriptions for large memories e.g. are necessary. Before using a device with a webserver it should be checked, weather there are meaningful results.
 - ext is not supported
 - CODING and restrictions of manual numeric input is not supported
 - some OPTIONs are not supported
-- modifying the design of the webpage is not supported / ready
+- modifying the design of the webpage is limited (see above). A solution using javascript is outstanding.
 
 Starting / preparations
 
 The following programs must be installed:
 on the client:
 a browser (firefox is used) 
-on the webserver (Win10 tested):
+enable javascript for the browser (for later use)
+
+on the webserver (Win10 and Win11 tested):
 xampp (standard installation, nothing special [19])
-Enable javascript for the browser (for later use)
 Your device must provide a filetransfer interface. A device with software interface should have this.
 For a (hardware) device with USB interface the following apply:
 install python (standard installation, nothing special [20]) 
@@ -59,11 +66,11 @@ C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe -m pi
 
 move the original \xampp\htdocs to another directory, (if you need this for later usage).
 download a new htdocs from [17], unzip and copy to \xampp
-create a new  \xampp\htdocs\devices\<device-name> directory
-download the device from [18], unzip and copy the content to \xampp\htdocs\devices<device-name>. The __announcement file is necessary only.
+create a new  \xampp\htdocs\devices\<your-device-name> directory
+download the device from [18], unzip and copy the content to \xampp\htdocs\devices<your-device-name>. The __announcement file is necessary only.
 For most existing devices these data are available.
 
-Actual usage of the SK
+Usage of the SK
 	
 on the webserver:
 call the xampp control Panel
@@ -78,7 +85,7 @@ C:\Users\your_name\AppData\Local\Programs\Python\Python_version\python.exe USB_s
 
 In a browser (on the same computer as the webserver) call
 localhost/myc.php
-If you use a different (remote) computer replace /localhost by the internetaddress are domainname.
+If you use a different (remote) computer replace /localhost by the internetaddress or domainname.
 
 Some tips for usage, which may help:
 - to unselect a switch of an or command “control” + mouse-click!
@@ -88,15 +95,16 @@ Some tips for usage, which may help:
 - for entering data of commands with more than one value (ob, on, of) the separation character is blank (“|”). So when you want to enter a “|” for strings you must write &H7C. Received data are printed as printable characters(including space) or &Hxx. Separator for multiple elements of ob / on and f commands is “ . “.
 - The number of entries for stacks and memory positions is not limited. But it is recommended, that the device delivers suitable descriptions with MUL and ADD using a small number of entries (< 100).
 - if you are testing new devices, the _alpha file is not updated. You must delete it for update with the next run of the program.
+- indivdual users ( with name other than “user” can store indivdual settings for GUI color, sequence of the controls and a personal translation of the (english) names
 
 Other devices
 For devices not found in [18] you can create your own.
 create the directory \xampp\devices\your_new_device
-copy your announcefile to this directory. The name should be __announcement or announcement.bas.
+copy your announcefile to this directory. The name should be _announcement or announcement.bas.
 Syntax errors in the announcement file may create a crash of the webserver.
 
 Other languages:
-The names for labels given by the announcements cannot be changed yet, but the (default) labels and names defined by the web-server. English and german is available now, others can be added in the _lang file (“;” is the separator)
+Modifying the translations and adding additional languages is supported. It can be stored by user
 
 Some additional explanations
 
@@ -108,28 +116,22 @@ My intention was:
 - the programming should be as simple as possible, so that it works with all browsers.
 - the web-server do not use a database program, but calculate many data at the first start.
  - the usage should be simple (there is a lot to do)
-- the web-pages will be completely dynamic, so that all kinds of announce-lists can be used.
+- the web-pages will be completely dynamic, so that all kinds of announcelists can be used.
+The code can be shrinked by deleting comments, Tabs and CR with a suitable program.
 
-Later additions:
-- The user calls his own individual web site and get his personal web layout.
-- Functions may disappear when a device disappears.
-- The labels of those functions may disappear or be grayed out.
-- The user should find a knob to switch to an edit mode.
-- In this mode the web page behaves like a web editor. The user can modify those functions defined by the full announcement-list.
-- So the user can define his own colors and view of the functions in the edit mode and use it later on.
-- The result is stored in a user individual config file or data base.
-- For simple usage preconfigured files (skins) can be used.
+Missing:
 
+automatically update when info data arraive.
 
 External programs
 
-Because I found no simple way for the web-server to communicate with USB device, an additional pyton script is necessary.. The web-server create file file with the data to send, and wait for an answer (for answer commands).
+Because I found no simple way for the web-server to communicate with USB device, an additional python script is necessary.. The web-server create file file with the data to send, and wait for an answer (for answer commands).
 The script USB_serial read the file, send data to the device, wait for answer (for answer commands) and put it to a file.
 The web-server read it, and update the values and display the page
 
 My Test environment
 
-I work with one windows laptop (Win10)
+I work with one windows laptop (Win10 or Win11)
 For development of the pages I use PhpStorm, and I installed a web-server (XAMPP)..
 
 Copyright

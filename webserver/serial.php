@@ -24,7 +24,6 @@ function read_from_device(){
             $file = fopen($_SESSION["conf"]["serialread"], "r");
             $_SESSION["received_data"]  = fgets($file);
             fclose($file);
-            unlink($_SESSION["conf"]["serialread"]);
             if ($_SESSION["received_data"]  == "") {
                 # error
                 $_SESSION["last_command_status"] = 1;
@@ -49,9 +48,9 @@ function read_from_device(){
             }
             $i++;
         }
-        # the device write to file with append -> delete file
-        if (file_exists($_SESSION["conf"]["serialread"])) {unlink($_SESSION["conf"]["serialread"]);}
     }
+    # the device write to file with append -> delete file
+    if (file_exists($_SESSION["conf"]["serialread"])) {unlink($_SESSION["conf"]["serialread"]);}
     if ($_SESSION["conf"]["testmode"]){print " from device: ".$_SESSION["received_data"] ." ";}
     # convert 2 byte each to 1 byte char
  #   $string = $_SESSION["received_data"]
