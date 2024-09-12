@@ -273,26 +273,26 @@ Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,21,{
 '
 'Announce45:
 ' Undervoltage
-Data "R !$9 !$11 !$13 IF $1<400"
+Data "R;!$9 !$11 !$13 IF $1<400"
 '
 'Announce46:
 ' Undervoltage
-Data "R !$7 IF $1<10"
+Data "R;!$7 IF $1<10"
 '
 'Announce47:
 ' On - off mode only during operation
-Data "R $15 IF $19>0 AND $19<5"
+Data "R;$15 IF $19>0 AND $19<5"
 '
 'Announce48:
 ' Switch off, if power is exceeded
-Data "R $20=1! IF $4>$27*$27"
+Data "R;$20=1! IF $4>$27*$27"
 '
 'Announce49:
 ' Switch off, if current is exceeded
-Data "R $20=1! IF $2&*>150000"
+Data "R;$20=1! IF $2&*>150000"
 '
 'Announce50:
-Data "R !E8 IF $1<400"
+Data "R;!E8 IF $1<400"
 '
 'Announce51;
 Data "L;original;english;deutsch"
