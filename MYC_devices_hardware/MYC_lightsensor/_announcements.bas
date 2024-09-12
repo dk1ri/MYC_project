@@ -179,4 +179,4 @@ Data "L;6 chanal lightsensor;6 chanal lightsensor;6 Kanal Lichtsensor;raw data a
 Data "L;blue;blue;blau;green;green;gruen;yellow;yellow;gelb;red;red;rot;integration time;integration time;Integrations Zeit;"
 '
 'Announce31:
-Data "temperature;temperature;Temperatur;LED current mA;LED current mA;LED Strom mA;LED ind current mA;LED ind current mA;LED ind Strom mA;gain;gain;Verstaerkung"
+Data "L;temperature;temperature;Temperatur;LED current mA;LED current mA;LED Strom mA;LED ind current mA;LED ind current mA;LED ind Strom mA;gain;gain;Verstaerkung"
