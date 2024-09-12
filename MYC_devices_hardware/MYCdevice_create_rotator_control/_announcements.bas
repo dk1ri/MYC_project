@@ -154,12 +154,12 @@ Data "L;values 2;values 2;Werte 2;calibration;calibration;Eichung;at limit;at li
 '
 'Announce28:
 ' - no operate command is done before Control_on is set
-Data "R !$4 !$5 !$6 !$8 IF $2=0"
+Data "R;!$4 !$5 !$6 !$8 IF $2=0"
 '
 'Announce29:
 ' - motor at limit will switch off , no need for logic device to send switch off command
-Data "R $7 IF $15=1"
+Data "R;$7 IF $15=1"
 '
 'Announce30:
 'No Preset If hardwarelimit
-Data "R !$4 IF $15=1"
+Data "R;!$4 IF $15=1"
