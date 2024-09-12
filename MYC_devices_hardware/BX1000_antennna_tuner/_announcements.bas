@@ -232,4 +232,4 @@ Data "L;fan;fan;Luefter;voltage;voltage;Spannung;temperature;temperature;Tempera
 '
 'Announce43:
 ' Switch off up /down if Power > 12W
-Data "R $15 = 1 IF $19 > 0 AND $14 > 100"
+Data "R;$15 = 1 IF $19 > 0 AND $14 > 100"
