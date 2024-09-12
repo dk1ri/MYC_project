@@ -5,7 +5,7 @@ Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;70MHz DDS geneato V03.3;180;1;43;1-1"
+Data "0;m;DK1RI;70MHz DDS geneator;V03.3;1;180;1;43;1-1"
 '
 'Announce1:
 'Befehl &H01
@@ -199,17 +199,17 @@ Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,37,{
 '
 'Announce33:
 'Temp
-Data "R !$7 IF $6=0"
+Data "R;!$7 IF $6=0"
 '
 'Announce34:
 'Relais
-Data "R $3 IF $22=0"
+Data "R;$3 IF $22=0"
 '
 'Announce35:
-Data "R $08 $09 IF $22=0"
+Data "R;$08 $09 IF $22=0"
  '
  'Announce36:
-Data "R $10 $11 R12 $13 $14 IF $22=0 AND $6=1"
+Data "R;$10 $11 R12 $13 $14 IF $22=0 AND $6=1"
 '
 'Announce37;
 Data "L;original;english;deutsch"
