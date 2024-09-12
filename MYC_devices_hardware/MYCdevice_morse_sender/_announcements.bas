@@ -5,7 +5,7 @@ Announce:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;morse sender;V05.0;1;190;1;14;1-1"
+Data "0;m;DK1RI;morse sender;V05.0;1;190;1;16;1-1"
 '
 'Announce1:
 'Befehl  &H01 <s>
@@ -53,7 +53,7 @@ Data "7;as,as6"
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;190;15,start at;15,lines;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;190;16,start at;15,lines;16,CHAPTER,ADMINISTRATION"
 '
 'Announce9:                                                  '
 'Befehl &HFC
@@ -80,5 +80,11 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,18,{
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,18,{1_0to127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '
 'Announce13:
-Data "R !* IF !$6&0 OR !$6&1"
+Data "R;!* IF !$6&0 OR !$6&1"
+'
+'Announce14:
+Data "L;language name;english;deutsch"
+'
+'Announce15:
+Data "L;send morse;send morse;Morse senden;morse speed;morse speed;Morse Geschwindigkeit;morse frequency;morse frequency;Morse Frequenz"
 '
