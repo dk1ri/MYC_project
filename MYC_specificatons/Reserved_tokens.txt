@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Reserved Commands
 
 Author: DK1RI
-Version V01.20.08 20240416
+Version V01.20.09 20240905
 This paper is published in https://github.com/dk1ri as well
 
 Introduction
@@ -95,14 +95,15 @@ Features Command 0xxxfa
 
 This is not a command but a description announcement of optional additional feature and properties of a device-group, which cannot be modified.
 This line is optional and not forwarded by the CR, if all <OPTION> are used by the CR only.
-The command announcement has the 1st <des> "FEATURE".
+The command announcement has the 1st <des> "FEATURE". Non default OPTIONS are set only.
+The device will not answer to this command.
 
 announce:	250;ia,FEATURE[,<des>]...[,<des>];<ty>,<OPTION>,[<des>..][;...]
 command:	-
 answer / info	-
 
 Defined <OPTION> are:
-b,INFO,<DEFAULT>			FU only. Optional, can be used, if infos are send; must not be defined otherwise
+b,INFO,<DEFAULT>				FU only. Optional, can be used, if infos are send; must not be defined otherwise
 						0:	info used, but no polled interface
 						other:	requested info polling time in 10ms. <DEFAULT> is 10 (means 100ms)
 <sm>,INFOCOMMANDS			FU  only. The CR should poll the commands given in this ls list
@@ -110,9 +111,10 @@ a,MULTI_ANSWER,<DEFAULT>		FU only, Optional, 1, if device can handle multiple an
 						 I2C, 1 for others. For polled devices with default, the master must get the answer within 1 second. After 
 						that time the FU may delete the answer.
 
-w,COMMANDDELAY<DEFAULT>	in ms, DEFAULT is 100. The CR will wait for this time, before sending another command. This will 
+w,COMMANDDELAY,<DEFAULT>	in ms, DEFAULT is 100. The CR will wait for this time, before sending another command. This will 
 						allow slow devices to handle commands. 0 means, that the device can buffer commands. The FU will not 
 						accept commands during that time. The FU will also do so, until all data are sent to the master.
+b,ACK,<DEFAULT>				set to “1”: info for HI, that FU will send an answer for all operating commands as an acknowledge.
 	
 			 
 Log on Command 0xxxfb

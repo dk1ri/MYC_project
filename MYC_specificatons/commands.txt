@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V03.00.03 20240415
+Version V03.00.03 20240905
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -25,7 +25,7 @@ Lines with the basic announcement, lines of command announcements and lines for 
 Two of the reserved tokens are used by the CR to identify a device, also, if more than one of the same device-group (same hardware and firmware) exist. (command_token 0x00, 0xxxff)
 The basic announcement (command_token 0x00,) contains the description of the device. For details see [5]
 The rules describe the restrictive conditions, when and how commands will not work for a device. By default any command is working at any time.
-Translation lines give a translation of names use in the announcements to other lanuages.
+Translation lines give a translation of names use in the announcements to other languages.
 The CR concatenate the announcements of the devices to a full announce-list.
 The I-announcement is inserted by the CR to the full announce-list for each device. It shows some individual parameters of the device, so that RU and SK can identify the device in all cases.
 Some operating commands may have an influence on the status of other commands. This can be handled by rules as well.
@@ -33,12 +33,11 @@ Rules lines start with R”, “S”, “Q” or “T”. “R” rules of devices are included in
 “Q” rules are sent by the RU to the command-router. They are used for user management.
 “S” rules are used by devices during configuration and are not included in the full announcement list. They are used during configuration.
 “T” rules are sent by the RU to the command-router. These are optional translations of the descriptions within announcements. They can be used to handle other languages or modify the semantic function of a device. For details see [8].
-Translation lines start with “L”. The first “L” line contain the languages as name in this language as:
-L;english;deutsch;francais
-The first language is the language used in the announcements.
-Other lines contain the translated words in the sequence of the first “L” line as:
-L;switch;Schalter;bouton;pressure,Druck;pression;
-L;speed;Geschwindigkeit;vitesse
+Translation lines of devices start with “L”. The first “L” line contain the languages as name in this language as:
+L;languagename;english;deutsch;francais
+Other lines contain an identrifier (usually the english label) and the translated words in the sequence of the first “L” line as:
+L;switch;switch;Schalter;bouton;pressure,pressure,Druck;pression;
+L;speed;speed;Geschwindigkeit;vitesse
 Do not forget the “;” at the end of the first line.
 Predefined words like ANNOUNCEMENTS should not be added.
 
@@ -112,6 +111,7 @@ General syntax for a command
 
 Info / answers
 
+As default a device will send data for answers commands only and do not send an acknowledge for operating commands. A device can send acknoledges and announce this with a FEATURE announcement [5]. The SK will do appropriate actions.
 Some devices can send answers without a corresponding command as info. Not all devices will send infos.
 Sometimes a command has an additional effect depending on the commands in the past. The FU may send infos in this case to inform the SK.
 Devices may store the status of some commands. If a command changes a stored status the SK must be informed about the state of the changed commands. This can be done by info with the changed states. So an operate command may answer with infos. Or it can be done by rules – and the CR will inform the SK- or the FU inform the SK directly.
@@ -190,7 +190,7 @@ The following can be used for defining allowed characters of a string (example):
 Definition:
 200;id,DEF;alpha,0x22,(, ,a,,,aa,AA,11,1_0x3to0x20
 ( ? “, (, space, a, colon, a to z  AtoZ, 0 to 9, 0x3 to 0x20)
-AA ? 1_1_AtoZ; aa ? 1_atoz; 11 ? 1_0to9
+AA ? 1_AtoZ; aa ? 1_atoz; 11 ? 1_0to9
 hex and binary notation allowed
 “ is used in the announcement as delimiter ? 0x22 must be used
 alpha is unique label (without colon)
@@ -513,12 +513,14 @@ CODING:
 If for memory data the translation of transmitted values to displayed values cannot be described in a simple way, CODING can be used. The device must not send values out of range.
 CODING is an information for the SK, if complex translation from display data to transmitted data is necessary (as for time).the SK decides about the displayed format, and do the translation.
 Transmitted values are numeric always.
-CODING (as ALPHA) is a special form of <des_range>, but the definition is fixed.
-Format:
-<ty>[,label][,{<codingname>}]
+CODING (as ALPHA) is a special form of <des_range>, but the definition is fixed and is not defined in the announcements.
+
 The following reserved names for <codingname> are defined now (more may follow):
-UNIXTIME8:	t[,label],{UNIXTIME8}	8byte UNIX-time
-UNIXTIME4:	w[,label],{UNIXTIME4}	4byte UNIX-time
+UNIXTIME8 	t[,label],{UNIXTIME8}	8byte UNIX-time
+UNIXTIME4	w[,label],{UNIXTIME4}	4byte UNIX-time
+YEAR0	w[,label],{YEAR0}		0 to 65000 year after BC
+MONTH	n[,label],{MONTH}		0 to 11
+DAY		n[,label],DAY			0 to 31
 DAYSEC	k[,label],{DAYSEC}		0 to 86400
 DAYMON	n[,labe].{DAYMON}		0 to 28|29|30|31
 YEARDAY	w[,label],{YEARDAY}	0 to 364|365
@@ -528,6 +530,10 @@ LOG		<ty>[,label],{LOG,…}	logarithmic display, <ty> depend on {...}
 The status of bits of a byte can be described by the r command.
 
 <codingname> is used for <sequence> of op /ap commands as well. The number of the maximum transmitted value must match the <codingname>.
+
+usage: 
+100;om;t,{CODING,UNIXTIME8};10
+101;op;1;365;CODING,YEARDAY;-
 
 Errors and Error Handling
 
