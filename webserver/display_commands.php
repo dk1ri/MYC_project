@@ -1,15 +1,15 @@
 <?php
 # display_commands.php
-# DK1RI 20240826
+# DK1RI 20240913
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 #
 # display one element for each tok (with some exceptions)
 function display_commands(){
     $device = $_SESSION["device"];
-    if ($_SESSION["conf"]["testmode"]){for_tests();}
+    if ($_SESSION["conf"]["testmode"]){create_data_file("actual_data", "0", 0,1);}
     $already_done = "";
     foreach ($_SESSION["final_actual_sequencelist_by_sequence"][$device] as $basic_tok){
-        if (array_key_exists($basic_tok, $_SESSION["toks_to_ignore"][$device]) and $_SESSION["toks_to_ignore"][$device][$basic_tok] == 0) {
+        if ($_SESSION["toks_to_ignore"][$device][$basic_tok] == 0) {
             continue;
         }
         # $value is ct!
@@ -40,40 +40,52 @@ function display_commands(){
                 create_basic_command($basic_tok);
                 break;
             case "os":
+            case "ks":
                 create_os($basic_tok);
                 break;
             case "at":
+            case "lt":
                 create_at($basic_tok);
                 break;
             case "as":
+            case "ls":
                 create_as($basic_tok);
                 break;
             case "or":
+            case "kr":
                 create_or($basic_tok);
                 break;
             case "ar":
+            case "lr":
                 create_ar($basic_tok);
                 break;
             case "ou":
+            case "ku":
                 create_ou($basic_tok);
                 break;
             case "op":
+            case "kp":
                 # "oo is handled here as well
                 create_op_oo($basic_tok);
                 break;
             case "ap":
+            case "lp":
                 create_ap($basic_tok);
                 break;
             case "om":
+            case "km":
                 create_om($basic_tok);
                 break;
             case "on":
+            case "kn":
                 create_on($basic_tok);
                 break;
             case "am":
+            case "lm":
                 create_am($basic_tok);
                 break;
             case "an":
+            case "ln":
                 create_an($basic_tok);
                 break;
             case "oa":
@@ -85,15 +97,19 @@ function display_commands(){
                 create_aa($basic_tok);
                 break;
             case "ob":
+            case "kb":
                 create_ob($basic_tok);
                 break;
             case "ab":
+            case "lb":
                 create_ab($basic_tok);
                 break;
             case "of":
+            case "kf":
                 create_of($basic_tok);
                 break;
             case "af":
+            case "lf":
                 create_af($basic_tok);
                 break;
         }
@@ -141,7 +157,7 @@ function display_chapter(){
     echo "</div>";
 }
 function create_final_actual_sequencelist(){
-    # updated form $_SESSION["chapter_token_pure"][$device] when chapters or toks_to_ignore is changed
+    # updated form $_SESSION["chapter_token_pure"][$device] when chapters or toks_to_ignore and sequence is changed
     $device = $_SESSION["device"];
     $_SESSION["final_actual_sequencelist_by_sequence"][$device] = [];
     foreach ($_SESSION["actual_sequencelist_by_sequence"][$device] as $sequence => $tok){

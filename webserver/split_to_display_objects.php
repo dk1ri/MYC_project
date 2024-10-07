@@ -831,7 +831,7 @@ function create_alpha($line){
             } elseif (is_numeric($max) and $max > 9) {
                 $numeric = 0;
             }
-            if ($numeric == 1) {
+            if ($numeric) {
                 $j = $min;
                 while ($j < $max) {
                     $result .= chr($j);
@@ -859,58 +859,63 @@ function create_alpha($line){
 }
 
 function read_translate_lines($transl){
-    # default $_SESSION["translate_by_language"] exist already
-    $device_lang_line = explode(";", $transl[0]);
-    $dla = [];
+    $device = $_SESSION["device"];
+    # default $_SESSION["default_translate_by_language"] exist already
+    $_SESSION["translate_by_language"][$device] = $_SESSION["default_translate_by_language"];
     $i = 0;
-    foreach ($device_lang_line as $dl){
-        if ($i != 0) {
-            $dla[$dl] = $dl;
+    $device_languages = [];
+    foreach ($transl as $dl){
+        if ($i == 0) {
+            $ar = explode(";", $dl);
+            $ar = str_replace(" ", "&nbsp;", $ar);
+            $device_languages = array_splice($ar,2);
+            foreach ($device_languages as $lang){
+                if(!array_key_exists($lang, $_SESSION["languages"])){$_SESSION["languages"][$lang] = $lang;}
+            }
         }
         $i++;
     }
-    $device_lang_line = $dla;
-    # add default (englisch) for additional languages and new language to $_SESSION["languages"]
-    $languages = $_SESSION["languages"];
-    #
-    $pos = [];
-    $i = 0;
-    foreach ($device_lang_line as $l){
-        # new language
-        $l = str_replace(" ", "&nbsp;", $l);
-        $pos[$l] = $i;
-        if (!array_key_exists($l, $languages)) {
-            $languages[$l] = $l;
-            $_SESSION["additional_languages"][$l] = $l;
-            $_SESSION["actual_additional_language"] = $l;
-            # add english as default
-            $_SESSION["translate_by_language"][$l] = $_SESSION["translate_by_language"]["english"];
+    # add new languages
+    foreach ($device_languages as $lang){
+        if (!array_key_exists($lang, $_SESSION["translate_by_language"][$device])){
+            $_SESSION["translate_by_language"][$device][$lang] = [];
+            # it is assumed, that englisch exist always
+            foreach ($_SESSION["translate_by_language"][$device]["english"] as $key => $value){
+                $_SESSION["translate_by_language"][$device][$lang][$key] = "";
+                }
         }
-        $i++;
     }
-    #
+    # add new itmes (empty)
     $i = 0;
-    $_SESSION["languages"] = $languages;
     foreach ($transl as $transline){
         if ($i != 0) {
             # ignore language names
             $transline_array = explode(";", $transline);
-            $key = $transline_array[0];
-            array_splice($transline_array,  0, 1);
-            # no key in $transline_array
-            foreach ($languages as $lang) {
-                if (array_key_exists($lang, $device_lang_line)) {
-                    $_SESSION["translate_by_language"][$lang][$key] = $transline_array[$pos[$lang]];
+            $key = $transline_array[1];
+            if (!array_key_exists($key, $_SESSION["translate_by_language"][$device]["english"])){
+                foreach ($_SESSION["languages"] as $lang) {
+                    $_SESSION["translate_by_language"][$device][$lang][$key] = "";
                 }
             }
         }
         $i++;
     }
-    # some elements of $_SESSION["translate_by_language" may be missing -> set to ""
-    foreach ($languages as $lang){
-        foreach ($_SESSION["translate_by_language"][$lang] as $key => $value){
-            if (!array_key_exists($key, $_SESSION["translate_by_language"][$lang])){$_SESSION["translate_by_language"][$lang][$key] = "";}
-        }
+    # now all elements of _SESSION["translate_by_language"][$device] exist
+    # fill with data (overwrite
+    $i = 0;
+    foreach ($transl as $transline){
+        if ($i != 0) {
+            # ignore language names
+            $transline_array = explode(";", $transline);
+            $transline_array = str_replace(" ", "&nbsp;", $transline_array);
+            $key = $transline_array[1];
+            $pos = 2;
+            foreach ($_SESSION["languages"] as $lang) {
+                $_SESSION["translate_by_language"][$device][$lang][$key] = $transline_array[$pos];
+                $pos ++;
+                }
+            }
+        $i++;
     }
 }
 ?>

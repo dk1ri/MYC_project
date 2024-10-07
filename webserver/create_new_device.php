@@ -11,9 +11,6 @@ function create_new_device(){
         # data already available
         read_device_from_file();
     }
-    else{
-        create_new_device_first_time();
-    }
 }
 
 function create_new_device_first_time(){
@@ -34,6 +31,7 @@ function create_new_device_first_time(){
     $_SESSION["default_value"][$device] = [];
     $_SESSION["des"][$device] = [];
     $_SESSION["des_name"][$device] = [];
+    $_SESSION["dev"][$device] = [];
     $_SESSION["max_for_ADD"][$device] = [];
     $_SESSION["max_for_send"][$device] = [];
     $_SESSION["meter"][$device] = [];
@@ -46,15 +44,16 @@ function create_new_device_first_time(){
     $_SESSION["property_len_byte"][$device] = [];
     $_SESSION["rules"][$device] = [];
     $_SESSION["to_correct"][$device] = [];
+    $_SESSION["translate_by_language"][$device] = [];
     $_SESSION["type_for_memories"][$device] = [];
     $_SESSION["unit"][$device] = [];
-  #  $_SESSION["chapter_for_edit_sequence"] = [];
     $_SESSION["actual_sequencelist"][$device] = [];
     $_SESSION["actual_sequencelist_by_sequence"][$device] = [];
     $_SESSION["final_actual_sequencelist_by_sequence"][$device]= [];
     $_SESSION["toks_to_ignore"][$device] = [];
-    $_SESSION["dev"][$device] = [];
-    $_SESSION["edit_toks_to_ignore"][$_SESSION["device"]] = [];
+    # without as commands
+    $_SESSION["edit_toks_to_ignore"][$device] = [];
+    $_SESSION["command_len"][$device][0] = 0;
     #
     create_original_announce();
     # as answer token <-> operate token:
@@ -74,9 +73,15 @@ function create_new_device_first_time(){
     sort_chapternames();
     create_actual_sequence_list();
     create_final_actual_sequencelist();
+    create_command_len();
     write_device_to_file();
     # default: all chapters are activ
  #   $_SESSION["activ_chapters"][$device] = $_SESSION["chapter_names"][$device];
+    # overwrite?
+    if (file_exists("devices\\".$device."\\session_original_announce")){
+        # data already available
+        read_device_from_file();
+    }
 }
 
 function read_a_o(){

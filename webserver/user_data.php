@@ -26,21 +26,28 @@ function read_user_data(){
     }
     else{
         # nothing exist; create data for new user
-        $_SESSION["user_data"][$username]["is_lang"] = $_SESSION["is_lang"];
-        $_SESSION["user_data"][$username]["color"] = $_SESSION["color"];
-        $_SESSION["user_data"][$username]["device"] = $_SESSION["device"];
-        $device = $_SESSION["device"];
-        $_SESSION["user_data"][$username][$device]["activ_chapters"] = $_SESSION["activ_chapters"][$device];
-        $_SESSION["user_data"][$username][$device]["actual_sequencelist"] = $_SESSION["actual_sequencelist"][$device];
-        $_SESSION["user_data"][$username][$device]["actual_sequencelist_by_sequence"] = $_SESSION["actual_sequencelist_by_sequence"][$device];
-        $_SESSION["user_data"][$username][$device]["final_actual_sequencelist_by_sequence"] = $_SESSION["final_actual_sequencelist_by_sequence"][$device];
-        $_SESSION["user_data"][$username]["translate_by_language"] = $_SESSION["translate_by_language"];
-        $_SESSION["user_data"][$username][$device]["toks_to_ignore"] = $_SESSION["toks_to_ignore"][$device];
-        $_SESSION["user_data"][$username][$device]["toks_to_ignore"] = $_SESSION["toks_to_ignore"][$device];
+        create_SESSION_user_data($username);
         # create new device if not existing
         create_new_device();
         }
 }
+
+function create_SESSION_user_data($username){
+    # nothing exist; create data for new user
+    if (!array_key_exists($username,$_SESSION["user_data"])){$_SESSION["user_data"][$username] = [];}
+    $_SESSION["user_data"][$username]["is_lang"] = $_SESSION["is_lang"];
+    $_SESSION["user_data"][$username]["color"] = $_SESSION["color"];
+    $_SESSION["user_data"][$username]["device"] = $_SESSION["device"];
+    $device = $_SESSION["device"];
+    $_SESSION["user_data"][$username][$device]["activ_chapters"] = $_SESSION["activ_chapters"][$device];
+    $_SESSION["user_data"][$username][$device]["actual_sequencelist"] = $_SESSION["actual_sequencelist"][$device];
+    $_SESSION["user_data"][$username][$device]["actual_sequencelist_by_sequence"] = $_SESSION["actual_sequencelist_by_sequence"][$device];
+    $_SESSION["user_data"][$username][$device]["final_actual_sequencelist_by_sequence"] = $_SESSION["final_actual_sequencelist_by_sequence"][$device];
+    $_SESSION["user_data"][$username][$device]["translate_by_language"] = $_SESSION["translate_by_language"][$device];
+    $_SESSION["user_data"][$username][$device]["toks_to_ignore"] = $_SESSION["toks_to_ignore"][$device];
+    $_SESSION["user_data"][$username][$device]["edit_toks_to_ignore"] = $_SESSION["edit_toks_to_ignore"][$device];
+}
+
 function read_data_from_user_data($username){
     $_SESSION["is_lang"] = $_SESSION["user_data"][$username]["is_lang"];
     $_SESSION["device"] = $_SESSION["user_data"][$username]["device"];
@@ -49,9 +56,10 @@ function read_data_from_user_data($username){
     $_SESSION["activ_chapters"][$device] = $_SESSION["user_data"][$username][$device]["activ_chapters"];
     $_SESSION["actual_sequencelist"][$device] = $_SESSION["user_data"][$username][$device]["actual_sequencelist"];
     $_SESSION["actual_sequencelist_by_sequence"][$device] = $_SESSION["user_data"][$username][$device]["actual_sequencelist_by_sequence"];
-    $_SESSION["final_actual_sequencelist_by_sequence"][$device] = $_SESSION["user_data"][$username][$device]["actual_seqfinal_actual_sequencelist_by_sequenceuencelist_by_sequence"];
+    $_SESSION["final_actual_sequencelist_by_sequence"][$device] = $_SESSION["user_data"][$username][$device]["final_actual_sequencelist_by_sequence"];
     $_SESSION["translate_by_language"][$device] = $_SESSION["user_data"][$username][$device]["translate_by_language"];
     $_SESSION["toks_to_ignore"][$device] = $_SESSION["user_data"][$username][$device]["toks_to_ignore"];
+    $_SESSION["edit_toks_to_ignore"][$device] = $_SESSION["user_data"][$username][$device]["edit_toks_to_ignore"];
 }
 
 function  read_user_data_from_file($user_dir){
@@ -73,31 +81,34 @@ function  read_user_data_from_file($user_dir){
                 break;
             case 1:
                 $_SESSION["device"] = $line;
+                $_SESSION["user_data"][$username]["device"] = $line;
         }
         $i++;
     }
     fclose($file);
     # $S_SESSION["device"] required
     # color list
-    read_data_file("color", 1, 0, 0);
+    read_data_file("color", 2, 0);
     # activ_chapters exist
-    read_data_file("activ_chapters", 1, 0,1);
+    read_data_file("activ_chapters", 0, 0);
     # actual_sequencelist
-    read_data_file("actual_sequencelist", 1, 0, 1);
-    read_data_file("actual_sequencelist_by_sequence", 1, 0, 1);
-    read_data_file("final_actual_sequencelist_by_sequence", 1, 0, 1);
+    read_data_file("actual_sequencelist", 0, 0);
+    read_data_file("actual_sequencelist_by_sequence", 0, 0);
+    read_data_file("final_actual_sequencelist_by_sequence", 0, 0);
     # translate
-    read_data_file("translate_by_language", 1, 0, 1);
+    read_data_file("translate_by_language", 0, 1);
     # toks_to_ignore
-    read_data_file("toks_to_ignore",1, 0 , 1);
-    read_data_file("named_tok_list",1, 0 , 1);
+    read_data_file("toks_to_ignore",0, 0);
+    read_data_file("edit_toks_to_ignore",0, 0);
+    read_data_file("named_tok_list",0, 0);
     $_SESSION["named_tok_lists"][$_SESSION["username"]] = $_SESSION["named_tok_list"] ;
 }
 
 function store_permanent(){
     if ($_SESSION["username"] != "user") {
-        check_user_dir_exist();
         $username = $_SESSION["username"];
+        create_SESSION_user_data($username);
+        check_user_dir_exist();
         # store actual data to username
         $file = fopen($_SESSION["conf"]["user_dir"] . $username . "\\data", "w");
         fwrite($file, $_SESSION["is_lang"] . "\r\n");
@@ -112,9 +123,10 @@ function store_permanent(){
         create_data_file("actual_sequencelist_by_sequence", 1,0,1);
         create_data_file("final_actual_sequencelist_by_sequence", 1,0,1);
         # translatactual_sequenceliste
-        create_data_file("translate_by_language", 1,1,0);
+        create_data_file("translate_by_language", 1,1,1);
         # toks_to_ignore
         create_data_file("toks_to_ignore", 1,0,1);
+        create_data_file("edit_toks_to_ignore", 1,0,1);
         if (array_key_exists($_SESSION["username"], $_SESSION["named_tok_lists"])) {
             $_SESSION["named_tok_list"] = $_SESSION["named_tok_lists"][$_SESSION["username"]];
             create_data_file("named_tok_list", 1, 1,1);

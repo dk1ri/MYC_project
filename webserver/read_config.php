@@ -32,21 +32,23 @@ function read_config(){
     $_SESSION["last_command_status"] = 0;
     # answer command sent; read data
     $_SESSION["read"] = 0;
-    $_SESSION["started"] = 0;
     $_SESSION["update"] = 0;
     $_SESSION["user_data"] = [];
     $_SESSION["default_lang"] = "english";
     $_SESSION["languages"] = [];
-    $_SESSION["additional_languages"] = ["-"];
+  #  $_SESSION["additional_languages"] = ["-"];
     $_SESSION["actual_additional_language"] = "";
+    $_SESSION["default_translate_by_language"] = [];
     $_SESSION["translate_by_language"] = [];
     $_SESSION["edit_toks_to_ignore"] = [];
     $_SESSION["edit_chapter_name"] = "all_basic";
     $_SESSION["with_command_router"] = 1;
     $_SESSION["last_mode"] = "";
     $_SESSION["named_tok_lists"] = [];
+    $_SESSION["last_user"] = "user";
     # temporary use:
     $_SESSION["named_tok_list"] = [];
+    $_SESSION["named_tok_list_with_spaces"] = [];
     #
     # read config
     $_SESSION["conf"] = [];
@@ -69,6 +71,12 @@ function read_config(){
     $_SESSION["conf"]["default_translate"] = $_SESSION["conf"]["bas_dir"].$c[15][1];
     $_SESSION["conf"]["other_POSTS"] = $_SESSION["conf"]["bas_dir"].$c[16][1];
     $_SESSION["conf"]["with_command_router"] = $c[17][1];
+    $_SESSION["conf"]["last_user_file"] = $c[18][1];
+    if (is_file($_SESSION["conf"]["sys"]."//".$_SESSION["conf"]["last_user_file"])) {
+        $c = read_from_file($_SESSION["conf"]["sys"] . "//" . $_SESSION["conf"]["last_user_file"], 0);
+        $_SESSION["last_user"] = $c[0];
+    }
+    # else{$_SESSION["last_user"] = "user";}
         # language used in edit_language
     $_SESSION["edit_language"] = "";
     #
@@ -102,7 +110,7 @@ function read_config(){
         copy($_SESSION["conf"]["default_translate"],$filename);
     }
     # defaultname is "user"
-    $_SESSION["username"] = "user";
+    $_SESSION["username"] = $_SESSION["last_user"];
     $_SESSION["is_lang"] = $_SESSION["default_lang"];
     read_device_list($_SESSION["conf"]["device_dir"]);
 }

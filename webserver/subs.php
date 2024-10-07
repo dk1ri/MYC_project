@@ -1,6 +1,6 @@
 <?php
 # subs.php
-# DK1RI 20240824
+# DK1RI 20240919
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
 function basic_tok($o_tok){
@@ -536,8 +536,8 @@ function checkusername($username){
 
 function tr($label){
     # translate
-    if (array_key_exists($label,$_SESSION["translate_by_language"][$_SESSION["is_lang"]])) {
-        $label = $_SESSION["translate_by_language"][$_SESSION["is_lang"]][$label];
+    if (array_key_exists($label,$_SESSION["translate_by_language"][$_SESSION["device"]][$_SESSION["is_lang"]])){
+        $label = $_SESSION["translate_by_language"][$_SESSION["device"]][$_SESSION["is_lang"]][$label];
     }
     return $label;
 }
@@ -550,12 +550,8 @@ function ignore_some_POSTs($data){
 function create_command_len(){
     $device = $_SESSION["device"];
     if (array_key_exists("65520", $_SESSION["original_announce"][$device])){
-        $_SESSION["command_len"][$device] = 1;
+        $_SESSION["command_len"][$device][0] = 1;
     }
-   else {
-       # default 1 byte
-       $_SESSION["command_len"][$device] = 0;
-   }
 }
 
 function read_translate_lines_default(){
@@ -567,27 +563,25 @@ function read_translate_lines_default(){
         $pure = str_replace("\n", '', $pure);
         $line = str_replace("\r", '', $pure);
         $l_line = explode(";", $line);
-        $key = str_replace(" ", "&nbsp;", $l_line[0]);
+        $l_line = str_replace(" ", "&nbsp;", $l_line);
+        $key = $l_line[0];
         $l_line = array_splice($l_line, 1);
-        $ll_line = [];
-        foreach ($l_line as $l){
-            $ll_line[] = str_replace(" ", "&nbsp;", $l);
-        }
         if ($i == 0) {
-            foreach ($ll_line as $lll_line) {
-                $_SESSION["languages"][$lll_line] = $lll_line;
+            foreach ($l_line as $ll_line) {
+                $_SESSION["languages"][$ll_line] = $ll_line;
             }
         }
         else {
             $j = 0;
             foreach ($_SESSION["languages"] as $lan) {
-                $_SESSION["translate_by_language"][$lan][$key] = $ll_line[$j];
+                $_SESSION["default_translate_by_language"][$lan][$key] = $l_line[$j];
                 $j++;
             }
         }
         $i++;
     }
 }
+
 function add_indiv_name_to_dev($an){
     # this requires, that all devices have a "la,INDIVIDUALIZATION" line
     $basic_tok = 0;

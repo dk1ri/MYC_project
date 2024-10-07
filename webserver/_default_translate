@@ -1,13 +1,14 @@
-language name;english;deutsch
+language_name;english;deutsch
 ADMINISTRATION;ADMINISTRATION;VERWALTUNG
-LAST ERROR;LAST ERROR;LETZTER FEHLER
+LAST_ERROR;LAST ERROR;LETZTER FEHLER
 INDIVIDUALIZATION;INDIVIDUALIZATION;INDIVIDUALISIERUNG
 add;+;+
 all_basic;all basic;Basisbefehle
 author;author;Author
 change;change;aendern
-chappter;chapter;Kapitel
+chapter;chapter;Kapitel
 config;configuration;Konfiguration
+default;set to default;Anfangswerte einstellen
 device;device;Gerät
 edit_color; edit color; Farben aendern
 edit_language; edit language;neue Sprache
@@ -19,7 +20,7 @@ languages;english;deutsch
 last command;last command;letzter Befehl
 last_commnd_ok;last read command ok;letzter Lesebefehl iO
 last_commnd_nok;last read command not ok;letzter Lesebefehl nicht iO
-new_data;get new_data;neue Daten abrufen
+new_data;get new data;neue Daten abrufen
 new_language;new lanuage;neue Sprache
 operate;operate;Anwendung
 position;position;Position

@@ -2,8 +2,8 @@
 <!--
     Webserver for MYC system
     myc.php
-    Version 1.2 202408
-    Manual Version: V01.01.06
+    Version 1.3 20240919
+    Manual Version: V01.01.08
     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
     For description see detailed_description.php
@@ -16,12 +16,26 @@
 -->
     <?php
     session_start();
-    include "read_config.php";
+    include "create_new_device.php";
+    include "display_commands.php";
     include "file_handling.php";
-    include "subs.php";
+    include "read_config.php";
     include "select_any.php";
+    include "split_to_display_objects.php";
+    include "subs.php";
+    include "user_data.php";
+    # must be included always (no simple check after loading device from file):
     read_config();
     read_translate_lines_default();
+    # $_SESSION["device" exists (first  entry) , create (read) device
+    if (file_exists("devices\\".$_SESSION["device"]."\\session_original_announce")){
+        # data already available
+        read_device_from_file();
+    }
+    if($_SESSION["username"] != "user"){
+        read_user_data();
+    }
+    else{create_new_device_first_time();}
     $date = new DateTime();
     $act_date = $date->getTimestamp();
     ?>

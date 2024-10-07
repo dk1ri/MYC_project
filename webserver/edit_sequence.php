@@ -1,12 +1,13 @@
 <?php
 # edit_sequence.php
-# DK1RI 20240415
+# DK1RI 20240919
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
 function edit_sequence(){
     $device = $_SESSION["device"];
     $username = $_SESSION["username"];
     echo "<div>";
+    echo "<input type='checkbox' id=sequence_default name=sequence_default value=1>";echo tr("default")."<br>";
     echo tr("w1")."<br>";
     $i = 0;
     foreach ($_SESSION["actual_sequencelist"][$device] as $tok => $value) {
@@ -23,29 +24,15 @@ function edit_sequence(){
         $i++;
     }
     echo "</div><div>";
-    echo tr("save_as"). " ";
-    echo "<input type=text name= sequncelist_name size=7>";
-    echo "<input type='checkbox' id=store_sequencelist name=store_sequencelist value=1>";
-    if (array_key_exists($device, $_SESSION["named_tok_lists"])) {
-        if (array_key_exists($username, $_SESSION["named_tok_lists"][$device])) {
-            if (count($_SESSION["named_tok_lists"][$device][$username]) > 0) {
-                echo "<br><br>";
-                # find first element
-                $listnames = [];
-                foreach ($_SESSION["named_tok_lists"][$device][$username] as $listname => $dat) {
-                    $listnames[] = $listname;
-                }
-                array_selector("sequencelist_to_delete_or_load", $listnames, $listnames[0]);
-                echo "<br>" . tr("w7") . " ";
-                echo "<input type='checkbox' id=delete_sequencelist name=delete_sequencelist value=1>";
-                echo "<br>" . tr("w8"). " ";
-                echo "<input type='checkbox' id=load_sequencelist name=load_sequencelist value=1>";
-            }
-        }
-    }
 }
 
 function edit_sequence_post(){
+    if (array_key_exists("sequence_default", $_POST) and $_POST["sequence_default"] == 1){
+        create_actual_sequence_list();
+        create_final_actual_sequencelist();
+        # do nothing else
+        return;
+    }
     # return at first call:
     $device = $_SESSION["device"];
     $username = $_SESSION["username"];
@@ -92,7 +79,7 @@ function edit_sequence_post(){
             }
         }
     }
-    #store old list
+    #remember old list
     $old_list = $_SESSION["actual_sequencelist"][$device];
     $_SESSION["actual_sequencelist"][$device]= [];
     $_SESSION["actual_sequencelist_by_sequence"][$device] = [];
@@ -109,24 +96,5 @@ function edit_sequence_post(){
         }
     }
     create_final_actual_sequencelist();
-    #
-    if (array_key_exists("store_sequencelist", $_POST) and $_POST["store_sequencelist"]){
-        if (array_key_exists("sequncelist_name", $_POST) and $_POST["sequncelist_name"] != "") {
-            $_SESSION["named_tok_lists"][$device][$username][$_POST["sequncelist_name"]] = $_SESSION["actual_sequencelist"][$device];
-        }
-    }
-    elseif (array_key_exists("load_sequencelist", $_POST) and $_POST["load_sequencelist"]){
-        if (array_key_exists("sequencelist_to_delete_or_load", $_POST) and $_POST["sequencelist_to_delete_or_load"] != "") {
-            if ($_SESSION["username"] == "user") {
-                $_SESSION["actual_sequencelist"][$device] = $_SESSION["named_tok_lists"][$device][$username][$_POST["sequencelist_to_delete_or_load"]];
-            }
-        }
-    }
-    elseif (array_key_exists("delete_sequencelist", $_POST) and $_POST["delete_sequencelist"]){
-        if (array_key_exists("sequencelist_to_delete_or_load", $_POST) and $_POST["sequencelist_to_delete_or_load"] != "") {
-            if ($_SESSION["username"] == "user") {
-                unset ($_SESSION["named_tok_lists"][$device][$device][$username][$_POST["sequencelist_to_delete_or_load"]]);
-            }
-        }
-    }
+    var_dump($_SESSION["final_actual_sequencelist_by_sequence"][$device]);
 }

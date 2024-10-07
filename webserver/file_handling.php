@@ -1,7 +1,16 @@
 <?php
 # filehandling.phhp
-# DK1RI 20240831
+# DK1RI 20240919
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
+
+function write_to_file($filename,$data, $array){
+    $file = fopen($filename, "w");
+    if (!$array){
+        #write one line
+        fwrite($file, $data . "\r\n");
+    }
+    fclose($file);
+}
 
 function  read_from_file($filename, $array){
     # result is an array with an array or string per line
@@ -126,30 +135,35 @@ function write_device_to_file(){
     create_data_file("toks_to_ignore","0",0, 1);
     create_data_file("dev","0",0, 1);
     create_data_file("edit_toks_to_ignore","0",0, 1);
-    create_data_file("translate_by_language","0",1, 0);
+    create_data_file("translate_by_language","0",1, 1);
+    create_data_file("command_len","0",0, 1);
 }
 
-function read_data_file($name, $userdata,$dim, $dev){
+function read_data_file($name, $mode,$dim){
     $device = $_SESSION["device"];
-    if ($dev) {
-        if ($userdata) {
-            $_SESSION["user_data"][$_SESSION["username"]][$name] = [];
-            $filename = $_SESSION["conf"]["user_dir"] . $_SESSION["username"] . "/" . $device . "/" . $name;
-        } else {
-            $_SESSION[$name][$_SESSION["device"]] = [];
+    $username =  $_SESSION["username"];
+    $data_array = [];
+    switch ($mode){
+        case 0:
+            # device userdata
+            $_SESSION["user_data"][$username][$device][$name] = [];
+            $filename = $_SESSION["conf"]["user_dir"] . $username . "/" . $device . "/" . $name;
+            break;
+        case 1:
+            # device, no userdata
+            $_SESSION[$name][$device] = [];
             $filename = $_SESSION["conf"]["device_dir"] . $device . "/session_" . $name;
-        }
-    }
-    else{
-        if ($userdata){
-            $_SESSION["user_data"][$_SESSION["username"]][$name] = [];
-            $filename = $_SESSION["conf"]["user_dir"] . $_SESSION["username"] . "/" . $name;
-        }
-        else {
-            $_SESSION[$name][$_SESSION["device"]] = [];
+            break;
+        case 2:
+            # userdata
+            $_SESSION["user_data"][$username][$name] = [];
+            $filename = $_SESSION["conf"]["user_dir"] . $username . "/" . $name;
+            break;
+        case 3:
+            # no dev, no userdata
             $filename = $_SESSION["conf"]["device_dir"] . "/session_" . $name;
+            break;
         }
-    }
     $c = read_from_file($filename,1);
     if ($c != []){
         foreach ($c as $data) {
@@ -159,23 +173,14 @@ function read_data_file($name, $userdata,$dim, $dev){
                 $k1 = $data[0];
                 array_splice($data, 0, 1);
                 $dat = implode(";", $data);
-                if ($device) {
-                    $_SESSION[$name][$_SESSION["device"]][$k1] = $dat;
-                } else {
-                    $_SESSION[$name][$k1] = $dat;
-                }
+                $data_array[$k1] = $dat;
             }
             elseif ($dim == 1){
                 if (count($data) < 3){continue;}
                 $k1 = $data[0];
                 $k2 = $data[1];
                 array_splice($data, 0, 2);
-                $dat = implode(";", $data);
-                if ($device) {
-                    $_SESSION[$name][$_SESSION["device"]][$k1][$k2] = $dat;
-                } else {
-                    $_SESSION[$name][$k1][$k2] = $dat;
-                }
+                $data_array[$k1][$k2] = implode(";", $data);
             }
             elseif ($dim == 2){
                 if (count($data) < 3){continue;}
@@ -184,66 +189,74 @@ function read_data_file($name, $userdata,$dim, $dev){
                 $k3 = $data[2];
                 array_splice($data, 0, 3);
                 $dat = implode(";", $data);
-                if ($device) {
-                    $_SESSION[$name][$_SESSION["device"]][$k1][$k2][$k3] = $dat;
-                } else {
-                    $_SESSION[$name][$k1][$k2][$k3] = $dat;
-                }
+                $data_array[$k1][$k2][$k3] = $dat;
             }
             elseif ($dim == 3) {
-                if (count($data) < 4) {
-                    continue;
-                }
+                if (count($data) < 4) {continue;}
                 $k1 = $data[0];
                 $k2 = $data[1];
                 $k3 = $data[2];
                 $k4 = $data[3];
                 array_splice($data, 0, 4);
                 $dat = implode(";", $data);
-                if ($device) {
-                    $_SESSION[$name][$_SESSION["device"]][$k1][$k2][$k3][$k4] = $dat;
-                } else {
-                    $_SESSION[$name][$k1][$k2][$k3][$k4] = $dat;
-                }
+                $data_array[$k1][$k2][$k3][$k4] = $dat;
             }
         }
 
     }
+    switch ($mode) {
+        case 0:
+            $_SESSION["user_data"][$username][$device][$name] = $data_array;
+            break;
+        case 1:
+            $_SESSION[$name][$device] = $data_array;
+            break;
+        case 2:
+            $_SESSION["user_data"][$username][$name] = $data_array;
+            break;
+        case 3:
+            $_SESSION[$name] = $data_array;
+            break;
+    }
 }
 
 function read_device_from_file(){
-    read_data_file( "activ_chapters", "0",0, 1);
-    read_data_file( "actual_data", "0",0, 1);
-    read_data_file( "ALL", "0",0, 1);
-    read_data_file("announce_all", "0",0,1);
-    read_data_file("a_to_o", "0",0,1);
-    read_data_file("alpha", "0",0, 1);
-    read_data_file("chapter_names", "0",0, 1);
-    read_data_file("chapter_names_with_space", "0",0, 1);
-    read_data_file("chapter_token_pure", "0",2, 1);
-    read_data_file( "cor_token", "0",1, 1);
-    read_data_file("default_value", "0",0, 1);
-    read_data_file("des", "0",0, 1);
-    read_data_file("des_name", "0",0, 1);
-    read_data_file("max_for_ADD", "0",0, 1);
-    read_data_file("max_for_send", "0",0, 1);
-    read_data_file("meter", "0",0, 1);
-    read_data_file("meter_announce_line", "0",0, 1);
-    read_data_file("actual_sequencelist", "0",0, 1);
-    read_data_file("actual_sequencelist_by_sequence", "0",0, 1);
-    read_data_file("final_actual_sequencelist_by_sequence", "0",0, 1);
-    read_data_file("o_to_a", "0",0, 1);
-    read_data_file("oo_tok", "0",0, 1);
-    read_data_file("original_announce", "0",1, 1);
-    read_data_file("property_len", "0",1, 1);
-    read_data_file("property_len_byte", "0",1, 1);
-    read_data_file( "rules", "0",0, 1);
-    read_data_file("to_correct", "0",0, 1);
-    read_data_file("type_for_memories", "0",0, 1);
-    read_data_file("unit", "0",0, 1);
-    read_data_file("toks_to_ignore", "0",0, 1);
-    read_data_file("dev", "0",0, 1);
-    read_data_file("edit_toks_to_ignore", "0",0, 1);
-    read_data_file("translate_by_language", "0",1, 0);
+    read_d_from_file(1);
+}
+function read_d_from_file($mode){
+    read_data_file( "activ_chapters", $mode,0);
+    read_data_file( "actual_data", $mode,0);
+    read_data_file( "ALL", $mode,0);
+    read_data_file("announce_all", $mode,0);
+    read_data_file("a_to_o", $mode,0);
+    read_data_file("alpha", $mode,0);
+    read_data_file("chapter_names", $mode,0);
+    read_data_file("chapter_names_with_space", $mode,0);
+    read_data_file("chapter_token_pure", $mode,2);
+    read_data_file( "cor_token", $mode,1);
+    read_data_file("default_value", $mode,0);
+    read_data_file("des", $mode,0);
+    read_data_file("des_name", $mode,0);
+    read_data_file("max_for_ADD", $mode,0);
+    read_data_file("max_for_send", $mode,0);
+    read_data_file("meter", $mode,0);
+    read_data_file("meter_announce_line", $mode,0);
+    read_data_file("actual_sequencelist", $mode,0);
+    read_data_file("actual_sequencelist_by_sequence", $mode,0);
+    read_data_file("final_actual_sequencelist_by_sequence", $mode,0);
+    read_data_file("o_to_a", $mode,0);
+    read_data_file("oo_tok", $mode,0);
+    read_data_file("original_announce", $mode,1);
+    read_data_file("property_len", $mode,1);
+    read_data_file("property_len_byte", $mode,1);
+    read_data_file( "rules", $mode,0);
+    read_data_file("to_correct", $mode,0);
+    read_data_file("type_for_memories", $mode,0);
+    read_data_file("unit", $mode,0);
+    read_data_file("toks_to_ignore", $mode,0);
+    read_data_file("dev", $mode,0);
+    read_data_file("edit_toks_to_ignore", $mode,0);
+    read_data_file("translate_by_language", $mode,1);
+    read_data_file("command_len", $mode,0);
 }
 ?>

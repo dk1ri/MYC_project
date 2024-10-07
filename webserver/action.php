@@ -1,11 +1,35 @@
 <?php
 # action.php
-# DK1RI 20240901
+# DK1RI 20240919
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 ?>
 <html lang = "de">
 <?php
     session_start();
+    include "commands_a.php";
+    include "commands_b.php";
+    include "commands_m.php";
+    include "commands_n.php";
+    include "commands_f.php";
+    include "commands_r.php";
+    include "commands_s.php";
+    include "commands_p.php";
+    include "commands_u.php";
+    include "correct_POST.php";
+    include "create_new_device.php";
+    include "display_commands.php";
+    include "edit_color.php";
+    include "edit_language.php";
+    include "edit_ignore.php";
+    include "edit_sequence.php";
+    include "file_handling.php";
+    include "select_any.php";
+    include "send_and_update.php";
+    include "serial.php";
+    include "split_to_display_objects.php";
+    include "subs.php";
+    include "update_received.php";
+    include "user_data.php";
 ?>
 <script>
     function do_action() {
@@ -41,6 +65,7 @@
             <?php
             echo ".green{color : green;}";
             echo ".red{color : red;}";
+            echo ".orange{color : orange;}";
             echo ".os{color: ".$_SESSION["color"]["switch_command_s"].";}";
             echo ".as{color: ".$_SESSION["color"]["switch_command_s"].";background-color:".$_SESSION["color"]["background_answer"]."}";
             echo ".or{color: ".$_SESSION["color"]["switch_command_r"].";}";
@@ -69,45 +94,13 @@
     <body>
     <p id="myc"></p>
     <?php
-    include "subs.php";
-    include "serial.php";
-    include "update_received.php";
-    include "correct_POST.php";
-    include "file_handling.php";
-    include "send_and_update.php";
-    include "display_commands.php";
-    include "select_any.php";
-    include "edit_sequence.php";
-    include "edit_color.php";
-    include "edit_language.php";
-    include "edit_ignore.php";
-    include "user_data.php";
-    include "create_new_device.php";
-    include "split_to_display_objects.php";
-    # must be included always (no simple check after loading device from file):
-    include "commands_a.php";
-    include "commands_b.php";
-    include "commands_m.php";
-    include "commands_n.php";
-    include "commands_f.php";
-    include "commands_r.php";
-    include "commands_s.php";
-    include "commands_p.php";
-    include "commands_u.php";
     if ($_SESSION["conf"]["testmode"]){
         include "for_tests.php";
     }
     $_SESSION["send_string_by_tok"] = [];
     $_SESSION["send_ok"] = 1;
-    if (array_key_exists("language", $_POST) and $_POST["language"] != "") {
-        $_SESSION["is_lang"] = $_POST["language"];
-    }
-    if (!$_SESSION["started"]) {
-        $_SESSION["started"] = 1;
-        $_SESSION["device"] = $_POST["device"];
-        create_new_device();
-    }
-    elseif (array_key_exists("device", $_POST) and $_POST["device"] != "") {
+    if (array_key_exists("language", $_POST) and $_POST["language"] != ""){$_SESSION["is_lang"] = $_POST["language"];}
+    if (array_key_exists("device", $_POST) and $_POST["device"] != "") {
         if ($_SESSION["device"] != $_POST["device"]) {
             $_SESSION["device"] = $_POST["device"];
             create_new_device();
@@ -124,11 +117,12 @@
             if ($uname != "user") {
                 # load new user data
                 read_user_data();
+                $_SESSION["last_user "] = $uname;
+                write_to_file($_SESSION["conf"]["sys"]."//".$_SESSION["conf"]["last_user_file"], $uname, 0);
             }
             else{
                 $_SESSION["color"] = $_SESSION["default_color"];
                 $_SESSION["is_lang"] = $_SESSION["default_lang"];
-                $_SESSION["toks_to_ignore"] = [];
                 # device and activ_chapters not changed
             }
         }
@@ -203,7 +197,6 @@
     elseif ($_SESSION["select_mode"] == "edit_toks_to_ignore") {
         if ($_SESSION["select_mode"] == $_SESSION["last_mode"]) {edit_toks_to_ignore_post();}
     }
-    if (!array_key_exists($_SESSION["device"], $_SESSION["command_len"])){create_command_len();}
     # automatic update tested, but not ok
     #     while (1){
     #       stop php
