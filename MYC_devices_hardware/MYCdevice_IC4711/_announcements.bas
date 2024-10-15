@@ -1,17 +1,17 @@
 ' name: _announcements.bas
-' 20200213
+' 20241015
 '
 Announce:
 'Befehl &H00
 'eigenes basic Announcement lesen
 'basic 'Announcement is read to I2C or output
-Data "0;m;DK1RI;IC471 Interface;V01.3;1;175;1;17;1-1"
+Data "0;m;DK1RI;IC471 Interface;V01.3;1;175;1;20;1-1"
 '
 'Announce1:
 'Befehl &H01 0 to 9999999 Code 00 (05)
 'Frequenz schreiben
 'write Frequency
-Data "1;op,freqency;1;10000000,{430000000 to 439999990};lin;Hz"
+Data "1;op,freqency;1;10000000,,{1_430000000to439999990};lin;Hz"
 '
 'Announce2:
 'Befehl &H02 0 to 9999999: --> Code 03
@@ -23,49 +23,49 @@ Data "2;ap,as1"
 'Befehl &H03 : -->Code 01 (06)
 'Mode schreiben
 'write mode
-Data "3;os,mode;2;0,LSB;1,USB;1,AM;3,CW;0,FIL1;1,FIL2"
+Data "3;os,mode;1;0,FIL1 LSB;1,FIL1 USB;2,Fil1 AM;3,FIL1 CW;4,FIL2 LSB;4,FIL2 USB;5,Fil2 AM;6,FIL2 CW"
 '
 'Announce4:
 'Befehl &H04: --> Code 04
 'Mode lesen
 'read mode
-Data "4,as3"
+Data "4;as,as3"
 '
 'Announce5:
 'Befehl &H05: -->  Code 02
 'Bandgrenze lesen
 'read band edge
-Data "5;ap,band edge frequencies;1;1,{430000000},low;lin;Hz;1,{440000000},high;lin;*10Hz"
+Data "5;ap,band_edge_frequencies;1;200000,low,{10_144000000to145999999};lin;*10Hz;200000,high,{1_144000000to145999999};lin;*10Hz"
 '
 'Announce6:
 'Befehl &H06  --> Code 07
 'Vfo Mode setzen
 'set vfo mode
-Data "6;ou,set vfo mode;1;0,idle;1,VFO mode"
+Data "6;ou,vfo;1;0,idle;1,set"
 '
 'Announce7:
 'Befehl &H07 --> Code 08
 'set memory mode
 'set memory mode
-Data "7;ou,set memory mode;1;0.idle;1,memory mode"
+Data "7;ou,memory;1;0,idle;1,set"
 '
 'Announce8:
 'Befehl &H08 --> Code 09
 'Vfo und Mode nach memory schreiben
 'write vfo and mode to memory
-Data "8;ou,copy vfo and mode to memory;1;0,idle;1,copy to memory"
+Data "8;ou,copy vfo and mode to memory;1;0,idle;1,copy"
 '
 'Announce9:
 'Befehl &H09 --> Code 0A
 'memory nach Vfo und mode schreiben
 'write memory to vfo and mode
-Data "9;ou,copy memory to vfo and mode;1;0,idle;1,copy to vfo and mode"
+Data "9;ou,copy memory to vfo and mode;1;0,idle;1,copy"
 '
 'Announce10:
 'Befehl &H0A 0 - 1999 --> Code 0D
 'Offset schreiben
 'write offset
-Data "10;op,write offset;1;100000;lin;*100Hz"
+Data "10;op,offset;1;100000;lin;*100Hz"
 '
 'Announce11:
 'Befehl &H0B 0 - 1999  --> Code 0C
@@ -77,7 +77,7 @@ Data "11;ap,as10"
 'Befehl  &F0
 'liest announcements
 'read n announcement lines
-Data "240;ln,ANNOUNCEMENTS;175;17"
+Data "240;an,ANNOUNCEMENTS;145;20,start at;20,elements;14,CHAPTER,ADMINISTRATION"
 '
 'Announce13:                                                  '
 'Befehl &HFC
@@ -95,11 +95,20 @@ Data "253;aa,MYC INFO;b,ACTIVE"
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,30,{0 to 127};a,SERIAL,1"
+Data "254;ka,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;bADRESS,30,{1_0to127};a,SERIAL,1;14,CHAPTER,ADMINISTRATION"
+
 '
 'Announce16:
 'Befehl  &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-Data "255 ;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,30,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
+Data "255 ;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,30,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;14,CHAPTER,ADMINISTRATION"
 '
+'Announce17:
+Data "L;language name;english;deutsch"
+'
+'Announce18:
+Data "L;frequency;frequency;Frequenz;band_edge_frequencies;band edge frequencies;Bandgrenzen;"
+'
+'Announce19:
+Data "L;copy_vfo_and_mode_to_memory;copy vfo and mode to memory;VFO und Mode speichern;copy_memory_to_vfo_and_mode;copy memory to vfo and mode;VFO und Mode lesen"
