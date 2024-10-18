@@ -1,15 +1,15 @@
 'name : IC7000_interface_bascom.bas
-'Version V01.3, 20201123
+'Version V01.3, 20241018
 'purpose : Programm to control a ICOM IC7000 Radio
 'Can be used with hardware ICOM Interface Version V03.2 by DK1RI          >
 '
 
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.11 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.13 with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
-$include "common_1.11\_Introduction_master_copyright.bas"
+$include "common_1.13\_Introduction_master_copyright.bas"
 '
 '----------------------------------------------------
 '
@@ -41,13 +41,13 @@ $regfile = "m1284pdef.dat"
 '
 '-----------------------------------------------------
 $crystal = 20000000
-$include "common_1.11\_Processor.bas"
+$include "common_1.13\_Processor.bas"
 '
 '----------------------------------------------------
 '
 '1...127:
 Const I2c_address = 32
-Const No_of_announcelines = 380
+Const No_of_announcelines = 414
 'announcements start with 0 -> minus 1
 Const Tx_factor = 10
 ' For Test:10 (~ 10 seconds), real usage:1 (~ 1 second)
@@ -62,7 +62,7 @@ Const Civ_data_length = 250
 '
 '----------------------------------------------------
 $include "__use.bas"
-$include "common_1.11\_Constants_and_variables.bas"
+$include "common_1.13\_Constants_and_variables.bas"
 '
 Dim Temp_dw As Dword
 Dim Temp_dw1 As Dword
@@ -105,19 +105,19 @@ Dim DTCSS As String * 3
 Dim DTCSS_b(3) As Byte At DTCSS Overlay
 '
 '----------------------------------------------------
-$include "common_1.11\_Macros.bas"
+$include "common_1.13\_Macros.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Config.bas"
+$include "common_1.13\_Config.bas"
 '
 '----------------------------------------------------
 ' procedures at start
 '
 '----------------------------------------------------
-$include "common_1.11\_Main.bas"
+$include "common_1.13\_Main.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Loop_start.bas"
+$include "common_1.13\_Loop_start.bas"
 '
 '----------------------------------------------------
 '
@@ -177,20 +177,20 @@ End If
 '
 '----------------------------------------------------
 '
-$include "common_1.11\_Main_end.bas"
+$include "common_1.13\_Main_end.bas"
 '
 '----------------------------------------------------
 '
 ' End Main start subs
 '
 '----------------------------------------------------
-$include "common_1.11\_Reset.bas"
+$include "common_1.13\_Reset.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_init.bas"
+$include "common_1.13\_init.bas"
 '
 '----------------------------------------------------
-$include "common_1.11\_Subs.bas"
+$include "common_1.13\_Subs.bas"
 '
 '----------------------------------------------------
 '
@@ -232,11 +232,11 @@ $include _analyze_civ_s072_s095.bas
 $include _analyze_civ_s096_s119.bas
 '----------------------------------------------------
 '
-$include "common_1.11\_Commands_required.bas"
+$include "common_1.13\_Commands_required.bas"
 #IF Command_is_2_byte = 0
-   $include "common_1.11\_Commandparser.bas"
+   $include "common_1.31\_Commandparser.bas"
 #ELSE
-$include "common_1.11\_Command0.bas"
+$include "common_1.13\_Command0.bas"
 '
 Commandparser:
 $include __select_command.bas
