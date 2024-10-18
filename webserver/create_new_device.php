@@ -11,6 +11,14 @@ function create_new_device(){
         # data already available
         read_device_from_file();
     }
+    else{
+        if (file_exists("devices\\".$_SESSION["device"]."\\session_original_announce")){
+            # data already available
+            read_device_from_file();
+            $device_read = 1;
+        }
+        else{create_new_device_first_time();}
+    }
 }
 
 function create_new_device_first_time(){

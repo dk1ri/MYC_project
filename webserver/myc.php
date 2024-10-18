@@ -28,14 +28,17 @@
     read_config();
     read_translate_lines_default();
     # $_SESSION["device" exists (first  entry) , create (read) device
+    $device_read = 0;
     if (file_exists("devices\\".$_SESSION["device"]."\\session_original_announce")){
         # data already available
         read_device_from_file();
+        $device_read = 1;
     }
     if($_SESSION["username"] != "user"){
         read_user_data();
+        $device_read = 1;
     }
-    else{create_new_device_first_time();}
+    if(!$device_read){create_new_device_first_time();}
     $date = new DateTime();
     $act_date = $date->getTimestamp();
     ?>

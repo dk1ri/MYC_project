@@ -8,11 +8,14 @@ author;author;Author
 change;change;aendern
 chapter;chapter;Kapitel
 config;configuration;Konfiguration
+copy;copy;kopieren
+date;date;Datum
 default;set to default;Anfangswerte einstellen
 device;device;Gerät
 edit_color; edit color; Farben aendern
 edit_language; edit language;neue Sprache
 edit_sequence;edit_sequence;Reihenfolge aendern
+hour;hour;Stunde
 ignore_toks;toks to ignore;ausgeblendete Token
 interface;interface;Schnittstelle
 language;language;Sprache
@@ -20,6 +23,7 @@ languages;english;deutsch
 last command;last command;letzter Befehl
 last_commnd_ok;last read command ok;letzter Lesebefehl iO
 last_commnd_nok;last read command not ok;letzter Lesebefehl nicht iO
+Minute;minute;Minute
 new_data;get new data;neue Daten abrufen
 new_language;new lanuage;neue Sprache
 operate;operate;Anwendung
@@ -29,10 +33,12 @@ read_data;read_data;Daten lesen
 save_as;save_as;speichern als
 send;send;abschicken
 send_data;send data;Daten absenden
+set;set;einstellen
 set_default;set default;Standardwert
 stack;stack;Stapel
 store_data;store;speichern
 store;store user data;Benutzerdaten speichern
+time;time;Zeit
 token;token;Befehlsnummer
 version;version;Version
 w1;Write new sequence number to the left side of the old place and press send;neue Nummer der Reihenfolge an alte Position eintragen und abschicken
@@ -43,4 +49,5 @@ w5;The following names are allowed as well:;Folgende Farbnamen sind erlaubt:
 w6;delete additonal languages;zusaetzliche Sprachen loeschen
 w7;delete sequencelist;Liste mit Reihenfolge loeschen
 w8;load sequencelist;Liste mit Reihenfolge laden
+year;year;Jahr
 your_name;your name;Ihr Name

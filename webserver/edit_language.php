@@ -42,7 +42,6 @@ function edit_language_post(){
         if (substr($tok, 0, 14) == "edit_language_") {
             if ($value != "") {
                 $key_for_translate = substr($tok, 14);
-                print $key_for_translate;
                 if ($value != $_SESSION["translate_by_language"][$device][$_SESSION["edit_language"]][$key_for_translate]) {
                     $_SESSION["translate_by_language"][$device][$_SESSION["edit_language"]][$key_for_translate] = $value;
                 }
