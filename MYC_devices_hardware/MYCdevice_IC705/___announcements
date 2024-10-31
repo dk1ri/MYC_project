@@ -1,5 +1,6 @@
 ﻿' name : ___announcements IC705
-' last edited: 20240124
+' last edited: 20241028
+' CIV Manual A7560-8EX-6 (2023)
 ' the format matches the bascom compiler
 ' python read lines starting with 'D' only
 '
@@ -7,7 +8,7 @@ Announce0:
 'Befehl &H00
 'eigenes basic announcement lesen
 'basic announcement is read to I2C or output
-Data "0;m;DK1RI;IC705 Interface;V01.3;1;175;2;965;1-1"
+Data "0;m;DK1RI;IC705 Interface;V01.9;1;175;2;1053;1-1"
 '
 Announce1:
 'Befehl 256 &H0100 Code 05 (+ 009
@@ -25,7 +26,7 @@ Announce3:
 'Befehl 258 &H0102 Code 01 + 04 + 06
 'Mode schreiben
 'write mode
-Data "258;op,mode;1;10,mode,{LSB,USB,AM,CW,RTTY,FM,WFM,CW-R,RTTY-R,DV};lin; ;3,filter,{1,2,3};lin;"
+Data "258;op,mode;1;10,mode / filter,{LSB,USB,AM,CW,RTTY,FM,WFM,CW-R,RTTY-R,DV};lin; ;3,filter,{1,2,3};lin;"
 '
 Announce4:
 'Befehl 259 &H0103 Code 04 + 01+ 06
@@ -56,19 +57,19 @@ Announce8:
 'Befehl 263 &H0107 Code 08
 'select memory
 'select memory
-Data "263;op,select memory;1;104,{1_0to99,144C1,144C2,430C1,430C2};lin;;6,CHAPTER,memory"
+Data "263;op,memory;1;104,{1_0to99,144C1,144C2,430C1,430C2};lin;;6,CHAPTER,memory"
 '
 Announce9:'
 'Befehl 264 &H0108 Code 08 A0
 'memory Gruppe
 'memory group
-Data "264;op,memory;1;100,group,{1_0to99};lin;;6,CHAPTER,memory"
+Data "264;op,memory group;1;100,group,{1_0to99};lin;;6,CHAPTER,memory"
 '
 Announce10:
 'Befehl 265 &H0109 Code 09 0A 0B
 'Vfo - memory Funktionen
 'vfo - memory functions
-Data "265;ou,vfo-memory functions;1;0,idle;1,copy to memory;2,copy to vfo;3,clear memory;6,CHAPTER,memory"
+Data "265;ou,vfo - memory;1;0,idle;1,copy to memory;2,copy to vfo;3,clear memory;6,CHAPTER,memory"
 '
 Announce11:
 'Befehl 266 &H010a Code 0D
@@ -86,7 +87,7 @@ Announce13:
 'Befehl 268 &H010c Code 0e00 - 24
 'start scan mode
 'start scan mode
-Data "268;os,start scan mode;1;0,stop;1,prog/memory;2,prog;3,delta-f;4,fine;5,fine delta;6,memory;7,select memory;8,select mode;4,CHAPTER,scan"
+Data "268;os,scan mode;1;0,stop;1,prog/memory;2,prog;3,delta-f;4,fine;5,fine delta;6,memory;7,select memory;8,select mode;4,CHAPTER,scan"
 '
 Announce14:
 'Befehl 269 &H010d Code 0ea1 - a7
@@ -104,13 +105,13 @@ Announce16:
 'Befehl 271 &H010f Code 0eb1
 'select chanal
 'select chanal
-Data "271;os,select chanal;1;0,1;1,2;2,3;4,CHAPTER,scan"
+Data "271;os,chanal;1;0,1;1,2;2,3;4,CHAPTER,scan"
 '
 Announce17:
 'Befehl 272 &H0110 Code 0eb2
 'Set select memory scan
 'Set select memory scan
-Data "272;os,Set select memory scan;1;0,all;1,sel1;2,sel2;3,sel3;4,CHAPTER,scan"
+Data "272;os,memory scan;1;0,all;1,sel1;2,sel2;3,sel3;4,CHAPTER,scan"
 '
 Announce18:
 'Befehl 273 &H0111 Code 0ed0, 0ed3
@@ -200,7 +201,7 @@ Announce32:
 'Befehl 287 &H011f Code 1406
 'Noise reduction
 'Noise reduction
-Data "287;op,Noise reduction;1;256, ,{0.39_0to99.70};lin;%;7,CHAPTER,control"
+Data "287;op,noise reduction;1;256, ,{0.39_0to99.70};lin;%;7,CHAPTER,control"
 '
 Announce33:
 'Befehl 288 &H0120 Code 1406
@@ -284,7 +285,7 @@ Announce46:
 'Befehl 301 &H012d Code 140d
 'Notch
 'Notch
-Data "301;op,Notch position;1;256, ,{0.39_0to98};lin;%;7,CHAPTER,control"
+Data "301;op,Notch;1;256, ,{0.39_0to98};lin;%;7,CHAPTER,control"
 '
 Announce47:
 'Befehl 302 &H012e Code 140d
@@ -410,25 +411,25 @@ Announce67:
 'Befehl 322 &H0142 Code 1513
 'ALC meter
 'ALC meter
-Data "322;ap,ALC meter;1;121, ;lin;-;5,CHAPTER,METER"
+Data "322;ap,ALC;1;121, ;lin;-;5,CHAPTER,METER"
 '
 Announce68:
 'Befehl 323 &H0143 Code 1514
 'Comp meter
 'comp meter
-Data "323;ap,comp meter;1;242, ,{0.115_0.0to15.0,0.13_15.1to25.5};lin;dB;5,CHAPTER,METER"
+Data "323;ap,compress;1;242, ,{0.115_0.0to15.0,0.13_15.1to25.5};lin;dB;5,CHAPTER,METER"
 '
 Announce69:
 'Befehl 324 &H0144 Code 1515
 'Vsupply meter
 'vsupply meter
-Data "324;ap,v supply;1;242, ,{0.066_0.0to16};lin;V;5,CHAPTER,METER"
+Data "324;ap,supply voltage;1;242, ,{0.066_0.0to16};lin;V;5,CHAPTER,METER"
 '
 Announce70:
 'Befehl 325 &H0145 Code 1516
 'Isupply meter
 'isupply meter
-Data "325;ap,i supply;1;242, ,{0.0165_0.00to4.00};lin;A;5,CHAPTER,METER"
+Data "325;ap,supply current;1;242, ,{0.0165_0.00to4.00};lin;A;5,CHAPTER,METER"
 '
 Announce71:
 'Befehl 326 &H0146 Code 1602
@@ -470,7 +471,7 @@ Announce77:
 'Befehl 332 &H014c Code 1640
 'Noise reduction
 'Noise reduction
-Data "332;os,Noise reduction;1;0,off;1,on"
+Data "332;os,noise reduction;1;0,off;1,on"
 '
 Announce78:
 'Befehl 333 &H014d Code 1640
@@ -518,7 +519,7 @@ Announce85:
 'Befehl 340 &H0154 Code 1644
 'Speech compressor
 'Speech compressor
-Data "340;os,speech compressor;1;0,off;1,on"
+Data "340;os,compressor;1;0,off;1,on"
 '
 Announce86:
 'Befehl 341 &H0155 Code 1644
@@ -530,7 +531,7 @@ Announce87:
 'Befehl 342 &H0156 Code 1645
 'Monitor
 'Monitor
-Data "342;os,Monitor;1;0,off;1,on"
+Data "342;os,monitor;1;0,off;1,on"
 '
 Announce88:
 'Befehl 343 &H0157 Code 1645
@@ -989,7 +990,7 @@ Announce162:
 'Befehl 417 &H01a1 Code 01a0002
 'SSB Bass Level
 'SSB Bass Level
-Data "417;op,SSB Rx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "417;op,SSB Rx bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce163:
 'Befehl 418 &H01a2 Code 1a050002
@@ -1001,7 +1002,7 @@ Announce164:
 'Befehl 419 &H01a3 Code 01a0003
 'SSB Hoehen Level
 'SSB Treble Level
-Data "419;op,SSB RX Treble Level;1;11,,{0.5_-5to5};lin;-;16,CHAPTER,tone control"
+Data "419;op,SSB RX treble level;1;11,,{0.5_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce165:
 'Befehl 420 &H01a4 Code 1a050003
@@ -1025,7 +1026,7 @@ Announce168:
 'Befehl 423 &H01a7 Code 01a050005
 'AM Bass Level
 'AM Bass Level
-Data "423;op,AM Rx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "423;op,AM Rx bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce169:
 'Befehl 424 &H01a8 Code 1a050005
@@ -1037,7 +1038,7 @@ Announce170:
 'Befehl 425 &H01a9 Code 01a050006
 'AM Hoehen Level
 'AM Treble Level
-Data "425;op,AM RX Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "425;op,AM RX treble level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce171:
 'Befehl 426 &H01aa Code 1a050006
@@ -1061,7 +1062,7 @@ Announce174:
 'Befehl 429 &H01ad Code 01a050008
 'FM Bass Level
 'FM Bass Level
-Data "429;op,FM Rx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "429;op,FM Rx bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce175:
 'Befehl 430 &H01ae Code 1A05000
@@ -1073,7 +1074,7 @@ Announce176:
 'Befehl 431 &H01af Code 01a050009
 'FM Hoehen Level
 'FM Treble Level
-Data "431;op,FM Rx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "431;op,FM Rx treble level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce177:
 'Befehl 432 &H01b0 Code 1a050009
@@ -1097,7 +1098,7 @@ Announce180:
 'Befehl 435 &H01b3 Code 01a050011
 'DV Bass Level
 'DV Bass Level
-Data "435;op,DV RX Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "435;op,DV RX bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce181:
 'Befehl 436 &H01b4  Code 1a05011
@@ -1109,7 +1110,7 @@ Announce182:
 'Befehl 437 &H01b5 Code 01a050012
 'DV Hoehen Level
 'DV Treble Level
-Data "437;op,DV Rx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "437;op,DV Rx treble level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce183:
 'Befehl 438 &H01b6 Code 1a050012
@@ -1121,7 +1122,7 @@ Announce184:
 'Befehl 439 &H01b7 Code 01a050013
 'WFM Bass Level
 'WFM Bass Level
-Data "439;op,WFM Rx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "439;op,WFM Rx bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce185:
 'Befehl 440 &H01b8 Code 1a05013
@@ -1133,7 +1134,7 @@ Announce186:
 'Befehl 441 &H01b9 Code 01a050014
 'WFM Hoehen Level
 'WFM Treble Level
-Data "441;op,WFM RX Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "441;op,WFM RX treble level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce187:
 'Befehl 442 &H01ba Code 1a050014
@@ -1169,7 +1170,7 @@ Announce192:
 'Befehl 447 &H01bf Code 01a050017
 'SSB TX Bass Level
 'SSB TX Bass Level
-Data "447;op,SSB Tx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "447;op,SSB Tx bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce193:
 'Befehl 448 &H01c0 Code 1a050017
@@ -1181,7 +1182,7 @@ Announce194:
 'Befehl 449 &H01c1 Code 01a050018
 'SSB Tx Hoehen Level
 'SSB Tx Treble Level
-Data "449;op,SSB Tx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "449;op,SSB Tx treble level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce195:
 'Befehl 450 &H01c2 Code 1a050018
@@ -1241,7 +1242,7 @@ Announce204:
 'Befehl 459 &H01cb Code 01a050023
 'AM TX Bass Level
 'AM TX Bass Level
-Data "459;op,AM TX Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "459;op,AM TX bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce205:
 'Befehl 460 &H01cc Code 1a050023
@@ -1253,7 +1254,7 @@ Announce206:
 'Befehl 461 &H01cd Code 01a050024
 'AM Tx Hoehen Level
 'AM Tx Treble Level
-Data "461;op,AM TX Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "461;op,AM TX treble level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce207:
 'Befehl 462 &H01ce Code 1a050024
@@ -1265,7 +1266,7 @@ Announce208:
 'Befehl 463 &H01cf Code 01a050025
 'FM Tx Bass Level
 'FM Tx Bass Level
-Data "463;op,FM Tx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "463;op,FM Tx bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce209:
 'Befehl 464 &H01d0 Code 1a050025
@@ -1277,7 +1278,7 @@ Announce210:
 'Befehl 465 &H01d1 Code 01a050026
 'FM Tx Hoehen Level
 'FM Tx Treble Level
-Data "465;op,FM Tx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "465;op,FM Tx treble level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce211:
 'Befehl 466 &H01d2 Code 01a050026
@@ -1289,7 +1290,7 @@ Announce212:
 'Befehl 467 &H0d3 Code 01a050027
 'DV Tx Bass Level
 'DV Tx Bass Level
-Data "467;op,DV Tx Bass Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "467;op,DV Tx bass level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce213:
 'Befehl 468 &H01d4 Code 1a050027
@@ -1301,7 +1302,7 @@ Announce214:
 'Befehl 469 &H01d5 Code 01a050028
 'DV Tx Hoehen Level
 'DV Tx Treble Level
-Data "469;op,DV Tx Treble Level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
+Data "469;op,DV Tx treble level;1;11,,{1_-5to5};lin;-;16,CHAPTER,tone control"
 '
 Announce215:
 'Befehl 470 &H01d6 Code 01a050028
@@ -1981,7 +1982,7 @@ Announce326:
 'Befehl 581 &H0245 Code 1a050085
 'Keyboard Typ
 'Keyboard type
-Data "581;os,Keyboard type;1;0,10 key;1,full;8,CHAPTER,function"
+Data "581;os,keyboard type;1;0,10 key;1,full;8,CHAPTER,function"
 '
 Announce327:
 'Befehl 582 &H0246 Code 1a05085
@@ -2617,7 +2618,7 @@ Announce432:
 'Befehl 687 &H02af Code 1a050139
 'Bildschirmschoner 13,8V
 'screen saver 13.8V
-Data "687;os,screen saver battery;1;0,off;1,1min;2,2min;3,5min;4,15min;5,30min;6,60min;10,CHAPTER,display"
+Data "687;os,screen saver 13.8V;1;0,off;1,1min;2,2min;3,5min;4,15min;5,30min;6,60min;10,CHAPTER,display"
 '
 Announce433:
 'Befehl 688 &H02b0 Code 1a050139
@@ -2689,7 +2690,7 @@ Announce444:
 'Befehl 699 &H02bb Code 1a050145
 'Rufzeichen Anzeige
 'call sign display
-Data "699;os,call sign display;1;0,off;1,normal;2,rx hold;3,hold;10,CHAPTER,display"
+Data "699;os,callsign display;1;0,off;1,normal;2,rx hold;3,hold;10,CHAPTER,display"
 '
 Announce445:
 'Befehl 700 &H02bc Code 1a050145
@@ -2773,7 +2774,7 @@ Announce458:
 'Befehl 713 &H02c9 Code 1a050152
 'TX Rufzeicheanzeige
 'tx call sign display
-Data "713;os,tx call sign display;1;0,off;1,your call sign;2,my call sign;10,CHAPTER,DV"
+Data "713;os,tx callsign display;1;0,off;1,your callsign;2,my callsign;10,CHAPTER,DV"
 '
 Announce459:
 'Befehl 714 &H02ca Code 1a05052
@@ -3070,7 +3071,7 @@ Announce507:
 Data "762;as,as761"
 '
 Announce508:
-'Befehl 763 &H02fb Code 1a05017
+'Befehl 763 &H02fb Code 1a050177
 'VBW
 'VBW
 Data "763;os,VBW;1;0,narrow;1,wide;5,CHAPTER,scope"
@@ -3450,7 +3451,7 @@ Announce568:
 'Befehl 823 &H0337 Code 1A050241
 'Audio FFT scope waterfall
 'Audio FFT scope waterfall
-Data "823;os,Audio FFT scope waterfall;1;0,off;1,on;5,CHAPTER,scope"
+Data "823;os,audio FFT scope waterfall;1;0,off;1,on;5,CHAPTER,scope"
 '
 Announce569:
 'Befehl 824 &H0338 Code 1A050241
@@ -3462,7 +3463,7 @@ Announce570:
 'Befehl 825 &H0339 Code 1a050242
 'Audio Oscilloscope scope color
 'Audio Oscilloscope scope color
-Data "825;op,Audio Oscilloscope scope color;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;5,CHAPTER,scope"
+Data "825;op,audio oscilloscope scope color;1;256,red;lin;-;256,yellow;lin;-;256,blue;lin;-;5,CHAPTER,scope"
 '
 Announce571:
 'Befehl 826 &H033a Code 1a050242
@@ -3738,7 +3739,7 @@ Announce616:
 'Befehl 871 &H0367 Code 1a050265
 'file saving format for the  RTTY log
 'file saving format for the  RTTY log
-Data "871;os,file saving format for the  RTTY log;1;0,text;1,HTML;10,CHAPTER,rtty"
+Data "871;os,file saving format for the RTTY log;1;0,text;1,HTML;10,CHAPTER,rtty"
 '
 Announce617:
 'Befehl 872 &H0368 Code 1a050265
@@ -4841,7 +4842,7 @@ Announce794:
 'Befehl 1049 &H0419 Code 1a050360
 'Voice delay
 'Voice delay
-Data "1049;os,Voice delay;1;0,off;1,short;2,mid;3,long;5,CHAPTER,voice"
+Data "1049;os,voice delay;1;0,off;1,short;2,mid;3,long;5,CHAPTER,voice"
 '
 Announce795:
 'Befehl 1050 &H041a Code 1a050360
@@ -4853,7 +4854,7 @@ Announce796:
 'Befehl 1051 &H041b Code 1a050361
 'Rufzeichen Anzeige
 'call sign display
-Data "1051;os,call sign display;1;0,callsign;1,name;2,CHAPTER,DV"
+Data "1051;os,callsign display;1;0,callsign;1,name;2,CHAPTER,DV"
 '
 Announce797:
 'Befehl 1052 &H041c Code 1a050361
@@ -4961,7 +4962,7 @@ Announce814:
 'Befehl 1069 &H042d Code 1a07
 'NTP Server
 'NTP Server
-Data "1069;os,NTP Server;1;0,terminate;1,initiate;4,CHAPTER,time"
+Data "1069;os,NTP server;1;0,terminate;1,initiate;4,CHAPTER,time"
 '
 Announce815:
 'Befehl 1070 &H042e Code 1a07
@@ -4985,7 +4986,7 @@ Announce818:
 'Befehl 1073 &H0331 Code 1a0a
 'Share picture
 'Share picture
-Data "1073;os,Share picture;1;0,off;1,on;2,on repeat"
+Data "1073;os,share picture;1;0,off;1,on;2,on repeat"
 '
 Announce819:
 'Befehl 1074 &H0432 Code 1a0a
@@ -5075,7 +5076,7 @@ Announce831:
 'Befehl 1086 &H043e Code 1c01
 'Antenna Tuner
 'Antenna Tuner
-Data "1086;os,Antenna Tuner;1;0,off;1,on;2,tune;5,CHAPTER,Tuner"
+Data "1086;os,antenna tuner;1;0,off;1,on;2,tune;5,CHAPTER,Tuner"
 '
 Announce832:
 'Befehl 1087 &H043f Code 1c01
@@ -5173,7 +5174,7 @@ Announce847:
 'Befehl 1102 &H044e Code 200000
 'Auto DV RX Call signs output
 'Auto DV RX Call signs output
-Data "1102;os,auto DV RX Callsigns;1;0,off;1,on;2,CHAPTER,DV"
+Data "1102;os,auto DV RX callsigns;1;0,off;1,on;2,CHAPTER,DV"
 '
 Announce848:
 'Befehl 1103 &H044f Code 200000
@@ -5185,7 +5186,7 @@ Announce849:
 'Befehl 1104 &H0450 Code 200001
 'DV RX Call signs for transceive
 'DV RX Call signs for transceive
-Data "1104;oa,DV RX Call signs for transceive;b,heaeder1;b,header2;"
+Data "1104;oa,DV RX callsigns for transceive;b,heaeder1;b,header2;"
 Data "1104;oa;8,caller,{ALPHA3};4,caller note,{ALPHA3};8,called,{ALPHA3};8,repeater,{ALPHA3};8,gateway,{ALPHA3};2,CHAPTER,DV"
 '
 Announce850:
@@ -5198,7 +5199,7 @@ Announce851:
 'Befehl 1106 &H0452 Code 200002
 'Auto DV RX Call signs
 'Auto DV RX Call signs
-Data "1106;aa,Auto DV RX Call signs;b,heaeder1;b,header2;"
+Data "1106;aa,Auto DV RX callsigns;b,heaeder1;b,header2;"
 Data "1106;aa;8,caller,{ALPHA3};4,caller note,{ALPHA3};8,called,{ALPHA3};8,repeater,{ALPHA3};8,gateway,{ALPHA3};2,CHAPTER,DV"
 '
 Announce852:
@@ -5651,7 +5652,7 @@ Announce923:
 'Befehl 1178 &H049a Code 2719
 'Scope Reference level
 'Scope Reference level
-Data "1178;op,Scope Reference level;1;81,{0.5_-20.0to20.1};lin;db;5,CHAPTER,scope"
+Data "1178;op,scope reference level;1;81,{0.5_-20.0to20.1};lin;db;5,CHAPTER,scope"
 '
 Announce924:
 'Befehl 1179 &H049b Code 2719
@@ -5793,7 +5794,7 @@ Announce949:
 'Befehl  65520 &Hfff0
 'liest announcements
 'read n announcement lines
-Data "65520;an,ANNOUNCEMENTS;175;972,start at (999max);972,elements (999max);14,CHAPTER,ADMINISTRATION"
+Data "65520;an,ANNOUNCEMENTS;175;1053,start at;1053,elements;14,CHAPTER,ADMINISTRATION"
 '
 Announce950:                                                  '
 'Befehl 65530 &Hfffa
@@ -5830,167 +5831,368 @@ Data "65535;aa;a,FILE,1;36,FILIN,/xampp/htdocs/usb_interface/from_web;34,FILOUT,
 Announce955:
 ''262
 'vfo A = vfo B a<>B
-Data "R ?262&2 ?262&3 ?265?1 IF $261=0
+Data "R;?262&2 ?262&3 ?265?1 IF $261=0
 ;
 Announce956:
 '265
 'clear memory
 'clear memory
-Data "R ?265&2 ?265?3 IF $261 = 1"
+Data "R;?265&2 ?265?3 IF $261 = 1"
 '
 Announce957:
 '268
 'scan memory
-Data "R !$268&6 !2687 IF $261=0"
+Data "R;!$268&6 !2687 IF $261=0"
 '
 Announce958:
 '270 271
 'scan memory select
-Data "R !$270 !$271 IF $261=0"
+Data "R;!$270 !$271 IF $261=0"
 '
 Announce959:
 '368
 'CW message
-DATA "R 368 IF $258&0=3 OR $258&0=7
+DATA "R;368 IF $258&0=3 OR $258&0=7
 '
 Announce960:
 '278
 'Abschwaecher
 'attenuator
-Data "R ?278 IF $257 < 199969999"
+Data "R;?278 IF $257 < 199969999"
 '
 nnounce961:
 '336
 'repeater tone
 'repeater tone
-Data "R $336 = 0 IF $339 = 1"
+Data "R;$336 = 0 IF $339 = 1"
 '
 Announce962:
 '338
 'tone squelch
 'tone squelch
-Data "R $338 = 0 IF $337 = 1"
+Data "R;$338 = 0 IF $337 = 1"
 '
 Announce963:
 '334
 'DSP
 'DSP
-Data "R ?354 IF $1188=0 OR $1188=1 OR $1188=3"
+Data "R;?354 IF $1188=0 OR $1188=1 OR $1188=3"
 '
 Announce964:
 '360
 'cw message only in cw mode
 'cw message only in cw mode
-Data "R $360 IF $1188 != 3
+Data "R;$360 IF $1188 != 3
 '
 Announce965:
 '365
 'AM Filter Bandbreite
 'AM filter width
-Data "R ?365 IF $1188=2"
+Data "R;?365 IF $1188=2"
 '
 Announce966:
 '367
 'n0 AM Filter Bandbreite
 'no AM filter width
-Data "R ?367 UNLESS $1188 = 2"
+Data "R;?367 UNLESS $1188 = 2"
 ' 
 Announce967:
 '369
 'AM AGC
 'AM AGC
-Data "R ?369 IF $1188 = 2"
+Data "R;?369 IF $1188 = 2"
 ' 
 Announce968:
 '1a04
 'SSB / AGC
 'SSB / CW AGC
-Data "R ?371 UNLESS $1188 = 2"
+Data "R;?371 UNLESS $1188 = 2"
 ' 
 Announce969:
 '408
 ' AM filter
-Data "R ?408 ?409 IF 259=2
+Data "R;?408 ?409 IF 259=2
 '
 Announce970:
 '410
 'RTTY CW Filter
-Data "R ?410 ?411 IF 259=4 OR 259=8
-Data "R ?410 ?411 IF 259=0 OR 259=1 OR 259=3
+Data "R;?410 ?411 IF 259=4 OR 259=8
+Data "R;?410 ?411 IF 259=0 OR 259=1 OR 259=3
 '
 Announce971:
 '509
 'auto repeater US only
-Data "R ?509 ?510 ?265?1 IF $1187 =1"
+Data "R;?509 ?510 ?265?1 IF $1187 =1"
 '
 Announce972:
 '579
 'Log Format
 'log format
-Data "R ?579 IF $576=0 AND $578=0 AND $1188!=0"
+Data "R;?579 IF $576=0 AND $578=0 AND $1188!=0"
 '
 Announce973:
 '481
 'Datumsformat
 'date format
-Data "R ?581 IF $576=0 AND $578=0 AND $1188 =0"
+Data "R;?581 IF $576=0 AND $578=0 AND $1188 =0"
 '
 Announce974:
 '693
 'Sprache
 'language
-Data "R ?693 IF $696=1"
+Data "R;?693 IF $696=1"
 '
 Announce975:
 '829
 'log Format
 'log format
-Data "R ?829 IF $828=0 AND $1188!=5"
+Data "R;?829 IF $828=0 AND $1188!=5"
 '
 Announce976:
 ' 1191 1193
-'AGC time contant
-Data "R ?1191 ?1192 IF 259=2
-Data "R ?1193 ?1194 UNLESS 259=2
+'AGC time constant
+Data "R;?1191 ?1192 IF 259=2"
+'
+Announce9
+Data "R;?1193 ?1194 UNLESS 259=2"
 '
 Announce977:
 '785 -
 ' fixed edges
-Data "R ?785 IF $785&0 + $785&1 < $785&0MAX + 6
-Data "R ?787 IF $787&0 + $787&1 < $787&0MAX + 6
-Data "R ?789 IF $789&0 + $789&1 < $789&0MAX + 6
-Data "R ?791 IF $791&0 + $791&1 < $791&0MAX + 6
-Data "R ?793 IF $793&0 + $793&1 < $793&0MAX + 6
-Data "R ?795 IF $795&0 + $795&1 < $795&0MAX + 6
-Data "R ?797 IF $797&0 + $797&1 < $797&0MAX + 6
-Data "R ?799 IF $799&0 + $799&1 < $799&0MAX + 6
-Data "R ?801 IF $801&0 + $801&1 < $801&0MAX + 6
-Data "R ?803 IF $803&0 + $803&1 < $803&0MAX + 6
-Data "R ?805 IF $805&0 + $805&1 < $805&0MAX + 6
-Data "R ?807 IF $807&0 + $807&1 < $807&0MAX + 6
-Data "R ?809 IF $809&0 + $809&1 < $809&0MAX + 6
-Data "R ?811 IF $811&0 + $811&1 < $811&0MAX + 6
-Data "R ?813 IF $813&0 + $813&1 < $813&0MAX + 6
-Data "R ?815 IF $815&0 + $815&1 < $815&0MAX + 6
-Data "R ?817 IF $817&0 + $817&1 < $817&0MAX + 6
+Data "R;?785 IF $785&0 + $785&1 < $785&0MAX + 6"
 '
-Announce994:
+Announce978;
+Data "R;?787 IF $787&0 + $787&1 < $787&0MAX + 6"
+'
+Announce979:
+Data "R;?789 IF $789&0 + $789&1 < $789&0MAX + 6"
+'
+Announce9780:
+Data "R;?791 IF $791&0 + $791&1 < $791&0MAX + 6"
+'
+Announce981:
+Data "R;?793 IF $793&0 + $793&1 < $793&0MAX + 6"
+'
+Announce982:
+Data "R;?795 IF $795&0 + $795&1 < $795&0MAX + 6"
+'
+Announce983:
+Data "R;?797 IF $797&0 + $797&1 < $797&0MAX + 6"
+'
+Announce984:
+Data "R;?799 IF $799&0 + $799&1 < $799&0MAX + 6"
+'
+Announce985:
+Data "R;?801 IF $801&0 + $801&1 < $801&0MAX + 6"
+'
+Announce986:
+Data "R;?803 IF $803&0 + $803&1 < $803&0MAX + 6"
+'
+Announce987:
+Data "R;?805 IF $805&0 + $805&1 < $805&0MAX + 6"
+'
+Announce987:
+Data "R;?807 IF $807&0 + $807&1 < $807&0MAX + 6"
+'
+Announce988:
+Data "R;?809 IF $809&0 + $809&1 < $809&0MAX + 6"
+'
+Announce989:
+Data "R;?811 IF $811&0 + $811&1 < $811&0MAX + 6"
+'
+Announce990:
+Data "R;?813 IF $813&0 + $813&1 < $813&0MAX + 6"
+'
+Announce991:
+Data "R;?815 IF $815&0 + $815&1 < $815&0MAX + 6"
+'
+Announce99 :
+Data "R;?817 IF $817&0 + $817&1 < $817&0MAX + 6"
+'
+Announce992:
 '871
 #rtty format
-Data "R !$871 IF $870=1
-Data "R !$873 IF $870=1
-Data "R !$875 IF $870=1
-Data "R !$877 IF $870=1
+Data "R;!$871 IF $870=1"
+'
+Announce993:
+Data "R;!$873 IF $870=1"
+'
+Announce994:
+Data "R;!$875 IF $870=1"
+'
+Announce995:
+Data "R;!$877 IF $870=1"
 ' 
-Announce998:
+Announce996:
 '1030
 'DTCS
 'DTCS
-Data "R ?1030 IF $188=6 OR $1188=10"
+Data "R;?1030 IF $188=6 OR $1188=10"
 '
-Announce999:
+Announce997:
 '1180
 'DSQL
 'DSQL
-Data "R ?1180 IF $1188=10"
+Data "R;?1180 IF $1188=10"
 '
+'Announce998:
+Data "L;language name;english;deutsch"
+'
+'Announce999:
+Data "L;band edge frequencies;band edge frequencies;Bandgrenzen;"
+'
+'Announce1000
+Data "L;memory Group;memory Group;Speichergruppe;copy to Memory;copy to Memory;in Speicher kopieren;copy to vfo;copy to vfo;nach VFO kopieren;"
+'
+'Announce1001
+Data "L;clear memory;clear memory;Speicher loeschen;scan mode;scan mode;Scan Mode;scan resume;scan resume;Scan neu starten;"
+'
+'Announce1002
+Data "L;tuning step;tuning step;Abstimmstufung;noise reduction;noise reduction;Rauschreduzierung;"
+'
+'Announce1004
+Data "L;Rf power;Rf power;HF Leistung;key Speed;key Speed;CW Geschwindigkeit;Compress;Compress;Kompressor;"
+'
+'Announce1005
+'Announce1006
+Data "L;PO meter;PO meter;Ausgangsleistung;supply voltage;supply voltage;Versorgungsspannung;supply current;supply current;Versorgungsstrom;preamp;preamp;Vorverstaerker;"
+'
+'Announce1007
+Data "L;Noise blanker;Noise blanker;Stoerunterdrueckung;Repeater tone;Repeater tone;Relais Ton;compressor;compressor;Kompressor;monitor;monitor;Monitor;Dial lock;Dial lock;Frequenzsperre;"
+'
+'Announce1008
+Data "L;DSP filter type;DSP filter type;DSP Filtertyp;Manual notch width;Manual notch width;manulle Notchbreite;SSB transmit bandwidth;SSB transmit bandwidth;Sendebandbreite SSB;"
+'
+'Announce1009
+Data "L;Cw message;Cw message;CW Nachricht;main switch;main switch;Hauptschalter;"
+'
+'Announce1010
+Data "L;SSB Tx wide bandwidth;SSB Tx wide bandwidth;SSB Sendebandbreite, breit;SSB Tx mid bandwidth;SSB Tx mid bandwidth;SSB Sendebanbbreite, mittel;"
+'
+'Announce1011
+Data "L;SSB Tx narrow bandwidth;SSB Tx narrow bandwidth;SSB Sendebandbeite, schmal;SSBD Tx bandwidth;SSBD Tx bandwidth;SSNBD Sendebandbreite;"
+'
+'Announce1012
+Data "L;beep gain;beep gain;Beep Verstaerkung;"
+'
+'Announce1013
+Data "L;beep gain Limit;beep gain Limit;Grenze fuer Beep Verstaerkung;confirmation Beep;confirmation Beep;Bestaetigungston;Home CH Beep;Home CH Beep;Home CH Ton;"
+'
+'Announce1014
+Data "L;bandedge beep mode;bandedge beep mode;Mode für Bandgrenzenton;Auto Power Off;Auto Power Off;automatische Abschaltung;Power save;Power save;Strom sparen;"
+'
+'Announce1015
+Data "L;Power max with battery;Power max with battery;max Leistung mit Batterie;Power max b13.5V;Power max b13.5V;max Leistung mit 13.5V;Hf Tx delay;Hf Tx delay;HF Sendeverzoegerung;"
+'
+'Announce1016
+Data "L;50MHz Tx delay;50MHz Tx delay;50MHz Sendeverzoegerung;144MHz Tx delay;144MHz Tx delay;144MHz Sendeverzoegerung;430MHz Tx delay;430MHz Tx delay;430MHz Sendverzoegerung;"
+'
+'Announce1017
+Data "L;split lock;split lock;Split Sperre;Tuner PTT start;Tuner PTT start;Tuner start mit PTT;"
+'
+'Announce1018
+Data "L;RTTY shift width;RTTY shift width;RTTY shift Weite;RTTY polarity;RTTY polarity;RTT Polariaet;language Speed;language Speed;Sprachegechwindigkeit;"
+'
+'Announce1019
+Data "L;mic updown speech;mic updown speech;mic updown Sprachausgabe;s meter speech;s meter speech;s meter Sprachausgabe;"
+'
+'Announce1020
+Data "L;mode speech;mode speech;Mode Sprachausgabe;lock function;lock function;Sperrfunktion;number of memory pads;number of memory pads;Zahl der Speichertasten;"
+'
+'Announce1021
+Data "L;mic up/down Speed;mic up/down Speed;mic up/down Geschwindigkeit;CW normal side;CW normal side;CW normale Seite;power on charging;power on charging;Power on Laden;"
+'
+'Announce1022
+Data ";power off for remote;power off for remote;Ausschalten bei Fernsteuerung;mode select ssb;mode select ssb;SSB moeglich;mode select cw;mode select cw;CW moeglich;mode select rtty;mode select rtty;RTTY moeglich;"
+'
+'Announce1023
+Data "L;mode select am;mode select am;AM moeglich;mode select fm;mode select fm;FM Moeglich;mode select dv;mode select dv;DV moeglich;mode select wfm;mode select wfm;WFM moeglich;"
+'
+'Announce1024
+Data "L;screen capture file type;screen capture file type;Dateiformat Bildschirmaufnahme;"
+'
+'Announce1025
+Data "L;standby Beep;standby Beep;Standby Ton;audio Reply;audio Reply;Sprachantwort;gps data Speed;gps data Speed;GPSdaten Geschwindigkeiit;"
+'
+'Announce1026
+Data "L;date Format;date Format;Datumsformat;sp jack function;sp jack function;Funktion der SP Buchse;"
+'
+'Announce1027:
+Data "L;USB output;USB output;USB Ausgang;beep and speech output;beep and speech output;Ton und Sprachausgang;"
+'
+'Announce1028
+Data "L;wlan af/if Output;wlan af/if Output;WLAN NF/ZF Ausgang;"
+'
+'Announce1029
+Data "L;MOD input for DATA;MOD input for DATA;DATA Modulationseingang;MOD input for DATA OFF;MOD input for DATA OFF;Nicht DATA Modulationseingang;"
+'
+'Announce1030
+Data "L;send output for hf;send output for hf;sende HF;send output for 50MHz;send output for 50MHz;sende 50MHz;send output for 144MHz;send output for 144MHz;sende 144MHz;"
+'
+'Announce1031
+Data "L;send output for 430MHz;send output for 430MHz;sende 430MHz;external keypad for VOICE;external keypad for VOICE;externe Tasten fuer Sprache;external keypad for keyer;external keypad for keyer;externe Tasten für CW;"
+'
+'Announce1032
+Data "L;external keypad for RTTY;external keypad for RTTY;extern Tasten fuer RTTY;echo for CI-V USB;echo for CI-V USB;Echo fuer CI-V USB;USB B gps out;USB B gps out;USB B GPS Ausgang;"
+'
+'Announce1033
+Data "L;mic 8v Output;mic 8v Output;Mikrofon 8V;LCD unit backlight brightness;LCD unit backlight brightness;LCD Helligkeit;LCD brightness auto adjust;LCD brightness auto adjust;LCD automatische Helligkeitseinstellung;"
+'
+'Announce1034
+Data "L;screen saver battery;screen saver battery;Bildschirmschoner (Batterie);screen saver 13.8V;screen saver 13.8V;Bildschirmschoner (13.8V);screen power switch;screen power switch:Bildschirm Ein/Aus Schalter;>"
+'
+'Announce1035
+Data "L;meter peak hold:meter peak hold;Spitzenwerte speichern;group name popup;group name popup;Grupenname Anzeige;"
+'
+'Announce1036
+Data "L;rx position indicator;rx position indicator; RX Lage Anzeiger;rx picture indicator:rx picture indicator;RX Bildanzeiger;DV rx backlight;DV rx backlight;DV RX Beleuchtung;"
+'
+'Announce1037
+Data "L;scroll speed;scroll speed;Scroll Geschwindigkeit;opening message;opening message;Start Mitteilung;Power on check;Power on check;Pruefung beim Einschalten;"
+'
+'Announce1038
+Data "L;format longitude /latitude;format longitude /latitude;Laengen / Breiten Format;format altitude / distance;format altitude / distance;Hoehen / Entfernungd Format;display language;display language;Anzeigensprache;"
+'
+'Announce1039
+Data "L;system language;system language;Systemsprache;ntp address;ntp address;NTP Adresse;GPS time correction;GPS time correction;GPS Zeitkorrektur;SD csv format date;SD csv format date;CSV Format fuer Datum (SD KArte);"
+'
+'Announce1040
+Data "L;spectrum display type;spectrum display type;Spektrum Anzeigetyp;waveform color current;waveform color current;Aktuelle Farbe der Welle;"
+'
+'Announce1041
+Data "L;waveform line Color;waveform line Color;Farbe der Wellenlinie;waveform  color for peak hold;waveform  color for peak hold;Farbe fuer Peak hold;waterfall Speed;waterfall Speed;Wasserfll Geschwindigkeit;"
+'
+'Announce1042
+Data "L;waterfall height (expanded);waterfall height (expanded);Waserfall Hoehe (vergroesert);waterfall marker auto-hide;waterfall marker auto-hide;automatisches Ausblendends Wassefall Markers;"
+'
+'Announce1043
+Dat "L;audio FFT scope;audio FFT scope;Audio FFT Anzeige;audio FFT fill Color;audio FFT fill Color;Audio FFT Fuellfarbe;Audio FFT scope waterfall;Audio FFT scope waterfall;Audio FFT Wasserfall;"
+'
+'Announce1044
+Data "L;audio Oscilloscope scope Color;audio Oscilloscope scope Color;Audio FFT Anzeigenfarbe;auto monitor;auto monitor;automatischer Monitor;Tx repeat time;Tx repeat time;Sende Wiederholzeit;"
+'
+'Announce1045
+Data "L;contest number style;contest number style;Kontest Nummernstil;present number;present number;aktuelle Nummer;"
+
+'Announce1046'
+Data "L;CW keyer dot/dash Ratio;CW keyer dot/dash Ratio;CW Punkt Strich Verhaeltnis;rise time;rise time;Anstiegszeit;keyer type;keyer type;Testentype;mic.up/down keyer;mic.up/down keyer;Mic Auf Ab Taste;"
+'
+'Announce1047
+Data "L;averaging function for RTTY FFT;averaging function for RTTY FFT;Mittelwert fuer RTTY FFT;RTTY FFT scope waveform color;RTTY FFT scope waveform color;RTTY Scope Farbe;rtty new line code;rtty new line code;Zeichen fuer RTTY neue Zeile;"
+'
+'Announce1048
+Data "L;received RTTY text font color;received RTTY text font color;RTTY Textfarbe RX;transmitted RTTY text font color;transmitted RTTY text font color;RTTY Textfarbe Tx;
+'
+'Announce1049
+Data "L;file saving format for the RTTY log;file saving format for the RTTY log;Speicherformat fuer RTTY Log;RTTY time stamp;RTTY time stamp;RTTY Zeitstempel;rtty Log Time Stamp;rtty Log Time Stamp;RTTY Log Zeitstepel;"
+'
+'Announce1050
+Data "L;RTTY frequency stamp;RTTY frequency stamp;RTTY Frequenz Stempel;TX recording;TX recording;TX Aufnahme;RX recording;RX recording;RX Aufnahme;"
+'
+'Announce1051
+Data "L;file split;file split;Datei Auftrennung;scan speed;scan speed;Scangeschwindigkeit;scan resume;scan resume;Scan neu starten;pause timer;pause timer;Pausezeit;"
+'
+'Announce1052
+Data "L;resume timer;resume timer;Neustart Zeit;GPS;manual position;manual position;muauelle Position;my call;my call;mein Rufzeichen;
+'
+
