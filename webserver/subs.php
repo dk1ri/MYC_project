@@ -530,14 +530,47 @@ function checkusername($username){
         elseif (ord($chr) > 96 and ord($chr)< 123){$s .= $chr;}
         $i++;
     }
-    if ($username == ""){$username = "user";}
-    return $username;
+    if ($username == ""){$username = "user";}    return $username;
 }
 
 function tr($label){
     # translate
+    $found = 0;
+ #   var_dump($_SESSION["translate_by_language"][$_SESSION["device"]]);
     if (array_key_exists($label,$_SESSION["translate_by_language"][$_SESSION["device"]][$_SESSION["is_lang"]])){
         $label = $_SESSION["translate_by_language"][$_SESSION["device"]][$_SESSION["is_lang"]][$label];
+        $found = 1;
+    }
+    if (!$found){
+        if (strpos($label," ") !== false){
+            # search for single words
+            # as result a mixture of translated and not translated word is allowed
+            $label_t = $label;
+            $label = "";
+            $i = 0;
+            while (strpos($label_t," ") !== false){
+                $pos = strpos($label_t," ");
+                $label_part = substr($label_t,0,$pos);
+             #   print $pos." x".$label_part."x";
+                if ($i){$label .= " ";}
+                $label .= tr1($label_part);
+                $label_t = substr($label_t,$pos +1);
+                # last element
+                if (strpos($label_t," ") == false){$label .= " " . tr1($label_t);}
+                $i++;
+            }
+        }
+    }
+    return $label;
+}
+
+function tr1($label_part){
+    $label ="";
+    if (array_key_exists($label_part,$_SESSION["translate_by_language"][$_SESSION["device"]][$_SESSION["is_lang"]])){
+        $label .= $_SESSION["translate_by_language"][$_SESSION["device"]][$_SESSION["is_lang"]][$label_part];
+    }
+    else{
+        $label .= $label_part;
     }
     return $label;
 }

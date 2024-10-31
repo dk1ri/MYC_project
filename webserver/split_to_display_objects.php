@@ -48,8 +48,9 @@ function create_original_announce(){
         }
     }
     fclose($file);
+    $_SESSION["translate_by_language"][$device] = $_SESSION["default_translate_by_language"];
     read_translate_lines($transl);
-    add_indiv_name_to_dev($an);
+    add_indiv_name_to_dev($an);# default $_SESSION["default_translate_by_language"] exist already
     # concatenate lines with same token:
     $last_line = "";
     $last_token = "";
@@ -860,6 +861,9 @@ function create_alpha($line){
 
 function read_translate_lines($transl){
     $device = $_SESSION["device"];
+    # default $_SESSION["default_translate_by_language"] exist already
+    $_SESSION["translate_by_language"][$device] = $_SESSION["default_translate_by_language"];
+    if ($transl == []){return;}
     # split lines with multiple elements to one element lines
     $i = 0;
     $number_of_languages = 0;
@@ -920,8 +924,6 @@ function read_translate_lines($transl){
         }
         $i++;
     }
-    # default $_SESSION["default_translate_by_language"] exist already
-    $_SESSION["translate_by_language"][$device] = $_SESSION["default_translate_by_language"];
     # add new languages
     foreach ($transl_languages as $lang){
         if (!array_key_exists($lang, $_SESSION["translate_by_language"][$device])){

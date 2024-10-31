@@ -3,44 +3,94 @@ ADMINISTRATION;ADMINISTRATION;VERWALTUNG
 LAST_ERROR;LAST ERROR;LETZTER FEHLER
 INDIVIDUALIZATION;INDIVIDUALIZATION;INDIVIDUALISIERUNG
 add;+;+
+address;address;Adresse
 all_basic;all basic;Basisbefehle
+altitude;altitude;Hoehe
+attenuator;attenuator;Abschwaecher
 author;author;Author
+barometric;barometric;barometrisch
+battery;battery;Batterie
+blue;blue;blau
+brightness;brightness;Helligkeit
+callsign;callsisign;Rufzeichen
 change;change;aendern
 chapter;chapter;Kapitel
+confirmation;confirmation;Bestaetigung
+command;command;Kommando
+comment;comment;Kommentar
 config;configuration;Konfiguration
 copy;copy;kopieren
+course;course;Kurs
 date;date;Datum
+delay;delay;Verzoegerung
+direction;direction;Richtung
+directivity;directivity;Ausrichtung
 default;set to default;Anfangswerte einstellen
+Depth;depth;Tiefe
 device;device;Gerät
 edit_color; edit color; Farben aendern
 edit_language; edit language;neue Sprache
 edit_sequence;edit_sequence;Reihenfolge aendern
+Extension;extension;Erweiterung
+for;for;fuer
+forward;forward;vorwaerts
+freqency;freqency;Frequenz
+gain;gain;Verstaerkung
+green;green;gruen
+group;group;Gruppe
+hight;hight;Hoehe
 hour;hour;Stunde
 ignore_toks;toks to ignore;ausgeblendete Token
+input;input;Eingang
 interface;interface;Schnittstelle
+key;key;Taste
+keyboard;keyboard;Tastatur
 language;language;Sprache
 languages;english;deutsch
-last command;last command;letzter Befehl
+last;last;letzter
 last_commnd_ok;last read command ok;letzter Lesebefehl iO
 last_commnd_nok;last read command not ok;letzter Lesebefehl nicht iO
-Minute;minute;Minute
+level;level;Pegel
+lock;lock;Sperre
+Memory;memory;Speicher
+message;meassage;Nachricht
+minute;minute;Minute
+mode;mode;Betriebsart
+Name;nam;Name
 new_data;get new data;neue Daten abrufen
 new_language;new lanuage;neue Sprache
+off;off;Aus
+on;on;An
 operate;operate;Anwendung
+output;output;Ausgang
+phone;phone;Kopfhoerer
 position;position;Position
+power;power;Leistung
+rainfall;rainfall;Regen
 read;read;lesen
 read_data;read_data;Daten lesen
+red;red;rot
+reflected;reflected;reflektiert
 save_as;save_as;speichern als
+select;select;Auswahl
+selected;selected;aufgewaehlt
 send;send;abschicken
 send_data;send data;Daten absenden
 set;set;einstellen
 set_default;set default;Standardwert
+speed;speed;Geschwindigkeit
+speech;speech;Sprache
 stack;stack;Stapel
 store_data;store;speichern
 store;store user data;Benutzerdaten speichern
+Symbol;symbol;Zeichen
+temperature;temperature;Temperatur
 time;time;Zeit
 token;token;Befehlsnummer
+treble;treble;hoehen
+type;type;Typ
 version;version;Version
+voice;voice;Sprache
 w1;Write new sequence number to the left side of the old place and press send;neue Nummer der Reihenfolge an alte Position eintragen und abschicken
 w2;if you think, it is ok tick store as well;zum speichern auch dies markieren
 w3;The top line may contain a new name of the language;Die oberste Zeile kann einen Namen für eine neue Sprache enthalten
@@ -49,5 +99,9 @@ w5;The following names are allowed as well:;Folgende Farbnamen sind erlaubt:
 w6;delete additonal languages;zusaetzliche Sprachen loeschen
 w7;delete sequencelist;Liste mit Reihenfolge loeschen
 w8;load sequencelist;Liste mit Reihenfolge laden
+waterfall;waterfall;Wasserfall
+width;width;Breite
+wind;wind;Wind
 year;year;Jahr
+yellow;yellow;gelb
 your_name;your name;Ihr Name
