@@ -5562,7 +5562,7 @@ Announce908:
 'Befehl 1163 &H048b Code 2700
 'scope data 
 'scope data
-Data "1163;aa, scope data;480;5,CHAPTER,scope"
+Data "1163;aa,scope data;480;5,CHAPTER,scope"
 '
 Announce909:
 'Befehl 1164 &H048c Code 2710
@@ -5730,7 +5730,7 @@ Announce936:
 'Befehl 1191 &H04a7 Code &H1a04
 'AGC Zeitkonstante
 'AGC time constant
-Data "1191;os, AM AGC time comstant;1;0,off;1,.3;2,.5;3,.8,4,1.2;5,1.6;6,2;7,2.5;3,3;9,4;10,5;11,6;12,7;13,8"
+Data "1191;os, AM AGC time constant;1;0,off;1,.3;2,.5;3,.8,4,1.2;5,1.6;6,2;7,2.5;3,3;9,4;10,5;11,6;12,7;13,8"
 '
 Announce937:
 'Befehl 1192 &H04a8 Code &H1a04
@@ -5742,7 +5742,7 @@ Announce938:
 'Befehl 1193 &H04a9 Code &H1a04
 'AGC Zeitkonstante
 'AGC time constant
-Data "1193;os,non AM AGC time comstant;1;0,off;1,.1;2,.2;3,.3;4,.5;5,.8;6,1.2;7,1.6;8,2;9,2.5;10,3;11,4;12,5;13,6"
+Data "1193;os,non AM AGC time constant;1;0,off;1,.1;2,.2;3,.3;4,.5;5,.8;6,1.2;7,1.6;8,2;9,2.5;10,3;11,4;12,5;13,6"
 '
 Announce939:
 'Befehl 1194 &H019e Code &H1a04
@@ -6174,7 +6174,7 @@ Data "L;audio Oscilloscope scope Color;audio Oscilloscope scope Color;Audio FFT 
 'Announce1045
 Data "L;contest number style;contest number style;Kontest Nummernstil;present number;present number;aktuelle Nummer;"
 
-'Announce1046'
+'Announce1046
 Data "L;CW keyer dot/dash Ratio;CW keyer dot/dash Ratio;CW Punkt Strich Verhaeltnis;rise time;rise time;Anstiegszeit;keyer type;keyer type;Testentype;mic.up/down keyer;mic.up/down keyer;Mic Auf Ab Taste;"
 '
 'Announce1047
@@ -6193,6 +6193,8 @@ Data "L;RTTY frequency stamp;RTTY frequency stamp;RTTY Frequenz Stempel;TX recor
 Data "L;file split;file split;Datei Auftrennung;scan speed;scan speed;Scangeschwindigkeit;scan resume;scan resume;Scan neu starten;pause timer;pause timer;Pausezeit;"
 '
 'Announce1052
-Data "L;resume timer;resume timer;Neustart Zeit;GPS;manual position;manual position;muauelle Position;my call;my call;mein Rufzeichen;
+Data "L;resume timer;resume timer;Neustart Zeit;GPS;manual position;manual position;mauelle Position;my call;my call;mein Rufzeichen;
 '
-
+'Announce1053
+Data "L;temporary skip timer;temporary skip timer;timer zeitweilig aussetztn;power save;power save;Strom sparen;"
+'
