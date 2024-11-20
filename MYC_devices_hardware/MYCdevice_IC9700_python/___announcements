@@ -1,11 +1,11 @@
 ' name : __announcements IC9700
-' 20220113
+' 20241118
 '
 Announce:
 'Befehl &H00
 'eigenes basic Announcement lesen
 'basic Announcement is read to I2C or output
-Data "0;m;DK1RI;IC9700 Interface;V01.4;1;175;2;983;1-1"
+Data "0;m;DK1RI;IC9700 Interface;V01.4;1;175;2;1070;1-1"
 '
 Announce1:
 'Befehl 256 &H0100 Code 05
@@ -5979,7 +5979,7 @@ Announce993
 'Befehl  65520 &HFFF0
 'liest announcements
 'read n announcement lines
-Data "65520;ln,ANNOUNCEMENTS;175;983"
+Data "65520;an,ANNOUNCEMENTS;175;1070,start at;1070,elements;14,CHAPTER,ADMINISTRATION"
 '
 Announce994:                                                  '
 'Befehl 65532 &HFFFC
@@ -6006,57 +6006,221 @@ Announce997:
 Data "65535 ;la,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,23,{0 to 127};a,SERIAL,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1"
 '
 Announce998:
-Data "R 258: fil1 only if mode = dd"
+'Data "R;258: fil1 only if mode = dd"
+'
 Announce984:
-Data "R 262 / 7: 1 2 in vfo mode only 3 not possible in main band mode"
+'Data "R;262 / 7: 1 2 in vfo mode only 3 not possible in main band mode"
 '
 Announce999:
-Data "R 267 /9 -b: 1, 2 not if memory empty 3 in memory mode only"
+'Data "R;267 /9 -b: 1, 2 not if memory empty 3 in memory mode only"
 '
 Announce1000:
-Data "R 268 / 0d: < 10MHz if f < 1200M"
+'Data "R;268 / 0d: < 10MHz if f < 1200M"
 '
 Announce1001:
-Data "R 270 / 0e: 1- 13 vfo mod; 22-24 memory mode only"
+'Data "R;270 / 0e: 1- 13 vfo mod; 22-24 memory mode only"
 '
 Announce1002:
-Data "R 274 /0e	  b0, b1: memory mode only"
+'Data "R;274 /0e	  b0, b1: memory mode only"
 '
 Announce1003:
-Data "R     / 0d limit to the band"
+'Data "R;/ 0d limit to the band"
 '
 Announce1004:
-Data "R 275 /0e	  d0 d3 ??"
+'Data "R;275 /0e	  d0 d3 ??"
 '
 Announce1005:
-Data "R 276 / 0f  05 in dd mode (23cm) only"
+'Data "R;276 / 0f  05 in dd mode (23cm) only"
 
 Announce1006:
-Data "R 292 294 /1407 1408	not valid in dv dd fm mode"
+'Data "R;292 294 /1407 1408	not valid in dv dd fm mode"
 '
 Announce1007:
-Data "R 329:external preamp necessary for par: 2,3"
+'Data "R;329:external preamp necessary for par: 2,3"
 '
 Announce1008:
-Data "R 332: not for FM and DV"
+'Data "R;332: not for FM and DV"
 '
 Announce1009:
-Data "R 379 cw mode only"
+'Data "R;379 cw mode only"
 '
 Announce1010:
-Data "R 390	dd 23cm only"
+'Data "R; 390	dd 23cm only"
 '
 Announce1011:
-Data "R 395 	not dd mode"
+'Data "R;395 	not dd mode"
 '
 Announce1012:
-Data "R 397	only dd mode"
+'Data "R;397	only dd mode"
 
 Announce1013:
-Data"!1179"
+'Data"R;!1179"
 
 Announce1014:
-Data "!1197"
+'Data "R;!1197"
 
-Snnounce1015:
-Data "!1199 if"
+Announce1015:
+'Data "R;!1199 if"
+'
+'Announce1016:
+Data "L;language name;english;deutsch"
+'
+'Announce1017
+Data "L;band edge frequencies;band edge frequencies;Bandgrenzen;"
+'
+'Announce1018
+Data "L;memory Group;memory Group;Speichergruppe;copy to Memory;copy to Memory;in Speicher kopieren;copy to vfo;copy to vfo;nach VFO kopieren;"
+'
+'Announce1019
+Data "L;clear memory;clear memory;Speicher loeschen;scan mode;scan mode;Scan Mode;scan resume;scan resume;Scan neu starten;"
+'
+'Announce1020
+Data "L;tuning step;tuning step;Abstimmstufung;noise reduction;noise reduction;Rauschreduzierung;"
+'
+'Announce1021
+Data "L;Rf power;Rf power;HF Leistung;key Speed;key Speed;CW Geschwindigkeit;Compress;Compress;Kompressor;"
+'
+'Announce1022
+Data "L;PO meter;PO meter;Ausgangsleistung;supply voltage;supply voltage;Versorgungsspannung;supply current;supply current;Versorgungsstrom;preamp;preamp;Vorverstaerker;"
+'
+'Announce1023
+Data "L;Noise blanker;Noise blanker;Stoerunterdrueckung;Repeater tone;Repeater tone;Relais Ton;compressor;compressor;Kompressor;monitor;monitor;Monitor;Dial lock;Dial lock;Frequenzsperre;"
+'
+'Announce1024
+Data "L;DSP filter type;DSP filter type;DSP Filtertyp;Manual notch width;Manual notch width;manulle Notchbreite;SSB transmit bandwidth;SSB transmit bandwidth;Sendebandbreite SSB;"
+'
+'Announce1025
+Data "L;Cw message;Cw message;CW Nachricht;main switch;main switch;Hauptschalter;"
+'
+'Announce1026
+Data "L;SSB Tx wide bandwidth;SSB Tx wide bandwidth;SSB Sendebandbreite, breit;SSB Tx mid bandwidth;SSB Tx mid bandwidth;SSB Sendebanbbreite, mittel;"
+'
+'Announce1027
+Data "L;SSB Tx narrow bandwidth;SSB Tx narrow bandwidth;SSB Sendebandbeite, schmal;SSBD Tx bandwidth;SSBD Tx bandwidth;SSNBD Sendebandbreite;"
+'
+'Announce1028
+Data "L;beep gain;beep gain;Beep Verstaerkung;"
+'
+'Announce1029
+Data "L;beep gain Limit;beep gain Limit;Grenze fuer Beep Verstaerkung;confirmation Beep;confirmation Beep;Bestaetigungston;Home CH Beep;Home CH Beep;Home CH Ton;"
+'
+'Announce1030
+Data "L;bandedge beep mode;bandedge beep mode;Mode für Bandgrenzenton;Auto Power Off;Auto Power Off;automatische Abschaltung;Power save;Power save;Strom sparen;"
+'
+'Announce1031
+Data "L;Power max with battery;Power max with battery;max Leistung mit Batterie;Power max b13.5V;Power max b13.5V;max Leistung mit 13.5V;Hf Tx delay;Hf Tx delay;HF Sendeverzoegerung;"
+'
+'Announce1032
+Data "L;50MHz Tx delay;50MHz Tx delay;50MHz Sendeverzoegerung;144MHz Tx delay;144MHz Tx delay;144MHz Sendeverzoegerung;430MHz Tx delay;430MHz Tx delay;430MHz Sendverzoegerung;"
+'
+'Announce1033
+Data "L;split lock;split lock;Split Sperre;Tuner PTT start;Tuner PTT start;Tuner start mit PTT;"
+'
+'Announce1034
+Data "L;RTTY shift width;RTTY shift width;RTTY shift Weite;RTTY polarity;RTTY polarity;RTT Polariaet;language Speed;language Speed;Sprachegechwindigkeit;"
+'
+'Announce1035
+Data "L;mic updown speech;mic updown speech;mic updown Sprachausgabe;s meter speech;s meter speech;s meter Sprachausgabe;"
+'
+'Announce1036
+Data "L;mode speech;mode speech;Mode Sprachausgabe;lock function;lock function;Sperrfunktion;number of memory pads;number of memory pads;Zahl der Speichertasten;"
+'
+'Announce1037
+Data "L;mic up/down Speed;mic up/down Speed;mic up/down Geschwindigkeit;CW normal side;CW normal side;CW normale Seite;power on charging;power on charging;Power on Laden;"
+'
+'Announce1038
+Data ";power off for remote;power off for remote;Ausschalten bei Fernsteuerung;mode select ssb;mode select ssb;SSB moeglich;mode select cw;mode select cw;CW moeglich;mode select rtty;mode select rtty;RTTY moeglich;"
+'
+'Announce1039
+Data "L;mode select am;mode select am;AM moeglich;mode select fm;mode select fm;FM Moeglich;mode select dv;mode select dv;DV moeglich;mode select wfm;mode select wfm;WFM moeglich;"
+'
+'Announce1040
+Data "L;screen capture file type;screen capture file type;Dateiformat Bildschirmaufnahme;"
+'
+'Announce1041
+Data "L;standby Beep;standby Beep;Standby Ton;audio Reply;audio Reply;Sprachantwort;gps data Speed;gps data Speed;GPSdaten Geschwindigkeiit;"
+'
+'Announce1042
+Data "L;date Format;date Format;Datumsformat;sp jack function;sp jack function;Funktion der SP Buchse;"
+'
+'Announce1043:
+Data "L;USB output;USB output;USB Ausgang;beep and speech output;beep and speech output;Ton und Sprachausgang;"
+'
+'Announce1044
+Data "L;wlan af/if Output;wlan af/if Output;WLAN NF/ZF Ausgang;"
+'
+'Announce10245
+Data "L;MOD input for DATA;MOD input for DATA;DATA Modulationseingang;MOD input for DATA OFF;MOD input for DATA OFF;Nicht DATA Modulationseingang;"
+'
+'Announce1046
+Data "L;send output for hf;send output for hf;sende HF;send output for 50MHz;send output for 50MHz;sende 50MHz;send output for 144MHz;send output for 144MHz;sende 144MHz;"
+'
+'Announce1047
+Data "L;send output for 430MHz;send output for 430MHz;sende 430MHz;external keypad for VOICE;external keypad for VOICE;externe Tasten fuer Sprache;external keypad for keyer;external keypad for keyer;externe Tasten für CW;"
+'
+'Announce1048
+Data "L;external keypad for RTTY;external keypad for RTTY;extern Tasten fuer RTTY;echo for CI-V USB;echo for CI-V USB;Echo fuer CI-V USB;USB B gps out;USB B gps out;USB B GPS Ausgang;"
+'
+'Announce1049
+Data "L;mic 8v Output;mic 8v Output;Mikrofon 8V;LCD unit backlight brightness;LCD unit backlight brightness;LCD Helligkeit;LCD brightness auto adjust;LCD brightness auto adjust;LCD automatische Helligkeitseinstellung;"
+'
+'Announce1050
+Data "L;screen saver battery;screen saver battery;Bildschirmschoner (Batterie);screen saver 13.8V;screen saver 13.8V;Bildschirmschoner (13.8V);screen power switch;screen power switch:Bildschirm Ein/Aus Schalter;>"
+'
+'Announce1051
+Data "L;meter peak hold:meter peak hold;Spitzenwerte speichern;group name popup;group name popup;Grupenname Anzeige;"
+'
+'Announce1052
+Data "L;rx position indicator;rx position indicator; RX Lage Anzeiger;rx picture indicator:rx picture indicator;RX Bildanzeiger;DV rx backlight;DV rx backlight;DV RX Beleuchtung;"
+'
+'Announce1053
+Data "L;scroll speed;scroll speed;Scroll Geschwindigkeit;opening message;opening message;Start Mitteilung;Power on check;Power on check;Pruefung beim Einschalten;"
+'
+'Announce1054
+Data "L;format longitude /latitude;format longitude /latitude;Laengen / Breiten Format;format altitude / distance;format altitude / distance;Hoehen / Entfernungd Format;display language;display language;Anzeigensprache;"
+'
+'Announce1055
+Data "L;system language;system language;Systemsprache;ntp address;ntp address;NTP Adresse;GPS time correction;GPS time correction;GPS Zeitkorrektur;SD csv format date;SD csv format date;CSV Format fuer Datum (SD KArte);"
+'
+'Announce1056
+Data "L;spectrum display type;spectrum display type;Spektrum Anzeigetyp;waveform color current;waveform color current;Aktuelle Farbe der Welle;"
+'
+'Announce1057
+Data "L;waveform line Color;waveform line Color;Farbe der Wellenlinie;waveform  color for peak hold;waveform  color for peak hold;Farbe fuer Peak hold;waterfall Speed;waterfall Speed;Wasserfll Geschwindigkeit;"
+'
+'Announce1058
+Data "L;waterfall height (expanded);waterfall height (expanded);Waserfall Hoehe (vergroesert);waterfall marker auto-hide;waterfall marker auto-hide;automatisches Ausblendends Wassefall Markers;"
+'
+'Announce1059
+Dat "L;audio FFT scope;audio FFT scope;Audio FFT Anzeige;audio FFT fill Color;audio FFT fill Color;Audio FFT Fuellfarbe;Audio FFT scope waterfall;Audio FFT scope waterfall;Audio FFT Wasserfall;"
+'
+'Announce1060
+Data "L;audio Oscilloscope scope Color;audio Oscilloscope scope Color;Audio FFT Anzeigenfarbe;auto monitor;auto monitor;automatischer Monitor;Tx repeat time;Tx repeat time;Sende Wiederholzeit;"
+'
+'Announce1061
+Data "L;contest number style;contest number style;Kontest Nummernstil;present number;present number;aktuelle Nummer;"
+
+'Announce1062
+Data "L;CW keyer dot/dash Ratio;CW keyer dot/dash Ratio;CW Punkt Strich Verhaeltnis;rise time;rise time;Anstiegszeit;keyer type;keyer type;Testentype;mic.up/down keyer;mic.up/down keyer;Mic Auf Ab Taste;"
+'
+'Announce1063
+Data "L;averaging function for RTTY FFT;averaging function for RTTY FFT;Mittelwert fuer RTTY FFT;RTTY FFT scope waveform color;RTTY FFT scope waveform color;RTTY Scope Farbe;rtty new line code;rtty new line code;Zeichen fuer RTTY neue Zeile;"
+'
+'Announce1064
+Data "L;received RTTY text font color;received RTTY text font color;RTTY Textfarbe RX;transmitted RTTY text font color;transmitted RTTY text font color;RTTY Textfarbe Tx;
+'
+'Announce1065
+Data "L;file saving format for the RTTY log;file saving format for the RTTY log;Speicherformat fuer RTTY Log;RTTY time stamp;RTTY time stamp;RTTY Zeitstempel;rtty Log Time Stamp;rtty Log Time Stamp;RTTY Log Zeitstepel;"
+
+'Announce1066
+Data "L;RTTY frequency stamp;RTTY frequency stamp;RTTY Frequenz Stempel;TX recording;TX recording;TX Aufnahme;RX recording;RX recording;RX Aufnahme;"
+'
+'Announce1067
+Data "L;file split;file split;Datei Auftrennung;scan speed;scan speed;Scangeschwindigkeit;scan resume;scan resume;Scan neu starten;pause timer;pause timer;Pausezeit;"
+'
+'Announce105268
+Data "L;resume timer;resume timer;Neustart Zeit;GPS;manual position;manual position;mauelle Position;my call;my call;mein Rufzeichen;
+'
+'Announce1069
+Data "L;temporary skip timer;temporary skip timer;timer zeitweilig aussetztn;power save;power save;Strom sparen;"
+'
