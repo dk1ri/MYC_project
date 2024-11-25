@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V03.00.03 20240905
+Version V03.00.04 20241125
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -38,8 +38,8 @@ L;languagename;english;deutsch;francais
 Other lines contain an identrifier (usually the english label) and the translated words in the sequence of the first “L” line as:
 L;switch;switch;Schalter;bouton;pressure,pressure,Druck;pression;
 L;speed;speed;Geschwindigkeit;vitesse
-Do not forget the “;” at the end of the first line.
-Predefined words like ANNOUNCEMENTS should not be added.
+A line can contain more than one element. All “L” lines should be together. 
+Do not forget the “;” at the end of the all “L” lines except the last.
 
 Each command announcement line contain the unique command-number, the command-type and properties as necessary; in this sequence. A special type of properties are optional <OPTION>. Some <OPTION> will not result in transmitted data and will be at the end of a line. The first <des> of
  these properties is the uppercase name for the <OPTION>, followed by other parameters.
@@ -87,7 +87,7 @@ Commands and properties
 
 The command tokens use numeric n byte big-endian format.  The shortest format possible is always used.
 For properties the same rule apply. For memory content a string is allowed as property as well.
-If a device has less than 239 (0, 240- 255 are reserved,) commands, the communication with the CR should use one byte format for the command token. The number of bytes used is given in the basic announcement-line.
+If a device has less than 224 (0, 240- 255 are reserved,) commands, the communication with the CR should use one byte format for the command token. The number of bytes used is given in the basic announcement-line. To address announcement lines, more than one byte may be necessary.
 If the CR has more than 223 commands (0, 240 - 255 is reserved, 16 for SK communication), it will communicate SK with 2 or more bytes. In this case, the first byte of translated command-tokens must not be 0 (but can be 1), because one byte 0x00 is reserved for the basic announcement.
 Shortest possible format must be used for properties in any case. So the CR, LD, RU and SK know the format by the announcements.
 A command consist of a command-token and properties (parameters) depending on the command-type.
@@ -323,10 +323,11 @@ answer command:			<c><m>					mth stack
 					<c>						one stack
 
 number_of_valuesx..is the maximum of the transmitted value!
-More details about  <ddes_op_ap_oo > see below shown in: More about Descriptions
+More details about  <des_op_ap_oo > see below shown in: More about Descriptions
 Real values the valuex.. must match the highest possible value to be transmitted
 For <sequence> the following is defined:
 lin				linear numbering
+unitx is used by HI for display and may be the range of allowed values as well.
 
 announce:	<c>;yo,[ext<c>],[<des>];number_of_stacks[,<des_stacks>];number_of_steps,<label>;step_size[,<des_op_ap_oo>][;step_time[,<des_op_ap_oo>][;step_time-unit,<label>[;a,<label>],[4,LOOP|6,LIMIT]
 												move position stepwise;  works only as extension of an op
@@ -424,7 +425,7 @@ Take into account, that input of non valid data may result in no data sent. So m
 
 More about Descriptions
 
-General format: [label][<,des_range>|<des_memory>|...][,additional]
+General format: [label][<,des_range>|<,des_memory>|...][,additional]
 The description should help the SK to display the real parameters and to provide the correct user readable labeling. If there is no description the SK will use the full range as defined by the property type and use this as labeling.
 It is used as well for restriction of characters / values for data of memory.
 
@@ -435,24 +436,23 @@ Description of command-type  <des_c>:
 [as|ext]|[,label]
 
 Descriptions for stacks and memory positions <des_stacks>, <des_memory_position>:
-with one selector / dimension:
+with one or a small number of stack selectors / memory dimensions:
 [,<label>][,<des_range>]
 
-with with more than one selector / dimension::
+If the stack / memory element number is high, it is recommended to split it to rows and columns so that the SK can arrange this
 {n1,[,[label][,<des_range>][MULn2[,<label>][,<des_range>]… [ADDn_add,[,label][,<des_range>]}
-number_of_positions is the possible number of combinations of n1, n2….
-If the stack / memory element number is high, it is recommended that the SK arrange this in rows and columns (and more).
+The number of stack / memory elements must match the possible number of combinations of n1, n2….
 The SK can use separate selectors as defined by <des_memory>  fields separated by MULs and ADD.
 The number of MULs (selectors) is not limited, but MULs within the MULs are not supported.
 Only one ADD should be at the end (if any). ADD requires MUL.
 ADD can be used if the row and cols are used, and there is a limited number of additional positions. If the selected value is “0”, rows and cols are used only. Otherwise the maxrow * maxcol * ...+ ADD is transmitted independent of the selected row and col values. 
 The  <des_range> for ADD should start with a meaningful name as label. It should denote, that the value is calculated using the other values.
 Resulting values must be unique.
-Note, that there is  no “,” around MUL and ADD. A “,”before MUL or ADD means an empy label
+Note, that there is  no “,” around MUL and ADD. A “,”before MUL or ADD means an empty label
 Examples:
-2;op;100,test;255;lin;-					simple stack selector with name test for values from 0 to 99
-2:op;4,{t1,t2,t3,t4};255;lin;-					simple stack selector without name for values t1, t2, t3, t4
-2:op;4,{4,test,{t1,t2,t3,t4}};lin;-				simple stack selector with name test for values t1, t2, t3, t4
+2;op;100,test;255;lin;-					simple stack selector with name test for stack values from 0 to 99
+2:op;4,{t1,t2,t3,t4};255;lin;-					simple stack selector without name for stack values t1, t2, t3, t4
+2:op;4,{4,test,{t1,t2,t3,t4}};lin;-				simple stack selector with name test for stack values t1, t2, t3, t4
 2;op;10004,{100,colMUL100,rowADD5,tx,{use_row_col,t1,t2,t3,t4}};255;lin;-
            is a matix (stackselector from 0 to 99 (named col), a stackselector  from 0 to 99 (named row)) and an additional stacksselector  t1 – t4, named tx.
 	The transmitted value is col * max_row + row for tx = 0 and max_col * max_row + tx for tx > 0.
@@ -460,7 +460,7 @@ Examples:
 2;op;15,{5,{1_2_to 4,a,b}}MUL3,test,{1,2,3}};255;lin;-	is matix (stackselector 2,3,4,a,b (no name), a stackselector 0 to 2 (named test)
 
 Descriptions for range commands <des_op_ap_oo>:
-same as  <des_stacks> for one selector, but for each dimension (non MUL or ADD)
+same as  <des_stacks> for one selector, but for each dimension (but no MUL or ADD)
 <number_of_positions>[,<label>][,<des_range>]
 Examples:
 1;op;1;8,{1_1to5,10_20to40};lin;-			will result in 8 values: 1 2 3 4 5 10 30 40 transmitted by 0 to 7.
