@@ -101,8 +101,8 @@ function stack_memory_selector($ctoken){
     $actual = $_SESSION["actual_data"][$_SESSION["device"]][$ctoken];
     if (array_key_exists($ctoken, $_SESSION["des_name"][$_SESSION["device"]])) {echo $_SESSION["des_name"][$_SESSION["device"]][$ctoken] . ": ";}
     $stacks = explode(",", $_SESSION["des"][$_SESSION["device"]][$ctoken]);
-    $stacks = array_splice($stacks, 1);
     if ($stacks[0] < $_SESSION["conf"]["selector_limit"]){
+        $stacks = array_splice($stacks, 1);
         most_simple_selector_for_simple_des($ctoken, $stacks, $actual);
     }
     else{

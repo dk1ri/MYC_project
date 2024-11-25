@@ -144,7 +144,7 @@
 # all switches:
 #   stacks (mx) and data (d0): no manual entries: MYC data stored and used for display
 # command op/oo:
-#   stacks (mx): MYC data (positions) are stored and display may be different (stringas well)
+#   stacks (mx): MYC data (positions) are stored and display may be different (string as well)
 #   data (dx) per dimension: MYC positions are stored.
 #   _POST is checked, if "big values" are used (manual entries)
 #   for big values: displayed (real) values are translated from actual_data; otherwise actual_data are used directly

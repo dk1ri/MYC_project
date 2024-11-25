@@ -15,10 +15,13 @@ brightness;brightness;Helligkeit
 callsign;callsisign;Rufzeichen
 change;change;aendern
 chapter;chapter;Kapitel
-confirmation;confirmation;Bestaetigung
+color;color;Farbe
 command;command;Kommando
 comment;comment;Kommentar
+compass;compass;Kompass
 config;configuration;Konfiguration
+confirmation;confirmation;Bestaetigung
+constant;constant;Konstante
 copy;copy;kopieren
 course;course;Kurs
 date;date;Datum
@@ -32,15 +35,18 @@ edit_color; edit color; Farben aendern
 edit_language; edit language;neue Sprache
 edit_sequence;edit_sequence;Reihenfolge aendern
 Extension;extension;Erweiterung
+dast;fast;schnell
 for;for;fuer
 forward;forward;vorwaerts
 freqency;freqency;Frequenz
+function;function;Funktion
 gain;gain;Verstaerkung
 green;green;gruen
 group;group;Gruppe
 hight;hight;Hoehe
 hour;hour;Stunde
 ignore_toks;toks to ignore;ausgeblendete Token
+indicator;indicator;Anzeiger
 input;input;Eingang
 interface;interface;Schnittstelle
 key;key;Taste
@@ -51,12 +57,14 @@ last;last;letzter
 last_commnd_ok;last read command ok;letzter Lesebefehl iO
 last_commnd_nok;last read command not ok;letzter Lesebefehl nicht iO
 level;level;Pegel
+line;line;Linie
 lock;lock;Sperre
-Memory;memory;Speicher
+medium;medium;mittel
+memory;memory;Speicher
 message;meassage;Nachricht
 minute;minute;Minute
 mode;mode;Betriebsart
-Name;nam;Name
+name;name;Name
 new_data;get new data;neue Daten abrufen
 new_language;new lanuage;neue Sprache
 off;off;Aus
@@ -64,29 +72,36 @@ on;on;An
 operate;operate;Anwendung
 output;output;Ausgang
 phone;phone;Kopfhoerer
+picture;picture;Bild
 position;position;Position
 power;power;Leistung
 rainfall;rainfall;Regen
 read;read;lesen
 read_data;read_data;Daten lesen
+record;record;Aufnahme
 red;red;rot
 reflected;reflected;reflektiert
 save_as;save_as;speichern als
+scope;scope;Spektrum
 select;select;Auswahl
-selected;selected;aufgewaehlt
+selected;selected;ausgewaehlt
 send;send;abschicken
 send_data;send data;Daten absenden
+sentence;sentence;Satz
 set;set;einstellen
 set_default;set default;Standardwert
+slow;slow;langsam
 speed;speed;Geschwindigkeit
 speech;speech;Sprache
 stack;stack;Stapel
 store_data;store;speichern
 store;store user data;Benutzerdaten speichern
+success;success;Erfolg
 Symbol;symbol;Zeichen
 temperature;temperature;Temperatur
 time;time;Zeit
 token;token;Befehlsnummer
+transmit;transmit;senden
 treble;treble;hoehen
 type;type;Typ
 version;version;Version
@@ -100,6 +115,7 @@ w6;delete additonal languages;zusaetzliche Sprachen loeschen
 w7;delete sequencelist;Liste mit Reihenfolge loeschen
 w8;load sequencelist;Liste mit Reihenfolge laden
 waterfall;waterfall;Wasserfall
+waveform;waveform;Wellenform
 width;width;Breite
 wind;wind;Wind
 year;year;Jahr

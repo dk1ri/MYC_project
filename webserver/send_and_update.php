@@ -159,17 +159,30 @@ function handle_stacks($basic_tok){
         # no ADDer
         $stack = 0;
         $i = 0;
+        print $basic_tok;
         while (!$found) {
             $tok = $basic_tok . "m" . $i;
+            print $tok." ";
             if (!array_key_exists($tok, $_SESSION["des"][$_SESSION["device"]])) {
+                print "found ";
                 $found = 1;
-            } else {
-                array_key_exists($tok, $_POST) ? $value = $_POST[$tok] : $value = $_SESSION["actual_data"][$_SESSION["device"]][$tok];
+            }
+            else {
+                print $tok." ";
+                if(array_key_exists($tok, $_POST)) {
+                    $value = $_POST[$tok];
+                    print "POST";
+                }
+                else{
+                    $value = $_SESSION["actual_data"][$_SESSION["device"]][$tok];
+                }
+                var_dump($value);
                 $stack += $value;
                 if (array_key_exists($basic_tok . "m" . ($i + 1), $_SESSION["des"][$_SESSION["device"]])) {
                     $stack *= (int)explode(",", $_SESSION["des"][$_SESSION["device"]][$basic_tok . "m" . ($i + 1)])[0];
                 }
             }
+            print " e ";
             $i++;
         }
     }

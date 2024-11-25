@@ -1,6 +1,6 @@
 <?php
 # commands_m.php
-# DK1RI 20240123
+# DK1RI 20241122
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 #
 function create_om($basic_tok) {
@@ -66,7 +66,7 @@ function correct_for_send_om($basic_tok){
         $send .= translate_dec_to_hex("m", $pos, $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][2]);
         # data
         $send .= $send_data;
-        $_SESSION[""][$basic_tok] = 1;
+        $_SESSION["tok_to_send"][$basic_tok] = 1;
         $_SESSION["send_string_by_tok"][$basic_tok] = $send;
     }
 }
