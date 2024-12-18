@@ -20,12 +20,12 @@ IC705
 # line 9: Telnet Port
 23
 # line10: Com Port number (to radio)
-6
+8
 # line 11: CIV Adress (0xA4 = 164)
 164
 # line12: CIV timeout (seconds)
 1
-# line13: Data in for vontrol via filetransfer
+# line13: Data in for control via filetransfer
 /xampp/htdocs/usb_interface/from_web
 # line14: Data out  for control via filetransfer
 /xampp/htdocs/usb_interface/to_web

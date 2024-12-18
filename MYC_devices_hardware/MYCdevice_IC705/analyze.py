@@ -70,7 +70,7 @@ def poll_sk_input_buffer():
                         temps += hex(temp)
                         count += 1
                     write_log(v_error_msg.parameter_error + temps)
-                    print ("finish 2 delete")
+                    print ("finish 2 - paramter error - delete")
                     v_sk.info_to_all = bytearray([])
                     v_icom_vars.input_locked = 0
                 else:

@@ -390,7 +390,6 @@ def check_and_convert_alphabet(a, type_):
             aa = a
     elif type_ == 3:
         # callsign
-        print ("call")
         # A-Z
         if 96 < a < 123:
             aa = a

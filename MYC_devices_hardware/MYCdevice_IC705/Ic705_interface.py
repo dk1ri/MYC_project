@@ -1,6 +1,6 @@
 """
 name : Ic705_interface.py
-Version 01.8, 20240311
+Version 01.9, 202401018
 Copyright : DK1RI
 If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 Purpose : Program to control the IC-705 radio
@@ -9,7 +9,7 @@ Details of the MYC protocol can be found in http://dk1ri.de/myc/Description.pdf
 developed using PyCharm
 tested with webbrowser under Win10
 Manual A7560D-1EX-7 Sep 2023, A7560-7EX-4 Sep 2023, A7560-8EX-6 Jan 2023
-tested with radio firmware 1.31
+tested with radio firmware 1.32
 Should be used with raspberry Pi Hardware (later)
 
 Some explanation:

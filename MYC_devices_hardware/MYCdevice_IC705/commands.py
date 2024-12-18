@@ -1160,7 +1160,11 @@ def command_hpf_lpf(line, input_device, tokennumber):
     # HPF / LPF SSB
     if len(line) < 4:
         return 0
-    if line[2] > 20 or line[3] > 20 or line[2] >= line[3]:
+    if line[2] > 20 or line[3] > 20:
+        return 2
+    print (line[3] - line[2])
+    if line[3] - line[2] < -4:
+        # high  must be higher than low (real values)
         return 2
     header(tokennumber)
     v_icom_vars.Civ_out.extend(int_to_bcd(line[2], 1))

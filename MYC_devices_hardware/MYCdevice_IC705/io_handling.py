@@ -221,6 +221,7 @@ def file_data_input(input_buffer_number):
             i += 1
         file.close()
         os.remove(v_icom_vars.control_data_in)
+        print ("from web ", from_web)
         if len(from_web) > 0:
             i = 0
             j = 1
