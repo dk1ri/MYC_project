@@ -1,0 +1,198 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/Feinstaubsensor_w.pdf
+
+Feinstaub Messung für das MYC Protokoll
+					
+
+Author DK1RI, Version V03.0, 20241219
+This project can be found in https://www.github.com/dk1ri
+
+Einleitung
+
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: siehe [7]
+Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
+Dieses Interface kam durch eine Anregung durch einen Artikel in der Zeitschrift ELV (2019/6) zustande.
+Zur Fernsteuerung über kurze Entfernungen kann ein passendes Funkmodul angeschlossen werden [9].
+Die Unterlagen zum Feinstaubsensor ohne Funkmodul: [9] [10] [11]
+
+Beschreibung und Bedienung
+
+Allgemeines:
+Die Stromversorgung ist 7- 9V, Stromaufnahme ca. 140mA max.
+Die Steuerung kann über I2C, USB oder RS232 oder ein Funkinterface erfolgen.
+Es wird der gleiche Sensor wie in dem ELV Artikel (ELV Journal 2019 Heft 6) verwendet: Sensirion SPS30 ab Firmware 2.1.
+Der Sensor ist aber anders als da nicht auf der gleichen Leiterplatte montiert, und es gibt auch kein Display.
+Details zu der Funktion des Sensors können in dem ELV Artikel oder im Datenblatt des Sensors nachgelesen werden.
+Der Sensor ist über die serielle Schnittstelle mit der Leiterplatte verbunden.
+Der Prozessor ATMEGA1284 wird verwendet, da er 2 serielle Hardware Schnittstellen hat und 16kB RAM. Dies erlaubt die Speicherung von 760 Messwerten.
+Das Messintervall beträgt 3s, 10s, 1min, 10min, 30min und 60min.
+Jeder Messwert benötigt 20 Byte, es können also nur 755 Messwerte gespeichert werden (Das ELV Original hat einen zusätzlichen 4MBit Speicher und kann daher mehr Messwerte speichern). 
+Ist der Speicher voll, werden alte Daten überschrieben.
+Beim Auslesen des Speichers kommt der neueste Messwert zuerst.
+Da das Interface auch keine Uhr hat, muss die Messzeit an Hand der auslesbaren Intervallzeit berechnet werden. Beim Ändern der Messintervallzeit , Start, Stop, Reset und Abschalten gehen die gespeicherten Daten verloren.
+Der Messvorgang muss nach dem Einschalten des Interfaces gestartet werden
+
+Details:
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
+Im folgenden werden auch Befehlsfolgen beschrieben, wie sie über die Schnittstellen direkt eingegeben werden. Alle Befehlsfolgen stehen auch mit dem Browser zur Verfügung. Details zur Bedienung über die I2C / serielle Schnittstelle:
+Start der Messung: &H1D01
+Das Auslesen erfolgt in Blöcken von maximal 28 Werten, beginnend mit den neuesten Daten.
+Bei einem Messintervall von einer Minute gibt der Befehl „read mass concentration“ mit „to send“: 5 und „start at“: 255 (&H0100FF05 
+5 Werte der Massekonzentration von vor 255 – 259 Minuten aus.
+Entsprechend  dem MYC Protokoll muss der Startmesswert als 2 Byte Wert eingegeben werden (00FF).
+Der Grund für die Limitierung der übertragenen Werte ist das Funk Übertragung.
+Der Sleep mode des Sensors wird nicht unterstützt
+
+Einbindung in das MYC System
+
+Details zum MYC System stehen in [3].
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
+
+Hardware Reset
+
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Dies ist hilfreich, wenn die aktuelle I2C Adresse verloren gegangen ist.
+
+Watchdog
+
+Es gibt einen kompletten Hardware -reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
+
+Software
+
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
+Das aktuelle Bascom Programm verwendet einen Atmega1284.
+Die Software wurde in BASCOM geschrieben [2]
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.14[6] in das Verzeichnis mit dem Programm kopiert werden. Für die unterschiedlichen Funkmodule gibt es unterschiedliche Hexfiles
+
+Programmierung des Prozessors
+
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper J1 und sollte während der Programmierung entfernt werden; ebenso der Sensor und der Funkmodul.
+
+Serielle (RS232 / USB) Schnittstelle
+
+Schnittstellenparameter: 19k2 8N1
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 46 mittleren Anschlusspunkten JP7 /JP8 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung erfolgt dann über USB.
+
+I2C Schnittstelle 
+
+Die Default Adresse ist 28
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Bei anderer I2C Spannung als 3V kann R5 / R6 angepasst werden.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2, R5, R6, JP2 entfallen und alternativ wird JP3 und JP4 bestückt. 
+Ganz ohne I2C kann auch SL1, SL2, JP3, JP4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird,, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+SL1 und SL2 sind parallel geschaltet. Ein Anschluss kann zur Weitergabe des I2C Signals an das nächste Gerät verwendet werden. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+Bei Bestückung mit der USB Schnittstelle muss die Stromversorgung darüber angeschlossen werden, auch wenn nur I2C verwendet werden soll.
+
+Browser Schnittstelle
+
+Es gibt einen (Windows) Webserver, an das Gerät direkt oder über die Funkschnittstelle angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+
+Remote Bedienung (über Funk)
+
+Es kann eine Funkschnittstelle (LoRa oder FSK) zur Überbrückung kurzer Entfernungen angeschlossen werden. Je nach verwendeter Funkschnittstelle muss der Feinstaubsensor entsprechend programmiert werden. Vor der ersten Inbetriebnahme muss der Name des Interfaces (JP12  verbunden) programmiert werden. Danach entfernt man Jumper um versehentlich Änderungen zu vermeiden.
+
+SMD
+
+Die Leiterplatte ist teilweise mit SMD bestückt
+
+Stromversorgung
+
+Die Stromversorgung ist 7- 12V, Stromaufnahme ca. 130mA max. 
+Alternativ erfolgt die Stromversorgung über USB. Mit JP11 kann die Umschaltung erfolgen.
+ 
+Bestückung der Leiterplatte 
+
+Verwendung von ISP:
+JP6
+
+Mit I2C:
+Siehe I2C oben.
+
+Mit serieller Schnittstelle:
+Bei Verwendung der RS232 Schnittstelle wird IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden.
+
+R7 – R11, Q2 -Q4 und X5 wird nicht bestückt.
+
+Anschlüsse
+
+Power
+Tip	12V
+Ring	GND
+
+RS232 (Buchse)
+5	GND
+2	TX (PC Eingang)
+3	RX (PC Ausgang)
+
+I2C (SL1, SL2)
+1	GND
+2	SCL
+3	SDA
+
+Ser2 (Anschluss des Feinstaub Sensors)
+1	5V
+2	Serial out
+3	Serial in
+4	-
+5	GND
+
+Jumper
+
+JP1 		Power
+JP2 		I2C: 3V/5V Umschaltung
+JP3		SDA Überbrückung (ohne IC3)
+JP4		SCL Überbrückung (ohne IC3)
+JP5		Reset
+JP6		ISP 
+JP7/8		Anschluss für USB Modul
+JP9/10		Anschluss Funkmodul
+JP11		Umschaltung STRV extern / USB
+SP12		Programmierung des  Funkmoduls
+
+Versionen
+
+Diese Beschreibung gilt für die
+Leiterplattenversion Feinstaubsensor V01.0
+Bascom Version V04.0
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+
+Referenzen
+
+[1]	http://www.dk1ri.de/dhw/MYC_Feinstaubsensor_w_eagle.zip
+[2]	http://www.dk1ri.de/dhw/Feinstaubsensor_w_bascom.zip
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
+[6]	https://dk1ri.de/dhw/common_1.13.zip
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm
+[9]	http://www.dk1ri.de/dhw/Feinstaubsensor.pdf
+[10]	http://www.dk1ri.de/dhwMYC_icom_eagle.zip
+[11]	http://www.dk1ri.de/dhw/Feinstaubsensor_bascom.zip
