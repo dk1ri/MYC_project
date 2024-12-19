@@ -7,6 +7,7 @@ Ignore:
    Commandpointer = 0
 Return
 '
+
 FFF0:
 ' F0 deliver not more than Tx_length byte, but complete line always
 #IF Command_is_2_byte = 0
@@ -83,6 +84,83 @@ FFF0:
    End If
 Return
 '
+FFF8:
+#IF Command_is_2_byte = 0
+   If Commandpointer >= 2 Then
+      If Command_b(2) = 0 Then
+         If wireless_active = 0 Then
+            'Switch to transparent mode, server only
+            Myc_mode = 0
+         Else
+            Parameter_error
+         End If
+         Gosub Command_received
+      Else
+         If Command_b(2) <= Name_len Then
+            ' change name
+            B_temp1 = Command_b(2)
+            If Commandpointer >= B_temp1 Then
+               Radio_name = String(4,&H878) ' "x"
+               B_temp2 = 1
+               For B_temp1 = 3 to Commandpointer
+                  Radio_name_b(B_temp2) = Command_b(B_temp1)
+                  B_temp2 = B_temp2 + 1
+               Next B_temp1
+               #IF RadioType = 2
+                  Gosub Write_id
+               #EndIF
+               Radio_name_eram = Radio_name
+               Gosub Command_received
+            Else
+               Parameter_error
+               Gosub Command_received
+            End If
+         Else
+            Parameter_error
+            Gosub Command_received
+         End If
+      End If
+   End If
+#ENDIF
+#IF Command_is_2_byte = 1
+   If Commandpointer >= 3 Then
+      If Command_b(3) = 0 Then
+         If wireless_active = 0 Then
+            'Switch to transparent mode, server only
+            Myc_mode = 0
+         Else
+            Parameter_error
+         End If
+         Gosub Command_received
+      Else
+         If Command_b(3) <= Name_len Then
+            ' change name
+            B_temp1 = Command_b(3)
+            If Commandpointer >= B_temp1 Then
+               Radio_name = String(4,&H878) ' "x"
+               B_temp2 = 1
+               For B_temp1 = 4 to Commandpointer
+                  Radio_name_b(B_temp2) = Command_b(B_temp1)
+                  B_temp2 = B_temp2 + 1
+               Next B_temp1
+               #IF RadioType = 2
+                  Gosub Write_id
+               #EndIF
+               Radio_name_eram = Radio_name
+               Gosub Command_received
+            Else
+               Parameter_error
+               Gosub Command_received
+            End If
+         Else
+            Parameter_error
+            Gosub Command_received
+         End If
+      End If
+   End If
+#ENDIF
+Return
+
 FFFC:
       Tx_time = 1
       Tx = String(30, 0)
