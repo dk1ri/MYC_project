@@ -86,7 +86,7 @@ function create_aa($basic_tok) {
 }
 function correct_for_send_oa($basic_tok){
     check_send_if_a_exists($basic_tok);
-    if ($_SESSION["send_ok"]) {$send_ok = check_send_if_change_of_actual_data($basic_tok);}
+    if ($_SESSION["send_ok"]) {$send_ok = check_send_if_change_of_actual_data_for_a($basic_tok);}
     if (!array_key_exists($basic_tok,$_SESSION["ALL"][$_SESSION["device"]])) {
         if ($send_ok == 1) {
             array_key_exists($basic_tok . "m0", $_POST) ? $pos = $_POST[$basic_tok . "m0"] : $pos = 0;
@@ -97,6 +97,7 @@ function correct_for_send_oa($basic_tok){
                 # one element of type of $pos have changed
                 $type = explode(",", $_SESSION["type_for_memories"][$_SESSION["device"]][$basic_tok . "m0"])[2 * $pos + 1];
                 list($send_data, $display_data) = check_memory_data($basic_tok . "dx", $type, 0, $basic_tok . "d" . ($pos));
+                if ($send_data == ""){$send_ok = 0;}
             } else {
                 $send_ok = 0;
             }

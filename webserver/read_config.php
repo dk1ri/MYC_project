@@ -53,25 +53,24 @@ function read_config(){
     # read config
     $_SESSION["conf"] = [];
     $c = read_from_file("_config", 1);
-    $_SESSION["conf"]["bas_dir"] = $c[0][1];
-    $_SESSION["conf"]["sys"] = $_SESSION["conf"]["bas_dir"].$c[1][1];
-    $_SESSION["conf"]["usb_interface_dir"] = $_SESSION["conf"]["bas_dir"].$c[2][1];
-    $_SESSION["conf"]["device_dir"] = $_SESSION["conf"]["bas_dir"].$c[3][1];
-    $_SESSION["conf"]["user_dir"] = $_SESSION["conf"]["bas_dir"].$c[4][1];
-    $_SESSION["conf"]["announcefile"] = $_SESSION["conf"]["sys"].$c[5][1];
-    $_SESSION["conf"]["serialwrite"] = $_SESSION["conf"]["usb_interface_dir"].$c[6][1];
-    $_SESSION["conf"]["serialread"] = $_SESSION["conf"]["usb_interface_dir"].$c[7][1];
-    $_SESSION["conf"]["selector_limit"] = $c[8][1];
-    $_SESSION["conf"]["testmode"] = $c[9][1];
-    $_SESSION["conf"]["alpha"] = $_SESSION["conf"]["bas_dir"].$c[10][1];
-    $_SESSION["conf"]["coding"] = $_SESSION["conf"]["bas_dir"].$c[11][1];
-    $_SESSION["conf"]["translate"] = $_SESSION["conf"]["usb_interface_dir"].$c[12][1];
-    $_SESSION["conf"]["actual_data"] = $_SESSION["conf"]["bas_dir"].$c[13][1];
-    $_SESSION["conf"]["default_color"] = $_SESSION["conf"]["bas_dir"].$c[14][1];
-    $_SESSION["conf"]["default_translate"] = $_SESSION["conf"]["bas_dir"].$c[15][1];
-    $_SESSION["conf"]["other_POSTS"] = $_SESSION["conf"]["bas_dir"].$c[16][1];
-    $_SESSION["conf"]["with_command_router"] = $c[17][1];
-    $_SESSION["conf"]["last_user_file"] = $c[18][1];
+    $_SESSION["conf"]["sys"] = $c[0][1] . "/";
+    $_SESSION["conf"]["usb_interface_dir"] = $c[1][1] . "/";
+    $_SESSION["conf"]["device_dir"] = $c[2][1] . "/";
+    $_SESSION["conf"]["user_dir"] = $c[3][1] . "/";
+    $_SESSION["conf"]["announcefile"] = $_SESSION["conf"]["sys"].$c[4][1];
+    $_SESSION["conf"]["serialwrite"] = $_SESSION["conf"]["usb_interface_dir"].$c[5][1];
+    $_SESSION["conf"]["serialread"] = $_SESSION["conf"]["usb_interface_dir"].$c[6][1];
+    $_SESSION["conf"]["selector_limit"] = $c[7][1];
+    $_SESSION["conf"]["testmode"] = $c[8][1];
+    $_SESSION["conf"]["alpha"] = $c[9][1];
+    $_SESSION["conf"]["coding"] = $c[10][1];
+    $_SESSION["conf"]["translate"] = $c[11][1];
+    $_SESSION["conf"]["actual_data"] = $c[12][1];
+    $_SESSION["conf"]["default_color"] = $c[13][1];
+    $_SESSION["conf"]["default_translate"] = $c[14][1];
+    $_SESSION["conf"]["other_POSTS"] = $c[15][1];
+    $_SESSION["conf"]["with_command_router"] = $c[16][1];
+    $_SESSION["conf"]["last_user_file"] = $c[17][1];
     if (is_file($_SESSION["conf"]["sys"]."//".$_SESSION["conf"]["last_user_file"])) {
         $c = read_from_file($_SESSION["conf"]["sys"] . "//" . $_SESSION["conf"]["last_user_file"], 0);
         $_SESSION["last_user"] = $c[0];
@@ -116,6 +115,7 @@ function read_config(){
 }
 
 function read_device_list($device_dir){
+    # do not work with RASPI: rad files in first subdir !!??!!
     $handle = opendir($device_dir);
     $i = 0;
     while (($file = readdir($handle)) !== false){

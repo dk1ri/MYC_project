@@ -2,7 +2,7 @@
 # update_received.php
 # DK1RI 20240324
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
-function receive_civ(){
+function receive_data(){
     read_from_device();
     $i = 0;
     while ($_SESSION["received_data"]  != "" and $i < 100) {
@@ -21,7 +21,7 @@ function update_received(){
     # data from device
     $from_device = $_SESSION["received_data"] ;
     $error = 0;
-    if ($_SESSION["command_len"][$_SESSION["device"]] == 0) {
+    if ($_SESSION["command_len"][$_SESSION["device"]][0] == "0") {
         if (strlen($_SESSION["received_data"] ) < 4){return;}
         # 0-> 1 byte
         $basic_tok = hexdec(substr($from_device,0, 2));

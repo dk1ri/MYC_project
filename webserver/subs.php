@@ -536,7 +536,6 @@ function checkusername($username){
 function tr($label){
     # translate
     $found = 0;
- #   var_dump($_SESSION["translate_by_language"][$_SESSION["device"]]);
     if (array_key_exists($label,$_SESSION["translate_by_language"][$_SESSION["device"]][$_SESSION["is_lang"]])){
         $label = $_SESSION["translate_by_language"][$_SESSION["device"]][$_SESSION["is_lang"]][$label];
         $found = 1;
@@ -551,7 +550,6 @@ function tr($label){
             while (strpos($label_t," ") !== false){
                 $pos = strpos($label_t," ");
                 $label_part = substr($label_t,0,$pos);
-             #   print $pos." x".$label_part."x";
                 if ($i){$label .= " ";}
                 $label .= tr1($label_part);
                 $label_t = substr($label_t,$pos +1);

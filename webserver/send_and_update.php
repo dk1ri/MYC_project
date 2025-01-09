@@ -71,6 +71,21 @@ function check_send_if_change_of_actual_data($basic_tok){
     return $change_found;
 }
 
+function check_send_if_change_of_actual_data_for_a($basic_tok){
+    $change_found = 0;
+    if (array_key_exists($basic_tok."m0", $_POST)){
+        $pos = $_POST[$basic_tok."m0"];
+    }
+    $tok = $basic_tok . "d" . $pos;
+    if (array_key_exists($tok, $_SESSION["actual_data"][$_SESSION["device"]])){
+        if ($_SESSION["actual_data"][$_SESSION["device"]][$tok] != $_POST[$basic_tok."dx"]) {
+            $change_found = 1;
+        }
+    }
+    return $change_found;
+}
+
+
 function update_actual_data_from_POST($basic_tok){
     $i = 0;
     $found = 1;
@@ -159,30 +174,22 @@ function handle_stacks($basic_tok){
         # no ADDer
         $stack = 0;
         $i = 0;
-        print $basic_tok;
-        while (!$found) {
+            while (!$found) {
             $tok = $basic_tok . "m" . $i;
-            print $tok." ";
             if (!array_key_exists($tok, $_SESSION["des"][$_SESSION["device"]])) {
-                print "found ";
                 $found = 1;
             }
             else {
-                print $tok." ";
                 if(array_key_exists($tok, $_POST)) {
-                    $value = $_POST[$tok];
-                    print "POST";
-                }
+                    $value = $_POST[$tok];                }
                 else{
                     $value = $_SESSION["actual_data"][$_SESSION["device"]][$tok];
                 }
-                var_dump($value);
-                $stack += $value;
+                 $stack += $value;
                 if (array_key_exists($basic_tok . "m" . ($i + 1), $_SESSION["des"][$_SESSION["device"]])) {
                     $stack *= (int)explode(",", $_SESSION["des"][$_SESSION["device"]][$basic_tok . "m" . ($i + 1)])[0];
                 }
             }
-            print " e ";
             $i++;
         }
     }
@@ -209,6 +216,15 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
         $dat = convert_bin_hex($corrected, $type);
         $basic_tok = basic_tok($tok);
         switch ($type) {
+            case "a":
+                if ($dat > 1){
+                     $_SESSION["send_ok"] = 0;
+                }
+                else{
+                    $send_data .= bin2hex($dat);
+                    $display_data = $dat;
+                }
+                break;
             case "b":
                 if (strlen($dat) > 1) {
                     $_SESSION["send_ok"] = 0;

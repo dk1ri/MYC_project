@@ -96,5 +96,4 @@ function edit_sequence_post(){
         }
     }
     create_final_actual_sequencelist();
-    var_dump($_SESSION["final_actual_sequencelist_by_sequence"][$device]);
 }

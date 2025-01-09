@@ -1,17 +1,18 @@
 <?php
 #    detailed description
-#    20240212
+#    20250108
 #    To understand the program, you should be familiar with the announcements and commands of the MYC system (at least)
 #    please read https://dk1ri.de/myc/commands.pdf or https://dk1ri.de/myc/commands.txt
 #
-#    To understand the program flow see action.php
+#    To understand the the basic program flow see action.php
 #
 #    This version should work basically, but there are some errors
 #
 #    found errors:
 #    ct_of_as correctly used? -> ct_of_as_ ?
 #    command a with 1 parameter: "0" not omitted
-#
+#   command oa send something, if parameter out of range
+#   
 #     not implemented / missing:
 #    automatically update of values: no working solution found. see action.php
 #     ext

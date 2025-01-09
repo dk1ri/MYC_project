@@ -170,7 +170,7 @@ function receive_p($basic_tok, $from_device){
         # data_len is the number of chars to delete
         $data_len = $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][$i + 2];
         $data = substr($from_device, $pointer,$data_len);
-        $data = hexdec(($data));
+        $data = hexdec($data);
         $to_delete += $data_len;
         # directly stored
         $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok . "d".$i] = $data;

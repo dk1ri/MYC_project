@@ -1,8 +1,7 @@
-base dir;c:\xampp\htdocs\
-dir for sys files;sys\
-dir for Usb interface;usb_interface\
-dir for devices;devices\
-dir for userdata;user_data\
+dir for sys files;sys
+dir for Usb interface;usb_interface
+dir for devices;devices
+dir for userdata;user_data
 annoncement file name;___announcements
 data i/o file to device;from_web
 data i/o file from device;to_web

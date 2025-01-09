@@ -5,6 +5,24 @@
 ?>
 <html lang = "de">
 <?php
+# flow of program
+# at start _POST is available
+# Post is analized and approproate actions taken
+# new page is generated
+#
+# chck language
+# new device ?
+# get individual uaser data
+# get actice chapters
+# get mode to select
+# select modes:
+#   operate:
+#       correct _POST
+#       send data
+#   read data
+#   other edits
+# create page (form)
+#
     session_start();
     include "commands_a.php";
     include "commands_b.php";
@@ -94,9 +112,6 @@
     <body>
     <p id="myc"></p>
     <?php
-    if ($_SESSION["conf"]["testmode"]){
-        include "for_tests.php";
-    }
     $_SESSION["send_string_by_tok"] = [];
     $_SESSION["send_ok"] = 1;
     if (array_key_exists("language", $_POST) and $_POST["language"] != ""){$_SESSION["is_lang"] = $_POST["language"];}
@@ -171,7 +186,7 @@
             $_SESSION["tok_to_send"] = [];
             $_SESSION["send_string_by_tok"] = [];
         }
-        if ($_SESSION["read"]) {receive_civ();}
+        if ($_SESSION["read"]) {receive_data();}
         $_SESSION["read"] = 0;
     }
     elseif ($_SESSION["select_mode"] == "edit_sequence") {

@@ -2,8 +2,8 @@
 <!--
     Webserver for MYC system
     myc.php
-    Version 1.3 20240919
-    Manual Version: V01.01.08
+    Version 1.3 20250104
+    Manual Version: V01.01.09
     The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
     For description see detailed_description.php
@@ -11,8 +11,8 @@
     This version is under development
     This version may have errors!
     ================================================================
-    known errors
-
+    known errors:
+    see detailed description
 -->
     <?php
     session_start();

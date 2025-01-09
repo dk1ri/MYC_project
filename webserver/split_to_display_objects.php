@@ -9,6 +9,7 @@ function create_original_announce(){
     $device = $_SESSION["device"];
     $last_is_op = 0;
     $last_op_tok = "";
+
     $fn = $_SESSION["conf"]["device_dir"].$device;
     if (file_exists("devices/".$_SESSION["device"]."/_announcements.bas")) {$filename = "devices/".$_SESSION["device"]."/_announcements.bas";}
     elseif (file_exists($fn."/__announcements")) {$filename =$fn."/__announcements";}
