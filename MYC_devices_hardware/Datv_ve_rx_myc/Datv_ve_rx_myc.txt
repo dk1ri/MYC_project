@@ -1,0 +1,123 @@
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/Datv_ve_rx_myc.pdf
+
+DATV RX für das MYC Protokoll
+					
+
+Author DK1RI, Version V01.2, 20250108
+This project can be found in https://www.github.com/dk1ri (later)
+
+Da ich zur Zeit keinen RTL SDR Stick habe, wurde das Programm nur ohne Stick getestet. Ob es wirklich funktioniert, zeigt sich später.
+
+Einleitung
+
+Der DATV Empfänger DATV_VE_RX von Rainer Flössner DL9NBZ wurde in der Zeitschrift cd-DL 2024/12 beschrieben. 
+Er verwendet eine Raspberry 4 oder 5  mit einem RTL SDR Stick. Das Image für den Raspberry ist in [1] zu finden. 
+Der Empfänger arbeitet als eigenständiges Gerät mit Bedienoberfläche, wenn man einen Bildschirm und eine Tastatur verbindet. Ein Programm setzt Eingaben der Benutzeroberfläche in einen Befehlsstring um, der die gewünschte Empfangsfunktion auslöst.
+Ich möchte den Empfänger so umbauen, dass er sich wie ein MYC device verhält, das mit MYC Befehlen gesteuert wird. Die Bedienung erfolgt dann mit (binären) MYC Befehlen, oder mit einem Webserver oder über einen Commandrouter. Die MYC Befehle werden  mit einem Interfaceprogramm in den Befehlsstring umgesetzt.
+Anders als mit der originalen Benutzeroberfläche ist auch der Empfang von QO100 Frequenzen möglich. Der LNB muss eine LO Frequenz von 9,75GHz haben. Alle Frequenzen nach Bandplan sind als Festfrequenzen abrufbar.
+ 
+Beschreibung und Bedienung
+
+Einschränkungen / Hinweise:
+Eigentlich soll der Empfänger ferngesteuert werden.
+Dazu ist eine Verbindung zum Commandrouter / Webserver nötig.
+Diese kann folgendermaßen erfolgen:
+über USB: Dazu müsste die USB Schnittstelle des Raspberry als Slave funktionieren. Ich weiß nicht, ob das überhaupt geht.
+Ethernet: UDP: ähnlich wie beim ICOM Interface? Test fehlt noch. Der Webserver hat auch noch keine Ethernet Schnittstelle zur Ausgabe der Steuerdaten.
+Ethernet: mit psexec ? Fehlt noch.
+
+Zunächst möchte ich wissen, ob das Konzept überhaupt funktioniert und dazu installiere ich den Webserver auf dem Raspberry mit Filetransfer der Steuerdaten zum Interfaceprogramm (das geht sicher noch besser)
+
+Vorbereitung
+Bei Verwendung des Raspi mit touchscreen kann die Anzeige um180 Grad gedreht sein:
+Das Anhängen der Zeile display_rotate=2 oder lcd_rotate =2 an die Datei boot/firmware/config.txt funktioniert nicht.
+Auch der touchscreen funktioniert bei mir nicht. Wahrscheinlich funktioniert das nur mit raspbian.
+
+Diese nötigen Ergänzungen des originalen Images werden später in einem script zusammengefasst (soweit noch nötig);
+
+in einen Terminal am Raspi:
+sudo apt-get install firefox (möglicherweise unnötig)
+sudo apt-get install apache2
+sudo apt-get install php php-mbstring
+
+Möglichrweise überflüssig:
+sudo apt-get install libapache2-mod-php php
+
+reboot
+
+Datei  Datv_ve_rx_myc.zip [2] und htdocs.zip [9] entpacken und auf USB Stick übertragen.
+
+Am Raspi:
+cd /media/pi/xxx (Kopieren vom Stick)
+
+Interface Programm kopieren:
+cp -r datv_ve_rx_myc/*  home/pi/leansdr/source/apps
+
+Webserver kopieren:
+cp -r htdocs/* /var/www/html
+cp home/pi/leansdr/source/apps___annnoncements /var/www/html/devices/Datv_ve_rx_myc
+
+Das Startscript sichern und ersetzen:
+cp /home/pi/ve-rx.sh /home/pi/ve-rx.org
+cp ve-rx.sh /home/pi
+
+sudo chown -R www-data  /var/www/html
+sudo chmod -R 775  /var/www/html
+sudo chmod -R 777 /var/www/html/usb_interface
+
+
+Details zur Bedienung:
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
+Anders als im Originalprogramm sind die Festfrequenzen nicht änderbar.
+Beim Start werden die Daten des 28MHz Festfrequenz verwendet.
+Beim Aufruf einer Festfrequenz werden die zugehörigen Parameter als aktueller Kanal gespeichert.
+Es gibt 6 Kanäle zur Speicherung individueller Kanäle. Man kann den aktuellen Kanal in einen dieser Kanäle übertragen.
+Diese Kanäle stehen allen Benutzern zu Verfügung. Mit der Web Benutzeroberfläche kann man zwar benutzerindividuell aktuelle Werte speichern, nicht aber alle Werte der verschiedenen individuellen Kanäle.
+Beim Aufruf einer Festfrequenz oder Änderung eines Parameters wird das rtl-sdr Programm gestartet ohne die bestehenden Prozesse zu löschen. Ob das richtig ist, ist noch zu klären.
+
+Einbindung in das MYC System
+
+Details zum MYC System stehen in [3] [4] [5].
+Die komplette Befehlsliste steht als  announcements in der Datei ___announcements im Interfacepogramm.
+
+Fehlermeldungen
+
+Der Befehl &HFC liefert den letzten Fehler im Format:
+aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
+Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
+Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
+Der Webserver unterstützt zur Zeit noch keine Regeln. Das Programm selbst verhindert Falscheingaben; Die Fehlermeldung kann abgefragt werden.. Mit dem Lesebefehl sieht man, ob geänderte Werte übernommen wurden.
+
+Software
+
+Die Software wurde in Python mir Pycharm geschrieben
+Als Basis wurde das Interface Programm für den ICOM IC705 verwendet. Ich habe versucht, die Grundstruktur beizubehalten. Aber da dieses Programm wesentlich weniger Befehle benötigt und die CIV Schnittstelle entfällt, waren einige Vereinfachungen möglich. Die Behandlung der Kommandos ist jetzt eher ähnlich den devices mit Bascom Firmware. Dieses Programm kann als Vorlage für ähnliche Steuerprogramme verwendet werden. 
+Zum Test des Interfaceprogramms auf einem Windows Rechner muss in der ___config Datei der Pfad für dn Datenaustausch geändert werden.
+
+Browser Schnittstelle
+
+Details zum Webserver stehen in [7].
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+
+Versionen
+
+Diese Beschreibung gilt für die Version V01.0
+
+Copyright
+
+Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit keine früheren, anderen Rechte betroffen sind.
+Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
+The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
+The usage of this document is on own risk, there is no warranty.
+Datv_ve_rx_myc.zip 
+
+Referenzen
+
+[1]	https://www.darc.de/der-club/referate/agaf/atv-weblinks
+[2]	http://www.dk1ri.de/dhw/Datv_ve_rx_myc.zip 
+[3]	https://www.dk1ri.de/myc/MYC.pdf 
+[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
+[5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
+[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
+[8]	https://dk1ri.de/w_dat.htm
+[9]	http://www.dk1ri.de/dhw/htdocs.zip 

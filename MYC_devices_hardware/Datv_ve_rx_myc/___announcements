@@ -1,1 +1,229 @@
-123
+﻿' name : ___announcements Datv_ve_rx_myc
+' last edited: 20241228
+' the format matches the bascom compiler
+' python read lines starting with 'D' only
+'
+Announce:
+'basic annoumement wird gelesen
+'basic announcement is read
+Data "0;m;DK1RI / DL9NBZ;DVBT_vr_rx_myc;V01.0;1;145;1;42;1-1"
+'
+'Announce1
+'feste Frequenzen
+'fixed frequencies
+Data "1;os,fixed frequency;1;0,29.25MHz;1,51.7MHz;2,71MHz;3,146.5MHz;4,437MHz;5,1255MHz;6,1275MHz;7,1291MHz;8,2395MHz;"
+Date "1;os,fixed frequency;9,10491.5MHz QO100 w;10;10493.25Mz QO100 w;11,10494.75MHz QO100 w;12,10496.25MHz QO100 w;"
+Data "1;os,fixed frequency;13,10492.75MHz QO100 m;14,10493.25MHZ QO100 m;15,10493.75Mhz QO100 m;16,10494.25 QO100 m;"
+Data "1;os,fixed frequency;17,10494.75MHz QO100 m;18,10495.25MHz QO100 m;19,10495.75MHz QO100 m;20,10496.25MHz QO100 m;"
+Data "1;os,fixed frequency;21,10496.75MHz QO100 m;22,10497.25MHz QO100 m;23;10497.75MHz QO100 m;24,10498.25MHz QO100 m;"
+Data "1;os,fixed frequenvy;25,10498.75MHz QO100 m;26,10499.25MHz m;"
+Data "1;os,fixed frequency;27,10492.75MHz QO100 s;28,10493MHz QO100 s;29;10493.25MHz QO100 s;30,10493.5MHz QO100 s;"
+Data "1;os,fixed frequency;31,10493.75MHz QO100 s;33,10494MHz QO100 s;33;10494.25MHz QO100 s;34,10494.5MHz QO100 s;"
+Data "1;os,fixed frequency;35,10494.75MHz QO100 s;36,10495MHz QO100 s;37;10495.25MHz QO100 s;38,10495.5MHz QO100 s;"
+Data "1;os,fixed frequency;39;10495.75MHz QO100 s;40,10496MHz QO100 s;41;10496.25MHz QO100 s;42,10496.5MHz QO100 s;"
+Data "1;os,fixed frequency;43;10496.75MHz QO100 s;44,10497MHz QO100 s;45;10497.25MHz QO100 s;46,10497.5MHz QO100 s;"
+Data "1;os,fixed frequency;47;10497.75MHz QO100 s;48,10498MHz QO100 s;49;10498.25MHz QO100 s;50,10498.5MHz QO100 s;"
+Data "1;os,fixed frequency;51;10498.75MHz QO100 s;52,10499MHz QO100 s;53;10499.25MHz QO100 s"
+'
+'Announce2
+'feste Frequenzen
+'fixed frequencies
+Data "2;as,as1"
+'
+Announce3
+'Frequenz
+'frequency
+Data "3;op,frequency direct 28-2397MHz;1;236900,,{1_2800to239750};lin;* 10kHz"
+'
+Announce4
+'Frequenz
+'frequency
+Data "4;op,frequency QO100 104915-10499.25MHz;1;776,,{1_1049150to1049925};lin;* 10kHz"
+'
+Announce5
+'Frequenz
+'frequency
+Data "5;ap,frequency;1;10499250,;lin;kHz"
+'
+'Announce6
+'sample Rate
+'sample rate
+Data "6;os,sample rate;1;0,60kHz;1,800kHz;2,1MHz;3,1.8HMz;4,2.4MHz"
+'
+'Announce7
+'sample Rate
+'sample rate
+Data "7;as,as6"
+'
+Announce8
+'Gain
+'gain
+Data "8;op,gain;1;50,,{agc,1_1to49};lin;-"
+'
+Announce9
+' Gain
+' gain
+Data "9;ap,as8"
+'
+'Announce10
+'Symbol Rate
+'symbol rate
+Data "10;os,symbol rate;1;0,33kS/s;1,66kS/s;2,125kS/s;3,250kS/s;4,333kS/s;5,500kS/s;6,1000KS/s;7,1500kS/s"
+'
+'Announce11
+'symbol Rate
+'symbol rate
+Data "11;as,as10"
+'
+'Announce12
+'FEC
+'FEC
+Data "12;os,FEC;1;0,1/2;1,2/3;2,3/4;3,5/6;4,7/8"
+'
+'Announce13
+'FEC
+'FEC
+Data "13;as,as12"
+'
+'Announce14
+'DVB
+'DVB
+Data "14;os,standard;1;0,DVBS-2;1,DVBS"
+'
+'Announce15
+'DVB
+'DVB
+Data "15;as,as14"
+'
+'Announce16
+'GUI
+'GUI
+Data "16;os,additional diplays;1;0,off;1,on"
+'
+'Announce17
+'GUI
+'GUI
+Data "17;as,as16"
+'
+Announce18
+'Player
+'player
+Data "18;os,player;1;0,ffplayer;1,mplayer"
+'
+'Announce19
+'Player
+'player
+Data "19;as,as18"
+'
+'Announce20
+'drift
+'drift
+Data "20;os,drift;1;0,on;1,off"
+'
+'Announce21
+'drift
+'drift
+Data "21;as,as20"
+'
+'Announce22
+'fastlock
+'fastlock
+Data "22;os,fastlock;1;0,on;1,off"
+'
+'Announce23
+'fastlock
+'fastlock
+Data "23;as,as22"
+'
+'Announce24
+'viterbi
+'viterbi
+Data "24;os,viterbi;1;0,on;1,off"
+'
+'Announce25
+'viterbi
+'viterbi
+Data "25;as,as24"
+'
+'Announce26
+'sampler
+'sampler
+Data "26;os,sampler;1;0,on;1,off"
+'
+'Announce27
+'sampler
+'sampler
+Data "27;as,as26"
+'
+'Announce28
+'Aufnahme
+'record
+Data "28;os,record transport stream;1;0,off;1,record"
+'
+'Announce29
+'Aufnahme
+'record
+Data "29;as,as28"
+'
+'Announce30
+'Aufnahme
+'record
+Data "30;os,record IQ stream;1;0,off;1,record"
+'
+'Announce31
+'Aufnahme
+'record
+Data "31;as,as30"
+'
+'Announce32
+'Individuellen Kanal speichern
+'store individual chanal
+Data "32;ou,store chanel;1;0,idle;1,1;2,2;3,3;4,4;5,5"
+'
+'Announce33
+'Individuellen Kanal lesen
+'read individual chanal
+Data "33;ou,read chanel;1;0,idle;1,1;2,2;3,3;4,4;5,5"
+'
+'
+'Announce34
+'rx stop
+'rx stop
+Data "34;ou,rx;1;0,idle;1,start,2,stop;3,exit"
+'
+'Announce35:
+'Befehl &HF0
+'liest announcements
+'read m announcement lines
+Data "240;an,ANNOUNCEMENTS;145;42,start at;42,elements;14,CHAPTER,ADMINISTRATION"
+'
+'Announce36:
+'Befehl &HFC
+'Liest letzten Fehler
+'read last error
+Data "252;aa,LAST ERROR;60,last_error"
+'
+'Announce37:
+'Befehl &HFD
+'Geraet aktiv Antwort
+'Life signal
+Data "253;aa,MYC INFO;b,ACTIVE"
+'
+'Announce38:
+'Befehl &HFE <n><data>
+'eigene Individualisierung schreiben
+'write individualization
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;n,NUMBER,1;a,TELNET,1;w,TELNETPORT,23;a,FILE,1;14,CHAPTER,ADMINISTRATION"
+'
+'Announce39:
+'Befehl &HFF <n>
+'eigene Individualisierung lesen
+'read individualization
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;n,NUMBER,1;a,TELNET,1;w,TELNETPORT,23;a,FILE,1;14,CHAPTER,ADMINISTRATION"
+'
+'Announce40:
+Data "R;!$113 !$114 IF $14=1"
+'
+'Announce41;
+Data "L;original;english;deutsch"
+

@@ -1,0 +1,23 @@
+# sequence must not be changed !!!
+# line 0 filename for announcements
+___announcements
+# line 1: time for command timeout (seconds)
+2
+# line 2 filename for logfile
+___logfile
+# line 3: size of logfile; all lines are purged then
+100
+# line 4: testmode
+1
+# line 5: file active
+1
+# line 6:Telnet active
+1
+# line 7: Telnet Port
+23
+# line 8: Data in for control via filetransfer
+from_web
+# line 9: Data out  for control via filetransfer
+to_web
+# line 10 filename for indivdata
+___indivdata
