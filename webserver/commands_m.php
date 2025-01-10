@@ -91,7 +91,7 @@ function receive_m($basic_tok, $from_device){
     update_memory_position_stack($basic_tok,$from_device);
     $from_device = substr($from_device,$position_length, null);
     list($data, $delete_bytes) = update_memory_data($basic_tok."d0", $from_device, $_SESSION["property_len"][$_SESSION["device"]][$basic_tok][1]);
-    update_corresponding_opererating($basic_tok, "d0", $data);
+    update_corresponding_operating($basic_tok, "d0", $data);
     # to delete
     return $delete_bytes + $position_length;
 }

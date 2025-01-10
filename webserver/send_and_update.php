@@ -1,6 +1,6 @@
 <?php
 # send_and_update.php
-# DK1RI 20240201
+# DK1RI 20250109
 # The ideas of this document can be used under GPL (Gnu Public License, V2) as long as no earlier other rights are affected.
 
 # The following are subs used by command send
@@ -221,7 +221,7 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
                      $_SESSION["send_ok"] = 0;
                 }
                 else{
-                    $send_data .= bin2hex($dat);
+                    $send_data .= "0" . strval(dechex($dat));
                     $display_data = $dat;
                 }
                 break;
@@ -242,7 +242,7 @@ function check_memory_data($tok, $type, $mode,$tok_for_des){
                 # numbers
                 # parameter length used for strings only -> 0
                 $send_data = translate_dec_to_hex($type, intval($dat), 0);
-                $display_data = $send_data;
+                $display_data = $dat;
                 break;
         }
     }

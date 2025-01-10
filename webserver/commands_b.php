@@ -205,7 +205,7 @@ function receive_b($basic_tok, $from_device){
     while ($j < $element_number){
         list($data, $delete_bytes) = update_memory_data($basic_tok . "d" . $i, $from_device,$_SESSION["property_len"][$_SESSION["device"]][$basic_tok][$element_number + 1]);
         $from_device = substr($from_device,$delete_bytes, null);
-        update_corresponding_opererating($basic_tok, "d".$i, $data);
+        update_corresponding_operating($basic_tok, "d".$i, $data);
         $all_to_delete += $delete_bytes;
         $i ++;
         if ($i > $max_element_number){$i = 0;}

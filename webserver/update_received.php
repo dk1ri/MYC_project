@@ -244,9 +244,14 @@ function update_memory_position_stack($basic_tok, $from_device){
         }
     }
 }
-function update_corresponding_opererating($basic_tok, $extension, $data){
-    array_key_exists($basic_tok, $_SESSION["a_to_o"][$_SESSION["device"]]) ? $tok = $_SESSION["a_to_o"][$_SESSION["device"]][$basic_tok]:$tok = $basic_tok;
-    $_SESSION["actual_data"][$_SESSION["device"]][$tok . $extension] = $data;
+function update_corresponding_operating($basic_tok_, $extension, $data){
+    # update original as well
+    if (array_key_exists($basic_tok_ . $extension, $_SESSION["actual_data"][$_SESSION["device"]])){
+        $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok_ . $extension] = $data;
+    }
+    if (array_key_exists($basic_tok_, $_SESSION["a_to_o"][$_SESSION["device"]])){
+        $_SESSION["actual_data"][$_SESSION["device"]][ $_SESSION["a_to_o"][$_SESSION["device"]][$basic_tok_] . $extension] = $data;
+    }
 }
 
 function convert_hex_to_readable($one_byte){

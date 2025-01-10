@@ -166,7 +166,7 @@ function receive_r($basic_tok, $from_device){
     }
     $value = hexdec(substr($from_device, 0, 2));
     $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok. "d".$position] = $value;
-    update_corresponding_opererating($basic_tok, "d".$position, $value);
+    update_corresponding_operating($basic_tok, "d".$position, $value);
     return $stacklen + $switchlen + 2;
 }
 ?>

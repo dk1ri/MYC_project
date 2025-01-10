@@ -174,7 +174,7 @@ function receive_p($basic_tok, $from_device){
         $to_delete += $data_len;
         # directly stored
         $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok . "d".$i] = $data;
-        update_corresponding_opererating($basic_tok, "d".$i, $data);
+        update_corresponding_operating($basic_tok, "d".$i, $data);
         $i += 1;
         $pointer += $data_len;
     }

@@ -97,6 +97,7 @@ function correct_for_send_oa($basic_tok){
                 # one element of type of $pos have changed
                 $type = explode(",", $_SESSION["type_for_memories"][$_SESSION["device"]][$basic_tok . "m0"])[2 * $pos + 1];
                 list($send_data, $display_data) = check_memory_data($basic_tok . "dx", $type, 0, $basic_tok . "d" . ($pos));
+                print ($display_data);
                 if ($send_data == ""){$send_ok = 0;}
             } else {
                 $send_ok = 0;
@@ -169,11 +170,11 @@ function  receive_a($basic_tok, $from_device){
         # max 256 elements only
         $element_number = hexdec(substr($from_device, 0, 2));
         # < 256 elements allowed only -> length: 1 byte
-        update_corresponding_opererating($basic_tok, "m0", $element_number);
+        update_corresponding_operating($basic_tok, "m0", $element_number);
         $from_device = substr($from_device, 2, null);
     }
     list($data, $delete_bytes) = update_memory_data($basic_tok . "d" . $element_number, $from_device,$_SESSION["property_len"][$_SESSION["device"]][$basic_tok][$element_number + 2]);
-    update_corresponding_opererating($basic_tok, "d" . $element_number, $data);
+    update_corresponding_operating($basic_tok, "d" . $element_number, $data);
     return $delete_bytes + 2;
 }
 ?>

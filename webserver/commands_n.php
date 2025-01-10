@@ -127,8 +127,8 @@ function receive_n($basic_tok, $from_device){
         $data .= $data_;
         $all_to_delete += $delete_bytes;
     }
-    update_corresponding_opererating($basic_tok,"d0", $data);
-    update_corresponding_opererating($basic_tok,"o0", $no_of_elements);
+    update_corresponding_operating($basic_tok,"d0", $data);
+    update_corresponding_operating($basic_tok,"o0", $no_of_elements);
     $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok."d0"] = $data;
     # to delete
     return $no_of_elements_length + $position_length + $all_to_delete;

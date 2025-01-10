@@ -104,7 +104,7 @@ function receive_st($basic_tok, $from_device){
     if ($switchlen == 0){$switchlen = 2;}
     $data = substr($from_device, 0, $switchlen);
     $_SESSION["actual_data"][$_SESSION["device"]][$basic_tok. "d0"] = hexdec($data);
-    update_corresponding_opererating($basic_tok, "d0", hexdec($data));
+    update_corresponding_operating($basic_tok, "d0", hexdec($data));
     return $stacklen + $switchlen;
 }
 ?>
