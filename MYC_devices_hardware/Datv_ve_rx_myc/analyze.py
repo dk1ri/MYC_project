@@ -1,6 +1,6 @@
 """
 name : analyze.py Datv_ve_rx_myc
-last edited: 20241226
+last edited: 20250109
 Copyright : DK1RI
 If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 command handling, subprograms for sk and civ
@@ -42,6 +42,7 @@ def poll_sk_input_buffer():
                 # finish == 1 or 2
                 if finish == 2:
                     # error
+                    v_sk.info_to_all = bytearray([])
                     v_dev_vars.error_cmd_no = v_dev_vars.command_no
                     temps = ""
                     count = 0
@@ -50,16 +51,8 @@ def poll_sk_input_buffer():
                         temps += hex(temp)
                         count += 1
                     write_log(v_dev_vars.last_error_msg +" " + temps)
-                    print ("finish 2 - " + v_dev_vars.last_error_msg + "  " + temps + " - delete")
-                    v_sk.info_to_all = bytearray([])
-                    v_dev_vars.input_locked = 0
-                # stop watchdog
-                v_dev_vars.command_time = 0
-                v_sk.inputline[input_device] = bytearray([])
-                v_dev_vars.command_no += 1
-                v_dev_vars.command_no %= 255
-                if v_dev_vars.error_cmd_no == v_dev_vars.command_no:
-                    # no error
-                    v_dev_vars.error_cmd_no = 255
+                    if v_dev_vars.test_mode == 1:
+                        print ("finish 2 - " + v_dev_vars.last_error_msg + "  " + temps + " - delete")
+                delete_buffers()
         input_device += 1
     return

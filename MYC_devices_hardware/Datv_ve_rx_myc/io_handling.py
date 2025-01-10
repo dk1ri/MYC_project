@@ -1,6 +1,6 @@
 """
 name : io_handling.py Datv_ve_rx_myc
-last edited: 202401229
+last edited: 20250109
 Copyright : DK1RI
 If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 subs for control input
@@ -8,7 +8,6 @@ subs for control input
 
 import socket
 import threading
-import os
 
 from misc_functions import *
 import v_sk
@@ -169,3 +168,5 @@ def file_data_input(input_buffer_number):
                 analyze_sk(from_web[i:j], input_buffer_number)
                 i += 1
                 j += 1
+        v_dev_vars.command_started = 0
+        v_dev_vars.command_start_time = time.time()

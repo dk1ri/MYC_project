@@ -1,6 +1,9 @@
 """
 name : v_fix_tables.py Datv_ve_rx_myc
-last edited: 20241228
+last edited: 20250109
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
+fixed valus
 """
 
 drift = {}
@@ -18,7 +21,7 @@ symbolrate = {}
 viterbi = {}
 
 # MYC values are stored for fixed frequencies
-#  frquencies to send to sdr in kHz
+#  frequencies to send to sdr in kHz
 frequency = {0: 29250,
             1: 51700,
             2: 71000,

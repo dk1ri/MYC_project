@@ -1,6 +1,6 @@
 """
 name: commands.py Datv_ve_rx_myc
-last edited: 20241228
+last edited: 20250109
 Copyright : DK1RI
 If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 handling of sk input commands
@@ -10,7 +10,6 @@ from misc_functions import *
 import v_announcelist
 import v_sk
 import v_dev_vars
-import platform
 
 
 def command_selector(command, line):
@@ -479,18 +478,18 @@ def com254(line):
             v_dev_vars.last_error_msg = "parameter error"
             return 2
         v_dev_vars.device_name = ba_to_str(line[3:])
-    if line[1] == 1:
+    elif line[1] == 1:
         v_dev_vars.device_number = line[2]
-    if line[1] == 2:
+    elif line[1] == 2:
         if line[2] > 1:
             v_dev_vars.last_error_msg = "parameter error"
             return 2
         v_dev_vars.telnet_active = line[2]
-    if line[1] == 3:
+    elif line[1] == 3:
         if len(line) < 4:
             return 0
         v_dev_vars.telnet_port = line[2] * 256 + line[3]
-    if line[1] == 4:
+    elif line[1] == 4:
         if line[2] > 1:
             v_dev_vars.last_error_msg = "parameter error"
             return 2

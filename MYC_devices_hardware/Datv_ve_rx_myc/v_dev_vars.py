@@ -1,6 +1,6 @@
 """
 name : v_Datv_ve_rx_myc_vars.py Datv_ve_rx_myc
-last edited: 20241226
+last edited: 20250109
 Copyright : DK1RI
 If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 Specific constants and variables
@@ -26,6 +26,8 @@ error_cmd_no = 255
 last_error_msg = ""
 command_timeout = 2
 indiv_data_file = ""
+command_started = 0
+command_start_time = 0
 
 # other
 # set to 1, when read is done; to 0 after successful send (SK)

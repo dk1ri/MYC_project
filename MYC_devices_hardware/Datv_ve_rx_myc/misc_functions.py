@@ -1,6 +1,6 @@
 """
 name : misc_functions.py Datv_ve_rx_myc
-last edited: 20250107
+last edited: 20250109
 Copyright : DK1RI
 If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 misc functions
@@ -251,7 +251,7 @@ def read_chanel(indiv_chanal_no):
 
 def stoprx():
     platf = platform.platform()[0:7]
-    if (platf != "Windows"):
+    if platf != "Windows":
         os.popen("killall rtl_sdr")
         os.popen("killall leandvb")
         os.popen("killall mplayer")
@@ -262,3 +262,20 @@ def stoprx():
 def exit_():
     stoprx()
     exit()
+
+def delete_buffers():
+    # after timeout and when command is finished
+    input_device = 0
+    # something received from SK ... ?
+    while input_device < len(v_sk.inputline):
+        v_sk.inputline[input_device] = bytearray([])
+        input_device += 1
+    v_dev_vars.input_locked = 0
+    # stop watchdog
+    v_dev_vars.command_time = 0
+    v_dev_vars.command_no += 1
+    v_dev_vars.command_no %= 255
+    if v_dev_vars.error_cmd_no == v_dev_vars.command_no:
+        # no error
+        v_dev_vars.error_cmd_no = 255
+    v_dev_vars.command_started = 0

@@ -1,8 +1,10 @@
 """
 name : init.py Datv_ve_rx_myc
-last edited: 20241226
+last edited: 20250109
+Copyright : DK1RI
+If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
+Init for some parameters
 """
-import v_fix_tables
 from io_handling import *
 from misc_functions import *
 
@@ -49,7 +51,7 @@ def initialization():
 
 def readconfig():
     platf =platform.platform()[0:7]
-    if (platf == "Windows"):
+    if platf == "Windows":
         platf = "/xampp/htdocs/usb_interface/"
     else:
         platf = "/var/www/html/usb_interface/"
