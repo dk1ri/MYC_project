@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Rules
 
 Author: DK1RI
-Version V01.02.03 20240416
+Version V01.02.04 20250202
 This project can be found in https://github.com/dk1ri  also.
 
 Introduction
@@ -18,43 +18,50 @@ see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 Some explanation
 
 Rules announcements start with “R” or “S” or “Q”
-“R” rules are valid always, “S” rules are used during configuration only and are not forwarded by the CR. “Q” rules are used for login.
+“R” rules are valid always, “S” rules are used during configuration only and are not forwarded by the CR. “Q” rules are used for login. The LD do not distinguish between “R” and “S” rules.
 Rules are defined by FU and RU.
 A “R” / “S” rule may have one of these functions:
-        ? A rule may restrict a combination of parameters of a command. This cannot be defined by an announcement.
-        ? By default all commands are working always. A rule will show, when a command is not working, if other commands had created a specific status. Some commands are working under special conditions only (not always)
-        ? By default commands are not executed by change of a status of another command. A rule can initiate this: eg the device can be switched off under special conditions.
-	      It is not the intention to show all conditions. If a device is switched off, some values may be 
-	      set to “0”. Such a behavior is obvious and a rule may be used in specific cases only.
-	-     A rule can modify the semantic of a command ie the real values of a command under given                	       conditions.
+        ? Rules will block commands but do not modify them.
+        ? All commands can be blocked
+        ? If a command has more than one parameter, and not all combinations are allowed, this will be defined by a rule. This cannot be defined by the command announcement.
+        ? A rule can restrict a range of numeric parameters used by memory commands.
+        ? By default all commands are working always. A rule will show, when a command is blocked under a specific status or condition. 
+        ? Usually commands are not executed by change of a status of another device. A rule can initiate this: eg the device can be switched off under special conditions.
+	-     A rule cannot use descriptions. It uses transmitted values only (may be changed later)
 	
  
-These rules are used by the LD, which have the status of the system at any time and know all rules and modify / initiate commands accordingly.
+These rules are used by the LD, which have the status for switch, range and array memory commands of the system at any time and know all “R” and “S” rules and block / initiate commands accordingly. The LD has no knowledge of the content the memories of the devices ( of “om”, “am”, “of, “af” commands); so rules cannot have the content of memories as a condition for blocking any command.
+The “oo”command has a temporary effect on a device only, So the status is not stored for the command There nay be a rule with a condition of this command to initiate another command.
+“oa” and “aa” commands have a limited number of memory and the status can be used as condition. 
+“ob” and “ab” in rules are not supported now (may be later).
+For answer commands with corresponding operating commands the token of the answer command or the operate command can be used for the right side. The LD should have the same status.
+If different commands work for the same function of a device (one “op”command changing the location and another changing the speed) the actual status of the LD may be wrong after the command. In these cases a rule, that create a read command, may help.
 
-The SK should observe rules given for a device. This avoids sending not valid commands.
+The SK should observe rules given for a device. This avoids sending not valid commands. The LD nevertheless will check this.
 
-Some limitation within a command should be described within the announcement of that command by <des>.
+Some limitation for the SK within a command should be described within the announcement of that command by <des>. The LD do not use <des>, it uses transmitted values only.
 
 A FU will have rule announcements to inform about dependencies, which exist between the commands and status within the FU.
 
 If there are dependencies between different devices,  a special rules-device RU will provide these rules.
-The rule will define, whether one or more commands are active or not, or that another command is executed.
-The syntax of the rules should be very simple. Up to now rules lines are readable, because they must be easily programmed as a part of the announcements of FUs.
+
+The syntax of the rules should be very simple. Lines are readable, because they must be easily programmed as a part of the announcements of FUs.
 
 All “R” rules are always handled by the LD in the sequence it get the rules, starting with rules of FU.
 
 General Rules behavior
 
 “R” , “S” rules
-Each rule is one announcement line (for FU) or an (MYC string) answer or info of a “an” command (for RU).
-By default all commands are working. If a command should be disabled, there must be a rule. The rule  is R !<c> …
-Enabling is done by R !!<c> …
-If a command should be executed under some conditions only (not always): use R ?<c> … Example is a reset under some conditions.
-If a command should be executed after another use ?<c> AFTER <c>. Example is a webserver, where a loading command is necessary to read a page.
-These rules use transmitted values (not real values). Exception, when MIN MAX is used.
+Each rule is one announcement line (for FU) or an (MYC string) answer or info of an  “an” command (for RU).
+By default all commands are working. If a command should be blocked, there must be a rule. The rule is R;!<c> …
+Re-enabling is done by R;!!<c> … 
+If a command should be generated by the LD under some conditions, use R;<c> … Example is a reset under some conditions. The command will be executed on time only.
+If a command should be executed after another use R;<c> AFTER .... Example is a webserver, where a loading command is necessary to read a page. This rule should follow directly the originating rule. Condition testing is only at that time and executing one time only.
+All rules use transmitted values (not real values by <des>). The LD do not know descriptions.
+All rules are regarded for any command transferred in the sequence: FU rules first, then rules from RU.
 
 "Q"-rules
-“Q” rules are produced by the RU only and sent to the CR only and are not forwarded. They are used by the CR, because the CR knows the interface of the user. They are used for user management.
+“Q” rules are produced by the RU only and sent to the CR only and are not forwarded. They are used by the CR only, because the CR knows the interface of the user. They are used for user management.
 As default the command-router allow all commands on all interfaces. The CR can block or allow commands, if necessary, for a specific user who logged in.
 "Q"-rules are the answer of a login request and describe the command-token to be used and not used.
 Format:
@@ -65,76 +72,69 @@ A !* as commandtoken means all commands are forbidden (default is: all allowed)
 Syntax is similar to "R" rules.
 
 special rules:
-Q d <n> <n>..		delete rules, sent by RU; * for all. This is an abbreviation, if many empty rules 
+Q;d <n> <n>..		delete rules, sent by RU; * for all. This is an abbreviation, if many empty rules 
 			must be sent. The memory elements must be empty.
-Q * !*			send at startup as first rule: login required for all. 
+Q;* !*			send at startup as first rule: login required for all. 
 			Default is, that all commands are allowed for all
-Q * *			allow all users all commands (default) 
-
-Simplification methods
-
-These methods are not essential, but may be used to reduce code 
-
-[$<c>TO$<c>, $<c>] IF|UNLESS	..		identical rule for multiple commands.
+Q;* *			allow all users all commands (default) 
 
 Rules syntax
 
-<left side> IF|UNLESS <right side>		“R” “S” rules
-<left side>					 “Q” rules
+<left side> IF|UNLESS|AFTR <right side>		for “R” “S” rules
+<left side>					 	for “Q” rules
 
 left side:
-[![!]$<c>[ &<p>=<n|s]][  ?<c>[&<p>=<n>|<s>]] …	specific parameters are affected only
-[![!]$<c>][ ?<c>] …						all parameters
-Bracketing like: !($<c>...<c>) allowed
+![!]$<c> ...						<c> is dropped or re-enabled
+<valid command_string>				The command will be sent
 
 right side:
-This describes the status which a answer commands would get.
+For switches, range and array memory commands this describes the status necessary for blocking.
 
 [!]$<c>[&<p>] [<compare operator> <n>|<s>] ... 
 [!]$<c>[&<p>] [<compare operator> <n> TO <n>] ...
 
-All words / tokens separated by a separator
-
 Reserved characters / words
 
+R;|S;|Q;		start of rule line
 space			separator
-( )			bracketing
-[]			left side: groups of commands
-!			right side: negation, left side: not active
+
+left side:
+$			command following
+!			not active (block)
+!!			active again (unblock)
+!$*			block all commands, allowed only one time for a device
+!!$*			if !$* is used, !!$* must follow (at the end of the rules of the device at least)
+			to avoid blocking for the next device.
+valid command	in hex, send this command under condition of right side
+
+IF|UNLESS|AFTER	separate left side and right side
+
+right side:
 $			command following
 &			Parameter following
-%”...”			new real value  (override description)
-?			left side, followed by a command token: active only if / unless ..
-*			one or more characters
-IF UNLESS
+( )			bracketing
 AND OR		logic operator
 <  >			relational operator
-=			left side: operator, right side: equal
+=			equal
+!			negation,
 TO
-.			delimiter for parameter 
-AFTER
-NECESSARY_FOR
 + - * /			arithmetic operator		
-MIN MAX		min / max value of a parameter; right side parameter. All parameters are real				values
+n			value
+s			string
 
 Examples
 
-R !$2 IF $5 = 0		means: Command 2 will not work if status of command 5 is 0
+R;!$2 IF $5 = 0		means: Command 2 will not work if status of command 5 is 0
 
-R !$4 UNLESS $7 = 3500000 TO 3799999 OR $7 = 7000000 TO 7199999
+R;!$4 UNLESS $7 = 3500000 TO 3799999 OR $7 = 7000000 TO 7199999
 				means: Command 4 will work only unless state 7 is in the range 						of .............
-				This would be used if the transceiver will transmit in amateur radio band 					only
-				The values are transmitted values, not values of <des>
 
-R $252&0  = "wrong address" IF $8&3 < 16	
-				$252 is an answer command and handled as info:
-				error-message if fourth parameter (3) of command 8 is < 16
-R !$2 IF $2&1 + $2&2 > $2&1MAX
-				The sum of (real) parameter 1 and 2 must not exceed the real maximum
-				value of parameter 1. real value as given by <des>!!
+R;!$2 IF $2&1 + $2&2 > 100
+				The sum of (real) parameter 1 and 2 must not exceed the maximum
+				value
 
-Q !* 1 30TO50		commands 1 and 30 to 50 forbidden for all
-Q * 0TO100 !500TO550	0 to 100 allowed, 500 to 550 forbidden for all
+Q;!* 1 30TO50		commands 1 and 30 to 50 forbidden for all
+Q;* 0TO100 !500TO550	0 to 100 allowed, 500 to 550 forbidden for all
 
 Copyright
 

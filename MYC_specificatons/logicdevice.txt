@@ -5,13 +5,14 @@ MYC Logicdevice
 Preliminary
 
 Author: DK1RI
-Version V01.01.01 20201029
+Version V01.012
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
 
-This paper describes some ideas for the logic-device
+This paper describes the logic-device
 For more details of the MYC system please check the reference.
+The program is in (early) development
 
 Definitions and formats
 
@@ -19,25 +20,26 @@ see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 The Idea
 
-The advertisement for a smart home is usually similar to this: all devices are talking together and as an example for the intelligence of the system  something similar as this is given: when you leave the house and you did not switch off the oven, you get message to your smartphone... 
-But is this really smart?
-There are a lot of other things to calculate. Is someone else in the house? sleeping, so that no movement sensor would detect this. Children without smartphone? Otherwise, when the system remembers you to everything, you have to click all the messages. This may be quite uncomfortable, you ignore them or overview important messages.
-The consequence is, that a standard rules system (in MYC terminology) provided by a manufacturer would never work and the customer will not be content. You need a system which can be easily adapted with a simple to use UI (graphical or voice ) which can be supported by a self learning system.
-
-In a MYC system I think the best solution is to separate the LD and RU.
-The task of the LD is to realize the rules. 
-The RU must generate rules and send them to the LD.
+The idea is similar that, what IFTTT (If This Than That) implemented same years after the first edition of this document was published: create and execute rules, that exist within a device and between different devices.
+Maybe, that IFTTT can be adapted to work with a MYC system.
+The MYC sytax for rules is different and the LD, which execute the rules is in progress.
+Rules for the devices are given with the device but the program to create the rules between the devices (RU), is not ready. They must be created manually now.
+The RU must generate rules and send them to the LD,  which can be done by AI (in future).
 
 Description
 
-The LD can be described as a state-machine. It gets inputs (command with parameters), handles them using a defined  algorithm and the internal state, and send the result back to the CR. 
-The algorithm is defined by the rules from the RU.
-It also gets all answers from any attached device to update or check its state. This is realized via a second receive chanal, or by some sort of prefix for any packet. 
-The internal state reflect the state of the MYC system. If a state of a FU change without a command, the LD get a info, which will modify the internal state of the LD.
-The LD get commands, rules and infos with translated token. So there is no need to have the full announce-list.
-The LD will have the basic &H00 &HFD announcement only. This is used by the CR to check that the LD is alive: The CR answers with <c>&H04. The answer is sent as info with the translated &HFD.
+The LD can be described as a state-machine. It gets inputs (command with parameters) from the SK by the CR, handles them using a defined algorithm and the internal state, and send the result back to the CR, which forward them to the devices.
+The algorithm uses the rules from the RU and the devices.
+It also gets all answers from any attached device to update its state. Data from and to SK have a different prefix than data from devices because on data chanal is used only.
+The LD has the status of switch, range and array memory commands but do not store othr memory content.
+The internal state reflect the state of the MYC system. If a state of a FU change without a command, the LD get an info, which will modify the internal state of the LD.
+The LD get rules from the RU and the rules of the device by the CR.
+The LD will have the basic &H00 &H01 &H02 and &HFD own announcement only. These command &HFD without prefix are used by the CR to check that the LD is alive: The CR answers with $HFD04. The &H01 &H02 commands is used to transfer rules data.
 
-The LD will provide some special functions as providing time data. This is not yet defined.
+The LD may provide some special functions as providing time data. This is not yet defined.
+
+I did not found a state machine program, that can be used as LD, and most of them are not open source. The effort to write a program for the LD is less that expected.
+If the program is finished, it will be part of the CR. This simplifies data transfer and is faster.
 
 Copyright
 

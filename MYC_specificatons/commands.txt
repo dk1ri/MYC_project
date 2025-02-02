@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V03.00.04 20241125
+Version V03.00.05 20250202
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -427,7 +427,7 @@ More about Descriptions
 
 General format: [label][<,des_range>|<,des_memory>|...][,additional]
 The description should help the SK to display the real parameters and to provide the correct user readable labeling. If there is no description the SK will use the full range as defined by the property type and use this as labeling.
-It is used as well for restriction of characters / values for data of memory.
+It is used as well for restriction of characters for string data of memory but not for restriction of numeric values. This should be done by rules.
 
 Description of OPTIONs:
 [additional] only; used for comments
@@ -471,35 +471,37 @@ Descriptions for switches (os, as, or, ar, ou, at):
 Usually any button of switches has one label. {des_range} is not allowed.
 
 Descriptions for type of memory commands (om, am, om, an, of, af, oa, aa, ob, ab) <des_type>:
-For all memory data:
- [<label>][,default_value][,<des_range>]	<default_value> must not contain „{„ . <default_value require <label>.
+For numeric memory data:
+ [<label>][,default_value][,<des_range>]	<default_value require <label>.
+For string memory data:
+ [<label>][,default_value][,<des_type>]	<default_value> must not contain „{„ . <default_value require <label>.
 
 Details for <label>:
 Uppercase names should be used for reserved words (as labels) only.
-Labels must not contain the characters “.”  “,”  “;”  “{  “}”  ”_”, and “to”; lowercase preferred
+Labels must not contain the characters “.”  “,”  “;”  “{  “}, ”  ”_”, and “to”; lowercase preferred
 For labeling english is preferred. If other languages are required, the translation can be done by the SK..
 
 
 Details of <des_range>
 Format: {[fixed_value][,“step-distance“_“from“to“to“]…}
+Is used for translation. Restriction are done by rules. The defined values are mapped to the allowed transmittted values. A rule may rstrict the transmitted values. There may be a translation from alpha to numeric values.
 Mixed combinations of ranges and fixed values are allowed, but values must be unique.
-Fixed values may be nuemric and alpha, ranges may be numeric or alpha. Alpha may be something like 1_atoz, 2BtoY but not 1_atoZ or 1_ato9.
+Fixed values may be numeric and alpha, ranges may be numeric or alpha. Alpha may be something like 1_atoz, 2_BtoY but not 1_atoZ or 1_ato9.
 Use more than one range instead or hex values.
 
-- For <des_type> of data of memory commands:
-<des_type> is used for restriction of characters / values to be used only. Other characters / values are ignored. There is no translation for strings.
-Not valid numbers of numeric types or characters of strings are not modified but ignored.
-There is no translation of displayed values to transmitted values.
+Details of <des_type>:
+<des_type> is used for restriction of characters of strings to be used only. Other characters are ignored. There is no translation for strings.
+
 Examples:
 1;om;2,{a,c,d};10		string of 2 characters (max); this limits the allowed characters to a, c, d.
 1;om;2,{1_atoz,1_AtoZ};10	string of 2 characters (max); letters only allowed
 1;om;3,{alpha};10		similar as above, use the predefined alphabet alpha; see meta-commands above.
-1;om;b,{0,1,3};10		byte; displayed as ASCII character of 0, 1, 3 and transmitted as 0,1,3 Other characters will be ignored.
-1;om;w,{1_0to100};10	word (2 bytes); 1 to 100 allowed only
-1;om;n, %,{5_0to100};10	will allow percent values with 5% steps from 0 to 100%
+1;om;b,{0,1,3};10		byte; displayed as ASCII character of 0, 1, 3 and transmitted as 0,1,2 
+				The may be a rule to restrict the values to 0 to 2, otherwise other numbers are not restricted and transmitted as given.
 
 - For others (range commands,  stacks, position of memory commands):
- <des_range> is used, if real values and transmitted values are different, and / or the range of transmitted values is limited.
+ <des_range> is used, if real values and transmitted values are different. Restriction may be made by rules, but make no sense now, and may be not supported.
+
 The transmitted values have the range 0 to x (inclusive)
 The transmitted value is the sequence-number of the real value (number or alphanumeric). Other real values are ignored.
 The ranges in the description are non-overlapping values usually in ascending order. Values must be unique.
