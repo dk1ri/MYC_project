@@ -2,36 +2,41 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC - Communication
 
-Preliminary Version
-
 Author: DK1RI
-Version V01.02.02 20220113
+Version V01.02.03 20250311
 This paper is published in  https://github.com/dk1ri  as well
 
 Introduction
 
-The MYC protocol is a semantic protocol withot header and end. For transmission of data some additional data are necessary,
-There are some rules, which should be observed for the different protocols.  
+The MYC protocol is a semantic protocol without header and end. For transmission of data some additional data are necessary,
+There are some rules, which should be observed for the additional protocols.  
 
 Definitions and formats
 
 see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 
 I2C
-
 The MYC data can be directly transmitted over I2C. Error correction, handshake, encryption usually is not necessary.
-A transmission should not exceed 254 Byte. The Rxbuffer cannot hold more bytes. If necessary, use multiline. The commandrouter, Logicdevice and human Interface must support this.
+A transmission should not exceed 254 Byte. The Rxbuffer of (small) FU cannot hold more bytes. If necessary for announcements, use multiline. The CR and SK will support this.
 
-Because the slave needs time for commandhandling, the master must be able to wait. Either the master send the read request not directly after a write or it waits during the read process. Slave is isolated from the bus at that time.
+Because the slave needs time for commandhandling, the master must be able to wait. Either the master send the read request not directly after a write or it waits during the read process. Slave is isolated from the bus at that time. The CR will support this
 
 RS232 / USB
 As I2C the MYC data can be directly transmitted over I2C. Error correction, handshake, encryption usually is not necessary.
 
 Ethernet
 Up to now telnet is used only, which may have a security problem, when sent via internet.
-Telnet requires a defined packet length. The devices can calculate this, so pure MYC data could be sent to the devices. The device will send answers as hex numbers (2 byte per byte) an end the transmission with chr(10). So the telnet client find the end of a transmission.
-For consistency the devices input will accept hex data as well. A chr(10) can be sent but is ignored as all other characters.
-This is used for the communication betwen CR and SK and the communication between devices and CR.
+Telnet requires a defined packet length. The devices can calculate this, so pure MYC data could be sent to the devices. The device will send answers as hex numbers (2 byte per byte) and end the transmission with chr(10). So the telnet client find the end of a transmission.
+This is used for the communication between CR and SK and the communication between devices and CR.
+
+LORA and other wireless protocols
+There is a FU for wireless connection of the CR to FU. Not all existing FUs may be connected to the this FU. This may be updated later.
+
+LD
+The LD is integrated to the CR; so data transfer is via variables
+
+SK
+If the SK and CR are on the same server, data transfer is done via file as long as there is no way to do this via pipes.
 
 Copyright
 
