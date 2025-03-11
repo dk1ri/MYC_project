@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Reserved Commands
 
 Author: DK1RI
-Version V01.20.09 20240905
+Version V01.20.10 20250311
 This paper is published in https://github.com/dk1ri as well
 
 Introduction
@@ -18,11 +18,10 @@ see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
 Overview
 
 Every MYC device should provide mandatory reserved command tokens and understand them, if applicable.
-The set of announcements of a MYC device should be in numerical sequence, start with the reserved basic command 0x00 and end with the other reserved tokens 0xxxf0 - 0xxxff. Rules lines may follow . In the full anouncment-list of CR the last line of each device is the I-announcement. This is necessary, to identify commands in systems with hierarchical (stacked) command-routers.
+The set of announcements of a MYC device should be in numerical sequence, start with the reserved basic command 0x00 and end with the other reserved tokens 0xxxf0 - 0xxxff. Rules lines may follow. In the full anouncment-list of CR the last line of each device is the I-announcement. This is necessary, to identify commands in systems with hierarchical (stacked) command-routers.
 
-Nine of the reserved tokens are used and defined now: 0x00, 0xxxf0, 0xxxf1 and 0xxxf9 – 0xxxff.
-It is noted, that the commands below are shown as operate / answer (o / a)  commands, but may be used in a real announcement as k / l commands, which will not be included to the full list by the CR.
-Some reserved word are used. They should use uppercase characters. Other characters can be used as well but no lower case characters.
+Ten of the reserved tokens are used and defined now: 0x00, 0xxxf0, 0xxxf1 and 0xxxf8 – 0xxxff.
+Some reserved word are used. They should use uppercase characters.
 
 Basic Command 0x00
 
@@ -38,11 +37,11 @@ The announcement is fixed and therefore the announce-line do not describe the fo
 The length of the string is a one byte string-length. The 0x00 announcement is limited therefore to 255 Bytes.
 
 MANUFACTURER DEVICEDESCRIPTION and VERSION are combined to a devicegroupname and are used in file names, so not all character are allowed. Preferred is a-z, A-Z, 0-9 _		
-These devicegroupnames are unique to a device and its firmware. A (published) device / firmware combination with a devicegroupname must not be changed. If changes are necessary, a new version must be used. Each device with its individualization belongs to a devicegroup. So, this is valid also for controlled programs, but not for controlled CR and and not for all controlling devices.
-For a normal device  NUMBER_OF_DEVICES is 1, For CR it is CR + all FU + CR + RU + number given by lower level CR. This value is important for the command-router as info for a higher level CR.
+These devicegroupnames are unique to a device and its firmware. A (published) device / firmware combination with a devicegroupname must not be changed. If changes are necessary, a new version must be used. Each device with its individualization belongs to a devicegroup. So, this is valid also for controlled programs, but not for controlled CR and not for all controlling devices.
+For a normal device  NUMBER_OF_DEVICES is 1, For CR it is CR + all FU + RU + number given by lower level CR. This value is important for the command-router as info for a higher level CR.
 LINELENGTH is the maximum line-length of the announcement lines.
 COMMAND_BYTES  is the number of bytes used for commands. Allowed values are 1 to 8. Higher numbers are handled as one byte.
-NUMBER_OF_ANNOUNCEMENTS includes “R” and “I” lines. This is the number of different announcements. An announcement can have more than one line.
+NUMBER_OF_ANNOUNCEMENTS includes “R” “L” and “I” lines. This is the number of different announcements. An announcement can have more than one line.
  A different transmission length of this number result in a CR startup procedure: see http://dk1ri.de/myc/Description.pdf.
 A (translated) 0x00 command of a device is answered by the CR itself and not send to the device for answer.
 SPEC_VERSION is the version of specification, the device is designed for: <branch>-<version>. <version> is a set of specification defined in [13]. Within a branch the CR must be compatible to a specific <version> and all lower  <versions>.
@@ -58,14 +57,14 @@ command:	0xxxf0<n><m>											ask for m announcement lines starting at
 answer / info:	0xxxf0<n><m><data>
 
 <n> is a positional parameter of the memory. The number of bytes for <m> and <n> must not exceed <NUMBER_OF_ANNOUNCELINES>.
-< NUMBER_OF_ANNOUNCELINES> is the number of the announcement lines including those for the reserved commands, rules and for the  CR the I-lines. It may be differen from the NUMBER_OF_ANNOUCEMENTS.
+< NUMBER_OF_ANNOUNCELINES> is the number of the announcement lines including those for the reserved commands, rules and for the CR the I-lines. It may be different from the NUMBER_OF_ANNOUCEMENTS.
 
 The CR will ask for the announce-lists of all devices using the 0xxxf0 command, if it do not have other sources. It will drop the 0xxxf0 command of other devices when building the complete list. The command-router answers all announcement commands by itself using the full list with translated command-token. The CR will  not forward 0xxxf0 infos.
 The CR will not include “r” and “s” commands in the full list but skip these numbers instead. The command-token are reserved for the delivering devices. Exception: the LD will get the list with the complete “r” and “s” commands.
 
 Announcement Command 0xxxf1
 
-The 0xxxf1 announcement command is used by the CR only.  BASIC ANNOUNCEMENTS must be the 1st <des>
+The 0xxxf1 announcement command is used by the CR only.  BASIC ANNOUNCEMENTS must be the 1st <des>. It delivers the basic anoouncmnts of attached devices-
 
 announce:	241;an,BASIC ANNOUNCEMENTS,<des>...<des>;<LINELENGTH><NUMBER_OF_DEVICES>
 														241 for 1 byte command-token
@@ -74,6 +73,15 @@ command:	0xxxf1<n><m>										ask for basic m announcement lines
 														not exceed <NUMBER_OF_DEVICES>
 answer / info:	0xxxF1<n><m><data>
 
+Transfer command 0xxf8
+
+This command is used if two FU are chained. The CR is connected to the first, which may be a wireless interface, that should route the data to the second (real) FU with the client wireless interface. This command is used by the first FU to switch between controlling the wireless interface and a transparent mode. It may have other functions as defining a name. Other devices should not use this command.
+
+Announce: 248;oa,TRANS[,<des>];n
+command;	0xxxF8<n><data>
+answer / info:	-
+The content is defined individually by the FU.
+ 
 Feature for SK 0xxxf9
 
 This command is used by the CR and SK only. SK-FEATURE must be the 1st <des>.
