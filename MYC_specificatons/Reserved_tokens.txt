@@ -127,23 +127,18 @@ b,ACK,<DEFAULT>				set to “1”: info for HI, that FU will send an answer for all 
 			 
 Log on Command 0xxxfb
 
-This command is used by the RU only. Used, if the system requires a log on for users to allow all or a subset of commands. The RU will then send a string with “Q” rules to the CR. From this the CR will use an individual list of commands for this user and block all other commands.
+This command is used by the RU only. The CR forward the command to the RU. If username and password is not correct, the RU will send the info with the content “3”. Otherwise it will send an info “1” for logon or 2 or logoff.
 For more details see 	http://dk1ri.de/myc/Rules_device.pdf
-The command announcement has the first command-type description  "LOGON". Only the given properties are allowed in this sequence:
-NAME and PASSWORD is limited to 255 characters (1 byte length of string).
+The command announcement has the first command-type description "LOGON". Only the given properties are allowed in this sequence:
+NAME and PASSWORD is limited to 255 characters (1 byte length of string), All parameters must be transmitted at the same time.
 
-announce:	251;ob,LOGON[,<des>];<b>,MODE;<l>,NAME;<l>,PASSWORD
-MODE:	1	log out	
-		2	log on
-		3	switch on user management (admin only)
-		4	switch off user management (admin only)
-command:	0xxxfb0x000x03<mode><name><password>
+announce:	251;ob,LOGON[,<des>];a,mode;<s>,name;<s>,password
+mod:		1	log on	
+		2	log out
 answer	/ info	-
 
-If the login is granted the RU send a info to the CR:
-xx: on,LOGIN_DATA;1,<length>,<s>
-where <s> is a “Q” rule
-
+If the login is granted the RU send an info to the CR:
+xx: aa,LOGIN_DATA;b	will send 0|1|2
 
 
 Last Error Command 0xxxfc

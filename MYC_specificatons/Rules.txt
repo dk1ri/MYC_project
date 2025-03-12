@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 MYC Rules
 
 Author: DK1RI
-Version V02.00.01 20250309
+Version V02.00.02 20250311
 This project can be found in https://github.com/dk1ri  also.
 
 Introduction
@@ -59,21 +59,20 @@ The syntax of the rules should be very simple. Lines are readable, because they 
 
 "Q"-rules
 “Q” rules are produced by the RU only and sent to the CR only and are not forwarded. They are used by the CR only, because the CR knows the interface of the user. They are used for user management.
-As default the command-router allow all commands on all interfaces. The CR can block or allow commands, if necessary, for a specific user who logged in.
-"Q"-rules are the answer of a login request and describe the command-token to be used and not used.
-Format:
-Q;<username>;[!]<c>[ TO <c>] [<c>….]
-A basic command-token of a device only means all token of the device.
-One Q rule per user; but * as username means all users.
-A !* as commandtoken means all commands are forbidden (default is: all allowed) 
-Syntax is similar to "R" rules.
+As default the command-router allow all commands on all interfaces. The CR can block or allow commands or a complete device, if necessary, for a specific user using “Q” rules.
 
-special rules:
-Q;d <n> <n>..		delete rules, sent by RU; * for all. This is an abbreviation, if many empty rules 
-			must be sent. The memory elements must be empty.
-Q;* !*			send at startup as first rule: login required for all. 
-			Default is, that all commands are allowed for all
-Q;* *			allow all users all commands (default) 
+Format:
+Q;<username>;<c>[TO<c>] [<c>]….	allow command (used together with Q;* !*)
+Q;<username>;[!]<c>[TO<c>] [!<c>]….	allow command (used together with Q;* *)
+A basic command-token of a device only means all token of the device.
+One Q rule per user.
+
+special rules, as first “Q” rule:
+Q;* !*				login required for all. All command forbidden by default
+Q;* *				login required for all. All command allowed by default
+These two rules missing:	 (default) All commands, which are not mentioned in “Q” rules, are 
+				allowed for all users without account (default). For users with account
+				Q;* !* is valid (ie commands have to be allowed)
 
 Rules syntax for R” and “S” rules
 
