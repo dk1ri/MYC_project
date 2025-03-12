@@ -1,9 +1,9 @@
 Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/spec_version.pdf
 
-MYC Spec_version
+MYC Specification_version
 
 Author: DK1RI
-Version V01.02.02 20201027
+Version V01.02.03 20250312
 This paper is published in https://github.com/dk1ri as well
 
 As an  introduction article to the MYC system please read [1] (german) or [2]
@@ -12,58 +12,10 @@ This paper describes the defined versions of specifications. For details see [5]
 
 Branch 1:
 
-SPEC_VERSION
-Definitions
-Description
-commands
-Commandrouter
-Reserved token
-Rules
-Rules device
-Skin
-Webserver
-Logic device
-Communication
-KI
-1.2.1
-01.3
-
-02.12
-
-01.20
-01.11.1
-
-
-
-
-
-
-01.02.02
-01.03.03
-01.08.3
-02.12.06
-01.13.01
-01.20.06
-01.11.02
-01.2.1
-01.05.01
-01.01.01
-01.0.1
-01.02.01
-01.01.01
-
-
-
-
-
-
-
-
-
-
-
-
-
+SPECIFICATION VERSION	Definitions	Description	commands	Command router	Reserved token	Rules	Rules device	Webserver	Security	Logic device	Communication	KI
+1.2.1	01.3		02.12		01.20	01.11.1						
+01.02.02	01.03.03	01.08.03	02.12.06	01.13.01	01.20.06	01.11.02	01.02.02	01.01.01	01.02..01	01.01.01	01.02.01	01.01.01
+01.02.03	01.03.07	01.08.03	03.00.05	01.13.03	01.20.10	02.00.02	01.02.01	01.01.08	01.02.01	01.03	01.02.03	01.01.01
 
 
 Copyright
@@ -91,3 +43,20 @@ Reference
 [12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
 [13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
 [14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf
+[17]	https://dk1ri.de/myc/logicdevice.zip
+[3]	https://dk1ri.de/myc/Description.txt or https://dk1ri.de/myc/Description.pdf
+[4]	https://dk1ri.de/myc/commands.txt or https://dk1ri.de/myc/commands.pdf
+[5]	https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
+[6]	https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf
+[7]	https://dk1ri.de/myc/commandrouter.txt or https://dk1ri.de/myc/commandrouter.pdf
+[8]	https://dk1ri.de/myc/Rules_device.txt or https://dk1ri.de/myc/Rules_device.pdf
+[9]	https://dk1ri.de/myc/skin.txt or https://dk1ri.de/myc/skin.pdf
+[10]	https://dk1ri.de/myc/logicdevice.txt or https://dk1ri.de/myc/logicdevice.pdf
+[11]	https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+[12]	https://dk1ri.de/myc/spec_version.txt or https://dk1ri.de/myc/spec_version.pdf
+[13]	https://dk1ri.de/myc/webserver.txt or https://dk1ri.de/myc/webserver.pdf
+[14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
+[15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
+[16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf
