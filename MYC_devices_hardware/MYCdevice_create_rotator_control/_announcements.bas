@@ -1,11 +1,11 @@
 ' announcements
-' 20240611
+' 20241108
 '
 Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;RC5 rotator control;V07.2;145;1;31;1-1"
+Data "0;m;DK1RI;RC5 rotator control;V07.3;145;1;30;01.02.03"
 '
 'Announce1:
 'Befehl &H01
@@ -111,7 +111,7 @@ Data "17;as,at limit;1;0,ok;1,at limit"
 'Befehl &HF0<n><m>
 'liest announcements
 'read n announcement lines
-Data "240;an,ANNOUNCEMENTS;145;31,start at;31,lines;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;31,start at;30,lines;14,CHAPTER,ADMINISTRATION"
 '
 'Announce19:                                                  '
 'Befehl &HFC
@@ -157,9 +157,5 @@ Data "L;values 2;values 2;Werte 2;calibration;calibration;Eichung;at limit;at li
 Data "R;!$4 !$5 !$6 !$8 IF $2=0"
 '
 'Announce29:
-' - motor at limit will switch off , no need for logic device to send switch off command
-Data "R;$7 IF $15=1"
-'
-'Announce30:
 'No Preset If hardwarelimit
-Data "R;!$4 IF $15=1"
+Data "R;!$6 IF $17=1"
