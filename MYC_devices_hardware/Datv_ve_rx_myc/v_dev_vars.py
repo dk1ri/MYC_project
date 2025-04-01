@@ -1,6 +1,6 @@
 """
 name : v_Datv_ve_rx_myc_vars.py Datv_ve_rx_myc
-last edited: 20250109
+last edited: 20250331
 Copyright : DK1RI
 If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 Specific constants and variables
@@ -17,7 +17,7 @@ config_file = "___config"
 announce_list = "___announcements"
 log_file = "___logfile"
 logfilesize = 100               # lines
-test_mode = 1
+test_mode = 2
 command_no = 0
 device_name = "Device 1"
 device_number = 1

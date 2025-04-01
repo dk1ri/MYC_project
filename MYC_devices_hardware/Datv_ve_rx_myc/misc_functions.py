@@ -1,6 +1,6 @@
 """
 name : misc_functions.py Datv_ve_rx_myc
-last edited: 20250109
+last edited: 20250331
 Copyright : DK1RI
 If no other earlier rights are affected, this program can be used under GPL (Gnu public licence)
 misc functions
@@ -9,6 +9,7 @@ misc functions
 import time
 import sys
 import platform
+from time import sleep
 
 import v_dev_vars
 import v_sk
@@ -170,13 +171,7 @@ def send_to_sdr():
     error = check_valid_values()
     if error == 1:
         return
-
-    if v_dev_vars.frequency_dat >= 10491500:
-        # - lnb offset
-        f = str((v_dev_vars.frequency_dat - 9750000) * 1000)
-    else:
-        f = str(v_dev_vars.frequency_dat * 1000)
-    string = "rtl_sdr -f " + f
+    string = "rtl_sdr -f " + v_dev_vars.frequency_dat
     string += " -g " + str(v_dev_vars.gain_dat)
     string += " -s "  + str(v_fix_tables.samplerate_values[v_dev_vars.samplerate_dat])
     if v_dev_vars.record_iq_dat == 1:
@@ -197,9 +192,16 @@ def send_to_sdr():
     if v_dev_vars.record_t_dat:
         string += " | tee /home/pi/Desktop/Videos/record$(date +%y.%m.%d-%H:%M:%S).ts "
     string += " | " + ''.join(v_fix_tables.player_values[v_dev_vars.player_dat])
-    if v_dev_vars.test_mode == 1:
-        print (string)
+    if v_dev_vars.test_mode == 0:
+        os.popen("/home/pi/rx_stop.sh")
+        sleep(1)
+        os.popen(string)
+    elif v_dev_vars.test_mode == 1:
+        print(string)
     else:
+        print(string)
+        os.popen("/home/pi/rx_stop.sh")
+        sleep(1)
         os.popen(string)
     return
 

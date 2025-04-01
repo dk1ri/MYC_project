@@ -98,7 +98,7 @@ def command_selector(command, line):
 
 
 def com01(line):
-    #   fixeed frequency
+    #   fixed frequency
     if len(line) < 2:
         return 0
     if line[1] > 54:
@@ -120,11 +120,16 @@ def com03(line):
     if len(line) < 4:
         return 0
     f = 65536 * line[1] + 256 * line[2] + line[3]
-    if f > 236900:
+    if f > 2369000:
         v_dev_vars.last_error_msg = "parameter error"
         return 2
-    v_dev_vars.frequency_dat = f + 2800
-    v_dev_vars.frequency_dat *= 10
+    f += 28000
+    # f in kHz
+    if f > 1000000:
+        # > 1G
+        v_dev_vars.frequency_dat = str(f/1000000) + "e9"
+    else:
+        v_dev_vars.frequency_dat = str(f/1000) + "e6"
     send_to_sdr()
     return 1
 
@@ -134,22 +139,21 @@ def com04(line):
     if len(line) < 3:
         return 0
     f = 256 * line[1] + line[2]
-    if f > 776:
+    if f > 7750:
         v_dev_vars.last_error_msg = "parameter error"
         return 2
     #
-    v_dev_vars.frequency_dat = f + 1049150
-    v_dev_vars.frequency_dat *= 10
+    # in kHz
+    v_dev_vars.frequency_dat = f + 10491500
+    v_dev_vars.frequency_dat = str(f / 10000000) + "e9"
     send_to_sdr()
     return 1
 
 
 def com05(command):
     v_sk.info_to_all.extend([command])
-    a = int_to_list(v_dev_vars.frequency_dat)
-    v_sk.info_to_all.extend([a[0]])
-    v_sk.info_to_all.extend([a[1]])
-    v_sk.info_to_all.extend([a[2]])
+    v_sk.info_to_all.extend([len(v_dev_vars.frequency_dat)])
+    v_sk.info_to_all.extend([v_dev_vars.frequency_dat])
     return 1
 
 def com06(line):

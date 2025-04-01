@@ -1,12 +1,12 @@
 ﻿' name : ___announcements Datv_ve_rx_myc
-' last edited: 20241228
+' last edited: 20250331
 ' the format matches the bascom compiler
 ' python read lines starting with 'D' only
 '
 Announce:
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI / DL9NBZ;DVBT_vr_rx_myc;V01.0;1;145;1;42;1-1"
+Data "0;m;DK1RI / DL9NBZ;DVBT_vr_rx_myc;V01.1;1;145;1;42;1-1"
 '
 'Announce1
 'feste Frequenzen
@@ -33,17 +33,17 @@ Data "2;as,as1"
 Announce3
 'Frequenz
 'frequency
-Data "3;op,frequency direct 28-2397MHz;1;236900,,{1_2800to239750};lin;* 10kHz"
+Data "3;op,frequency direct 28-2397MHz;1;2369000,,{1_28000to2397000};lin;kHz"
 '
 Announce4
 'Frequenz
 'frequency
-Data "4;op,frequency QO100 104915-10499.25MHz;1;776,,{1_1049150to1049925};lin;* 10kHz"
+Data "4;op,frequency QO100 10491.5-10499.25MHz;1;7750,,{1_10491500to10499250};lin;kHz"
 '
 Announce5
 'Frequenz
 'frequency
-Data "5;ap,frequency;1;10499250,;lin;kHz"
+Data "5;aa,frequency  (Hz);10"
 '
 'Announce6
 'sample Rate
@@ -222,7 +222,7 @@ Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;n,NUMBER,1;a,TELNET,1;w,TELNETPO
 Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;n,NUMBER,1;a,TELNET,1;w,TELNETPORT,23;a,FILE,1;14,CHAPTER,ADMINISTRATION"
 '
 'Announce40:
-Data "R;!$113 !$114 IF $14=1"
+Data "R;!$12 !$13 IF $14=1"
 '
 'Announce41;
 Data "L;original;english;deutsch"
