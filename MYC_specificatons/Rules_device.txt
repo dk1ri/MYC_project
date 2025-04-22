@@ -1,10 +1,10 @@
-Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/Rules_device.pdf
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/myc/Rules_device.txt
 
-MYC Rules Device
+Rules-device
 
 Author: DK1RI
-Version V01.02.01 20250312
-This project can be found in https://github.com/dk1ri  also.
+Version V01.02.02 20250422
+This paper is published in https://github.com/dk1ri as well
 
 Introduction
 
@@ -12,78 +12,87 @@ This paper describes some ideas for the rules-device For more details of the MYC
 
 Definitions and formats
 
-see https://dk1ri.de/myc/Definitions.txt or https://dk1ri.de/myc/Definitions.pdf
+see https://dk1ri.de/myc/Definitions.txt or  https://dk1ri.de/myc/Definitions.pdf
+Some explanation
 
-Some explanation 
-
-For details of rules see [6]. The Rules-device should do the following: 
+The Rules-device should do the following: 
 - Provide “R”-rules for dependencies between different devices. The rules may created via an
-	appropriate user interface.
+        appropriate user interface.
 - Create “R” rules for system wide commands.
 - Provide a user management: create “Q” rules.
+- Check login requests
 
 For simplicity of usage and editing the internal storage of the rules-device uses “full commands” for “R” rules. These “full commands” consist of the I-line of the device and the relative count of the commandtoken within the device for reference to a commandtoken. These command are created from the full announcelist from the CR. So commands can be identified even if command-token numbering changes. If a rule should be sent to the CR, the RU translates the full commands to the original translated command-token.
-
 “R” rules
+
  “R” rules describe the dependencies between different devices and system wide commands. “R” rules for CR, RU, LD or SK are not allowed.
+For details of rules see https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf. 
 
 “Q” rules 
+
 Q rules are used for user management. 
-As default the command-router allow all commands for all users, but this can be changed to forbid users to send commands to specific devices or to send specific commands. This is done by “Q” rules.
+As default the command-router allow all commands for all users, but this can be changed to forbid users to send commands to specific devices or to send specific commands. This is done by “Q” rules. “Q” are provided by the RU and executed by the CR.
 The access to the RU device is handled in the same way as for other devices: users can use the commands or it is forbidden.
-The RU itself is a device with few commands. These commands are part of the full announcelist. So the SK can use them.
-By default the RU has one admin account with password, which can be changed. This login is needed to use all commands of the RU.
-How the “Q” rules affect the access to commands is described in [6]
+The RU itself is a device with few commands. These commands are part of the full announcelist of the CR. So the SK can use them.
+The RU has one admin account “admin”, “admin”. Name and password can be changed.
+How the “Q” rules affect the access to commands is described in https://dk1ri.de/myc/Rules.txt or https://dk1ri.de/myc/Rules.pdf. 
 
 RU announcemnts
+
+The RU should have the following announcements:
+
 The command to write or overwrite “R” rules:
-1;om,”R” rules;500;1000.
+“R” rules are identified by number. Empty positions can be used for new rules
+1;om,R_rules;500;1000.
 This allow up to 1000 rules while a length < 500 (can be changed)
 
-The read command (these rule may be not those the CR is using):
+The read command:
 2;am,as1
 
 as command 1 but for “Q” rules
-3;om,”Q” rules;500;1000.
+“Q” rules are identified by number. Empty positions can be used for new rules
+3;om,Q_rules;500;1000.
 This allow up to 1000 rules while a length < 500 (can be changed)
 
-The read command (these rule may be not those the CR is using):
+The read command:
 4;am,as3
 
-This command will send „all“ rules to the CR. The CR will know by the name “FOR_CR” that it should read the rules and will not forward them.
-5;am,FOR_CR;1;0,idle;1,send to CR
+This command will send „all“ rules to the CR. The CR will know by the name “FOR_CR” that it should read the rules and will not forward them. The RU will send all not empty rules, whenever a rule is changed / added / deleted as info
+5;am,FOR_CR;500;2000
 
-allow a user to create “R” rules with a commandtoken as “left_side” commandtoken (admin only). If the commandtoken is the basic command of a device, all commands of the device are allowed. A *” means: all devices (admin only):
-6;ob,<des>;<s>,username;<n>commandtoken
+For the following commands all possible parameters must be send always; commands are allowed for admin users only!!
 
-as above, but disallow user (admin only):
-7;ob,<des>;<s>,username;<n>commandtoken
+allow a user to create “R” rules with a commandtoken as “left_side” commandtoken. If the commandtoken is the basic command of a device, all commands of the device are allowed. If the commandtoken is the basic command of the CR all commands of all device are allowed:
+6;ob,<des>;<s>,username;<n>,commandtoken
 
-allow a user to create “Q” rules (admin only):
-8;ob,<des>;<s>,username;<n>commandtoken
+as above, but disallow user:
+7;ob,<des>;<s>,username;<n>,commandtoken
 
-as above, but disallow user (admin only):
-9;ob,<des>;<s>,username;<n>commandtoken
+allow a user to create “Q” rules:
+8;oa,<des>;<s>,username
 
-add a user account for login (admin only):
+as above, but disallow user:
+9;oa,<des>;<s>,username
+
+add a user account for login:
 10;ob,<des>;<s>,name;<s>,password
 
-delete a user account for login (admin only):
-11;ob,<des>;<s>,name
+delete a user account for login:
+11;oa,<des>;<s>,name
 
-read all usernames; usernames are limited to 100 characters and max 1000 users ((admin only):
+read all usernames; usernames are limited to 100 characters and max 1000 users (can be changed):
 12;an,usernames;100,1000
 
-change account and password for the admin user:
+change name and password for the admin user:
 13:1;ob,<des>;b,mode;<s>,old_name;<s>,old_password;<s>new_name;<s>,new_password
 
-reply to CR, weather a login was ok or not (will send “0” or “1” as info)
+reply to CR, weather a login was ok or not (will send “0” or “1” or “2”as info)
 14;aa,LOGIN_DATA;b
 
 Login command:
-2511;ob,LOGON;b,mode;<s>,name;<s>,password
+251;ob,LOGON;b,mode;<s>,name;<s>,password
 
-For details of the login command see http://dk1ri.de/myc/Reserved_tokens.pdf.
+For details of the login command see https://dk1ri.de/myc/Reserved_tokens.txt or https://dk1ri.de/myc/Reserved_tokens.pdf
 
 User management may be done via a more comfortable GUI other than the existing GUI using the webserver.
 
@@ -114,4 +123,3 @@ Reference
 [14]	https://dk1ri.de/myc/ki.txt or https://dk1ri.de/myc/ki.pdf
 [15]	https://dk1ri.de/myc/communication.txt or https://dk1ri.de/myc/communication.pdf
 [16]	https://dk1ri.de/myc/Security.txt or https://dk1ri.de/myc/Security.pdf
-[17]	https://dk1ri.de/myc/logicdevice.zip
