@@ -6,10 +6,10 @@ Start Watchdog
 'Loop must be less than 2s
 '
 ' timeout
-Incr J
-If J = 255 Then
-   Incr I
-   Select Case I
+Incr Timeout_J
+If Timeout_J = 255 Then
+   Incr Timeout_I
+   Select Case Timeout_I
       Case  90
          If Tx_time > 0 Then
             Incr Tx_time

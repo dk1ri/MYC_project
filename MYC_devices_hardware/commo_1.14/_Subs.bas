@@ -15,20 +15,42 @@ End If
 Return
 #ENDIF
 '
-#IF Use_print_tx = 1
 Print_tx:
 Decr  Tx_write_pointer
 For B_temp2 = 1 To Tx_write_pointer
    B_temp3 = Tx_b(B_temp2)
-   Printbin B_temp3
+   If Interface_FU = 0 Then
+      ' Interface Myc Mode
+      If Interface_mode = 1 Then
+         Printbin B_temp3
+      End If
+   Else
+      ' FU
+      Printbin B_temp3
+   End If
 Next B_temp2
+If Interface_FU = 0 Then
+   ' Interface
+   If Interface_mode = 0 Then
+      ' Transparent
+      Gosub Tx_wireless_start0
+   End If
+Else
+   ' FU
+   If wireless_active = 1 Then
+      Select Case Radio_type
+         Case is < 3
+            Gosub Tx_wireless_start0
+         Case 3
+            Gosub Tx3
+      End Select
+   End If
+End If
 Tx_pointer = 1
 Tx_write_pointer = 1
 Tx_time = 0
 Return
-#ENDIF
 '
-#IF Use_sub_restore = 1
 Sub_restore:
 ' basic announcement
 ' commands as temporary storage
@@ -42,16 +64,15 @@ For B_temp2 = 1 To B_temp3
    Incr Tx_write_pointer
 Next B_temp2
 Return
-#ENDIF
 '
-#IF Use_seri = 1
 Sub Seri()
-If Command_pointer < Stringlength Then Incr Command_pointer
-Command_b(Command_pointer) = UDR
-New_data = 1
-Command_mode = 1
+B_temp1 = UDR
+If Serial_active = 1 Then
+   If Command_pointer < Stringlength Then Incr Command_pointer
+   Command_b(Command_pointer) = B_temp1
+   New_data = 1
+End If
 End Sub
-#ENDIF
 '
 #IF Use_reset_i2c = 1
 Reset_i2c:
@@ -83,25 +104,21 @@ Sub I2c()
       Case &H80
          If Command_pointer < Stringlength Then Incr Command_pointer
             Command_b(Command_pointer) = TWDR
-            Command_mode = 2
             New_data = 1
             Twcr = &B11000101
       Case &H88
          If Command_pointer < Stringlength Then Incr Command_pointer
             Command_b(Command_pointer) = TWDR
-            Command_mode = 2
             New_data = 1
             Twcr = &B11000101
       Case &H90
          If Command_pointer < Stringlength Then Incr Command_pointer
             Command_b(Command_pointer) = TWDR
-            Command_mode = 2
             New_data = 1
             Twcr = &B11000101
       Case &H98
          If Command_pointer < Stringlength Then Incr Command_pointer
             Command_b(Command_pointer) = TWDR
-            Command_mode = 2
             New_data = 1
             Twcr = &B11000101
       Case &HA0
@@ -156,3 +173,94 @@ Sub I2c()
 
 End Sub
 #ENDIF
+
+Check_interfaces:
+   Serial_active = 0
+   If Serial_activ = 1 Or USB_active = 1 Then
+      Serial_active = 1
+   End If
+ '  Command_allowed = 0
+   If I2c_active = 1 Or serial_active = 1 Then
+    '     Command_allowed = 1
+   End If
+   If wireless_active = 1 Then
+ '     Command_allowed = 1
+   End If
+Return
+'
+' wireless
+'
+' There is a transparent mode (for interface only) and a MYC mode.
+' This is necessary for the interface, because the interface do not know the length of other commands.
+'
+' Interface:
+' Transparent mode:
+' Data are directly and imediately sent from I2C / serial / USB to radio modul.
+' Received data (Spi_in) are sent to I2C / serial / USB.
+'
+' MYC Mode:
+' It works as all MYC FU.
+' (but: Interface get no commands via radio interface
+'
+'
+' other FU:
+' FU is in MYC Mode always
+' wireless interface is enabled by individualization,
+'
+wireless_setup:
+B_temp1 = InterfaceFU
+B_temp2 = 0
+If B_temp1 = 0 Then
+   If Interface_mode = 0 Then
+      ' transparent
+      ' Interface: has radio module always
+      B_temp2 = 1
+   End If
+Else
+   ' FU
+   If Wireless_active = 1 Then
+      B_temp2 = 1
+   End If
+End If
+If B_temp2 = 1 Then
+   ' init radio module
+   Select Case R_type
+      Case 0
+         Gosub RFM95_setup0
+      'Case 1
+         'Gosub RFM95_setup0
+      'Case2
+         'Gosub RFM95_setup0
+      Case 3
+         Gosub nrf24_setup3
+   End Select
+  '
+End If
+Return
+'
+' for wireless
+Read_register:
+   spiout Register_b(1), 1
+   spiin  Spi_in_b(1), Spi_len
+Return
+'
+Write_Register1:
+   spiout Register_b(1), 1
+Return
+'
+Write_Register:
+   spiout Register_b(1), 2
+Return
+'
+Write_3Register:
+   spiout Register_b(1), 4
+Return
+'
+Write_wireless_string:
+   spiout Tx, Spi_len
+Return
+'
+Read_fifo:
+   spiout Register_b(1), 1
+   spiin  Spi_in_b(1), Rx_bytes
+Return

@@ -25,142 +25,63 @@ FFF0:
       ' -> used for temporary storage of announdements
       If A_line < No_of_announcelines And Number_of_lines < No_of_announcelines Then
          If Number_of_lines > 0 Then
-            If Command_mode = 1 Then
-               F0stop = 0
-               Tx_time = 1
+            F0stop = 0
+            Tx_time = 1
 #IF Command_is_2_byte = 0
-      Tx_b(1) = &HF0
-      Tx_b(2) = A_line
-      Tx_b(3) = Number_of_lines
-      Tx_write_pointer = 4
+            Tx_b(1) = &HF0
+            Tx_b(2) = A_line
+            Tx_b(3) = Number_of_lines
+            Tx_write_pointer = 4
 #ELSE
-      Tx_b(1) = &HFF
-      Tx_b(2) = &HF0
-      Tx_b(3) = High(A_line)
-      Tx_b(4) = Low (A_line)
-      Tx_b(5) = High(Number_of_lines)
-      Tx_b(6) = Low(Number_of_lines)
-      Tx_write_pointer = 7
+            Tx_b(1) = &HFF
+            Tx_b(2) = &HF0
+            Tx_b(3) = High(A_line)
+            Tx_b(4) = Low (A_line)
+            Tx_b(5) = High(Number_of_lines)
+            Tx_b(6) = Low(Number_of_lines)
+            Tx_write_pointer = 7
 #ENDIF
-               Command = Lookupstr(A_line, Announce)
-               B_temp3 = Len(Command)
-               Tx_b(Tx_write_pointer) = B_temp3
-               Incr Tx_write_pointer
-               For B_temp2 = 1 To B_temp3
-                   Tx_b(Tx_write_pointer) = Command_b(B_temp2)
-                   Incr Tx_write_pointer
-               Next B_temp2
-               F0elements = 1
-               Incr A_line
-               Decr Number_of_lines
-               If Number_of_lines > 0 Then
-                  'additional announcement lines
-                  While Number_of_lines > 0  and F0stop = 0
-                     Command = Lookupstr(A_line, Announce)
-                     B_temp3 = Len(Command)
-                     W_temp1 = Tx_write_pointer + B_temp3
-                    Incr W_temp1
-                    If W_temp1 < Stringlength Then
-                       Tx_b(Tx_write_pointer) = B_temp3
+            Command = Lookupstr(A_line, Announce)
+            B_temp3 = Len(Command)
+            Tx_b(Tx_write_pointer) = B_temp3
+            Incr Tx_write_pointer
+            For B_temp2 = 1 To B_temp3
+                Tx_b(Tx_write_pointer) = Command_b(B_temp2)
+                Incr Tx_write_pointer
+            Next B_temp2
+            F0elements = 1
+            Incr A_line
+            Decr Number_of_lines
+            If Number_of_lines > 0 Then
+               'additional announcement lines
+               While Number_of_lines > 0  and F0stop = 0
+                  Command = Lookupstr(A_line, Announce)
+                  B_temp3 = Len(Command)
+                  W_temp1 = Tx_write_pointer + B_temp3
+                  Incr W_temp1
+                  If W_temp1 < Stringlength Then
+                    Tx_b(Tx_write_pointer) = B_temp3
+                    Incr Tx_write_pointer
+                    For B_temp2 = 1 To B_temp3
+                       Tx_b(Tx_write_pointer) = Command_b(B_temp2)
                        Incr Tx_write_pointer
-                       For B_temp2 = 1 To B_temp3
-                          Tx_b(Tx_write_pointer) = Command_b(B_temp2)
-                          Incr Tx_write_pointer
-                       Next B_temp2
-                       Incr F0elements
-                    Else
-                       F0stop = 1
-                    End If
-                    Decr Number_of_lines
-                    Incr A_line
-                  Wend
-               End If
-               Tx_b(3) = F0elements
-               Gosub Print_tx
+                    Next B_temp2
+                    Incr F0elements
+                  Else
+                    F0stop = 1
+                  End If
+                  Decr Number_of_lines
+                  Incr A_line
+               Wend
             End If
+            Tx_b(3) = F0elements
+            Gosub Print_tx
          End If
       Else_Parameter_error
       Gosub Command_received
    End If
 Return
 '
-FFF8:
-#IF Command_is_2_byte = 0
-   If Commandpointer >= 2 Then
-      If Command_b(2) = 0 Then
-         If wireless_active = 0 Then
-            'Switch to transparent mode, server only
-            Myc_mode = 0
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else
-         If Command_b(2) <= Name_len Then
-            ' change name
-            B_temp1 = Command_b(2)
-            If Commandpointer >= B_temp1 Then
-               Radio_name = String(4,&H878) ' "x"
-               B_temp2 = 1
-               For B_temp1 = 3 to Commandpointer
-                  Radio_name_b(B_temp2) = Command_b(B_temp1)
-                  B_temp2 = B_temp2 + 1
-               Next B_temp1
-               #IF RadioType = 2
-                  Gosub Write_id
-               #EndIF
-               Radio_name_eram = Radio_name
-               Gosub Command_received
-            Else
-               Parameter_error
-               Gosub Command_received
-            End If
-         Else
-            Parameter_error
-            Gosub Command_received
-         End If
-      End If
-   End If
-#ENDIF
-#IF Command_is_2_byte = 1
-   If Commandpointer >= 3 Then
-      If Command_b(3) = 0 Then
-         If wireless_active = 0 Then
-            'Switch to transparent mode, server only
-            Myc_mode = 0
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      Else
-         If Command_b(3) <= Name_len Then
-            ' change name
-            B_temp1 = Command_b(3)
-            If Commandpointer >= B_temp1 Then
-               Radio_name = String(4,&H878) ' "x"
-               B_temp2 = 1
-               For B_temp1 = 4 to Commandpointer
-                  Radio_name_b(B_temp2) = Command_b(B_temp1)
-                  B_temp2 = B_temp2 + 1
-               Next B_temp1
-               #IF RadioType = 2
-                  Gosub Write_id
-               #EndIF
-               Radio_name_eram = Radio_name
-               Gosub Command_received
-            Else
-               Parameter_error
-               Gosub Command_received
-            End If
-         Else
-            Parameter_error
-            Gosub Command_received
-         End If
-      End If
-   End If
-#ENDIF
-Return
-
 FFFC:
       Tx_time = 1
       Tx = String(30, 0)
@@ -222,7 +143,7 @@ FFFC:
       Tx_b(3) = B_temp1 - 4
 #ENDIF
       Tx_write_pointer = B_temp1
-      If Command_mode = 1 Then Gosub Print_tx
+      Gosub Print_tx
       Gosub Command_received
 Return
 '
@@ -240,7 +161,7 @@ FFFD:
       'no info
       Tx_write_pointer = 4
 #ENDIF
-      If Command_mode = 1 Then Gosub Print_tx
+      Gosub Print_tx
       Gosub Command_received
 Return
 '
@@ -297,9 +218,26 @@ FFFE:
                If Commandpointer >= 3 Then
                   B_temp2 = Command_b(3)
                   If B_temp2 < 2 Then
-                     Serial_active = B_temp2
-                     Serial_active_eeram = Serial_active
+                     Serial_activ = B_temp2
+                     Serial_activ_eeram = Serial_activ
                   Else_Parameter_error
+                  Gosub Command_received
+               End If
+            Case 5
+               If Commandpointer >= 3 Then
+                  B_temp2 = Command_b(3)
+                  If B_temp2 < 2 Then
+                     USB_active = B_temp2
+                     USB_active_eeram = USB_active
+                  Else_Parameter_error
+                  Gosub Command_received
+               End If
+            Case 6
+               If Commandpointer >= 3 Then
+                  If Command_b(3) < 2 Then
+                     wireless_active = Command_b(3)
+                     wireless_active_eram = wireless_active
+                     Else_Parameter_error
                   Gosub Command_received
                End If
 #ELSE
@@ -330,8 +268,8 @@ FFFE:
             Case 2
                If Commandpointer >= 4 Then
                   If Command_b(4) < 2 Then
-                     I2C_active = Command_b(4)
-                     I2C_active_eeram = I2C_active
+                     I2c_active = Command_b(3)
+                     I2c_activ_eeram = I2c_active
                      Else_Parameter_error
                   Gosub Command_received
                End If
@@ -350,9 +288,25 @@ FFFE:
                If Commandpointer >= 4 Then
                   B_temp2 = Command_b(4)
                   If B_temp2 < 2 Then
-                     Serial_active = B_temp2
-                     Serial_active_eeram = Serial_active
+                     Serial_activ = B_temp2
+                     Serial_activ_eeram = Serial_activ
                   Else_Parameter_error
+                  Gosub Command_received
+               End If
+            Case 5
+               If Commandpointer >= 4 Then
+                  If Command_b(4) < 2 Then
+                     USB_active = Command_b(3)
+                     USB_activ_eeram = USB_active
+                     Else_Parameter_error
+                  Gosub Command_received
+               End If
+            Case 6
+               If Commandpointer >= 3 Then
+                  If Command_b(3) < 2 Then
+                     wireless_activ = Command_b(3)
+                     wireless_activ_eeram = wireless_activ
+                     Else_Parameter_error
                   Gosub Command_received
                End If
 #ENDIF
@@ -363,8 +317,10 @@ FFFE:
                Parameter_error
                Gosub Command_received
          End Select
+         Gosub Check_interfaces
       End If
 Return
+#ENDIF
 '
 FFFF:
 #IF Command_is_2_byte = 0
@@ -401,7 +357,7 @@ FFFF:
                Tx_b(3) = B_temp2
                Tx_write_pointer = 4
             Case 4
-               Tx_b(3) = Serial_active
+               Tx_b(3) = Serial_activ
                Tx_write_pointer = 4
             Case 5
                Tx_b(3) = 0
@@ -411,7 +367,13 @@ FFFF:
                Tx_b(4) = "8"
                Tx_b(5) = "N"
                Tx_b(6) = "1"
-               Tx_write_pointer = 7
+               Tx_write_pointer = 4
+            Case 7
+               Tx_b(3) = USB_active
+               Tx_write_pointer = 4
+            Case 8
+               Tx_b(3) = wireless_active
+               Tx_write_pointer = 4
 #ELSE
       If Commandpointer >= 3 Then
          Tx_time = 1
@@ -453,6 +415,12 @@ FFFF:
                Tx_b(6) = "N"
                Tx_b(7) = "1"
                Tx_write_pointer = 8
+            Case 7
+               Tx_b(3) = USB_active
+               Tx_write_pointer = 4
+            Case 8
+               Tx_b(3) = wireless_activ
+               Tx_write_pointer = 4
 #ENDIF
 '
             $include "__command255.bas"
@@ -461,9 +429,8 @@ FFFF:
                Parameter_error
          End Select
          If Tx_write_pointer > 0 Then
-            If Command_mode = 1 Then Gosub Print_tx
+            Gosub Print_tx
          End If
          Gosub Command_received
       End If
 Return
-#ENDIF
