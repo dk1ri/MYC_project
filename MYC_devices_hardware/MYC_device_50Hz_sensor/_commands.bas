@@ -255,12 +255,3 @@ Return
    End If
 Return
 '
-16:
-   Tx_time = 1
-   Tx_b(1) = &H10
-   Tx_b(2) = Interface_mode
-   Tx_write_pointer = 3
-   Gosub Print_tx
-   Gosub Command_received
-Return
-'

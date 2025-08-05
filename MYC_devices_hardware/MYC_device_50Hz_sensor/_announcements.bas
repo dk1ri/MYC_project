@@ -96,40 +96,35 @@ Data "14;op,frequency;1;1019999,{62_820000000to1020000000};lin;Hz;14,CHAPTER,ADM
 'frequency
 Data "15;ap,as14"
 '
-'Announce 16:
-'Myc_mode
-'Myc_mode
-Data "16;as,mode;1;0,configuration;1,operate"
-'
-'Announce17:
+'Announce16:
 'Befehl &HF0
 'liest announcements
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;145;23,start at;23,elements;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;22,start at;22,elements;14,CHAPTER,ADMINISTRATION"
 '
-'Announce18:
+'Announce17:
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;60,last_error"
 '
-'Announce19:
+'Announce18:
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-'Announce20:
+'Announce19:
 'Befehl &HFE :
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2Cactiv,1;b,I2caddress,40;a,RS232,1;a,USB,1;a,wireless,1;14,CHAPTER,ADMINISTRATION"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1;a,wireless,0;a,I2Cactiv,1;b,I2caddress,41;14,CHAPTER,ADMINISTRATION"
 '
-'Announce21:
+'Announce20:
 'Befehl &HFF :
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2Cactiv,1;b,I2caddress,40;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,wireless,1;14,CHAPTER,ADMINISTRATION"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,wireless,0;a,I2Cactiv,1;b,I2caddress,41;14,CHAPTER,ADMINISTRATION"
 '
-'Announce22:
+'Announce21:
 Data "R;!4 !$5 !$6 !$7 !$8 !$9 !$10 !$11 !$12 !$12 IF $14=1"
