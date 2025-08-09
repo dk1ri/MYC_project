@@ -1,10 +1,8 @@
 'name : U_I.bas
-'Version V01.0, 20250620
-
+'Version V02.1, 20250809
 'purpose : Program for U / I Sensor INA219
 'This Programm workes with serial protocol or use a wireless interface
-'Can be used with hardware Wireless_interface Version V02.1 by DK1RI
-'This Interface cannot be used with a wireless interface now!!!!
+'Can be used with hardware Wireless_interface Version V02.3 by DK1RI
 '
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -37,7 +35,6 @@ $regfile = "m644def.dat"
 '-----------------------------------------------------
 $include "common_1.14\_Processor.bas"
 $crystal = 20000000
-$lib "i2c_twi.lbx"
 '
 '----------------------------------------------------
 '
@@ -48,9 +45,9 @@ $lib "i2c_twi.lbx"
 '
 'I2C address of Sensor (default)
 Dim I2c_addr As Byte
-' &H40 ! * 2
+' &H40  * 2
 I2c_addr = &H80
-Const No_of_announcelines = 26
+Const No_of_announcelines = 24
 Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 50
@@ -73,14 +70,12 @@ Const Bus_voltage_reg = &H02
 Const Current_reg = &H04
 Const Power_reg = &H03
 Const Calibration_reg = &H05
-Dim Ina_register As Byte
-Dim I2c_rx_data As String * 3
-Dim I2c_rx_data_b(2) As Byte At I2c_rx_data Overlay
-Dim I2c_tx_data As String * 3
-Dim I2c_tx_data_b(3) As Byte At I2c_tx_data Overlay
+Dim I2c_data As String * 4
+Dim I2c_data_b(3) As Byte At I2c_data Overlay
 Dim Is_minus As Byte
 Dim S As Single
 '
+$lib "i2c_twi.lbx"
 waitms 100
 '----------------------------------------------------
 $include "common_1.14\_Macros.bas"
@@ -123,29 +118,32 @@ $include "common_1.14\_Subs.bas"
 '----------------------------------------------------
 '
 Ina_setup:
-I2c_tx_data_b(1) = Calibration_reg
+I2c_data_b(1) = Calibration_reg
 ' LSB = 3000/32768 = 92uA  -> 100uA
 ' Reg = 0,0496/(100uA * 0.1) = 4096/A -> &H1000
-I2c_tx_data_b(2) = &H10
-I2c_tx_data_b(3) = &H00
-i2csend I2c_addr, I2c_tx_data, 3
+I2c_data_b(2) = &H10
+I2c_data_b(3) = &H00
+B_temp1 = 3
+Gosub Write_i2c_data
 Return
 '
-
 Write_i2c_data:
-   i2csend  I2c_addr, I2c_tx_data_b(1), 3
+   i2csend  I2c_addr, I2c_data_b(1), B_temp1
+   i2c_error
 Return
 '
 Read_i2c_data:
-B_temp1 = 65
-   i2csend  I2c_addr, Ina_register
-   i2creceive I2c_addr, I2c_rx_data, 0, 2
+   B_temp1 = 1
+   B_temp2 = 2
+   i2creceive I2c_addr, I2c_data_b(1), B_temp1, B_temp2
+   i2c_error
 Return
 '
+
 Complement:
 Is_minus = 0
-W_temp1_h = I2c_rx_data_b(1)
-W_temp1_l = I2c_rx_data_b(2)
+W_temp1_h = I2c_data_b(1)
+W_temp1_l = I2c_data_b(2)
 If W_temp1_h > &B01111111 Then
    ' negative
    W_temp1_h = W_temp1_h Xor &HFFFF

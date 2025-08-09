@@ -1,30 +1,39 @@
-Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/Feinstaubsensor_w.pdf
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/U_I.pdf
 
-Spannung / Strom  Messung für das MYC Protokoll
-					
-Dieses Messgerät ist nicht getestet, kann also noch Fehler enthalten (Leiterplatte und Firmware)!
+Spannung / Strom  Messung für das MYC Protokoll mit INA219
 
-Author DK1RI, Version V01.0, 202412
+Author DK1RI, Version V02.1, 20250809
 This project can be found in https://www.github.com/dk1ri
+
+Definitionen
+
+https://dk1ri.de/myc/Description.txtDefinitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
 
 Einleitung
 
-Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser gesteuert werden. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
-Zur Steuerung mit einem Browser: siehe [7]
+Diese FU verwendet das Adafruit Modul oder den pinkompatiblen Modul von Stemma.. Das Modul von Soldered kann auch verwendet werden, hat aber eine andere Pinbelegung.
+Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Steuerung kann seriell, über USB oder über ein Funkinterface erfolgen. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
+Zur Steuerung mit einem Browser: https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
-Zur Fernsteuerung über kurze Entfernungen kann ein passendes Funkmodul angeschlossen werden [9].
+Das Gerät besteht aus einer Leiterplatte mit dem Prozessor und dem Funkinterface. Die Leiterplatte ist auch für andere Geräte vorgesehen, auch für verschiedene Schnittstellen und unterschiedliche Stromversorgung. Das Funkinterface ist für verschiedene Funkmodule ausgelegt. Für eine spezielle Anwendung lässt sich die Hardware erheblich vereinfachen.
+Zur Fernsteuerung über kurze Entfernungen kann ein Funkmodul angeschlossen werden:
+http://www.dk1ri.de/dhw/Wireless_interface.pdf  oder http://www.dk1ri.de/dhw/Wireless_interface.txt 
+Zur Zeit (Juni 2025) gibt es kein funktionsfähiges Funkinterface !!
 
 Beschreibung und Bedienung
 
-Das Messgerät misst Spannungen von 0 – 25V (1mV Auflösung) und Ströme bis 15A (1mA Auflösung).
-Die Stromversorgung ist 7- 12V, Stromaufnahme ca. 40mA max.
-Die Steuerung kann über USB oder RS232 oder ein Funkinterface erfolgen.
-Mit den Defaultwerten beträgt der Messbereich +- 25V und 15A, wie für den Adafruit Modul vorgegeben. Andere Werte sind einstellbar. Es wird empfohlen, dazu das Datenblatt zu lesen. Möglicherweise müssen die announcents geändert werden, damit die richtigen Werte angezeigt werden.
-Die Spannung an den Messeingängen des INA219 darf 26V nicht überschreiten.
+Das Messgerät misst Spannungen von 0 – 25V (4mV Auflösung) und Ströme bis 3A (100uA Auflösung).
+Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
+Strom und Shuntspannung erfolgt durch Messung an Vin+ und Vin-. Zur Spannung-messung wird Vin- und GND (der Stromversorgung) verwendet. Um die Leistung zu messen, muss Vin+ , Vin- und GND verbunden sein. Die Spannung an Vin+ und Vin+ muss 0 - +25V gegen GND sein. Die Spannung zwischen Vin+ und Vin- kann positiv oder negativ sein, muss aber kleiner als 300mV sein da der Strom auf 3A begrenzt ist (zwischen Vin+ und Vin- liegt ein Widerstand von 0,1Ohm).
+Bei der Leistungsmessung ist zu beachten, dass dazu 2 Messungen nötig sind.
+Die Leistungsmessung mit Befehl 4 verwendet die interne Messung und ist auf +-30W begrenzt; die mit Befehl 5 verwendet getrennt Strom und Spannungsmessung und ist auf +-75W begrenzt (25V, +-3A)
+Der Modul hat keine Filter zur Unterdrückung von Spannungs- und Stromschwankungen und auch keinen Schutz gegen Verpolung oder Überspannung.
+Zum genauen Eichung kann der Wert des Configuration register geändert werden. Die Vorgehensweise dafür ist im Datenblatt des INA219 beschrieben. Bei meinen Moduln werden die Spezifikationen der Genauigkeit leicht überschritten.
+Es gibt eine ungetestete kleine Leiterplatte nur zur Steuerung per USB: http://www.dk1ri.de/dhw/U_I_eagle.zip . Diese kann auch mit dem INA219 IC bestückt werden. Dann ist auch der Widerstand zur Strommessung veränderbar. Das Bascom Programm muss angepasst werden.
 
 Einbindung in das MYC System
 
-Details zum MYC System stehen in [3].
+Details zum MYC System stehen in https://www.dk1ri.de/myc/MYC.pdf .
 Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
@@ -38,47 +47,44 @@ Hardware Reset
 
 Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen.
 
-
 Watchdog
 
 Es gibt einen kompletten Hardware -reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
-Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „Testbetrieb“ nach ca 10 Sekunden ansprechen. Für „nicht Test Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
 Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
- Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
 
 Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
-Das aktuelle Bascom Programm verwendet einen Atmega1284.
-Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.14[6] in das Verzeichnis mit dem Programm kopiert werden. Für die unterschiedlichen Funkmodule gibt es unterschiedliche Hexfiles
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega644.
+Die Software wurde in BASCOM geschrieben http://www.dk1ri.de/dhw/U_I_bascom.zip
+Um das Programm zu kompilieren, muss das Verzeichnis https://dk1ri.de/dhw/common_1.14.zip  in das Verzeichnis mit dem Programm kopiert werden.
 
 Programmierung des Prozessors
 
 Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
-Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm) !! Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
-Der Jumper J1 und sollte während der Programmierung entfernt werden; ebenso der Sensor und der Funkmodul.
+Die Fuses müssen möglicherweise programmiert werden (JTAG abschalten!!). Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper JP1 und sollte während der Programmierung entfernt werden; ebenso der Sensor und der Funkmodul.
+
 
 Serielle (RS232 / USB) Schnittstelle
 
-Schnittstellenparameter: 19k2 8N1
-Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die mittleren 4 pins des Verbinders ST2  sind mit dem 4 mittleren Anschlusspunkten JP7 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
-Die Stromversorgung erfolgt dann über USB. X1 C1 und IC3 wird dann nicht bestückt.
+Für die RS232 Schnittstelle wird IC4 und C6 – C9 bestückt. Die seriellen Daten können an JP12 abgenommen werden. Schnittstellenparameter: 19k2 8N1
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die 6 pins des Verbinders ST2  sind mit den 6Anschlusspunkten JP7 /JP8 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung kann dann über USB erfolgen.
+
+I2C Schnittstelle 
+
+Die I2C Schnittstelle wird für den INA219 verwendet und kann daher nicht zur Gerätesteuerung verwendet werden.
 
 Browser Schnittstelle
 
 Es gibt einen (Windows) Webserver, an das Gerät direkt oder über die Funkschnittstelle angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
-Details dazu stehen in [7].
-Ein Bildschirm Bild und nötige Daten für dieses Device stehen in [8].
+Details dazu stehen in  https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt .
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in https://dk1ri.de/w_dat.htm ,
 
 Remote Bedienung (über Funk)
 
-Es kann eine Funkschnittstelle (LoRa oder FSK) zur Überbrückung kurzer Entfernungen angeschlossen werden. Je nach verwendeter Funkschnittstelle muss der Feinstaubsensor entsprechend programmiert werden. Vor der ersten Inbetriebnahme muss der Name des Interfaces (JP12  verbunden) programmiert werden. Danach entfernt man Jumper um versehentlich Änderungen zu vermeiden.
-
-INA219 Anschluss
-
-Wenn ein INA219 im SOT23 Gehäuse verwendet wird,Muss R1 0 R3 und C1 bestückt werden. R1 bestimmt den Strommessbereich.
-Diese Bauteile entfallen bei Verwendung des Adafruit Moduls. Der Strommessbereich betrat dann (ohne Änderung des Moduls) 15A.
+Zur Überbrückung kurzer Entfernungen kann eine Funkschnittstelle angeschlossen werden. Je nach verwendeter Funkschnittstelle muss die FU entsprechend programmiert werden. Vor der ersten Inbetriebnahme muss das gewünschte Funkmodul eingetragen und die Konfiguration vorgenommen werden  (JP12 verbunden). Danach entfernt man den Jumper für den normalen Betrieb.
 
 SMD
 
@@ -86,10 +92,16 @@ Die Leiterplatte ist teilweise mit SMD bestückt
 
 Stromversorgung
 
-Die Stromversorgung ist 7- 12V, Stromaufnahme ca. 130mA max. 
-Alternativ erfolgt die Stromversorgung über USB. X1 C1 und IC3 wird dann nicht bestückt.
- 
+Die externe Stromversorgung ist 7- 12V, Stromaufnahme ca. 30mA max (ohne Funkmodul).
+Es wird bestückt: JP15, D1, C1, IC2. Wird für den Funkmodul zusätzlich 3V benötigt, muss auch DC1 und C11 bestückt werden.
+
+Alternativ erfolgt die Stromversorgung über USB. Dann braucht JP15, D1, und C1 nicht bestückt werden; IC2 und DC1 dürfen nicht bestückt werden!!! Wenn wegen hoher Ströme die 9-12V Stromversorgung und auch USB benötigt wird, dürfen JP8 Pin 1 und 2 nicht mit dem USB Modul verbunden werden.
+
 Bestückung der Leiterplatte 
+
+ http://www.dk1ri.de/dhw/Wireless_interface_eagle.zip
+Die Leiterplatten wireless_interface wird auch für andere Anwendungen verwendet und daher nur teilweise bestückt. 
+Zur Bestückung der wireless_modul Leiterplatte siehe http://www.dk1ri.de/dhw/Wireless_interface.pdf oder http://www.dk1ri.de/dhw/Wireless_interface.txt , wenn ein Funkmodul verwendet werden soll.
 
 Verwendung von ISP:
 JP6
@@ -98,38 +110,57 @@ Mit I2C:
 Siehe I2C oben.
 
 Mit serieller Schnittstelle:
-Bei Verwendung der RS232 Schnittstelle wird X4, IC4 und C6 – C9 bestückt. Alternativ dazu kann der USB Modul UM2102  verwendet werden.
+Siehe Serielle Schnittstelle oben
+
+Externe Stromversorgung:
+Siehe Stromversorgung oben.
+
+Außer den bereits erwähnten Bauteilen wird bestückt:  Q1, IC1, C2 – C5, C10 - C12, JP1, JP5,  JP11, JP13, JP14, JP21, JP22, SV1 (mit Funkschnittstelle)
+
+Der Adafruit Modul wird an JP21 / JP22 angeschlossen, Die Pins V+ und V- sind nicht verbunden. Der Anschluss zum Messen von Strom Spannung erfolgt über die Schraubkontakte des Moduls.
 
 Anschlüsse
 
-Power
-Tip	12V
-Ring	GND
+JP15 (Power)
+1	GND
+2	12V
 
-RS232 (Buchse)
-5	GND
-2	TX (PC Eingang)
-3	RX (PC Ausgang)
+JP 12 (RS232)
+1	GND
+2	RX (PC Ausgang)
+3	TX (PC Eingang)
+
+Adafruit U/I Sensor (JP21 JP22) Steckanschluss
+JP21 2		5V
+JP21 3		GND
+JP21 4		SCL
+JP22 1		SDA
+Vin+ und Vin- dürfen nicht verbunden werden !!!
+
+Soldered U/I Sensor (JP21 JP22)
+JP21 2		5V
+JP21 3		GND
+JP21 4		SCL Anschluss über Draht
+JP22 1		SDA Anschluss über Draht
+
+SV1		Anschluss Funkmodul
 
 Jumper
 
 JP1 		Power
-JP2 /JP3	INA219 Adafruit connector
-JP4		Messeingang
 JP5		Reset
 JP6		ISP 
 JP7/8		Anschluss für USB Modul
-JP9/10		Anschluss Funkmodul
-JP11		Umschaltung STRV extern / USB
-SP12		Programmierung des  Funkmoduls
-
-
+JP11		Konfiguration
+JP13		pin 2 und pin3 überbrücken (SCL)
+JP14		pin 2 und pin3 überbrücken (5V)
 
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion Feinstaubsensor V01.0
-Bascom Version V04.0
+Leiterplattenversion (wireless_interface) V02.3 https://dk1ri.de/dhw/Wireless_interface_eagle.zip
+Bascom Version V02.1
+http://www.dk1ri.de/dhw/U_I_bascom.zip
 
 Copyright
 
@@ -137,15 +168,3 @@ Die Ideen in diesem Dokument unterliegen der GPL (Gnu Public Licence V2) soweit 
 Die Verwendung der Unterlagen erfolgt auf eigene Geafahr; es wird keinerlei Garantie übernommen.
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
-
-Referenzen
-
-[1]	http://www.dk1ri.de/dhw/MYC_U_I_eagle.zip
-[2]	http://www.dk1ri.de/dhw/U_I_bascom.zip
-[3]	https://www.dk1ri.de/myc/MYC.pdf 
-[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
-[5]	https://dk1ri.de/myc/Definitions .txt  oder https://dk1ri.de/myc/Definitions .pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.13.zip
-[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
-[8]	https://dk1ri.de/w_dat.htm
-[9]	https://dk1ri.de/dhw/MYC_wireless.pdf oder  https://dk1ri.de/dhw/MYC_wireless.txt

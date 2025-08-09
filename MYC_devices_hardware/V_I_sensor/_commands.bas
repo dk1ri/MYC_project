@@ -1,5 +1,5 @@
 ' Commands
-' 20241221
+' 20250805
 '
 00:
 Tx_time = 1
@@ -12,13 +12,10 @@ Tx_time = 1
 Return
 '
 01:
-   Ina_register = Shunt_voltage_reg
+   I2c_data_b(1) = Shunt_voltage_reg
    Gosub Read_i2c_data
- '  printbin I2c_rx_data_b(1)
    Gosub Complement
    If W_temp1 <= 30000 Then
-  ' print Is_minus
- '  printbin w_temp1
       If Is_minus = 0 Then
          W_temp1 = W_temp1 + 30000
       Else
@@ -36,10 +33,10 @@ Return
 Return
 '
 02:
-   Ina_register = Bus_voltage_reg
+   I2c_data_b(1) = Bus_voltage_reg
    Gosub Read_i2c_data
-   W_temp1_h = I2c_rx_data_b(1)
-   W_temp1_l = I2c_rx_data_b(2)
+   W_temp1_h = I2c_data_b(1)
+   W_temp1_l = I2c_data_b(2)
    'shift out the low bits !!!!
    shift W_temp1, right, 3
    W_temp1 = W_temp1 * 4
@@ -52,7 +49,7 @@ Return
 Return
 '
 03:
-   Ina_register = Current_reg
+   I2c_data_b(1) = Current_reg
    Gosub Read_i2c_data
    Gosub Complement
    If W_temp1 <= 30000 Then
@@ -73,10 +70,10 @@ Return
 Return
 '
 04:
-   Ina_register = Power_reg
+   I2c_data_b(1) = Power_reg
    Gosub Read_i2c_data
-   W_temp1_h = I2c_rx_data_b(1)
-   W_temp1_l = I2c_rx_data_b(2)
+   W_temp1_h = I2c_data_b(1)
+   W_temp1_l = I2c_data_b(2)
    W_temp1 = W_temp1 * 2
    If W_temp1 <= 30000 Then
       Tx_b(1) = &H04
@@ -89,15 +86,15 @@ Return
 Return
 '
 05:
-   Ina_register = Bus_voltage_reg
+   I2c_data_b(1) = Bus_voltage_reg
    Gosub Read_i2c_data
-   W_temp1_h = I2c_rx_data_b(1)
-   W_temp1_l = I2c_rx_data_b(2)
+   W_temp1_h = I2c_data_b(1)
+   W_temp1_l = I2c_data_b(2)
    shift W_temp1, right, 3
    W_temp1 = W_temp1 * 4
    S = W_temp1
    '
-   Ina_register = Shunt_voltage_reg
+   I2c_data_b(1) = Shunt_voltage_reg
    Gosub Read_i2c_data
    Gosub Complement
    If W_temp1 <= 30000 Then
@@ -121,21 +118,21 @@ Return
 '
 06:
    If Commandpointer >= 3 Then
-      Ina_register = Calibration_reg
-      I2c_tx_data_b(1) = Ina_register
-      I2c_tx_data_b(2) = Command_b(2)
-      I2c_tx_data_b(3) = Command_b(3)
+      I2c_data_b(1) = Calibration_reg
+      I2c_data_b(2) = Command_b(2)
+      I2c_data_b(3) = Command_b(3)
+      B_temp1 = 3
       Gosub Write_i2c_data
       Gosub Command_received
    End If
 Return
 '
 07:
-   Ina_register = Calibration_reg
+   I2c_data_b(1) = Calibration_reg
    Gosub Read_i2c_data
    Tx_b(1) = &H07
-   Tx_b(2) = I2c_rx_data_b(1)
-   Tx_b(3) = I2c_rx_data_b(2)
+   Tx_b(2) = I2c_data_b(1)
+   Tx_b(3) = I2c_data_b(2)
    Tx_write_pointer = 4
    Gosub Print_tx
    Gosub Command_received
@@ -338,14 +335,5 @@ Return
       Not_valid_at_this_time
       Gosub Command_received
    End If
-Return
-'
-18:
-   Tx_time = 1
-   Tx_b(1) = &H12
-   Tx_b(2) = Interface_mode
-   Tx_write_pointer = 3
-   Gosub Print_tx
-   Gosub Command_received
 Return
 '

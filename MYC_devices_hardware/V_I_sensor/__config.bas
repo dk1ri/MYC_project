@@ -2,7 +2,7 @@
 ' 20241214
 '
 ' pin declaration is essential!!!
-Config SCL = Portc.0
-Config SDA = Portc.1
-Config Twi = 400000
+Config SDA = PortC.1
+Config SCL = PORTC.0
 I2cinit
+Config TWI = 100000
