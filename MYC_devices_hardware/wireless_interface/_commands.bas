@@ -1,114 +1,106 @@
 ' Commands
-' 20241210
+' 20251201
 '
 00:
+   Tx_time = 1
+   A_line = 0
+   Number_of_lines = 1
+   Send_line_gaps = 2
+   Gosub Sub_restore
+   Gosub Print_tx
+   Gosub Command_received
 Return
 '
-EB:
-   If Myc_mode = 1 Then
-      Tx_time = 1
-      Tx_b(1) = &HEB
-      Tx_b(2) = Myc_mode
-      Tx_write_pointer = 3
-      Gosub Print_tx
-      Gosub Command_received
-   End If
-Return
-'
-EC:
-   If Myc_mode = 1 And wireless_active = 0 Then
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 2 Then
-            Enable_switch_over = Command_b(2)
-            Enable_switch_over_eram = Command_b(2)
-            B_temp1 = Command_b(2) + 2
-         Else
-            Parameter_error
-         End If
-         Gosub Command_received
-      End If
-   Else
-      Parameter_error
-      Gosub Command_received
-   End If
-Return
-'
-ED:
-   If Myc_mode = 1 Then
-      Tx_time = 1
-      Tx_b(1) = &HED
-      Tx_b(2) = Enable_switch_over
-      Tx_write_pointer = 3
-      Gosub Print_tx
-      Gosub Command_received
-   End If
-Return
-'
-EE:
-   If Myc_mode = 1 Then
-      Tx_time = 1
-      Tx_b(1) = &H0E
-      Tx_b(2) = Radiotype
-      Tx_write_pointer = 3
-      Gosub Print_tx
-      Gosub Command_received
-   End If
-Return
-'
-EF:
-   If Myc_mode = 1 Then
-      Tx_time = 1
-      Tx_b(1) = &HEF
-      Tx_b(2) = len(Radio_name)
-      B_temp2 = 3
-      For B_temp1 = 1 to Tx_b(2)
-          Tx_b(B_temp2) = Tx_b(B_temp1)
-          Incr B_temp2
-      Next B_temp1
-      Tx_write_pointer = B_temp2
-      Gosub Print_tx
-      Gosub Command_received
-   End If
-Return
-'
-F8:
-   If Myc_mode = 1 Then
-      'server
-      If Commandpointer >= 2 Then
-         If Command_b(2) = 0 Then
-            If wireless_active = 0 Then
-               'Switch to transparent mode, server only
-               Myc_mode = 0
+01:
+   If Commandpointer >= 3 Then
+      'never as wireless command
+      If From_wireless = 0 Then
+         ' config Jumper required
+         If Mode_in = 0 Then
+            W_temp1 = Command_b(2) * 256
+            W_temp1 = W_temp1 + Command_b(3)
+            If Radio_type = 1 Then
+               If W_temp1 < 1700 Then
+                  Radio_frequency = W_temp1
+                  Radio_frequency_eeram = Radio_frequency
+                  D_temp1 = Radio_frequency * 1000
+                  Gosub Set_frequency_0
+               Else
+                  Parameter_error
+               End If
             Else
-               Parameter_error
+               Not_valid_at_this_time
             End If
             Gosub Command_received
          Else
-            If Command_b(2) <= Name_len Then
-               ' change name
-               B_temp1 = Command_b(2)
-               If Commandpointer >= B_temp1 Then
-                  Radio_name = String(4,&H878) ' "x"
-                  B_temp2 = 1
-                  For B_temp1 = 3 to Commandpointer
-                     Radio_name_b(B_temp2) = Command_b(B_temp1)
-                     B_temp2 = B_temp2 + 1
-                  Next B_temp1
-                  #IF RadioType = 2
-                     Gosub Write_id
-                  #EndIF
-                  Radio_name_eram = Radio_name
-                  Gosub Command_received
+            Not_valid_at_this_time
+         End If
+      Else
+         Not_valid_at_this_time
+      End If
+      From_wireless = 0
+      Gosub Command_received
+   End If
+Return
+'
+02:
+   If Radio_type = 1 Then
+      Gosub Read_frequency_0
+      Si_temp_w0 = D_temp1
+      Si_temp_w0 = Si_temp_w0 / 1000
+      Radio_frequency = Si_temp_w0
+      Tx_time = 1
+      Tx_b(1) = &H02
+      w_temp1 = Radio_frequency
+      Tx_b(2) = w_temp1_h
+      Tx_b(3) = w_temp1_l
+      Tx_write_pointer = 4
+      Gosub Print_tx
+   Else
+      Not_valid_at_this_time
+   End If
+   Gosub Command_received
+Return
+'
+03:
+   If Commandpointer >= 2 Then
+      'never as wireless command
+      If From_wireless = 0 Then
+         ' config Jumper required
+         If Mode_in = 0 Then
+            If Radio_type = 4 Then
+               If Command_b(2) < 129 Then
+                  Radio_frequency = B_temp1
+                  Radio_frequency_eeram = Radio_frequency
+                  Gosub Set_frequency_nrf244
                Else
                   Parameter_error
-                  Gosub Command_received
                End If
             Else
-               Parameter_error
-               Gosub Command_received
+               Not_valid_at_this_time
             End If
+         Else
+            Not_valid_at_this_time
          End If
+      Else
+         Not_valid_at_this_time
       End If
+      Gosub Command_received
    End If
+Return
+'
+04:
+   If Radio_type = 4 Then
+      Gosub Read_frequency_nrf244
+      Radio_frequency = Spi_in_b(1)
+      Tx_time = 1
+      Tx_b(1) = &H04
+      Tx_b(2) = Radio_frequency
+      Tx_write_pointer = 3
+      Gosub Print_tx
+   Else
+      Not_valid_at_this_time
+   End If
+   Gosub Command_received
 Return
 '
