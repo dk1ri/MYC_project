@@ -1,75 +1,54 @@
-Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte http://www.dk1ri.de/dhw/Wireless_interface.pdf
+Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, laden Sie bitte https://www.dk1ri.de/dhw/Wireless_interface.pdf
 
 MYC Funk Interface
 
-Author DK1RI, Version V01.0, 20241218
+Author DK1RI, Version V02.0, 20251203
 This paper is published in https://github.com/dk1ri  as well
 
-Dieses Projekt ist noch in Entwicklung und nicht getestet!!!
+Definitionen
+https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
 
 Einleitung
 
-Die meisten MYC Geräte (funcs) haben bisher drahtgebundene Interfaces (I2C, seriell oder USB).
-Für einige, wie zum Beispiel den Klimasensor, ist eine Funkverbindung nötig,wenn sie weiter entfernt vom Commandrouter - oder, wenn der nicht vorhanden ist, vom Webserver oder HI - platziert werden sollen. 
-Dies ist die Beschreibung eines Funk Interfaces mit RFM95 oder RYFA689 Modem. Wenn die Datenmenge sehr gering ist, bietet sich diese Interfaces an.
-Das Funkinterface kann nur jeweils mit einem Gerät (func) verbunden werden.
-Diese Interfaces können in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser verwendet werden oder auch als transparente Datenstrecke über Funk. 
+Die meisten MYC Geräte (FU) haben bisher drahtgebundene Interfaces (I2C, seriell oder USB).
+Für einige, wie zum Beispiel den Klimasensor, ist eine Funkverbindung nötig, wenn sie weiter entfernt vom Commandrouter - oder, wenn der nicht vorhanden ist, vom Webserver oder SK - platziert werden sollen. 
+Dies ist die Beschreibung eines Interfaces für verschiedene Funkmodule. Es können auch Module verwendet werden, die nur eine niedrige Datenmenge zulassen; wie zum Beispiel Lora.
+Zur Zeit sind Funkmodule für Lora, 2.4GHz ISM, WLAN und Bluetooth vorgesehen.
+Zwei dieser Interfaces können auch zur direkten bidirektionalen transparenten Datenübertragung verwendet werden (kein MYC System): serielle/USB Schnittstelle <> Funk  <>  serielle/USB Schnittstelle.
+In einem MYC System wird ein Interfaces an den CR / SK angeschlossen und arbeitet im Transparent Mode. Das zweite Interface ist die FU. Folgende Module können direkt auf dieses Interface gesteckt werden: Klimasensor, Luftsensor, Lichtsensor, 50Hz Sensor, GPS. Details zu diesen FU sind in der jeweiligen Beschreibung zu finden. 
+Jede FU ist über eine Verbindung an den CR angeschlossen. Die Funkschnittstelle ist nur eine weitere Verbindungsmöglichkeit der FU. 
+Das Interface hat einen MYC und einen Transparent Mode. Im MYC Mode wird das das Funkmodul konfiguriert. Im Transparent Mode verhält sich das Interface wie ein Kabel; nur eben über Funk.
+Das Funkinterface ist immer eine eins zu eins Verbindung. Bei mehreren FU mit Funkinterface sind daher mehrere Interfaces am CR nötig.
+Dieses Interface kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen oder mit einem Browser verwendet werden oder auch als einfache transparente Datenstrecke über Funk.
 Für dem MYC Mode sind die Befehle als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
-Im Transparent Mode des Servers werden Daten transparent bidirektional von Server zum Client übertragen.
-Die Funk relevanten Programmteile sind im Verzeichnis commonxx enthalten. Sie können so für die Serverseite und Client (funcs) verwendet werden, sofern das Funk Modem an die funcs angeschlossen werden kann und die funcs eine passende Firmware haben.
-Hier werden allgemeine Aspekte des Funkinterfaces und Details zur Severseite beschrieben. Details zur Clientseite wird bei den Geräten (funcs) beschrieben.
-
-RFM95
-Es gibt fertige Module für den RFM95 LoRa mit ESP32 als Prozessor; das erscheint mir aber überdimensioniert, wenn die Funktionalität auch mit einem 10MHz ATMEGA erreicht werden kann.
-Daher gibt es eine je eine Leiterplatte für den (Web / Commandrouter)-Server mit ATMEGA und eine Leiterplatte für den Anschluss an die Sensoren (funcs) als Client.
-Das Server Interface kann seriell oder über USB gesteuert werden.
-Zur Steuerung mit einem Browser: siehe [7].
- 
-RYFA689
-Weitere Details zum Einsatz des RYFA689 stehen weiter unten (Einsatz des RYFA689 Modems) und in der Zeitschrift „Funkamateur“ Heft 2024 / 12.
-
-Weitere Funkmodule können folgen
+Die Funk relevanten Programmteile sind im Verzeichnis common_1.4 enthalten.
+Die folgende Beschreibung gilt im wesentlichen für das Interface, das an den CR angeschlossen wird („Interface“) und die bidirektionale Funkstrecke.
 
 Grenzen des Einsatzes in einem MYC System
 
-Diese Funksysteme sind für geringen Datenverkehr ausgelegt, Die Daten sind nicht verschlüsselt. Befehle, die einen Missbrauch ermöglichen, sollten bei Betrieb über Funk gesperrt werden.
-Die Datenpakete dürfen auch nicht zu lang sein.
+Einige der Funksysteme sind für geringen Datenverkehr ausgelegt. Die Daten sind nicht verschlüsselt. Befehle, die einen Missbrauch ermöglichen, sollten für Betrieb über Funk gesperrt werden. Das MYC System setzt eine fehlerfreie Verbindung zwischen CR und FU voraus. Einige der Funkmodule haben zwar eine gewisse Fehlerkorrektur. Falls es aber trotzdem zu Fehlern kommt, gibt das Interface keine Fehlermeldung an den CR. 
 
-Einbindung in das MYC System
 
-Details zum MYC System stehen in [3].
-Auf der  Serverseite ist das Funkinterface eine Funktion aber nicht als MYC Schnittstelle aktiv und muss daher mit der Individualisierung für die Serverseite abgeschaltet werden. Dies wird auch zur Unterscheidung der Server und Client (func) Seite verwendet, da der Datenfluss für Server und Client unterschiedlich ist. Als Default ist die Firmware als MYC Schnittstelle eingeschaltet (für func).
-Wenn die „remote“ Konfiguration des Funkinterfaces der funcs gewünscht ist, müssen die Befehle zur Steuerung des Funkinterfaces dann auch im Befehlssatz des func erscheinen. Die HI erhält ja die Befehle der func. Ob die Befehle die func oder das Funkinterface des Servers erreichen, hängt vom Mode des Servers ab: MYC mode oder Transparent mode. Die func verarbeitet alle Eingaben über alle aktiven Schnittstellen als Befehle, auch die zu Konfiguration des Funkinterfaces.
-Die func sollte die Möglichkeit anbieten, die Konfiguration seines Funkinterfaces zu sperren.
+Einbindung des Interfaces in das MYC System
 
-Umschaltung vom Transparent in den Myc Mode (Server)
+Details zum MYC System stehen in https://www.dk1ri.de/myc/MYC.pdf .
+Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
+Das Interface erhält im MYC Mode (JP11 überbrückt) Befehle zur Konfiguration nur von der seriellen / USB / I2C Schnittstelle.
+Im Transparentmode (JP11 offen) gehen die MYC Daten / Befehle seriell / USB ? Funkschnittstelle. 
+Andere FU bekommen die Befehle über alle aktiven Schnittstellen. Die Befehle zur Konfiguration des Funkmoduls sind normalerweise im Kapitel „ADMINISTRATION“ und werden vom CR nicht weitergegeben. Eine Fernkonfiguration des Funkmoduls ist über Funk normalerweise nicht möglich.
 
-Die Umschaltung ist auf der Serverseite möglich.
-Es wird der Befehl &HF8 und einer 32 Byte langen Datensequenz gesendet wird. Die soll eine versehentliche Umschaltung verhindern:
-&HF8&H209d,?sz9_+w5.,d6;t8*<32ksy(e$fhN6
-Die Umschaltmöglichkeit kann im MYC mode deaktiviert  werden. Um dann wieder in den MYC Mode zu kommen, muss man das (Server-)Interface mit JP4 neu gestartet werden.
-Man kann so die Konfiguration auch im laufenden MYC System vornehmen.
-Der Befehl &HF8 wird im MYC Mode des Servers und beim Client auch zum Änderung des Namens des Funkinterfaces benutzt
+Transparent Mode
 
-Transparent Mode (Server Interface)
+Ohne Jumper JP11 ist das Interface beim Einschalten im Transparent Mode. Dies sollte die normale Betriebsart sein.
+Ob JP11 vorhanden ist, wird aus Sicherheitsgründen  nur beim Einschalten geprüft.
 
-Ohne Jumper JP4 ist das Funkinterface beim Einschalten im Transparent Mode;. Dies sollte die normale Betriebsart sein.
-Ob JP4 vorhanden ist, wird nur beim Einschalten geprüft.
-Bei Verwendung des RYFA689  wird den Nutzdaten über die Funkstrecke wird ein Byte mit der Datenlänge vorangestellt.
+Konfigurationsmode
 
-Beschreibung (RFM95 Modul)
+Anhängig vom verwendeten Funkmodul ist die  Konfiguration unterschiedlich. Einige Hinweise:
+Interface und FU müssen den gleichen Namen haben; es dient zu Ausfiltern fremder Datenpakete. Als Zeichen sollten nur Buchstaben, Zahlen und „_“ verwendet werden. Die Länge ist auf <= 5 Byte begrenzt.
+Die meisten Parameter der Funkmodule werden als Defaultwerte belassen.
 
-Die Eagle Daten für die Leiterplatten stehen unter  [1]
-Die Stromversorgung der Server Interfaces erfolgt über USB oder muss über JP7 (3.3V !!!) zugeführt werden.
-Es wird dringend empfohlen, bei Änderung der Firmware das Datenblatt des RFM95 zu lesen.
-
-MYC Mode (Server Interface)
-
-Die Konfigurationsbefehle haben commandtoken direkt unterhalb der reservierten token, um eine möglichst gute Trennung zu den normalen Funktionen zu haben. Falls beim Client commandtoken mit einem Byte nicht reichen, muss man zwei Byte verwenden.
-Der Funkname muss &HF8 geändert werden. Bei Server und Client muss der gleiche Name verwendet werden; es dient zu Ausfiltern fremder Datenpakete. Als Zeichen sollten nur Buchstaben, Zahlen und „_“ verwendet werden. Die Länge ist auf < 5 Byte begrenzt.
-Die meisten Parameter des Funkmoduls werden als Defaultwerte belassen, einige werden nur bei der Initialisierung geändert. Wenn Änderungen nötig sind, muss die Firmware neu kompiliert werden.
-
-Fehlermeldungen (Server Interface)
+Fehlermeldungen
 
 Für den MYC Mode:
 Der Befehl &HFC liefert den letzten Fehler im Format:
@@ -77,80 +56,167 @@ aktuelle Befehlsnummer - Fehler - Befehlsnummer beim Auftritt des Fehlers
 Dazu werden die empfangenen Befehle von 0 bis 255 umlaufend gezählt.
 Nach 254 korrekten Befehlen wird der Fehlereintrag gelöscht.
 
-Reset (Server Interface)
+Hardware Reset
 
-Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen.
+Ist der Reset Jumper JP5 beim Anlegen der Versorgungsspannung überbrückt, werden wieder die Defaultwerte eingelesen. Als Frequenz wird die Defaultfrequenz  entsprechend  dem verwendeten Default - Funkmodul eingestellt
 
-Watchdog (Server Interface)
+Watchdog
 
-Für den MYC Mode:
 Es gibt einen kompletten Hardware-reset, wenn die Hauptschleife länger als 2 Sekunde dauert.
-Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests und „nicht_MYC Betrieb“ nach ca 10 Sekunden ansprechen. Für „MYC Betrieb“ sollte der Wert auf 1 Sekunde gesetzt werden.
+Für den MYC Mode:
+Zusätzlich gibt es drei weitere Watchdogs, die in der vorliegenden Firmware für Tests nach ca 10 Sekunden ansprechen. Für „Nicht Test“ sollte der Wert auf 1 Sekunde gesetzt werden.
 Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werden die bereits empfangenen Daten gelöscht. Dies soll falsche Eingaben vermeiden. Mit dem &HFC "letzten Fehler" Befehl kann man Eingabefehler sehen.
+Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
+Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
-Software (Server Interface)
+Software
 
-Die Steuerung übernimmt ein AVR Mikrocontroller Atmega328.
-Die Software wurde in BASCOM geschrieben [2]
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.14 [6] in das Verzeichnis mit dem Programm kopiert werden und das gewünschte Funkmodul bei Const Radiotype = x eingetragen werden.
-Sofern vorhanden, gibt es hex Dateien für die verschiedenen Funkmodule.
+Die Steuerung übernimmt ein AVR Mikrocontroller Atmega 644 oder 1284 (wird bei Bascom verwendet)
+Die Software wurde in BASCOM geschrieben https://dk1ri.de/dhw/wireless_interface_bascom.zip
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.14 aus https://dk1ri.de/dhw/common_1.14_202511.zip  in das Verzeichnis mit dem Programm kopiert werden.
 
-Programmierung des Prozessors (Server Interface)
+Programmierung des Prozessors
 
-Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker (JP6 bei der RFM95 Leiterplatte) vorgesehen.
-Für die verschiedenen Funkmodule gibt es jeweils eigene Hex Dateien (getrennte Kompilierung).
-Die Fuses müssen möglicherweise programmiert werden (siehe Bascom Programm).
-Während der Programmierung JP1, JP2, JP9 – JP11 entfernt werden. Andernfalls wird das Modem zerstört!!
+Zur Programmierung des Prozessors ist ein 6poliger ISP Stecker JP6 vorgesehen.
+Die Fuses müssen möglicherweise programmiert werden (JTAG abschalten!!). Prozessortyp und Frequenz müssen gegebenenfalls angepasst werden.
+Der Jumper JP1 und sollte während der Programmierung entfernt werden; ebenso der Sensor und der Funkmodul!!
 
-Serielle (RS232 / USB) Schnittstelle (RFM95 Modul  Server Interface)
+Serielle (RS232 / USB) Schnittstelle
 
-Schnittstellenparameter: 19k2 8N1.
-Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. USB Platine und Interface müssen voneinander isoliert werden.
+Für die RS232 Schnittstelle wird IC4 und C6 – C9 bestückt. Die seriellen Daten können an JP12 abgenommen werden. Schnittstellenparameter: 19k2 8N1
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die 6 pins des Verbinders ST2  sind mit den 6 Anschlusspunkten JP7 /JP8 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Die Stromversorgung kann dann über USB erfolgen.
+USB Module anderer Firmen sind möglich, aber nicht pinkompatibel.
 
-SMD (RFM95 Modul Server Interface)
+I2C Schnittstelle 
+
+Die Default Adresse ist 40
+Mit dem Befehl &HFE03<n> kann die Adresse in n (1 … 127) geändert werden.
+Pullup Widerstände R3 / R4 müssen immer bestückt werden (1k - 10k).
+Mit JP2 kann festgelegt werden, ob der I2C Bus mit 3V oder 5V betrieben wird.
+Wenn auf den 3V Betrieb völlig verzichtet werden soll, kann IC3 (PCA9517), R1, R2 entfallen und stattdessen wird JP3 und JP4 bestückt und übrbrückt.
+Ganz ohne I2C kann auch SL1, JP3, JP4 R3, R4 entfallen. 
+Der Gesamtwiderstand am I2C Bus sollte bei 1 bis 10 kOhm je nach Leitungslänge liegen
+Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und JP3 / JP4 verwendet wird, muss berücksichtigt werden, dass R1 / R2 parallel zu R3 / R4 liegt. R1 / R2 kann also gegebenenfalls entfallen. 
+Der I2C Anschluss erfolgt an SL1. 
+Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
+Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
+Im Transparent Mode ist I2C nicht möglich
+
+Browser Schnittstelle
+
+Für den MYC Mode gibt es einen (Windows) Webserver, an den das Interface über seriell / USB / I2C angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
+Details dazu stehen in https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt .
+Ein Bildschirm Bild und nötige Daten für dieses Device stehen in https://dk1ri.de/w_dat.htm .
+
+SMD
 
 Die Leiterplatte ist teilweise mit SMD bestückt.
 
-Stromversorgung (RFM95 Modul Server Interface)
+Stromversorgung (Ab Leiterplattenversion V03.1)
 
-Die Stromversorgung erfolgt über USB oder über JP7 JP8 (3.3V !!)
-Mit einer späterenHardwareversion konnen auch Adafruit Funkmodule verwendet werden. Die Versogungsspannung muss dann auf 5V umgesteckt werden (JP?)
+Die Stromversorgung erfolgt mit 7 -12V oder 5V über JP10 oder eine USBmicro Buchse. Bei 12V Versorgung wird  JP10, D1, und C1 und IC2 bestückt. Wenn 3V benötigt werden, wird der Regler IC5 verwendet. Dies ist ein 78xx kompatibler Schaltregler.
+Alternativ erfolgt die Stromversorgung über USB. IC2 und IC5 dürfen dann nicht bestückt werden! Wenn wegen hoher Ströme die 9-12V Stromversorgung und auch USB benötigt wird, dürfen JP8 Pin 1 und 2 nicht mit dem USB Modul verbunden werden.
 
-Bestückung der Leiterplatte (RFM95 Modul Server Interface)
+Bestückung als Interface
+
+https://www.dk1ri.de/dhw/Wireless_interface_eagle.zip
+Die Leiterplatte ist für verschiedene Konfigurationen ausgelegt und wird daher normalerweise nur teilweise bestückt. Für genau definierte Anwendungen können die Leiterplatten verkleinert werden.
 
 Verwendung von ISP:
 JP6
 
+Mit I2C:
+Siehe I2C oben.
+
 Mit serieller Schnittstelle:
-Die serielle Schnittstelle hat keinen Pegelwandler (nur 3,3V Pegel)
+Siehe Serielle Schnittstelle oben
 
-Jumper (RFM95 Modul Server Interface)
+Externe Stromversorgung:
+Siehe Stromversorgung oben.
 
-JP1 		Power
-JP5		Reset
-JP6		ISP 
-JP7/JP8	Anschluss für USB Modul
+Außer den bereits erwähnten Bauteilen wird immer bestückt: Q1, IC1, U1, C2 – C5, C10 - C12, JP1, JP5, JP11, JP32, JP33, JP34
+ 
+Anschlüsse
 
-RFM95 Modul Client Interface
+JP 15 (12V / 5V Stromversorgung)
+1	GND
+2	12V
+3	5V
 
-Der Sensor / Client (func) muss für den Funk-Modul vorbereitet sein (Hardware und Software). Der Client wird über den 8 poligen Anschluss mit dem Funk Interface verbunden.
-Wenn das Funkinterface des Client konfiguriert werden sollen, müssen entsprechende Befehle auch beim Client vorhanden sein. In jedem Fall sollte der der Funkname änderbar sein. Die Konfiguration des Client kann über die Funkschnittstelle vorgenommen werden. Es wird aber empfohlen, eine serielle Schnittstelle zu verwenden und das Ändern der Funkmodulparameter mit Hilfe eines Jumpers zu verhindern.
-Weitere Details sind bei den func zu finden.
-Zur Zeit sind folgende func für die Funkschnitstelle vorbereitet:
-Feinstaubsensor
+JP 9 (RS232)
+1	GND
+2	RX (PC Ausgang)
+3	TX (PC Eingang)
 
-Einsatz des RYFA689 Moduls
+SL1 (I2C)
+1	GND
+2	SCL
+3	SDA
 
-Die Verwendung dieses Funkmoduls ist in der Zeitschrift Funkamateur 2024 / 12  beschrieben. Es gibt fertige Leiterplatten mit Firmware; ich habe daher keine Leiterplatte entwickelt. Die originale Firmware ist mir (bisher) nicht bekannt. 
-Für den Einsatz in einem MYC System oder MYC Clients muss aber die MYC Firmware (Server) verwendet werden.
-Bei Verwendung auf der Serverseite mit dem Webserver muss die Variante 1 mit einem USB ? seriell Wandler ergänzt werden. 
-Auf der func (Sensor) Seite wird die Variante 2 verwendet. Funcs, die die Funkschnittstelle verwenden, haben eine passende Schnittstelle, an die auch die LoRa Module angeschlossen werden.
+weitere Jumper
+
+JP1 			Power
+JP2 			I2C: 3V/5V Umschaltung
+JP3			SDA Überbrückung (ohne IC3)
+JP4			SCL Überbrückung (ohne IC3)
+JP5			Reset
+JP6			ISP 
+JP7/8			Anschluss für USB Modul
+JP11			MYC /  Transparent Mode
+
+Funk-Module
+
+Für die meisten Parameter werden Defaultwerte verwendet. Wenn Änderungen gewünscht sind, sollte man unbedingt die Datenblätter lesen!
+
+Die Funk-Module werden so aufgesteckt, dass die Leiterplatte nach außen (vom Rand weg) zeigt.
+ 
+nRF24L01:
+Dieses Funkmodul ist getestet.
+Zusätzliche Bestückung:
+Es gibt verschiedene Breakout boards:
+Das board von microe verwendet JP15, JP16 (Buchsenleiste); GND an JP16 Pin4
+„Soldered“ Board: JP17, JP18, JP19; GND an JP16 pin 1
+Einige Unterlagen zu den nRF24L1 ICs sagen, die Eingänge des Chips wären 5V fest. Im Nordic Datenblatt  sind aber nur Vdd +0.3V also 3,6V maximal) festgelegt. Die beiden hier verwendeten Breakout Boards haben keine Pegelwandler; also ist der Pegelwandler U1 nötig.
+INT des Funkmoduls wird nicht verwendet.
+Das Modul benötigt die 3.3V Stromversorgung.
+Datenpakete  mit mehr als 32 Byte werden in mehreren Datenpaketen übertragen. Die Länge der Datenpakete ist auf 255 Byte begrenzt.
+Die Datenübertratragung verwendet ACK, Retransmission und Fehlerkorrektur.
+
+RFM95:
+Dieses Funkmodul ist getestet.
+Zusätzliche Bestückung:
+Adafruit: JP12, JP13, JP14 (Buchsenleiste); Vin an JP12 Pin 1
+Das Datenblatt des RFM95 ist nicht ganz vollständig: Man muss den Sendeausgang auf Boost umschalten; mit default - Werten gibt es kein Ausgangssignal! Die übrigen Parameter muss man nicht unbedingt ändern.
+Datenpakete ist auf 123 (128 -5) Byte begrenzt. Die Verwendung des gesamte FIFO (255 Byte) hat nicht funktioniert.
+
+Bluetooth
+Das Adafruit Bluefriend Modul funktioniert nur als „Client“, also für die FU. Eine bidirektionale transparente  Funkstrecke ist nicht realisierbar. Die Serverseite müsste also in den CR einbaut werden. Wird zur Zeit nicht weiter verfolgt.
+Der HC05 Modul kann Master und Slave Mode. Realisierung fehlt noch.
+ 
+WLAN:
+Neben der Verwendung eines ESP32 gibt es  Module vom Microchip:
+
+ATWINC1500:
+Dazu gibt es ein Breakout board von Adafruit und auch Bibliotheken zur Verwendung mit Microcontrollern aber keine Beschreibung der Register. Man kann das Interface also nicht selbst programmieren. Wird nicht weiter verfolgt.
+
+RNWF02 :
+ist das neuere Modul mit Beschreibung der Register. Dazu gibt es auch ein lieferbares breakout board; Das IC alleine ist mit einfachen Mitteln nicht lötbar.
+Bestückung:
+JP15, JP16
+
+RYFA689:
+Weitere Details zum Einsatz des RYFA689 stehen in der Zeitschrift „Funkamateur“ Heft 2024 / 12.
+Die Module sind zur Zeit nicht lieferbar. Ich habe auch keine weitere Quelle für die ICs gefunden. 
+Wird zur Zeit nicht weiter verfolgt.
+
+Weitere Funkmodule können folgen
 
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V01.0
-Bascom Version V01.0
+Leiterplattenversion V05.0 (nicht kompatibel zu Versionen vor 3.1)
+Bascom Version V03.0
 
 Copyright
 
@@ -159,14 +225,3 @@ Die Verwendung der Unterlagen erfolgt auf eigene Gefahr; es wird keinerlei Garan
 The ideas of this document can be used under GPL (Gnu Public License V2) as long as no earlier other rights are affected.
 The usage of this document is on own risk, there is no warranty.
 
-Referenzen
-
-[1]	dk1ri.de/dhw/LoRa_interface_eagle.zip
-[2]	dk1ri.de/dhw/LoRa_interface_bascom.zip
-[3]	https://www.dk1ri.de/myc/MYC.pdf 
-[4]	https://dk1ri.de/myc/Description.txt  oder https://dk1ri.de/myc/Description.pdf (englisch)
-[5]	https://dk1ri.de/myc/Definitions.txt  oder https://dk1ri.de/myc/Definitions.pdf (englisch)
-[6]	https://dk1ri.de/dhw/common_1.13.zip
-[7]	https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
-[8]	https://dk1ri.de/w_dat.htm
-[9]	https://sander-electonic.de
