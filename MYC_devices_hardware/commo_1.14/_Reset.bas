@@ -1,5 +1,5 @@
 ' Reset
-' 191228
+' 202509
 '
 Reset_:
 'This wait is necessary, because some programmers provide the chip
@@ -8,23 +8,28 @@ Reset_:
 Wait 1
 Dev_number_eeram = 1
 Dev_name_eeram = "Device 1"
-#IF Use_I2c = 1
-Adress_eeram = I2c_address * 2
-I2C_active_eeram = 1
-#ENDIF
-Serial_activ_eeram = 1
+Serial_active_eeram = 1
 USB_active_eeram = 1
-#IF InterfaceFU = 1
-wireless_active_eram = 1
-Interface_mode = 1
-#ELSEIF InterfaceFU = 0
-wireless_activ_eram = 0
+I2C_active_eeram = 0
+Radio_name_eeram = Radioname_default
+Radio_type_eeram = Radiotype_default
+'
+#IF Use_I2c = 1
+   Adress_eeram = I2c_address * 2
+   I2C_active_eeram = 1
 #ENDIF
-Radio_type_eram = Radiotype
-Radio_name_eram = Radioname
+'
+#IF Use_wireless = 1
+   Select Case Radio_type_eeram
+      Case 0
+         Radio_frequency_eeram = Radio_frequency_default0
+      Case 4
+         Radio_frequency_eeram = Radio_frequency_default4
+   End Select
+#ENDIF
 '
 $include "__reset.bas"
 '
-'This should be the last of reset
+'This should be the last of reset:
 First_set = 5
 Return

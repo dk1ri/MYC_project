@@ -1,8 +1,21 @@
 ' info
-' 20250603
+' 20251128
 '
-' This version is similar to 1.13 but radio interfaces added.
-' This version should be used for FU with wireless interface only
-' cannot be used for FU without radio interface!"
-' Attention:
-' If wireless is used SPI Hardware is used and Pin for SCS must be defined in the controlling program!
+' This version is different to previous verionsnas not backward compatible, radio interfaces added.
+
+' actual:
+' 02511:
+' nfm95, nrf24 ok
+'
+' 202509
+' This Version (14 or later) was made for devices with wireless interface
+' It requires slightly more code and RAM, but has some enhancements over previous versions.
+' Previous versions will be not changed anymore (except serious errors were found)
+'
+' The Version number will not change (common14). so date is of interest
+' 202509                1st version
+'
+' 202508:
+' Use_wireless = 1 for wireless
+' Use_i2c = 0 possible, but &HFE &HFF must not have i2c in announcements!
+' similar to wireless

@@ -1,5 +1,5 @@
 ' Loop start
-' 20200730
+' 20251005
 '
 Loop_:
 Start Watchdog
@@ -22,11 +22,9 @@ If Timeout_J = 255 Then
          End If
 #IF Use_i2c = 1
       Case 180
-         If I2c_active = 1 And Pin_sda = 0 Then
+         If I2c_activ = 1 And Pin_sda = 0 Then
             Incr Watch_twi
-#IF Use_reset_i2c = 1
             If  Watch_twi > I2c_watchdog Then Gosub Reset_i2c
-#ENDIF
          Else
             Watch_twi = 0
          End If

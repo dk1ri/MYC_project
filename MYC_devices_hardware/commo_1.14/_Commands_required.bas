@@ -1,5 +1,5 @@
 ' Command_required
-' 202240317
+' 20251201
 '
 Ignore:
    'ignore this
@@ -175,8 +175,9 @@ FFFE:
                   If Command_b(3) = 0 Then
                      Gosub Command_received
                   Else
-                     B_temp1 = Command_b(3) + 3
-                     If Commandpointer >= B_temp1 Then
+                     B_temp1 = Command_b(3)
+                     B_temp6 = B_temp1 + 3
+                     If Commandpointer >= B_temp6 Then
                         Dev_name = String(20 , 0)
                         If B_temp1 > 23 Then B_temp1 = 23
                         For B_temp2 = 4 To B_temp1
@@ -195,35 +196,14 @@ FFFE:
                End If
             Case 2
                If Commandpointer >= 3 Then
-                  If Command_b(3) < 2 Then
-                     I2C_active = Command_b(3)
-                     I2C_active_eeram = I2C_active
-                     Else_Parameter_error
-                  Gosub Command_received
-               End If
-            Case 3
-               If Commandpointer >= 3 Then
-                   B_temp2 = Command_b(3)
-                   If B_temp2 < 128 Then
-                      B_temp2 = B_temp2 * 2
-                      Adress = B_temp2
-                      Adress_eeram = Adress
-#IF Use_reset_i2c = 1
-                      Gosub Reset_i2c
-#ENDIF
-                   Else_Parameter_error
-                   Gosub Command_received
-               End If
-            Case 4
-               If Commandpointer >= 3 Then
                   B_temp2 = Command_b(3)
                   If B_temp2 < 2 Then
-                     Serial_activ = B_temp2
-                     Serial_activ_eeram = Serial_activ
+                     Serial_active = B_temp2
+                     Serial_active_eeram = Serial_active
                   Else_Parameter_error
                   Gosub Command_received
                End If
-            Case 5
+            Case 3
                If Commandpointer >= 3 Then
                   B_temp2 = Command_b(3)
                   If B_temp2 < 2 Then
@@ -232,15 +212,81 @@ FFFE:
                   Else_Parameter_error
                   Gosub Command_received
                End If
+            Case 4
+               If Commandpointer >= 3 Then
+                  If From_wireless = 0 Then
+                     ' config Jumper required
+                     If Mode_in = 0 Then
+                        B_temp2 = Command_b(3)
+                        If B_temp2 < 7 Then
+                           Radio_type = B_temp2
+                           Radio_type_eeram = Radio_type
+                        Else_Parameter_error
+                     Else
+                        Not_valid_at_this_time
+                     End If
+                  Else
+                     Not_valid_at_this_time
+                  End If
+                  Gosub Command_received
+               End If
+            Case 5
+               If Commandpointer >= 3 Then
+                  B_temp1 = Command_b(3)
+                  B_temp6 = B_temp1 + 3
+                  If Commandpointer >= B_temp6 Then
+                     If From_wireless = 0 Then
+                        ' config Jumper required
+                        If Mode_in = 0 Then
+                           If B_temp1 <= Name_len Then
+                              If Command_b(3) = 0 Then
+                                 Gosub Command_received
+                              Else
+                                 Radio_name = string (Name_len, 0)
+                                 B_temp3 = 4
+                                 For B_temp2 = 1 To B_temp1
+                                    Radio_name_b(B_temp2) = Command_b(B_temp3)
+                                    Incr B_temp3
+                                 Next B_temp2
+                                 Radio_name_eeram = Radio_name
+                                 Select Case Radio_type
+                                    Case 4
+                                       Gosub Write_name_4
+                                 End Select
+                              End If
+                           Else_Parameter_error
+                        Else
+                           Not_valid_at_this_time
+                        End If
+                     Else
+                        Not_valid_at_this_time
+                     End If
+                     Gosub Command_received
+                  End If
+               End If
+        #IF Use_I2c = 1
             Case 6
                If Commandpointer >= 3 Then
                   If Command_b(3) < 2 Then
-                     wireless_active = Command_b(3)
-                     wireless_active_eram = wireless_active
+                     I2C_active = Command_b(3)
+                     I2C_active_eeram = I2C_active
                      Else_Parameter_error
                   Gosub Command_received
                End If
+            Case 7
+               If Commandpointer >= 3 Then
+                   B_temp2 = Command_b(3)
+                   If B_temp2 < 128 Then
+                      B_temp2 = B_temp2 * 2
+                      Adress = B_temp2
+                      Adress_eeram = Adress
+                      Gosub Reset_i2c
+                   Else_Parameter_error
+                     Gosub Command_received
+                  End If
+        #ENDIF
 #ELSE
+' 2 byte token
       If Commandpointer >= 3 Then
          Select Case Command_b(3)
             Case 0
@@ -248,8 +294,9 @@ FFFE:
                   If Command_b(4) = 0 Then
                      Gosub Command_received
                   Else
-                     B_temp1 = Command_b(4) + 3
-                     If Commandpointer >= B_temp1 Then
+                     B_temp1 = Command_b(4)
+                     B_temp6 = B_temp1 + 4
+                     If Commandpointer >= B_temp6 Then
                         Dev_name = String(20 , 0)
                         If B_temp1 > 23 Then B_temp1 = 23
                         For B_temp2 = 4 To B_temp1
@@ -265,7 +312,77 @@ FFFE:
                   Dev_number_eeram = Dev_number
                   Gosub Command_received
                End If
-            Case 2
+           Case 2
+               If Commandpointer >= 4 Then
+                  B_temp2 = Command_b(4)
+                  If B_temp2 < 2 Then
+                     Serial_activ = B_temp2
+                     Serial_activ_eeram = Serial_activ
+                  Else_Parameter_error
+                  Gosub Command_received
+               End If
+            Case3
+               If Commandpointer >= 4 Then
+                  If Command_b(4) < 2 Then
+                     USB_active = Command_b(4)
+                     USB_activ_eeram = USB_active
+                     Else_Parameter_error
+                  Gosub Command_received
+               End If
+            Case 4
+               If Commandpointer >= 4 Then
+                     If From_wireless = 0 Then
+                        ' config Jumper required
+                        If Mode_in = 0 Then
+                           If Command_b(4) < 7 Then
+                              Radio_type = Command_b(4)
+                              Radio_type_eeram = Radio_type
+                           Else_Parameter_error
+                        Else
+                           Not_valid_at_this_time
+                        End If
+                     Else
+                        Not_valid_at_this_time
+                     End If
+                  Gosub Command_received
+               End If
+            Case 5
+               If Commandpointer >= 4 Then
+                  B_temp1 = Command_b(4)
+                  B_temp6 = B_temp1 + 34
+                  If Commandpointer >= B_temp6 Then
+                     If From_wireless = 0 Then
+                        ' config Jumper required
+                        If Mode_in = 0 Then
+                           If B_temp1 <= Name_len Then
+                              If Command_b(3) = 0 Then
+                                 Gosub Command_received
+                              Else
+                                Radio_name = string (Name_len, 0)
+                                B_temp3 = 5
+                                For B_temp2 = 1 To B_temp1
+                                   Radio_name_b(B_temp2) = Command_b(B_temp3)
+                                   Incr B_temp3
+                                Next B_temp2
+                                Radio_name_eeram = Radio_name
+                                Select Case Radio_type
+                                   Case 4
+                                      Gosub Write_name_4
+                                End Select
+                             End If
+                           End If
+                           Else_Parameter_error
+                        Else
+                           Not_valid_at_this_time
+                        End If
+                     Else
+                        Not_valid_at_this_time
+                     End If
+                     Gosub Command_received
+                  End If
+               End If
+        #IF Use_I2c = 1
+            Case 6
                If Commandpointer >= 4 Then
                   If Command_b(4) < 2 Then
                      I2c_active = Command_b(3)
@@ -273,7 +390,7 @@ FFFE:
                      Else_Parameter_error
                   Gosub Command_received
                End If
-            Case 3
+            Case 7
                If Commandpointer >= 4 Then
                    B_temp2 = Command_b(4)
                    If B_temp2 < 128 Then
@@ -284,31 +401,7 @@ FFFE:
                    Else_Parameter_error
                    Gosub Command_received
                End If
-            Case 4
-               If Commandpointer >= 4 Then
-                  B_temp2 = Command_b(4)
-                  If B_temp2 < 2 Then
-                     Serial_activ = B_temp2
-                     Serial_activ_eeram = Serial_activ
-                  Else_Parameter_error
-                  Gosub Command_received
-               End If
-            Case 5
-               If Commandpointer >= 4 Then
-                  If Command_b(4) < 2 Then
-                     USB_active = Command_b(3)
-                     USB_activ_eeram = USB_active
-                     Else_Parameter_error
-                  Gosub Command_received
-               End If
-            Case 6
-               If Commandpointer >= 3 Then
-                  If Command_b(3) < 2 Then
-                     wireless_activ = Command_b(3)
-                     wireless_activ_eeram = wireless_activ
-                     Else_Parameter_error
-                  Gosub Command_received
-               End If
+        #ENDIF
 #ENDIF
 '
                 $include "__command254.bas"
@@ -317,7 +410,7 @@ FFFE:
                Parameter_error
                Gosub Command_received
          End Select
-         Gosub Check_interfaces
+         Gosub Check_command_allowed
       End If
 Return
 #ENDIF
@@ -350,30 +443,41 @@ FFFF:
                Tx_b(3) = Dev_number
                Tx_write_pointer = 4
             Case 2
-               Tx_b(3) = I2c_active
-               Tx_write_pointer = 4
-            Case 3
-               B_temp2 = Adress / 2
-               Tx_b(3) = B_temp2
-               Tx_write_pointer = 4
-            Case 4
                Tx_b(3) = Serial_activ
                Tx_write_pointer = 4
-            Case 5
+            Case 3
                Tx_b(3) = 0
                Tx_write_pointer = 4
-            Case 6
+            Case 4
                Tx_b(3) = 3
                Tx_b(4) = "8"
                Tx_b(5) = "N"
                Tx_b(6) = "1"
-               Tx_write_pointer = 4
-            Case 7
+               Tx_write_pointer = 7
+            Case 5
                Tx_b(3) = USB_active
                Tx_write_pointer = 4
-            Case 8
-               Tx_b(3) = wireless_active
+            Case 6
+               Tx_b(3) = Radio_type
                Tx_write_pointer = 4
+            Case 7
+               B_temp3 = Len(Radio_name)
+               Tx_b(3) = B_temp3
+               B_temp2 = 4
+               For B_temp1 = 1 to B_temp3
+                  Tx_b(B_temp2) = Radio_name_b(B_temp1)
+                  Incr B_temp2
+               Next B_temp1
+               Tx_write_pointer = B_temp2
+   #IF Use_i2c = 1
+            Case 8
+               Tx_b(3) = I2c_active
+               Tx_write_pointer = 4
+            Case 9
+               B_temp2 = Adress / 2
+               Tx_b(3) = B_temp2
+               Tx_write_pointer = 4
+   #ENDIF
 #ELSE
       If Commandpointer >= 3 Then
          Tx_time = 1
@@ -397,30 +501,41 @@ FFFF:
                Tx_b(4) = Dev_number
                Tx_write_pointer = 5
             Case 2
-               Tx_b(4) = I2c_active
-               Tx_write_pointer = 5
-            Case 3
-               B_temp2 = Adress / 2
-               Tx_b(4) = B_temp2
-               Tx_write_pointer = 5
-            Case 4
                Tx_b(4) = Serial_active
                Tx_write_pointer = 5
-            Case 5
+            Case 3
                Tx_b(4) = 0
                Tx_write_pointer = 5
-            Case 6
+            Case 4
                Tx_b(4) = 3
                Tx_b(5) = "8"
                Tx_b(6) = "N"
                Tx_b(7) = "1"
                Tx_write_pointer = 8
-            Case 7
+            Case 5
                Tx_b(3) = USB_active
-               Tx_write_pointer = 4
+               Tx_write_pointer = 5
+            Case 6
+               Tx_b(4) = Radio_type
+               Tx_write_pointer = 5
+            Case 7
+               B_temp3 = Len(Radio_name)
+               Tx_b(4) = B_temp3
+               B_temp2 = 5
+               For B_temp1 = 1 to B_temp3
+                  Tx_b(B_temp2) = Radio_name_b(B_temp1)
+                  Incr B_temp2
+               Next B_temp1
+               Tx_write_pointer = B_temp2
+      #IF Use_i2c = 1
             Case 8
-               Tx_b(3) = wireless_activ
-               Tx_write_pointer = 4
+               Tx_b(4) = I2c_active
+               Tx_write_pointer = 5
+            Case  9
+               B_temp2 = I2c_address
+               Tx_b(4) = B_temp2
+               Tx_write_pointer = 5
+      #ENDIF
 #ENDIF
 '
             $include "__command255.bas"
