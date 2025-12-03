@@ -1,70 +1,70 @@
 ' announcements
-' 20250730
+' 20251201
 '
 Announce:
 'Befehl &H00
 'basic annoumement wird gelesen
 'basic announcement is read
-Data "0;m;DK1RI;dust sensor with radio interface;V01.0;1;145;1;36;1-1"
+Data "0;m;DK1RI;dust sensor with radio interface;V01.0;1;230;1;40;1-1"
 '
 'Announce1:
 'Befehl &H01
 'liest Konzentration 1.0
 'read concentration 1.0
-Data "1;an,mass concentration 1.0 ug/cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "1;an,mass concentration 1.0 ug/cbm;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce2:
 'Befehl &H02
 'liest Konzentration 2.5
 'read concentration 2.5
-Data "2;an,mass concentration 2.5 ug/cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "2;an,mass concentration 2.5 ug/cbm;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce3:
 'Befehl &H03
 'liest Konzentration 4.0
 'read concentration 4.0
-Data "3;an,mass concentration 4.0 ug/cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "3;an,mass concentration 4.0 ug/cbm;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce4:
 'Befehl &H04
 'liest Konzentration 10
 'read concentration 10
-Data "4;an,mass concentration 10 ug/cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "4;an,mass concentration 10 ug/cbm;w;763,start at (0-763);124,to send 0 actual value"
 'Announce5:
 'Befehl &H05
 'liest Konzentration 0.5
 'read concentration 0.5
-Data "5;an,number concentration 0.5 /cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "5;an,number concentration 0.5 /cbm;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce16:
 'Befehl &H06
 'liest Konzentration 1.0
 'read concentration 1.0
-Data "6;an,number concentration 1.0 /cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "6;an,number concentration 1.0 /cbm;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce7:
 'Befehl &H07
 'liest Konzentration 2.5
 'read concentration 2.5
-Data "7;an,number concentration 2.5 /cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "7;an,number concentration 2.5 /cbm;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce8:
 'Befehl &H08
 'liest Konzentration 4.0
 'read concentration 4.0
-Data "8;an,number concentration 4.0 /cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "8;an,number concentration 4.0 /cbm;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce9:
 'Befehl &H09
 'liest Konzentration 10
 'read concentration 10
-Data "9;an,number concentration 10 /cbm;w;700,start at (0-770);124,to send 0: actual value"
+Data "9;an,number concentration 10 /cbm;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce10:
 'Befehl &H0A
 'typische Groese
 'typical size
-Data "10;an,typical size um;w;700,start at (0-770);124,to send 0: actual value"       
+Data "10;an,typical size um;w;763,start at (0-763);124,to send 0 actual value"
 '
 'Announce11:
 'Befehl &0B
@@ -139,55 +139,76 @@ Data "21;ou,reset;1;0,idle;1,reset"
 Data "22;aa,status register;20;14,CHAPTER,ADMINISTRATION"
 '
 'Announce23:
+'Frequenz RFM95
+'frequncy RFM95
+Data "23;op,frequency 433MHz Lora ;1;1700,,{1_433000to434700};lin;kHz"
+'
+'
+'Announce24:
+'Frequenz RFM95
+'frequncy RFM95
+Data "24;ap,as23"
+'
+'Announce25:
+'Frequenz nRF24
+'frequncy nRF24
+Data "25;op,frequency;1;128,,{1_2400to2527};lin;MHz"
+'
+'Announce26:
+'Frequenz nRF24
+'frequency nRF24
+Data "26;ap,as25"
+'
+'Announce27:
 'Befehl &HF0
 'liest announcements
 'read m announcement lines
-Data "240;an,ANNOUNCEMENTS;145;36,start at;36,elements;14,CHAPTER,ADMINISTRATION"
+Data "240;an,ANNOUNCEMENTS;145;40,start at;40,elements;14,CHAPTER,ADMINISTRATION"
 '
-'Announce24:
+'Announce28:
 'Befehl &HFC
 'Liest letzten Fehler
 'read last error
 Data "252;aa,LAST ERROR;60,last_error"
 '
-'Announce25:
+'Announce29:
 'Befehl &HFD
 'Geraet aktiv Antwort
 'Life signal
 Data "253;aa,MYC INFO;b,ACTIVE"
 '
-'Announce26:
+'Announce30:
 'Befehl &HFE <n><data>
 'eigene Individualisierung schreiben
 'write individualization
-Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1;a,wireless,0;a,I2Cactiv,1;b,I2caddress,28;14,CHAPTER,ADMINISTRATION"
+Data "254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;a,USB,1;b,radiotype,1,{no,Lora,wlan,RYFA689,nrf25,bluetooth};4,radioname,radix;a,I2Cactiv,1,4;b,I2caddress,28;14,CHAPTER,ADMINISTRATION"
 '
-'Announce27:
+'Announce31:
 'Befehl &HFF <n>
 'eigene Individualisierung lesen
 'read individualization
-Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;a,wireless,0;a,I2Cactiv,1;b,I2caddress,41;14,CHAPTER,ADMINISTRATION"
+Data "255;aa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,RS232,1;b,BAUDRATE,0,{19200};3,NUMBER_OF_BITS,8n1;a,USB,1;b,radiotype,1,{no,Lora,wlan,RYFA689,nrf25,bluetooth};5,radioname,radix;a,I2Cactiv,1;b,I2caddress,28;14,CHAPTER,ADMINISTRATION"
 '
-'Announce28;
+'Announce32;
 Data "L;original;english;deutsch"
 '
-'Announce29;
+'Announce33;
 Data "L;dust sensor;dust sensor;Feinstaubsensor;mass concentration 1.0;mass concentration 1.0;Masse Konzentration 1.0;mass concentration 2.5;mass concentration 2.5;Masse Konzentration 2.5;"
 '
-'Announce30
+'Announce34
 Data "L;mass concentration 4.0;mass concentration 4.0;Masse Konzentration 4.0;mass concentration 10;mass concentration 10;Masse Konzentration 10;"
 '
-'Announce31:
+'Announce35:
 Data "L;number concentration 0.5;number concentration 0.5;Teilchenzahl 0.5;number concentration 1.0;number concentration 1.0;Teilchenzahl 1.0;"
 '
-'Announce32:
+'Announce36:
 Data "L;number concentration 2.5;number concentration 2.5;Teilchenzahl 2.5;number concentration 4.0;number concentration 4.0;Teilchenzahl 4.0;"
 '
-'Announce33:
+'Announce37:
 Data "L;number concentration 10;number concentration 10;Teilchenzahl 10;typical size;typical size;typische Groesse;memorypointer;memorypointer;Speicherzeiger;"
 '
-'Announce34:
+'Announce38:
 Data "L;stop/start measurement;stop/start measurement;Messung stop/start;measuring time;measuring time;Messzeit;cleaning interval;cleaning interval;Reinigungsintervall;"
 '
-'Announce35
+'Announce39
 Data "L;start cleaning;start cleaning;startet Reinigung;product type;product type;Typ;serial number;serial number;Seriennummer;version;version; Version;"

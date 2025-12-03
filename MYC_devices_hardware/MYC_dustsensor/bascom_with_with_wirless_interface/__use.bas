@@ -15,3 +15,4 @@ Const Use_seri = 1
 Const Use_Reset_i2c = 1
 Const Use_I2c = 1
 Const Use_FE_FF = 1
+Const Use_wireless = 1

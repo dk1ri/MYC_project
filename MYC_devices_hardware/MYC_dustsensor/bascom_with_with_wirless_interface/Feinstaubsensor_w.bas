@@ -1,9 +1,9 @@
 'name : Feinstaubsensor_w.bas
-'Version V01.0, 20250730
+'Version V02.0, 20251201
 
 'purpose : Program for Sensitron SPS30 dust sensor
 'This Programm workes as I2C slave or with serial protocol or use a wireless interface
-'Can be used with hardware wireless_interface Version V02.3 by DK1RI
+'Can be used with hardware wireless_interface Version V05.1 by DK1RI
 'This Interface can be used with a wireless interface
 '
 '
@@ -52,14 +52,27 @@ Const Tx_factor = 15
 ' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
 Const S_length = 50
 '
-Const Memory_size = 770
+Const Memory_size = 763
 Const Rx_data_length = 50
 ' Length of Sensordata > 2* 21 + Header
 '
-'Radiotype 0: RFM95 900MHz; 1: RFM95 450MHz, 2: RFM95 150MHz, 3: nRF24 4: WLAN 5: RYFA689
-'default RFM95 900MHz:
-Const Radiotype = 0
-Const Radioname = "radi"
+'Radiotype 0: no radio; 1:RFM95 433MHz; 2:WLAN 3: RYFA689 4: nRF24, 5: Bluetooth
+'default nRF24
+Const Radiotype_default = 4
+Const Radioname_default = "radix"
+' 433.05 - 434,79MHz -> 433 - 434,7; 1kHz spacing
+' 434MHZ:
+Const Radio_frequency_default0 = 1000
+Const Radio_frequency_start0 = 433000000
+' WLAN: 2,4GHZ - 2.48GHz
+'
+' RYFA689 ???
+'
+'nrf24:  2,4 - 2.5 GHz; 1MHz spacing; 128 chanals
+' Bluetooth:   2,4 - 2.5 GHz;
+'
+Const Radio_frequency_default4 = 40
+'
 Const Name_len = 5
 'Interface: 0 other FU: 1:
 Const InterfaceFU = 1
@@ -109,6 +122,8 @@ Dim Init_ As Byte
 Dim Sensor_cmd As Byte
 '
 '
+wait 10
+print "start"
 '----------------------------------------------------
 $include "common_1.14\_Macros.bas"
 '
@@ -117,16 +132,25 @@ $include "common_1.14\_Config.bas"
 '
 Restart:
 '
+
 '----------------------------------------------------
-$include "common_1.14\_Main.bas"
+If Pin_reset = 0 Then Gosub Reset_
+'
+If First_set <> 5 Then Gosub Reset_
+'
+$include "common_1.14\_Init.bas"
 '
 '----------------------------------------------------
 $include "common_1.14\_Loop_start.bas"
 '
-If wireless_active = 1 Then
+If Radio_type > 0 Then
+   ' for FU only!
+   ' inhibit wireless resend answer of commands
    Select Case Radio_type
-      Case 0
-         Gosub Receive_wireless0
+      Case 1
+         Gosub RFM95_receive0
+      Case 4
+         Gosub nRF24_receive4
    End Select
 End If
 
@@ -145,8 +169,6 @@ $include "common_1.14\_Main_end.bas"
 '----------------------------------------------------
 $include "common_1.14\_Reset.bas"
 '
-'----------------------------------------------------
-$include "common_1.14\_Init.bas"
 '
 '----------------------------------------------------
 $include "common_1.14\_Subs.bas"
@@ -218,46 +240,42 @@ Ananlyze_in:
             B_temp1 = Rx_pointer - 1
             If Rx_data_b(B_temp1) = &H7E Then
                ' got all data
-               If Rx_pointer > 5 Then
-                  Select Case Rx_data_b(4)
-                     Case 0
-                        ' correct
-                        If Rx_data_b(5) <> 0 Then
-                           ' not empty
-                           ' sensor may send empty data (with command &H03). This is no error
-                           Sensor_cmd = Rx_data_b(3)
-                           Gosub Byte_stuffing_rx
-                           ' Rx_data Start with L (length) now
-                           Select Case Sensor_cmd
-                              Case 3
-                                 ' measurement data
-                                 Gosub Analyze_data
-                              Case &H80
-                                 Gosub Read_cleaning_intervall
-                              Case &HD0
-                                 Gosub Get_info
-                              Case &HD1
-                                 ' version
-                                 Gosub Get_info
-                              Case &HD2
-                                 ' status register
-                                 Gosub Get_info
-                           End Select
-                        End If
-                     Case 1
-                        Wrong_data_length
-                     Case 2
-                        Unknown_command
-                     Case 4
-                        Illegal_command_parameter
-                     Case &H28
-                        Internal_function_argument_out_of_range
-                     Case &H43
-                        Command_not_allowed_in_current_state
-                  End Select
-               Else
-                  Wrong_data_length
-               End If
+               Select Case Rx_data_b(4)
+                  Case 0
+                     ' correct
+                     If Rx_data_b(5) <> 0 Then
+                        ' not empty
+                        ' sensor may send empty data (with command &H03). This is no error
+                        Sensor_cmd = Rx_data_b(3)
+                        Gosub Byte_stuffing_rx
+                        ' Rx_data Start with L (length) now
+                        Select Case Sensor_cmd
+                           Case 3
+                              ' measurement data
+                              Gosub Analyze_data
+                           Case &H80
+                              Gosub Read_cleaning_intervall
+                           Case &HD0
+                              Gosub Get_info
+                           Case &HD1
+                              ' version
+                              Gosub Get_info
+                           Case &HD2
+                              ' status register
+                              Gosub Get_info
+                        End Select
+                     End If
+                  Case 1
+                     Wrong_data_length
+                  Case 2
+                     Unknown_command
+                  Case 4
+                     Illegal_command_parameter
+                  Case &H28
+                     Internal_function_argument_out_of_range
+                  Case &H43
+                     Command_not_allowed_in_current_state
+               End Select
                Rx_pointer = 1
             End If
          End If
@@ -403,7 +421,6 @@ Send_data:
       B_temp2 = Temps_b(B_temp1)
       Printbin #2, B_temp2
    Next B_temp1
-   Gosub Command_received
 Return
 '
 Send_memory_content:
@@ -515,16 +532,17 @@ Send_Cleaning_intervall:
 Return
 '
 '***************************************************************************
-$include "common_1.14\_RFM95.bas"
+$include "common_1.14\RFM95.bas"
+$include "common_1.14\Bluetooth.bas"
 $include "common_1.14\nrf24.bas"
-   '$include "common_1.14\A7129_setup.bas"
-   '$include  "common_1.14\A7129.bas"
-   '$include "common_1.14\_RRYFA689.bas"
+'$include  "common_1.14\A7129.bas"
+'$include "common_1.14\_RRYFA689.bas"
+
 '
 $include "_Commands.bas"
 $include "common_1.14\_Commands_required.bas"
 '
-$include "common_1.14\_Commandparser.bas"
+$include "__Select_command.bas"
 '
 '-----------------------------------------------------
 ' End
