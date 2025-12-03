@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 Feinstaub Sensor mit Funkschnittstelle für das MYC Protokoll
 					
 
-Author DK1RI, Version V01.0, 20250730
+Author DK1RI, Version V02.0, 20251203
 This paper is published in https://github.com/dk1ri  as well
 
 Definitionen
@@ -15,34 +15,34 @@ Einleitung
 Dieses Gerät kann in einem MYC System verwendet werden, aber auch unabhängig davon mit (binären) Befehlen gesteuert werden. Die Steuerung kann seriell, USB, I2C, über ein Funkinterface erfolgen. Die Befehle sind sind als announcements in der Datei announcements.bas im Bascom Programm beschrieben.
 Zur Steuerung mit einem Browser: https://dk1ri.de/myc/webserver.pdf oder  https://dk1ri.de/myc/webserver.txt
 Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl können diese aber deaktiviert werden. Der Initialisierungsbefehl funktioniert aber immer. 
-Das Gerät besteht aus einer Leiterplatte mit dem Prozessor und dem Funkinterface und dem Feinstaub Sensor. Die Leiterplatte ist auch für andere Geräte vorgesehen, auch für verschiedene Schnittstellen und unterschiedliche Stromversorgung. Das Funkinterface ist für verschiedene Funkmodule ausgelegt. Für eine spezielle Anwendung lässt sich die Hardware erheblich vereinfachen.
+Das Gerät besteht aus einer Leiterplatte mit dem Prozessor und dem Funkinterface und dem Feinstaub Sensor. Die Leiterplatte ist auch für andere Sensoren vorgesehen, auch für verschiedene Funkmodule und unterschiedliche Stromversorgung. Für eine spezielle Anwendung lässt sich die Hardware erheblich vereinfachen.
 Zur Fernsteuerung über kurze Entfernungen kann ein Funkmodul angeschlossen werden:
-https://www.dk1ri.de/dhw/Wireless_interface.pdf  oder https://www.dk1ri.de/myc/Wireless_interface.txt 
-Zur Zeit (Juni 2025) gibt es kein funktionsfähiges Funkinterface !!
+https://www.dk1ri.de/dhw/Wireless_interface.pdf  oder https://www.dk1ri.de/dhw/Wireless_interface.txt 
+Zur Zeit (JDezember 2025) funktioniert Lora mit RFM95 und 2,4GHz ISM mit nRF24
 Die Unterlagen zum Feinstaubsensor ohne Funkmodul:
 https://www.dk1ri.de/dhw/Feinstaubsensor.pdf  oder  https://www.dk1ri.de/dhw/Feinstaubsensor.txt 
-Als Leiterplatte kann auch https://dk1ri.de/dhw/wireless_interface_eagle.zip verwendet werden.
 Diese Version wird nicht weiter entwickelt.
 
 Beschreibung und Bedienung
 
 Allgemeines:
 Die Stromversorgung ist 7- 9V, Stromaufnahme ca. 140mA max oder über USB
-Die Steuerung kann über I2C, USB oder RS232 oder ein Funkinterface erfolgen.
 Es wird der gleiche Sensor wie in dem ELV Artikel (ELV Journal 2019 Heft 6) verwendet: Sensirion SPS30 ab Firmware 2.1.
 Der Sensor ist aber anders als da nicht auf der gleichen Leiterplatte montiert, und es gibt auch kein Display.
 Details zu der Funktion des Sensors können in dem ELV Artikel oder im Datenblatt des Sensors nachgelesen werden.
 Der Sensor ist über die serielle Schnittstelle mit der Leiterplatte verbunden.
-Der Prozessor ATMEGA1284 wird verwendet, da er 2 serielle Hardware Schnittstellen hat und 16kB RAM. Dies erlaubt die Speicherung von 758 Messwerten.
+Der Prozessor ATMEGA1284 wird verwendet, da er 2 serielle Hardware Schnittstellen hat und 16kB RAM. Dies erlaubt die Speicherung von 765 Messwerten.
 Das Messintervall beträgt 3s, 10s, 1min, 10min, 30min und 60min.
-Jeder Messwert benötigt 20 Byte, es können also nur 758 Messwerte gespeichert werden (Das ELV Original hat einen zusätzlichen 4MBit Speicher und kann daher mehr Messwerte speichern). 
+Jeder Messwert benötigt 20 Byte, es können also nur 750 Messwerte gespeichert werden (Das ELV Original hat einen zusätzlichen 4MBit Speicher und kann daher mehr Messwerte speichern). 
 Ist der Speicher voll, werden alte Daten überschrieben.
 Beim Auslesen des Speichers kommt der neueste Messwert zuerst.
 Da das Interface auch keine Uhr hat, muss die Messzeit an Hand der auslesbaren Intervallzeit berechnet werden. Beim Ändern der Messintervallzeit , Start, Stop, Reset und Abschalten gehen die gespeicherten Daten verloren.
 
 Details:
 Die Bedienung mit dem Browser ist weitestgehend selbsterklärend.
-Im folgenden werden auch Befehlsfolgen beschrieben, wie sie über die Schnittstellen direkt eingegeben werden. Alle Befehlsfolgen stehen auch mit dem Browser zur Verfügung. Details zur Bedienung über die I2C / serielle Schnittstelle:
+Die Parameter zu Funkübertragung können nicht über Funk verändert werden. Zu Änderung muss JP11 überbrückt sein.
+Wenn beim Start, das eingestellte Funkinterface nicht angeschlossen ist,wWird das Funkintrface abgeschaltet. 
+Im folgenden werden auch Befehlsfolgen beschrieben, wie sie über die Schnittstellen direkt eingegeben werden. Alle Befehlsfolgen stehen auch mit dem Browser zur Verfügung.
 Start der Messung: &H1D01
 Das Auslesen erfolgt in Blöcken von maximal 28 Werten, beginnend mit den neuesten Daten.
 Bei einem Messintervall von einer Minute gibt der Befehl „read mass concentration“ mit „to send“: 5 und „start at“: 255 (&H0100FF05 )
@@ -53,7 +53,7 @@ Der Sleep mode des Sensors wird nicht unterstützt
 
 Einbindung in das MYC System
 
-Details zum MYC System stehen in https://www.dk1ri.de/myc/MYC.pdff.
+Details zum MYC System stehen in https://www.dk1ri.de/myc/MYC.pdf .
 Die komplette Befehlsliste steht als  announcements in der Datei announcements.bas im Bascom Programm.
 
 Fehlermeldungen
@@ -75,11 +75,12 @@ Die Befehlseingabe und Ausführung muss in dieser Zeit beendet sein. Danach werde
 Bei einem I2C Lesebefehl müssen die Daten innerhalb dieser Zeit vom I2C Master abgeholt werden. Danach werden die Daten gelöscht. Neue Befehle können erst eingegeben werden, wenn alle  Daten abgeholt wurden oder die Watchdog Zeit abgelaufen ist. Wird die RS232 / USB Schnittstelle verwendet, werden die Daten sofort ausgegeben.
 Bei einem I2C BusLock (SDA pin auf 0) erfolgt auch ein I2C reset.
 
-Software
+Firmware
 
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
-Die Software wurde in BASCOM geschrieben https://www.dk1ri.de/dhw/Feinstaubsensor_w_bascom.zip .
-Um das Programm zu kompilieren, muss das Verzeichnis https://dk1ri.de/dhw/common_1.14.zip  in das Verzeichnis mit dem Programm kopiert werden.
+Die Software wurde in BASCOM geschrieben https://www.dk1ri.de/dhw/Feinstaubsensor_w_basom.zip .
+Um das Programm zu kompilieren, muss das Verzeichnis common_V01.14 aus https://dk1ri.de/dhw/common_1.14_202511.zip  in das Verzeichnis mit dem Programm kopiert werden.
+Die Firmware funktioniert nur mit der Leiterplattenversion ab Vrsion 5.0
 
 Programmierung des Prozessors
 
@@ -89,8 +90,8 @@ Der Jumper JP1 und sollte während der Programmierung entfernt werden; ebenso der
 
 Serielle (RS232 / USB) Schnittstelle
 
-Für die RS232 Schnittstelle wird IC4 und C6 – C9 bestückt. Die seriellen Daten können an JP12 abgenommen werden. Schnittstellenparameter: 19k2 8N1
-Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die 6 pins des Verbinders ST2  sind mit den 6Anschlusspunkten JP7 /JP8 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
+Für die RS232 Schnittstelle wird IC4 und C6 – C9 bestückt. Die seriellen Daten können an JP9 abgenommen werden. Schnittstellenparameter: 19k2 8N1
+Alternativ zur RS232 Schnittstelle kann die USB Platine UM2102 von ELV verwendet werden. Die USB Platine wird plan auf der Oberseite der Interfaces verlötet: der USB Stecker zeigt zum Rand. Die 6 pins des Verbinders ST2  sind mit den 6 Anschlusspunkten JP7 / JP8 auf dem Interface zu verbinden. USB Platine und Interface müssen voneinander isoliert werden.
 Die Stromversorgung kann dann über USB erfolgen.
 
 I2C Schnittstelle 
@@ -106,8 +107,6 @@ Mit IC3 muss R1 / R2 (<=10k) bestückt werden.  Wenn auf IC3 verzichtet wird und 
 Der I2C Anschluss erfolgt an SL1. 
 Um Buslocks zu vermeiden, wird circa alle 200ms geprüft, ob das SDA Signal auf „0“ liegt.
 Ist das 50 mal hintereinander der Fall, wird die I2C Schnittstelle neu gestartet.
-
-
 Browser Schnittstelle
 
 Es gibt einen (Windows) Webserver, an den die FU direkt oder über die Funkschnittstelle angeschlossen wird. Die Bedienung erfolgt mit einem Browser, der auf den Webserver zugreift.
@@ -116,7 +115,7 @@ Ein Bildschirm Bild und nötige Daten für dieses Device stehen in https://dk1ri.d
 
 Remote Bedienung (über Funk)
 
-Zur Überbrückung kurzer Entfernungen kann eine Funkschnittstelle angeschlossen werden. Je nach verwendeter Funkschnittstelle muss die FU entsprechend programmiert werden. Vor der ersten Inbetriebnahme muss das gewünschte Funkmodul eingetragen und die Konfiguration vorgenommen werden  (JP12 verbunden). Danach entfernt man den Jumper für den normalen Betrieb.
+Zur Überbrückung kurzer Entfernungen kann eine Funkschnittstelle angeschlossen werden. Je nach verwendeter Funkschnittstelle muss die FU entsprechend programmiert werden (JP11 überbrückt). Es muss zumindest das gewünschte Funkmodul, Name und Frequenz eingetragen angepasst werden. Danach entfernt man den Jumper für den normalen Betrieb.
 
 SMD
 
@@ -124,16 +123,13 @@ Die Leiterplatte ist teilweise mit SMD bestückt
 
 Stromversorgung
 
-Die externe Stromversorgung ist 7- 12V, Stromaufnahme ca. 30mA max (ohne Funkmodul).
-Es wird bestückt: JP15, D1, C1, IC2. Wird für I2C oder den Funkmodul zusätzlich 3V benötigt, muss auch DC1 und C11 bestückt werden.
-
-Alternativ erfolgt die Stromversorgung über USB. Dann braucht JP15, D1, und C1 nicht bestückt werden; IC2 und DC1 dürfen nicht bestückt werden!!! Wenn wegen hoher Ströme die 9-12V Stromversorgung und auch USB benötigt wird, dürfen JP8 Pin 1 und 2 nicht mit dem USB Modul verbunden werden.
+Die Stromversorgung erfolgt mit 7 -12V oder 5V über JP10 oder eine USBmicro Buchse. Bei 12V Versorgung wird  JP10, D1, und C1 und IC2 bestückt. Wenn 3V benötigt werden, wird der Regler IC5 verwendet. Dies ist ein 78xx kompatibler Schaltregler.
+Alternativ erfolgt die Stromversorgung über USB. IC2 und IC5 dürfen dann nicht bestückt werden! Wenn wegen hoher Ströme die 7-12V Stromversorgung und auch USB benötigt wird, dürfen JP8 Pin 1 und 2 nicht mit dem USB Modul verbunden werden.
  
 Bestückung der Leiterplatte 
 
 https://www.dk1ri.de/dhw/Wireless_interface_eagle.zip
-Die Leiterplatten wireless_interface wird auch für andere Anwendungen verwendet und daher nur teilweise bestückt. 
-Zur Bestückung der wireless_modul Leiterplatte siehe https://www.dk1ri.de/dhw/Wireless_interface.pdf oder https://www.dk1ri.de/dhw/Wireless_interface.txt , wenn ein Funkmodul verwendet werden soll.
+Die Leiterplatte ist für verschiedene Konfigurationen ausgelegt und wird daher normalerweise nur teilweise bestückt. Für genau definierte Anwendungen können die Leiterplatten verkleinert werde
 
 Verwendung von ISP:
 JP6
@@ -147,18 +143,18 @@ Siehe Serielle Schnittstelle oben
 Externe Stromversorgung:
 Siehe Stromversorgung oben.
 
+Außer den bereits erwähnten Bauteilen wird immer bestückt: Q1, IC1, U1, C2 – C5, C10 - C12, JP1, JP5, JP11, JP32, JP33 - JP37
 
-Außer den bereits erwähnten Bauteilen wird bestückt: Q1, IC1, C2 – C5, C10 - C12, JP1, JP5, JP11, JP13, JP14, JP21, SV1 (mit Funkschnittstelle)
-
-Der Sensirion  Modul wird an JP21 über Kabel angeschlossen.
+Der Sensirion  Modul wird an JP37 (Stiftleiste) über Kabel (mit Buchse) angeschlossen.
 
 Anschlüsse
 
-JP15 (Power)
+JP 15 (12V / 5V Stromversorgung)
 1	GND
 2	12V
+3	5V
 
-JP 12 (RS232)
+JP 9 (RS232)
 1	GND
 2	RX (PC Ausgang)
 3	TX (PC Eingang)
@@ -168,34 +164,30 @@ I2C (SL1, SL2)
 2	SCL
 3	SDA
 
-SV1	Anschluss Funkmodul als Buchsenleiste
-
-Feinstaubsensor (JP21) Drahtanschluss
-JP21 1	5V  	Sensirion Pin1 5V
-JP21 2	TX  	Sensirion Pin2 RX
-JP21 3	GND	Sensirion Pin5 GND
-JP21 4	RX  	Sensirion Pin3 TX
+Feinstaubsensor (JP37) Drahtanschluss
+JP37 1	5V  	Sensirion Pin1 5V
+JP37 2	TX  	Sensirion Pin2 RX
+JP37 3	GND	Sensirion Pin5 GND
+JP37 4	RX  	Sensirion Pin3 TX
 		Sensirion Pin4 nicht verbunden
 
 Jumper
 
 JP1 		Power
-JP2 		I2C: 3V/5V Umschaltung
+JP2 		I2C: 3V (1-2) 5V (2-3)  Umschaltung
 JP3		SDA Überbrückung (ohne IC3)
 JP4		SCL Überbrückung (ohne IC3)
 JP5		Reset
 JP6		ISP 
 JP7/8		Anschluss für USB Modul
-JP13		Pin1 und 2 überbrücken
-JP14		Pin1 und 2 überbrücken
+JP35		Pin1 und 2 überbrücken
+JP36		Pin1 und 2 überbrücken
 
 Versionen
 
-Diese Beschreibung gilt für die
-Leiterplattenversion (wireless interface) V02.3 https://dk1ri.de/dhw/wireless_interface_eagle.zip
-Bascom Version V01.0
-https://www.dk1ri.de/dhw/Feinstaubsensor_w_bascom.zip .
-
+Diese Beschreibung gilt für dieLeiterplattenversion (wireless interface) V05.0 https://www.dk1ri.de/dhw/Wireless_interface_eagle.zip
+Bascom Version V03.0
+https://www.dk1ri.de/dhw/Feinstaubsensor_w_basom.zip .
 
 Copyright
 
