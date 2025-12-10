@@ -3,7 +3,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 Feinstaub Sensor mit Funkschnittstelle für das MYC Protokoll
 					
 
-Author DK1RI, Version V02.0, 20251203
+Author DK1RI, Version V02.0, 20251209
 This paper is published in https://github.com/dk1ri  as well
 
 Definitionen
@@ -18,7 +18,7 @@ Defaultmäßig sind alle Schnittstellen aktiv. Mit dem Initialisierungsbefehl könn
 Das Gerät besteht aus einer Leiterplatte mit dem Prozessor und dem Funkinterface und dem Feinstaub Sensor. Die Leiterplatte ist auch für andere Sensoren vorgesehen, auch für verschiedene Funkmodule und unterschiedliche Stromversorgung. Für eine spezielle Anwendung lässt sich die Hardware erheblich vereinfachen.
 Zur Fernsteuerung über kurze Entfernungen kann ein Funkmodul angeschlossen werden:
 https://www.dk1ri.de/dhw/Wireless_interface.pdf  oder https://www.dk1ri.de/dhw/Wireless_interface.txt 
-Zur Zeit (JDezember 2025) funktioniert Lora mit RFM95 und 2,4GHz ISM mit nRF24
+Zur Zeit (Dezember 2025) funktioniert Lora mit RFM95 und 2,4GHz ISM mit nRF24
 Die Unterlagen zum Feinstaubsensor ohne Funkmodul:
 https://www.dk1ri.de/dhw/Feinstaubsensor.pdf  oder  https://www.dk1ri.de/dhw/Feinstaubsensor.txt 
 Diese Version wird nicht weiter entwickelt.
@@ -79,8 +79,8 @@ Firmware
 
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega1284.
 Die Software wurde in BASCOM geschrieben https://www.dk1ri.de/dhw/Feinstaubsensor_w_basom.zip .
-Um das Programm zu kompilieren, muss das Verzeichnis common_V01.14 aus https://dk1ri.de/dhw/common_1.14_202511.zip  in das Verzeichnis mit dem Programm kopiert werden.
-Die Firmware funktioniert nur mit der Leiterplattenversion ab Vrsion 5.0
+Um das Programm zu kompilieren, muss das Verzeichnis common_V01.14 aus https://dk1ri.de/dhw/common_1.14_202512.zip  in das Verzeichnis mit dem Programm kopiert werden.
+Die Firmware funktioniert nur mit der Leiterplattenversion ab Version 5.0
 
 Programmierung des Prozessors
 
