@@ -1,10 +1,10 @@
 'name : wireless interface
-'Version V03.0, 20251201
+'Version V03.0, 20251208
 'purpose : Program for a serial to wireless Interface
-'Can be used with hardware wireless_interface V05.0 / V03.1 by DK1RI
+'Can be used with hardware wireless_interface V05.0 by DK1RI
 '
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-' To run the compiler the directory comon_1.14 with includefiles must be copied to the directory of this file!
+' To run the compiler the directory comon_1.14 (202512) with includefiles must be copied to the directory of this file!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '
 '----------------------------------------------------
@@ -24,28 +24,7 @@ $include "common_1.14\_Introduction_master_copyright.bas"
 '
 '------------------------------------------------------
 ' Detailed description
-' There are differnt "modes":
-' wireless_active = 0 (set by command &HFE, cannot be set in transparent mode)
-'     all wireless functions off
-' wireless_active = 1 (default, )
-'     InterfaceFU = 0 (interface device)
-'     wireless_active parameter is ignored (always wireless)
-'        Mode_in bridged
-'           Myc_mode = 1
-'           serial only wireless off; config of wireless device is not modified
-'           valid for RX and TX for wireless transmission connection
-'        Mode_in open
-'           Myc_mode = 0
-'           transparent mode; no commands accepted
-'     InterfaceFU = 1 (other devices; clients for interface device))
-'        MYC commands are transmitted only
-'        The behaviour for different myc_mode is handled by the commands always (not by wireless in commonxx)!!!
-'        Myc_mode = 0:
-'           command to modify wireless are not allowed
-'        MYC commands are transmitted always
-'        Myc_mode = 1:
-'           command to modify wireless are allowed
-'           These command will initiate a restart
+' see common_1.14/__Version_202512.bas
 '----------------------------------------------------
 $regfile = "m1284pdef.dat"
 '
@@ -61,10 +40,7 @@ $crystal = 20000000
 '
 ' 1 ... 127
 Const I2c_address = 40
-Const No_of_announcelines = 16
-Const Tx_factor = 15
-' For Test:15 (~ 10 seconds), real usage:2 (~ 1 second)
-Const S_length = 50
+Const No_of_announcelines = 14
 '
 'Radiotype 0: no radio; 1:RFM95 433MHz; 2:WLAN 3: RYFA689 4: nRF24, 5: Bluetooth
 'default nRF24
@@ -86,6 +62,8 @@ Const Radio_frequency_default4 = 40
 Const Name_len = 5
 'Interface: 0 other FU: 1:
 Const InterfaceFU = 0
+'
+Const DIO_length = 5000
 '----------------------------------------------------
 $include "__use.bas"
 $include "common_1.14\_Constants_and_variables.bas"
@@ -122,16 +100,16 @@ If Interface_transparent_active = 1 Then
    End Select
 '
    ' send, if rquested
-   If Command_pointer > 0 Then
-      If Last_command_pointer <> Command_pointer Then
+   If Commandpointer > 0 Then
+      If Old_commandpointer <> Commandpointer Then
          B_temp5 = 10
-         Last_command_pointer = Command_pointer
+         Old_commandpointer = Commandpointer
       Else
           ' wait 10 * 5ms after change of command_pointer
          ' because the end of incoming data is unknown
          Decr B_temp5
          If B_temp5 = 0 Then
-            wireless_tx_length = Command_pointer
+            wireless_tx_length = Commandpointer
             Select Case Radio_type
                Case 1
                   Gosub RFM95_send0
@@ -143,14 +121,12 @@ If Interface_transparent_active = 1 Then
             waitms 5
          End If
       End If
-   Else
-      Last_command_pointer = 0
    End If
-   Stop Watchdog
 End If
 '
 :
 $include "common_1.14\_Main_end.bas"
+
 '
 '----------------------------------------------------
 '

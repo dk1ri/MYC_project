@@ -2,7 +2,7 @@ Hinweis für die Textformat-Version; um diese Version im PDF Format zu lesen, lad
 
 MYC Funk Interface
 
-Author DK1RI, Version V02.0, 20251203
+Author DK1RI, Version V02.0, 20251209
 This paper is published in https://github.com/dk1ri  as well
 
 Definitionen
@@ -27,7 +27,7 @@ Die folgende Beschreibung gilt im wesentlichen für das Interface, das an den CR 
 Grenzen des Einsatzes in einem MYC System
 
 Einige der Funksysteme sind für geringen Datenverkehr ausgelegt. Die Daten sind nicht verschlüsselt. Befehle, die einen Missbrauch ermöglichen, sollten für Betrieb über Funk gesperrt werden. Das MYC System setzt eine fehlerfreie Verbindung zwischen CR und FU voraus. Einige der Funkmodule haben zwar eine gewisse Fehlerkorrektur. Falls es aber trotzdem zu Fehlern kommt, gibt das Interface keine Fehlermeldung an den CR. 
-
+Die Interface als transparente Funkstrecke kann zwar Datenpakete bis 5kByte übertragen. Für die Übertragung werden große Pakete in kleine aufgeteilt. Möglicherweise wird dann die Zeit des Timeout überschritten. Dann muss das Programm angepasst werden.  
 
 Einbindung des Interfaces in das MYC System
 
@@ -73,7 +73,7 @@ Software
 
 Die Steuerung übernimmt ein AVR Mikrocontroller Atmega 644 oder 1284 (wird bei Bascom verwendet)
 Die Software wurde in BASCOM geschrieben https://dk1ri.de/dhw/wireless_interface_bascom.zip
-Um das Programm zu kompilieren, muss das Verzeichnis common_1.14 aus https://dk1ri.de/dhw/common_1.14_202511.zip  in das Verzeichnis mit dem Programm kopiert werden.
+Um das Programm zu kompilieren, muss das Verzeichnis common_1.14 aus https://dk1ri.de/dhw/common_1.14_202512.zip  in das Verzeichnis mit dem Programm kopiert werden.
 
 Programmierung des Prozessors
 
@@ -215,8 +215,8 @@ Weitere Funkmodule können folgen
 Versionen
 
 Diese Beschreibung gilt für die
-Leiterplattenversion V05.0 (nicht kompatibel zu Versionen vor 3.1)
-Bascom Version V03.0
+Leiterplattenversion V05.0 (nicht kompatibel zu Versionen vor 3.1) https://www.dk1ri.de/dhw/Wireless_interface_eagle.zip
+Bascom Version V03.0 https://dk1ri.de/dhw/wireless_interface_bascom.zip
 
 Copyright
 
