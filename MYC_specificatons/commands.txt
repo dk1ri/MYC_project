@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V03.00.05 20250202
+Version V03.00.06 20251205
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -29,7 +29,7 @@ Translation lines give a translation of names use in the announcements to other 
 The CR concatenate the announcements of the devices to a full announce-list.
 The I-announcement is inserted by the CR to the full announce-list for each device. It shows some individual parameters of the device, so that RU and SK can identify the device in all cases.
 Some operating commands may have an influence on the status of other commands. This can be handled by rules as well.
-Rules lines start with R”, “S”, “Q” or “T”. “R” rules of devices are included in the full announcment list; others not.
+Rules lines start with “R”, “S”, “Q” or “T”. “R” rules of devices are included in the full announcment list; others not.
 “Q” rules are sent by the RU to the command-router. They are used for user management.
 “S” rules are used by devices during configuration and are not included in the full announcement list. They are used during configuration.
 “T” rules are sent by the RU to the command-router. These are optional translations of the descriptions within announcements. They can be used to handle other languages or modify the semantic function of a device. For details see [8].
@@ -38,7 +38,7 @@ L;languagename;english;deutsch;francais
 Other lines contain an identrifier (usually the english label) and the translated words in the sequence of the first “L” line as:
 L;switch;switch;Schalter;bouton;pressure,pressure,Druck;pression;
 L;speed;speed;Geschwindigkeit;vitesse
-A line can contain more than one element. All “L” lines should be together. 
+A line can contain more than one element.
 Do not forget the “;” at the end of the all “L” lines except the last.
 
 Each command announcement line contain the unique command-number, the command-type and properties as necessary; in this sequence. A special type of properties are optional <OPTION>. Some <OPTION> will not result in transmitted data and will be at the end of a line. The first <des> of
@@ -50,9 +50,9 @@ Operation type (first letter of command-type: o, a, r, s, i, j, z)
 Active operating is denoted by “o”  as the first letter, answer commands start with “a”. If a function can operate and answer, the “as” notation should be used for the answer command: eg 33:as,as32 . The answer command should directly follow the operate command. The CR may extend the answer with the complete content and replace the “as32” by “ext32”  Commands with “as” and “ext” use the same properties as the corresponding command.
 The “ext” is always used to show the SK, that two commands belong together.
 It is recommended to use corresponding read commands if possible. This will help the SK to have an actual state always.
-The “r” and “s” types are identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by simple devices as switches. The devices usually send commands similar to SK; the “r” command means, the devices want another device to operate (require to operate); it is similar to an “o” commands.  The result of these commands is defined by rules. The “s” command can be used to get data from the LD and send the data to somewhere; it is similar to an “a” command (require to answer). For details see [9]. These commands are not part of the full announce-list created by the CR. A device can have “r” and “s” commands and “o” ans “a” commands as well.
-The operation type “i” denotes information only. They have no data traffic.
-The operation type “j” denotes information only. They have no data traffic. It is an operating command, which is used internally, usually by rules. An example is a reset under externally initiated conditions.
+The “r” and “s” types are identical to the “o” and “a” type and therefore not mentioned in the list below. These are used by simple devices as switches. These devices usually send commands similar to SK; the “r” command means, the devices want another device to operate (require to operate); it is similar to an “o” commands.  The result of these commands is defined by rules. The “s” command can be used to get data from the LD and send the data to somewhere; it is similar to an “a” command (require to answer). For details see [9]. These commands are not part of the full announce-list created by the CR. A device can have “r” and “s” commands and “o” ans “a” commands as well.
+The operation type “i” denotes information only. It hase no data traffic.
+The operation type “j” denotes information only. It has no data traffic. It is an operating command, which is used internally, usually by rules. An example is a reset under externally initiated conditions.
 z is used for commands without function (placeholder) 
 “k” and “l” commands are not supported anymore. These are commands for the configuration phase. This is replaced by adding “14,CHAPTER,ADMINISTRATION” at the end of the announceline.
 
@@ -111,7 +111,7 @@ General syntax for a command
 
 Info / answers
 
-As default a device will send data for answers commands only and do not send an acknowledge for operating commands. A device can send acknoledges and announce this with a FEATURE announcement [5]. The SK will do appropriate actions.
+As default a device will send data for answers commands only and do not send an acknowledge for operating commands. A device can send acknowledges and announce this with a FEATURE announcement [5]. The SK will do appropriate actions.
 Some devices can send answers without a corresponding command as info. Not all devices will send infos.
 Sometimes a command has an additional effect depending on the commands in the past. The FU may send infos in this case to inform the SK.
 Devices may store the status of some commands. If a command changes a stored status the SK must be informed about the state of the changed commands. This can be done by info with the changed states. So an operate command may answer with infos. Or it can be done by rules – and the CR will inform the SK- or the FU inform the SK directly.
@@ -142,7 +142,7 @@ The following optimizations may be used by all devices.
 Some are resolved by the CR, the SK should understand the others.
 
 Character font in announcements
-The characters ”.”, “;”, “””, “_”, “{“ and “}” cannot be used in a text-element (label). Depending on the implementation some others cannot be used as well.
+The characters ”.”  “;”  “””  “,“  “{“ and “}” cannot be used in a text-element (label). Depending on the implementation some others cannot be used as well.
 In this case the ASCII notation 0xnn  (nn is the ASCII code) can be used.
 
 Long announcement lines
@@ -367,6 +367,8 @@ It is not intended to replace data streams with these commands, but it is not de
 There is no “undefined” value, when reading a memory. For details see [11].
 The data content of the memory has the full range of the defined properties, if not restricted by <des_range> The position of the memory cell is “0” based.
 The number of elements of a memory are defined in the announcement. Any number is allowed, but there are some recommendation for restriction.
+
+The length of the transmitted data (command, answer, info) is not limited by the MYC protocol. Nevertheless it may be limited by the size of memory of the microcomputer. Some wireless transmission  protocols limit the data volume as well. So most FU have 256 byte or less as limit of the transmitted data.
 
 A device may have some internal memory, which stores the state of another command or memory and is not readable directly. In case of changes the device must send appropriate infos.
 
