@@ -1,5 +1,5 @@
 ' Reset
-' 202509
+' 20251207
 '
 Reset_:
 'This wait is necessary, because some programmers provide the chip
@@ -9,8 +9,11 @@ Wait 1
 Dev_number_eeram = 1
 Dev_name_eeram = "Device 1"
 Serial_active_eeram = 1
+Baudrate_eeram = 0
+Ser_mode_eeram = "8N1"
 USB_active_eeram = 1
 I2C_active_eeram = 0
+Radio_active_eeram = 1
 Radio_name_eeram = Radioname_default
 Radio_type_eeram = Radiotype_default
 '
@@ -20,12 +23,8 @@ Radio_type_eeram = Radiotype_default
 #ENDIF
 '
 #IF Use_wireless = 1
-   Select Case Radio_type_eeram
-      Case 0
-         Radio_frequency_eeram = Radio_frequency_default0
-      Case 4
-         Radio_frequency_eeram = Radio_frequency_default4
-   End Select
+Radio_frequency0_eeram = Radio_frequency_default0
+Radio_frequency4_eeram = Radio_frequency_default4
 #ENDIF
 '
 $include "__reset.bas"

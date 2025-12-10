@@ -1,25 +1,15 @@
 ' Loop start
-' 20251005
+' 20251207
 '
 Loop_:
 Start Watchdog
-'Loop must be less than 2s
+' each Loop must be less than 2s
 '
 ' timeout
 Incr Timeout_J
-If Timeout_J = 255 Then
+If Timeout_J = 100 Then
    Incr Timeout_I
    Select Case Timeout_I
-      Case  90
-         If Tx_time > 0 Then
-            Incr Tx_time
-            If Tx_time > Tx_timeout Then
-               Tx_pointer = 1
-               Tx_write_pointer = 1
-               Tx_time = 0
-               Tx_time_too_long
-            End If
-         End If
 #IF Use_i2c = 1
       Case 180
          If I2c_activ = 1 And Pin_sda = 0 Then
@@ -33,15 +23,32 @@ If Timeout_J = 255 Then
          'commands are expected as a string arriving in short time.
          'this watchdog assures, that a wrong commands will be deleted
          'commandbuffers is reset
-         If Cmd_watchdog > 0 Then Incr Cmd_watchdog
+         If Cmd_watchdog > 0 Then
+            Incr Cmd_watchdog
+         End If
          If Cmd_watchdog > Cmd_watchdog_time Then
             Command_watchdog
             Gosub Command_received
+            ' start again
+            Commandpointer = 0
+            Old_commandpointer = 0
          End If
     End Select
+End If
 '
 ' additional time dependent conditions
 '
 $include "__time.bas"
 '
+B_temp1 = InterfaceFU
+If B_temp1 = 1 Then
+   ' for FU only!
+   If Radio_type > 0 Then
+      Select Case Radio_type
+         Case 1
+            Gosub RFM95_receive0
+         Case 4
+            Gosub nRF24_receive4
+      End Select
+   End If
 End If

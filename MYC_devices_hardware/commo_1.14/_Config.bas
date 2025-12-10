@@ -1,5 +1,5 @@
 ' Config
-' 20251001
+' 20251207
 '
 Blw = peek (0)
 If Blw.WDRF = 1 Then

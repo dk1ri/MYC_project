@@ -1,54 +1,43 @@
 ' Loop / Main_end
-' 202509
+' 20251206
 '
-If Tx_write_pointer > 1 Then
-   Commandpointer = 0
-   Command_pointer = 0
-   Last_command_pointer = 0
-   Not_valid_at_this_time
-Else
-   If Command_pointer > Last_command_pointer Then
-      Last_command_pointer = Command_pointer
-      ' start Cmd_watchdog:
-      If Cmd_watchdog = 0 Then Incr Cmd_watchdog
+If Commandpointer > 0 And Interface_transparent_active = 0 Then
+   ' start Cmd_watchdog:
+   If Cmd_watchdog = 0 Then Incr Cmd_watchdog
+   If Interface_transparent_active = 0 Then
 #IF Command_is_2_byte = 0
-      Commandpointer = Command_pointer
-      If Interface_transparent_active = 0 Then
-        If Command_b(1) = 254 Then
-           Gosub Select_command
-        Else
-           If Command_allowed = 1 Then
-              Gosub Select_command
-           Else
-              Commandpointer = 0
-              Command_pointer = 0
-              Last_command_pointer = 0
-              Not_valid_at_this_time
-           End If
-        End If
-      End If
-#Else
-      If Command_pointer >= 2 Then
-         Commandpointer = Command_pointer
-         If Interface_transparent_active
-            If Command_b(1) = &HFF And Command_b(2) = 254 Then
-              Gosub Commandparser
-           Else
-              If Command_allowed = 1 Then
-                 Gosub Select_command
-              Else
-                 Commandpointer = 0
-                 Command_pointer = 0
-                 Last_command_pointer = 0
-                 Not_valid_at_this_time
-              End If
-           End If
-        End If
-      End If
+      If Commandpointer >= 1 Then
+         If Command_b(1) = 254 Then
+#ELSE
+      If Commandpointer >= 2 Then
+         If Command_b(1) = &HFF And Command_b(2) = 254 Then
 #ENDIF
+            Gosub Select_command
+         Else
+            B_temp1 = 0
+            Select Case Command_origin
+               Case 0
+                  If Serial_active = 1 Then B_temp1 = 1
+               Case 1
+                  If USB_active = 1 Then B_temp1 = 1
+               Case 2
+                  If Serial_active = 1 Or USB_active = 1 Then B_temp1 = 1
+               Case 3
+                  If I2c_active = 1 Then B_temp1 = 1
+               Case 4
+                  If Radio_type > 0 Then B_temp1 = 1
+            End Select
+            If B_temp1 = 1 Then
+               Gosub Select_command
+            Else
+               Gosub Command_received
+               Not_valid_at_this_time
+            End If
+         End If
+     End If
    End If
-   ' Either command is finished or new data necessary
 End If
 '
-Reset Watchdog                                           '
+' one loop wtachdog
+Stop Watchdog                                         '
 Goto Loop_
