@@ -1,15 +1,15 @@
 ' additional error messages
-' 20200318
+' 20251209
 '
          Case 9
-            Temps = ": Wrong data length too much  / little : "
+            Temps1 = ": Wrong data length too much  / little : "
          Case 10
-            Temps = ": Unknown command: "
+            Temps1 = ": Unknown command: "
          Case 11
-            Temps = ": Illegal command parameter out of allowed range: "
+            Temps1 = ": Illegal command parameter out of allowed range: "
          Case 12
-            Temps = ": Internal function argument out of range: "
+            Temps1 = ": Internal function argument out of range: "
          Case 13
-            Temps = ": Command not allowed in current state: "
+            Temps1 = ": Command not allowed in current state: "
          Case 14
-            Temps = ": no data available: "
+            Temps1 = ": no data available: "

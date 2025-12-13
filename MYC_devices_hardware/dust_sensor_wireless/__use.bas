@@ -1,5 +1,5 @@
 ' Sub to use
-' 20200730
+' 20250705
 '
 ' 8: for 8/32pin, ATMEGAx8; 4 for 40/44pin, ATMEGAx4 packages
 ' used for reset now: different portnumber of SPI SS pin
@@ -15,3 +15,4 @@ Const Use_seri = 1
 Const Use_Reset_i2c = 1
 Const Use_I2c = 1
 Const Use_FE_FF = 1
+Const Use_wireless = 1

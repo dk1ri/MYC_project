@@ -17,12 +17,3 @@ On  URXC1 Seri2, SAVEALL
 '
 Start Timer1
 On Timer1 Timer_interrupt
-
-Config PortC.7 = Output
-Scs Alias PortC.7
-
-Config PinC.6 = Input
-GPIO1 Alias PinC,7
-
-Config PinC.5 = Input
-Clk0 ALias PinC.5
