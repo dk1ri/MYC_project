@@ -2,37 +2,30 @@
 ' 20250805
 '
 00:
-Tx_time = 1
-   A_line = 0
-   Number_of_lines = 1
-   Send_line_gaps = 2
-   Gosub Sub_restore
+   Gosub Print_basic
    Gosub Print_tx
    Gosub Command_received
 Return
 '
 01:
+   Old_commandpointer = Commandpointer
    I2c_data_b(1) = Shunt_voltage_reg
    Gosub Read_i2c_data
    Gosub Complement
-   If W_temp1 <= 30000 Then
-      If Is_minus = 0 Then
-         W_temp1 = W_temp1 + 30000
-      Else
-         W_temp1 = 30000 - W_temp1
-      End If
-      Tx_b(1) = &H01
-      Tx_b(2) = W_temp1_h
-      Tx_b(3) = W_temp1_l
-      Tx_write_pointer = 4
-      Gosub Print_tx
-   Else
-      High_value
-   End If
-   Gosub Command_received
+    If Is_minus = 0 Then
+       W_temp1 = W_temp1 + 32767
+    Else
+       W_temp1 = 32767 - W_temp1
+    End If
+    Tx_b(1) = &H01
+    Tx_b(2) = W_temp1_h
+    Tx_b(3) = W_temp1_l
+    Tx_write_pointer = 4
+    Gosub Print_tx
 Return
 '
 02:
+   Old_commandpointer = Commandpointer
    I2c_data_b(1) = Bus_voltage_reg
    Gosub Read_i2c_data
    W_temp1_h = I2c_data_b(1)
@@ -45,79 +38,71 @@ Return
    Tx_b(3) = W_temp1_l
    Tx_write_pointer = 4
    Gosub Print_tx
-   Gosub Command_received
 Return
 '
 03:
+   Old_commandpointer = Commandpointer
    I2c_data_b(1) = Current_reg
    Gosub Read_i2c_data
    Gosub Complement
-   If W_temp1 <= 30000 Then
-      If Is_minus = 0 Then
-         W_temp1 = W_temp1 + 30000
-      Else
-         W_temp1 = 30000 - W_temp1
-      End If
-      Tx_b(1) = &H03
-      Tx_b(2) = W_temp1_h
-      Tx_b(3) = W_temp1_l
-      Tx_write_pointer = 4
-      Gosub Print_tx
+   If Is_minus = 0 Then
+      W_temp1 = W_temp1 + 32767
    Else
-      High_value
+      W_temp1 = 32767 - W_temp1
    End If
-   Gosub Command_received
+   Tx_b(1) = &H03
+   Tx_b(2) = W_temp1_h
+   Tx_b(3) = W_temp1_l
+   Tx_write_pointer = 4
+   Gosub Print_tx
+
 Return
 '
 04:
+   Old_commandpointer = Commandpointer
    I2c_data_b(1) = Power_reg
    Gosub Read_i2c_data
    W_temp1_h = I2c_data_b(1)
    W_temp1_l = I2c_data_b(2)
-   W_temp1 = W_temp1 * 2
-   If W_temp1 <= 30000 Then
-      Tx_b(1) = &H04
-      Tx_b(2) = W_temp1_h
-      Tx_b(3) = W_temp1_l
-      Tx_write_pointer = 4
-      Gosub Print_tx
-   End If
-   Gosub Command_received
+   B_temp1 = W_temp1
+   Tx_b(1) = &H04
+   Tx_b(2) = B_temp1
+   Tx_write_pointer = 3
+   Gosub Print_tx
 Return
 '
 05:
+   Old_commandpointer = Commandpointer
    I2c_data_b(1) = Bus_voltage_reg
    Gosub Read_i2c_data
    W_temp1_h = I2c_data_b(1)
    W_temp1_l = I2c_data_b(2)
    shift W_temp1, right, 3
-   W_temp1 = W_temp1 * 4
-   S = W_temp1
+   W_temp1 = W_temp1
+   ' V in mV
+   Si_temp_w0 = W_temp1
    '
-   I2c_data_b(1) = Shunt_voltage_reg
+   I2c_data_b(1) = Current_reg
    Gosub Read_i2c_data
    Gosub Complement
-   If W_temp1 <= 30000 Then
-      S = S * W_temp1
-      ' U / 0.1 Ohm
-      ' S = S * 10
-      ' result in 10nW -> / 1000 -> in 10uW
-      S = S / 100
-      D_temp1 = S
-      Tx_b(1) = &H05
-      ' 3 byte
-      Tx_b(2) = D_temp1_b(3)
-      Tx_b(3) = D_temp1_b(2)
-      Tx_b(4) = D_temp1_b(1)
-      Tx_write_pointer = 5
-      Gosub Print_tx
-   Else
-      High_value
-   End If
+' I in mA
+   W_temp1 = W_temp1
+   Si_temp_w0 = Si_temp_w0 * W_temp1
+   Si_temp_w0 = Si_temp_w0 / 1000
+   D_temp1 = Si_temp_w0
+   ' P in mW
+   Tx_b(1) = &H05
+   ' 3 byte
+   Tx_b(2) = D_temp1_b(3)
+   Tx_b(3) = D_temp1_b(2)
+   Tx_b(4) = D_temp1_b(1)
+   Tx_write_pointer = 5
+   Gosub Print_tx
 Return
 '
 06:
    If Commandpointer >= 3 Then
+      Old_commandpointer = Commandpointer
       I2c_data_b(1) = Calibration_reg
       I2c_data_b(2) = Command_b(2)
       I2c_data_b(3) = Command_b(3)
@@ -139,201 +124,86 @@ Return
 Return
 '
 08:
-   If Interface_mode = 0 Then
-      If Commandpointer >= 2 Then
-         If Command_b(2) < 4 Then
-            If Radio_type <> Command_b(2) Then
-               Radio_type = Command_b(2)
-               Radio_type_eram = Command_b(2)
-               Goto Restart
+   If Commandpointer >= 3 Then
+      Old_commandpointer = Commandpointer
+      'never as wireless command
+      If Command_origin <> 4 Then
+         ' config Jumper required
+         If Mode_in = 0 Then
+            W_temp1 = Command_b(2) * 256
+            W_temp1 = W_temp1 + Command_b(3)
+            If W_temp1 < 1700 Then
+               Radio_frequency0 = W_temp1
+               Radio_frequency0_eeram = Radio_frequency0
+               D_temp1 = Radio_frequency0 * 1000
+               Gosub Set_frequency_0
+            Else
+               Not_valid_at_this_time
             End If
+            Gosub Command_received
          Else
-            Parameter_error
+            Not_valid_at_this_time
          End If
-         Gosub Command_received
+      Else
+         Not_valid_at_this_time
       End If
-   Else
-      Not_valid_at_this_time
       Gosub Command_received
    End If
 Return
 '
 09:
-   If Interface_mode = 0 Then
-      Tx_time = 1
-      Tx_b(1) = &H09
-      Tx_b(2) = Radiotype
-      Tx_write_pointer = 3
-      Gosub Print_tx
-      Gosub Command_received
-   Else
-      Not_valid_at_this_time
-      Gosub Command_received
-   End If
+   Old_commandpointer = Commandpointer
+   If Radio_type = 0 Then Gosub Read_frequency_0
+   Tx_b(1) = &H09
+   print Radio_frequency0
+   w_temp1 = Radio_frequency0
+   Tx_b(2) = w_temp1_h
+   Tx_b(3) = w_temp1_l
+   Tx_write_pointer = 4
+   Gosub Print_tx
 Return
 '
 10:
-   If Interface_mode = 0 Then
-      If Commandpointer >= 2 Then
-         B_temp1 = Command_b(2) + 1
-         If B_temp1 <= Name_len Then
-            If Commandpointer >= B_temp1 Then
-               B_temp2 = 1
-               For B_temp1 = 3 To B_temp1
-                  Radio_name_b(B_temp2) = Command_b(B_temp1)
-                  Incr B_temp2
-               Next B_temp1
-               Radio_name_eram = Radio_name
-               Gosub Command_received
+   If Commandpointer >= 2 Then
+      Old_commandpointer = Commandpointer
+      'never as wireless command
+      If Command_origin <> 4 Then
+         ' config Jumper required
+         If Mode_in = 0 Then
+            If Command_b(2) < 129 Then
+               Radio_frequency4 = B_temp1
+               Radio_frequency4_eeram = Radio_frequency4
+               Gosub Set_frequency_nrf244
+            Else
+               Not_valid_at_this_time
             End If
          Else
-            Parameter_error
-            Gosub Command_received
+            Not_valid_at_this_time
          End If
+      Else
+         Not_valid_at_this_time
       End If
-   Else
-      Not_valid_at_this_time
+      Gosub Command_received
    End If
 Return
 '
 11:
-   If Interface_mode = 0 Then
-      Tx_time = 1
-      Tx_b(1) = &H0B
-      Tx_b(2) = len(Radio_name)
-      B_temp2 = 3
-      For B_temp1 = 1 to Tx_b(2)
-          Tx_b(B_temp2) = Radio_name_b(B_temp1)
-          Incr B_temp2
-      Next B_temp1
-      Tx_write_pointer = B_temp2
-      Gosub Print_tx
-      Gosub Command_received
-   Else
-      Not_valid_at_this_time
-      Gosub Command_received
-   End If
+   Old_commandpointer = Commandpointer
+   If Radio_type = 4 Then Gosub Read_frequency_nrf244
+   Tx_b(1) = &H0B
+   Tx_b(2) = Radio_frequency4
+   Tx_write_pointer = 3
+   Gosub Print_tx
 Return
 '
 12:
-   If Interface_mode = 0 Then
-      If Commandpointer >= 3 Then
-         Radio_frequency = Command_b(2) * 256
-         Radio_frequency = Radio_frequency + Command_b(3)
-         If Radio_frequency < 612903 Then
-            Radio_frequency = Radio_frequency + 137000000
-            Radio_frequency = Radio_frequency * 62
-            Radio_frequency_eeram = Radio_frequency
-            Select Case Radio_type
-               Case 0
-                  Gosub Set_radio_f0
-            End Select
-         Else
-            Parameter_error
-         End If
-      End If
+   Old_commandpointer = Commandpointer
+   Tx_b(1) = &H0C
+   If Mode_in = 0 Then
+      Tx_b(2) = 1
    Else
-      Not_valid_at_this_time
-      Gosub Command_received
+      Tx_b(2) = 0
    End If
+   Tx_write_pointer = 3
+   Gosub Print_tx
 Return
-'
-13:
-   If Interface_mode = 0 Then
-      Tx_time = 1
-      Tx_b(1) = &H0D
-      D_temp1 = Radio_frequency - 137000000
-      D_temp1 = D_temp1 / 62
-      Tx_b(2) = D_temp1_b(1)
-      Tx_b(3) = D_temp1_b(2)
-      Tx_write_pointer = 4
-      Gosub Print_tx
-      Gosub Command_received
-   Else
-      Not_valid_at_this_time
-      Gosub Command_received
-   End If
-Return
-'
-14:
-   If Interface_mode = 0 Then
-      If Commandpointer >= 4 Then
-         Radio_frequency = Command_b(2) * 256
-         Radio_frequency = Radio_frequency + Command_b(3)
-         If Radio_frequency < 1854838 Then
-            Radio_frequency = Radio_frequency + 410000000
-            Radio_frequency = Radio_frequency * 62
-            Radio_frequency_eeram = Radio_frequency
-            Select Case Radio_type
-               Case 0
-                  Gosub Set_radio_f0
-            End Select
-         Else
-            Parameter_error
-         End If
-      End If
-   Else
-      Not_valid_at_this_time
-      Gosub Command_received
-   End If
-Return
-'
-15:
-   If Interface_mode = 0 Then
-      Tx_time = 1
-      Tx_b(1) = &H0F
-      D_temp1 = Radio_frequency - 410000000
-      D_temp1 = D_temp1 / 62
-      Tx_b(2) = D_temp1_b(1)
-      Tx_b(3) = D_temp1_b(2)
-      Tx_b(4) = D_temp1_b(3)
-      Tx_write_pointer = 5
-      Gosub Print_tx
-      Gosub Command_received
-   Else
-      Not_valid_at_this_time
-      Gosub Command_received
-   End If
-Return
-'
-16:
-   If Interface_mode = 0 Then
-       If Commandpointer >= 4 Then
-          Radio_frequency = Command_b(2) * 256
-          Radio_frequency = Radio_frequency + Command_b(3)
-          If Radio_frequency < 1019999 Then
-             Radio_frequency = Radio_frequency + 820000000
-             Radio_frequency = Radio_frequency * 62
-             Radio_frequency_eeram = Radio_frequency
-             Select Case Radio_type
-                Case 0
-                   Gosub Set_radio_f0
-             End Select
-          Else
-             Parameter_error
-          End If
-       End If
-   Else
-      Not_valid_at_this_time
-      Gosub Command_received
-   End If
-Return
-'
-17:
-   If Interface_mode = 0 Then
-      Tx_time = 1
-      Tx_b(1) = &H011
-      D_temp1 = Radio_frequency - 820000000
-      D_temp1 = D_temp1 / 62
-      Tx_b(2) = D_temp1_b(1)
-      Tx_b(3) = D_temp1_b(2)
-      Tx_b(4) = D_temp1_b(3)
-      Tx_write_pointer = 5
-      Gosub Print_tx
-      Gosub Command_received
-   Else
-      Not_valid_at_this_time
-      Gosub Command_received
-   End If
-Return
-'
