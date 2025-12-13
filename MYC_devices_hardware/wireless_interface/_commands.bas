@@ -22,7 +22,7 @@ Return
                D_temp1 = Radio_frequency0 * 1000
                Gosub Set_frequency_0
             Else
-               Not_valid_at_this_time
+               Parameter_error
             End If
             Gosub Command_received
          Else
@@ -37,15 +37,14 @@ Return
 '
 02:
    Old_commandpointer = Commandpointer
-   if Radio_type = 0 Then Gosub Read_frequency_0
+   if Radio_type = 1 Then Gosub Read_frequency_0
    Tx_b(1) = &H02
-   print Radio_frequency0
    w_temp1 = Radio_frequency0
+   print w_temp1
    Tx_b(2) = w_temp1_h
    Tx_b(3) = w_temp1_l
    Tx_write_pointer = 4
    Gosub Print_tx
-   Gosub Command_received
 Return
 '
 03:
@@ -60,7 +59,7 @@ Return
                Radio_frequency4_eeram = Radio_frequency4
                Gosub Set_frequency_nrf244
             Else
-               Not_valid_at_this_time
+               Parameter_error
             End If
          Else
             Not_valid_at_this_time
@@ -79,7 +78,6 @@ Return
    Tx_b(2) = Radio_frequency4
    Tx_write_pointer = 3
    Gosub Print_tx
-   Gosub Command_received
 Return
 '
 05:
@@ -92,5 +90,4 @@ Return
    End If
    Tx_write_pointer = 3
    Gosub Print_tx
-   Gosub Command_received
 Return

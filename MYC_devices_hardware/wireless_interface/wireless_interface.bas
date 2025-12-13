@@ -1,5 +1,5 @@
 'name : wireless interface
-'Version V03.0, 20251208
+'Version V03.0, 20251211
 'purpose : Program for a serial to wireless Interface
 'Can be used with hardware wireless_interface V05.0 by DK1RI
 '

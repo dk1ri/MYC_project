@@ -28,7 +28,7 @@ Data "3;op,frequency;1;128,,{1_2400to2527};lin;MHz"
 'frequency nRF24
 Data "4;ap,as310"
 '
-''Announce5:
+'Announce5:
 'Konfiguration
 'config mode
 Data "5;as,configuration;1;0,off;1,on"
