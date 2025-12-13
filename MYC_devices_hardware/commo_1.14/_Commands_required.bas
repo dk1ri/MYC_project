@@ -88,8 +88,8 @@ FFF0:
          End If
       Else
          Parameter_error
+         Gosub Command_received
       End If
-      Gosub Command_received
    End If
 Return
 '
@@ -280,11 +280,11 @@ FFF7:
             Case Else
                Parameter_error
                Tx_write_pointer = 0
+               Gosub Command_received
          End Select
          If Tx_write_pointer > 0 Then
             Gosub Print_tx
          End If
-         Gosub Command_received
       End If
 Return
 '
@@ -350,7 +350,6 @@ FFFC:
 #ENDIF
    Tx_write_pointer = B_temp1
    Gosub Print_tx
-   Gosub Command_received
 Return
 '
 FFFD:
@@ -368,7 +367,6 @@ FFFD:
    Tx_write_pointer = 4
 #ENDIF
    Gosub Print_tx
-   Gosub Command_received
 Return
 '
 FFFE:
@@ -542,10 +540,10 @@ FFFF:
             Case Else
                Parameter_error
                Tx_write_pointer = 0
+               Gosub Command_received
          End Select
          If Tx_write_pointer > 0 Then
             Gosub Print_tx
          End If
-         Gosub Command_received
       End If
 Return

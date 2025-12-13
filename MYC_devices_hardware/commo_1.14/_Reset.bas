@@ -22,10 +22,8 @@ Radio_type_eeram = Radiotype_default
    I2C_active_eeram = 1
 #ENDIF
 '
-#IF Use_wireless = 1
 Radio_frequency0_eeram = Radio_frequency_default0
 Radio_frequency4_eeram = Radio_frequency_default4
-#ENDIF
 '
 $include "__reset.bas"
 '

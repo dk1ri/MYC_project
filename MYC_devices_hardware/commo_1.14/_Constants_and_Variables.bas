@@ -107,14 +107,14 @@ Dim Spi_len As Byte
 Dim Spi_IO As String * 100
 Dim Spi_IO_b(100) As Byte At Spi_IO Overlay
 '
+Dim Radio_frequency0 As Dword
+Dim Radio_frequency0_b(4) As Byte At Radio_frequency0 Overlay
+Dim Radio_frequency0_eeram As Eram Dword
+Dim Radio_frequency4 As Dword
+Dim Radio_frequency4_b(4) As Byte At Radio_frequency4 Overlay
+Dim Radio_frequency4_eeram As Eram Dword
+'
 #IF Use_wireless = 1
-'   Dim Send_wireless As Byte
    Dim wireless_tx_length As Byte
-   Dim Radio_frequency0 As Dword
-   Dim Radio_frequency0_b(4) As Byte At Radio_frequency0 Overlay
-   Dim Radio_frequency0_eeram As Eram Dword
-   Dim Radio_frequency4 As Dword
-   Dim Radio_frequency4_b(4) As Byte At Radio_frequency4 Overlay
-   Dim Radio_frequency4_eeram As Eram Dword
 #ENDIF
 '

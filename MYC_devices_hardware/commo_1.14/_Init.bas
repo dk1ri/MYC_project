@@ -21,6 +21,9 @@
    Radio_active = Radio_active_eeram
    Radio_type = Radio_type_eeram
    Radio_name = Radio_name_eeram
+   ' set frequency to default, when radi0_type is modifiered
+   Radio_frequency0 = Radio_frequency0_eeram
+   Radio_frequency4 = Radio_frequency4_eeram
 '
 #If Use_i2c = 1
    Adress = Adress_eeram
@@ -29,13 +32,9 @@
 #EndIf
 '
 #If Use_wireless = 1
-   ' set frequency to default, when radi0_type is modifiered
-   Radio_frequency0 = Radio_frequency0_eeram
-   Radio_frequency4 = Radio_frequency4_eeram
-'
    Spi_len = 0
    Spi_IO = String(100,0)
-   ' do this alway: If harsware not connected: no effect
+   ' do this alway: If hardware not connected: no effect
    Gosub wireless_setup
 #ENDIF
 '
