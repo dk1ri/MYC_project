@@ -1,27 +1,19 @@
-#
+"""
+# last edited: 202512
+Copyright : DK1RI
+If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+"""
 
-import time
 import random
 
-from device_handling import *
 from buffer_handling import *
 from command_handling import *
 from ld_command_handling import *
 from misc_functions import *
 
-# import v_announcelist
-# import v_configparameter
-# import v_cr_params
 import v_dev
-# import v_device_announce
-# import v_device_names_and_indiv
-# import v_index_of_input_buffer
-# import v_kbd_input
-import v_linelength
 import v_sk
-import v_sk_interface
 import v_time_values
-# import v_token_params
 
 # ------------------------------------------------
 # subprograms for tests
@@ -30,12 +22,13 @@ import v_time_values
 
 def handle_check():
     # handling of commandfiles
+    # for auto # delete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     if v_time_values.terminal == 255:
         # find terminal
         j = 0
-        while j < len(v_sk_interface.interface_type):
+        while j < len(v_sk.interface_type):
             j += 1
-            if v_sk_interface.interface_type[j - 1] == "TERMINAL":
+            if v_sk.interface_type[j - 1] == "TERMINAL":
                 v_time_values.terminal = j
     if v_time_values.terminal == 255:
         v_time_values.auto = 0
@@ -44,7 +37,7 @@ def handle_check():
         return
     while v_time_values.check_number < len(v_time_values.from_sk):
         v_sk.inputline[v_time_values.terminal] = bytearray([])
-        v_sk.len[v_time_values.terminal] = [0,0,0,0,0]
+        v_sk.len[v_time_values.terminal] = [0,0,0,0,0,0,0]
         v_sk.starttime[v_time_values.terminal] = 0
         # avoid user timeout
         # avoid user timeout
@@ -71,9 +64,9 @@ def handle_check():
                 v_time_values.out_device = v_token_params.device[v_token_params.index_of_cr_commands[tok]]
 
         poll_input_buffer()
-        send_to_ld()
+        # fehlt? send_to_ld()
         poll_ld()
-        send_buffer_to_device()
+        send_to_device()
         # next: check data to device:
         # line 3: check data to dev
         if v_time_values.data == v_time_values.to_dev[v_time_values.check_number]:
@@ -113,13 +106,13 @@ def handle_check():
 
 
 def random_data():
-# send data with ram length to (random) SK, LD or device input
+# send data with random length to (random) SK, LD or device input
     if v_time_values.terminal == 255:
         # find terminal
         j = 0
-        while j < len(v_sk_interface.interface_type):
+        while j < len(v_sk.interface_type):
             j += 1
-            if v_sk_interface.interface_type[j - 1] == "TERMINAL":
+            if v_sk.interface_type[j - 1] == "TERMINAL":
                 v_time_values.terminal = j
     if v_time_values.terminal == 255:
         v_time_values.auto = 0
@@ -141,22 +134,11 @@ def random_data():
             v_dev.data_to_CR[device].extend(([ran_int]))
         j += 1
     if direction == 0:
-        print("random: SK",len(v_sk.inputline[v_time_values.terminal]))
+        print("random: SK",len(v_sk.inputline[v_time_values.terminal]),v_time_values.mess_number)
     else:
-        print("random; device:", device, len(v_dev.data_to_CR[device]))
-# performance measurement corei7:
-# with all prints: 398s
-# one less: 378s
-# no random prints: 285s
-# error messages only 263s , 2499189 byte
-#    v_time_values.random_time = time.time()
-#    if v_time_values.mess == 0:
-#        v_time_values.mess = time.time()
-#    else:
-    #   print ("s", v_time_values.random_i)
-#        if v_time_values.random_i == 1000000:
-#            print(v_time_values.mess - time.time(),v_time_values.mess_byte)
-#            sys.exit()
-#       else:
-#            v_time_values.random_i += 1
+        print("random; device:", device, len(v_dev.data_to_CR[device]),v_time_values.mess_number)
+
+
+    v_time_values.mess_number = v_time_values.mess_number + 1
+
     return

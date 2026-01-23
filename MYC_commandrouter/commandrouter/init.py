@@ -1,6 +1,9 @@
 """
 name : init.py
-last edited: 201802
+last edited: 20250309
+Copyright : DK1RI
+If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+other misc functions
 ------------------------------------------------
 readconfig used at start only
 read_my_devices at start and from time to time
@@ -8,28 +11,70 @@ others are called by read_my_devices only
 ------------------------------------------------
 """
 
-import os
-
 from io_handling import *
-from misc_functions import *
 from create_new_announce_list import  *
 
-import v_device_names_and_indiv
 import v_configparameter
 import v_cr_params
-import v_sk_interface
 
-# variables per device
+# variables per device#
+from pathlib import Path
 import v_dev
 import v_sk
+import sys
+import v_time_values
 
 
-def readconfig(arg):
+def dummy_sub():
+    return
+
+
+def initialization():
+    # read config data
+    readconfig()
+    v_configparameter.other_lines = ["I","L","Q","R","S","T"]
+    #
+    # create / read all FU data
+    read_device_interface_list()
+    # # temporary solution for announcements of up to 6 devices (in devices dir)
+    v_dev.name[1] = "1"
+    """
+    v_dev.name[2] = "2"
+    v_dev.name[3] = "3"
+    v_dev.name[4] = "4"
+    v_dev.name[5] = "5"
+    v_dev.name[6] = "6"
+    v_dev.name[7] = "7"
+    v_dev.name[8] = "8"
+    v_dev.name[9]= "9"
+    v_dev.name[10] = "10"
+    v_dev.name[11] = "11"
+    v_dev.name[12] = "12"
+    v_dev.name[13] = "13"
+    v_dev.name[14] = "14"
+    """
+    i = 0
+    while i < len(v_dev.announcements):
+        # announcelist may be empty, if file not found
+        read_announcements_of_a_device(i)
+        i += 1
+    create_new_announce_list()
+    create_sk_buffer()
+    # not ready:
+    #  check_activity_of_devices()
+    v_time_values.last_device_search = int(time.time())
+    v_time_values.last_activity = time.time()
+    v_time_values.time_for_activ_check = time.time()
+    v_time_values.last_checktime = time.time()
+    return
+
+
+def readconfig():
     # configfile can be given with full path
-    # configfile is read read to v_configparameter[]
+    # configfile is read to v_configparameter[]
     # for details of parameters see manual -> files
-    if len(arg) > 1:
-        config_file = arg[1]
+    if len(sys.argv) > 1:
+        config_file = sys.argv[1]
     else:
         config_file = "commandrouter_config/config_commandrouter"
     if not os.path.isfile(config_file):
@@ -41,21 +86,30 @@ def readconfig(arg):
         if lines[0] == "#":
             continue
         # dir for my_devices
-        if i == 0:
-            if lines.splitlines()[0] == "home":
-                v_configparameter.my_devices_file = "commandrouter_config/my_devices"
-            else:
-                v_configparameter.my_devices_file = lines.rstrip()
-            if not os.path.isfile(v_configparameter.my_devices_file):
-                sys.exit("Missing file:  " + v_configparameter.my_devices_file)
+        lines = lines.splitlines()[0]
         # location of local devicegroupfiles
-        if i == 1:
-            if lines.splitlines()[0] == "home":
-                v_configparameter.devicegroup = "commandrouter_config/"
+        if i == 0:
+            if lines == "home":
+                v_configparameter.connection_of_devices = "connection_of_devices"
             else:
-                v_configparameter.devicegroup = lines.rstrip()
-            if not os.path.isdir(v_configparameter.devicegroup):
-                sys.exit("Missing dir:  " + v_configparameter.devicegroup)
+                v_configparameter.connection_of_devices = lines.rstrip()
+            if Unix_windows == 0:
+                v_configparameter.connection_of_devices = "commandrouter_config/" + v_configparameter.connection_of_devices
+            else:
+                v_configparameter.connection_of_devices = "commandrouter_config//" + v_configparameter.connection_of_devices
+            if not os.path.isfile(v_configparameter.connection_of_devices):
+                sys.exit("Missing dir:  " + v_configparameter.connection_of_devices)
+        if i == 1:
+            if lines == "home":
+               "devices"
+            else:
+                v_configparameter.announcements_dir = lines.rstrip()
+            if Unix_windows == 0:
+                v_configparameter.announcements_dir = "commandrouter_config/" + v_configparameter.announcements_dir
+            else:
+                v_configparameter.announcements_dir = "commandrouter_config//" + v_configparameter.announcements_dir
+            if not os.path.isdir(v_configparameter.announcements_dir):
+                sys.exit("Missing file:  " + v_configparameter.announcements_dir)
         if i == 2:
             # time in sec for checking weather a device is active
             v_configparameter.time_for_activ_check = int(lines.rstrip())
@@ -66,8 +120,8 @@ def readconfig(arg):
             # time in sec for command timeout
             v_configparameter.time_for_command_timeout = int(lines.rstrip())
         if i == 5:
-            if lines.splitlines()[0] == "home":
-                v_configparameter.logfile = "commandrouter_config/logfile"
+            if lines == "home":
+                    v_configparameter.logfile = "commandrouter_config/logfile"
             else:
                 v_configparameter.logfile = lines.rstrip()
         if i == 6:
@@ -94,9 +148,28 @@ def readconfig(arg):
         if i == 13:
             # sk buffer limit hysteresys
             v_configparameter.sk_histeresys = int(lines.rstrip())
+        if i == 14:
+            # dirname for LD files
+            v_configparameter.dirname = lines.rstrip()
+        if i == 15:
+            v_configparameter.announceline_0_CR =  lines.rstrip()
+        if i == 16:
+            v_configparameter.announceline_240_CR = lines.rstrip()
+        if i == 17:
+            v_configparameter.announceline_241_CR = lines.rstrip()
+        if i == 18:
+            v_configparameter.announceline_242_CR = lines.rstrip()
+        if i == 19:
+            v_configparameter.announceline_254_CR =  lines.rstrip()
+        if i == 20:
+            v_configparameter.announceline_255_CR =  lines.rstrip()
+        if i == 21:
+            v_configparameter.com_port =  int(lines.rstrip())
+        if i == 22:
+            v_configparameter.ethernet_port =  int(lines.rstrip())
         i += 1
     config_file.close()
-    if i != 14:
+    if i != 23:
         sys.exit("wrong number of configparameters")
     if v_configparameter.test_mode == 0:
         v_cr_params.sk_buffer_limit = v_configparameter.sk_buffer_limit
@@ -107,332 +180,46 @@ def readconfig(arg):
     return
 
 
-def read_my_devices():
-    # add new devices but do not delete
-    # this sub generates device_names_and_indiv.all and device_names_and_indiv.activ only
-    # (and call read of lower level CR if necessary)
-    # program crashes, if filenames contain special characters
-    my_dev_file = open(v_configparameter.my_devices_file)
+def read_device_interface_list():
+    # all devices of connection_file
+
+    connection_file = open(v_configparameter.connection_of_devices)
     # own CR must be 1st device, own_cr is reset after the first device
-    own_cr = 1
-    devicegroupname = ""
-    device = 0
-    indiv = ""
-    i = 0
-    new_device_found = 0
-    for linesx in my_dev_file:
-        # read 3 lines for one device
-        linesx = linesx.splitlines()[0]
-        if linesx == "" or linesx[0] == "#":
-            pass
-        elif i == 0:
-            indiv = linesx
-            i += 1
-        elif i == 1:
-            line2 = linesx
-            i += 1
-        elif i == 2:
-            line3 = linesx
-            # got 3 lines for one device now
-
-            # get lower level CR
-            item1 = line2.split(";")[1].split(",")
-            if item1[0] == "c" and own_cr == 0:
-                v_cr_params.lower_level_cr.append(indiv)
-                get_announcements_of_lower_level_device(devicegroupname)
-                i = 0
-                continue
-
-            item = indiv.split(";")
-            devicegroupname = item[0] + "_" + item[1] + "_" + item[2]
-            if indiv in v_device_names_and_indiv.name:
-                # dupe: skip next line (at re-initialization)
-                pass
-            else:
-                # read devicegroupfile first. skip rest in case of severe error
-                # otherwise create the device
-                item = line2.split(";")[1].split(",")[0]
-                if item == "m" or item == "c" or item == "s":
-                # not decided about RU and LD
-                    error = read_announcements_of_a_device(indiv, devicegroupname, own_cr)
-                    if error == 1:
-                        continue
-                v_device_names_and_indiv.name.append(indiv)
-                # active by default
-                v_device_names_and_indiv.activ.append(1)
-
-                # third line: 255 announcement
-                if own_cr == 1:
-                    initialize_inputbuffer(line3)
-                else:
-                    # device = 0 is CR always no interface parameters needed
-                    # extract interfaces from 255 line
-                    initialize_device_interface(line3, device)
-                new_device_found = 1
-            own_cr = 0
-            device += 1
-            i = 0
-    my_dev_file.close()
-    return new_device_found
+    # dvice for local CR
+    create_device()
+    i = 1
+    for linesx in connection_file:
+        # skip commants andempty lines
+        if linesx[0] == "#" or linesx == "":
+            continue
+        create_device()
+        linesx.rstrip()
+        if linesx[0:4] == "RS232":
+            v_dev.interface_comport[i] = linesx[5:]
+            linesx= linesx[0:4]
+        v_dev.interface_type[i] = linesx[0:4]
+        # read announcments missing
+        v_dev.avtive.append(1)
+      #  v_device_names_and_indiv.name.append(i)
+        # active by default
+       # v_device_names_and_indiv.activ.append(i)
+        i += 1
+    connection_file.close()
+    return
 
 
-"""
-------------------------------------------------
-tasks, with new device
-------------------------------------------------
-"""
-
-
-def read_announcements_of_a_device(indiv, devicegroupname, own_cr):
-    # read announcements of one new device from file with devicegroupname
-    # resolve duplicate commandtoken / commandtype:
-    # replace ANNOUNCEMENT line
-    # drop "k" and "l" lines (for configuration only) and individualization lines
-    # drop lines with errors, (as neccesary b< CR)
-    # find number of commands (excluding rules and ANNOUNCEMENT line)
-    # device point to the actual element
-    # do some checks on announcement data: return in case of error
-    # missing: ask device, if devicegroupfile not available
-
-    # write device_group_file to temporary list
-    file = []
-    file_last = []
-    device_temp_rules = []
-    device_group_file = open(v_configparameter.devicegroup + devicegroupname)
-    if own_cr == 1:
-        i = 0
-        for linesx in device_group_file:
-            lines = linesx.splitlines()[0]
-            if lines == "" or lines[0] == "#":
-                continue
-            # basic line only
-            if i == 0:
-                file_last.append(lines)
-            else:
-                # other lines appended later
-                v_cr_params.cr_announcement.append(lines)
-            i  +=  1
-    else:
-        file = []
-        for linesx in device_group_file:
-            lines = linesx.splitlines()[0]
-            # drop comment and empty lines
-            if lines == "" or lines[0] == "#":
-                continue
-            file.append(lines)
-    device_group_file.close()
-
-    # concatanate line with the same commandtoken
-    # must have the same commandtype
-    file1 =[]
-    for lines in file:
-        item = lines.split(";")
-        if len(item) > 1:
-            linenumber = 0
-            found = 0
-            for lines1 in file1:
-                newline = lines1.split(";")
-                if len(newline)> 1:
-                    if item[0] == newline[0]:
-                        if item[1].split(",")[0] == newline[1].split(",")[0]:
-                            # found; concatanate lines
-
-                            file1[linenumber] += ";".join(item[2:])
-                        else:
-                            # identical commandtoken, different commandtype: drop line
-                            write_log("dentical commandtoken, different commandtype in device "+ str(devicegroupname))
-                linenumber += 1
-            if found == 0:
-                file1.append(lines)
-        else:
-            file1.append(lines)
-
-    # resolve "as"lines; modify lines, if found
-    # lines with the same commandtoken must have the same commandtype
-    file = []
-    for linesx in file1:
-        item = linesx.split(";")
-        found = 0
-        if len(item) > 1:
-            item1 = item[1].split(",")
-            if len(item1) > 1:
-                # in commandlines here may be something as "as123"
-                if item1[1][0:2] == "as":
-                    # nothing will follow the "as" number (string)
-                    as_number = item1[1].split("as")[1]
-                    # search for "as" token
-                    found = 1
-                    for lines in file1:
-                        lines1 = lines.splitlines()[0]
-                        newline = lines1.split(";")
-                        if as_number == newline[0] and found == 1:
-                            # "as" line found, original type + ext
-                            new_commandtype = newline[1].split(",")[0] + ",ext" + as_number
-                            # "as"line as master
-                            # add original token and commandtype
-                            newline[0] = item[0]
-                            newline[1] = new_commandtype
-                            file.append(";".join(newline))
-                            found = 2
-        if found == 0:
-            file.append(linesx)
-
-    # drop "k" and "l" lines
-    file1 = []
-    for linesx in file:
-        item = linesx.split(';')
-        if len(item) > 1:
-            item1 = item[1].split(",")
-            if len(item1[0]) > 0:
-                if item1[0][0] == "k" or item1[0][0] == "l":
-                    continue
-
-        #drop ANNOUNCEMENT and INDIVIDUALIZATION lines (not for CR)
-        if len(item) > 1:
-            item1 = item[1].split(",")
-            if len(item1) > 1:
-                # des needed
-                if item1[1] == "ANNOUNCEMENTS":
-                    continue
-                if item1[1] == "INDIVIDUALIZATION":
-                    continue
-        file1.append(linesx)
-
-    # for CR; overwritten by other device
-    temp_length_commandtoken = 1
-
-    if own_cr == 1:
-        for lines in v_cr_params.cr_announcement:
-            number, stripped = misc_functions.strip_dimension(lines)
-            if lines[0] != "R" and lines[0] != "Q" and lines[0] != "I":
-                error = check_parameters(stripped, lines)
-                if error != "":
-                    exit ("error in devicegroupfile of CR; terminate programm: " + lines + " " + error )
-
-            temp_list1 = []
-            temp_list2 = []
-            item = lines.split(";")
-            if item[0] != "R" and item[0] != "I" and item[0] != "Q" and len(item) > 1:
-                item1 = item[1].split(",")
-                temp_list3, temp_list4 = commandtypes[item1[0]](lines, temp_list1, temp_list2,1)
-
-                if len(item1) > 1 and len(item) > 2:
-                    if item1[1] == "LAST ERROR":
-                        # number of bytes for length of error messages
-                        value = 0
-                        try:
-                            value = int(item[2].split(",")[0])
-                        except ValueError:
-                            exit ("length of error not numeric in CR error announcement; terminate programm")
-                        v_cr_params.length_last_error_length = length_of_int(value)
-
-        v_cr_params.full_device_name = indiv
-
-    else:
-
-    # for normal devices only
-        device_temp_rules = []
-        commands_of_device = 0
-        temp_length_commandtoken = 1
-
-        for lines in file1:
-            if lines[0] == "R":
-                # rules will be appended to the end
-                device_temp_rules.append(lines)
-                continue
-
-            item = lines.split(";")
-
-            # check basic line
-            temp = item[1].split(",")[0]
-            if temp == "m" or temp == "l" or temp == "r" or temp == "c" or temp == "h" or temp == "s":
-                if len(item) != 10:
-                    # wrong basic announcement
-                    # ignore that device
-                    write_log("wrong number of parameters in basic announcement of device, device ignored: " + indiv)
-                    return 1
-                try:
-                    temp_length_commandtoken = int(item[7])
-                except ValueError:
-                    # ignore that device
-                    write_log("wrong commandlength in devicegroupfile device, device ignored: " + indiv)
-                    return 1
-        file = []
-        for lines in file1:
-            #line ready now; check for valid values
-            number, stripped = misc_functions.strip_dimension(lines)
-            if lines[0] != "R" and lines[0] != "Q" and lines[0] != "I":
-                error = check_parameters(stripped, lines)
-                if error == "":
-                    commands_of_device += 1
-                    file.append(lines)
-                else:
-                    write_log(str(lines) +  " " + error + " line ignored")
-            else:
-                file.append(lines)
-
-        # length of commandtoken must match the value of the basic announcement
-        # + 16 due to reserved token
-        if device_length_of_commandtoken(commands_of_device + 16) > temp_length_commandtoken:
-            write_log(("error in devicegroupfile device; " + indiv))
-            return 1
-
-        # check commandtype, the generated lists are ignored, valid list are generated with create_new_announce_list
-        file_last = []
-        for lines in file:
-            #temp_list1 = []
-            #temp_list2 = []
-            #temp_list3 = []
-            #temp_list4 = []
-            #item =lines.split(";")
-            #if item[0] != "R" and item[0] != "I" and item[0] != "Q" and len(item) > 1:
-            #    item1= item[1].split(",")
-            #    temp_list3, temp_list4, error = commandtypes[item1[0]](lines, temp_list1,temp_list2, temp_length_commandtoken)
-            #    if error == 0:
-            #        file_last.append(lines)
-            #else:
-            file_last.append(lines)
-
-
-# device_temp_command1 ready now
-# create new device
-    device = create_device(indiv)
-
-    v_dev.length_commandtoken[device] = temp_length_commandtoken
-
-    # all commandtoken for a device
-    # device_temp_command may have I lines from lower level CR
-    tok = 0
-    for lines in file_last:
-        if lines[0:1] != "I" and lines[0:1] != "R" and lines[0:1] != "Q":
-            v_dev.tok[device].append(int(lines.split(";")[0]))
-
-
-    # write temp to final
-    for lines in file_last:
-        v_dev.announceline[device].append(lines)
-    for lines in device_temp_rules:
-        v_dev.announceline[device].append(lines)
-    # add I-line
-    tr = indiv.split("_")
-    v_dev.announceline[device].append("I;" + v_cr_params.full_device_name + ";" + ";".join(tr))
-    return 0
-
-def create_device(indiv):
-    # v_dev.actual_device_token. append(0)
-    # create new device_buffer
-    v_dev.announceline.append([])
+def create_device():
+    v_dev.avtive.append(1)
+    v_dev.announcements.append([])
     # commandlength of commands for device
-    v_dev.length_commandtoken.append(0)
-    v_dev.cr_dev_tok.append({})
+    v_dev.length_commandtoken.append(1)
     # data to send to CR
     v_dev.data_to_CR.append([])
     #  received  from SK
     v_dev.data_to_device.append([])
-    # list of tokennumber
-    v_dev.dev_cr_tok.append({})
+    v_dev.rules.append([])
     # list of devicetoken
-    v_dev.tok.append([])
+    v_dev.all_toks.append([])
     # v_dev.info.append(0)
     v_dev.input_device.append(0)
     v_dev.interface_adress.append(0)
@@ -443,127 +230,291 @@ def create_device(indiv):
     v_dev.interface_timeout.append(0)
     v_dev.interface_type.append("")
     # linelength parameters modified at real time: number of byte for next action
-    v_dev.len.append([0,0,0,0,0])
-    v_dev.name.append(indiv)
+    v_dev.len.append([0,0,0,0,0,0])
+    v_dev.name.append("")
     v_dev.start_time.append(0)
-    # create ringbuffer
-    i = 0
-    device = len(v_dev.name) - 1
-    return device
-
-def initialize_device_interface(line, device_number):
-    # first active interface used
-    # devicebufferarray alrady generated
-    item = line.split(";")
-    i = 4
-    active_interface_found = 0
-    while i < len(item):
-        if active_interface_found < 2:
-            item1 = item[i].split(",")
-            if item1[1] == "TERMINAL" or item1[1] == "I2C" or item1[1] == "RC5" or item1[1] == "RC6":
-                if item1[2] == "1":
-                    v_dev.interface_type[device_number] = (item1[1])
-                    active_interface_found = 2
-                else:
-                    # skip to next interfacename
-                    active_interface_found = 1
-            if item1[1] == "TELNET" or item1[1] == "USB" or item1[1] == "SSH":
-                if item1[2] == "1":
-                    v_dev.interface_type[device_number] = (item1[1])
-                    active_interface_found = 2
-                else:
-                    # skip to next interfacename
-                    active_interface_found = 1
-            if item1[1] == "CAN" or item1[1] == "HTTP" or item1[1] == "HTTPS":
-                if item1[2] == "1":
-                    v_dev.interface_type[device_number] = (item1[1])
-                    active_interface_found = 2
-                else:
-                    # skip to next interfacename
-                    active_interface_found = 1
-
-        if active_interface_found == 2:
-            if item1[1] == "ADRESS":
-                v_dev.interface_adress[device_number] = item1[2]
-            if item1[1] == "PORT":
-                v_dev.interface_port[device_number] = int(item1[2])
-            if item1[1] == "TIMEOUT":
-                v_dev.interface_timeout[device_number] = int(item1[2])
-            if item1[1] == "COMPORT":
-                v_dev.interface_comport[device_number] = item1[2]
-            if item1[1] == "NUMBER_OF_BITS":
-                v_dev.interface_number_of_bits[device_number] = item1[2]
-            if item1[1] == "BAUDRATE":
-                v_dev.interface_baudrate[device_number] = item1[2]
-
-        i += 1
-    if v_dev.interface_type[device_number] == "TELNET":
-        # adress and port must exist
-        if v_dev.interface_port[device_number] != "" and v_dev.interface_adress[device_number] > 0:
-            start_ethernet_client(v_dev.interface_adress[device_number], v_dev.interface_port[device_number], device_number)
+    v_dev.a_to_o.append({})
+    v_dev.o_to_a.append({})
+    v_dev.all_toks.append([])
     return
 
+"""
+------------------------------------------------
+tasks, with new device
+------------------------------------------------
+"""
 
-def  check_parameters(stripped, lines):
-    # check announceline for syntax errors, do not check <des>
-    # commandtoken)
+
+def read_announcements_of_a_device(device_dir):
+    # read announcements of one device from file in device_dir
+    # resolve duplicate commandtoken / commandtype:
+    # do some checks on announcement data: return in case of error
+    # drop lines with errors, (as neccesary)
+    # find number of commands (excluding rules and ANNOUNCEMENT line)
+    # missing: ask device, if file not available
+
+    # read announcement drop comment and empty lines
+    if device_dir == 0:
+        # CR
+        # only basic announcment, other command awre added later to the end
+        v_dev.announcements[device_dir].append(v_configparameter.announceline_0_CR)
+        return
+    file = []
+    f = Path(v_configparameter.announcements_dir + "devices/" + v_dev.name[device_dir] + "/_announcements")
+    if f.exists():
+        announce_file = open(v_configparameter.announcements_dir + "devices/" + v_dev.name[device_dir] + "/_announcements")
+        for linesx in announce_file:
+            if linesx == "" or linesx[0] == "#":
+                continue
+            file.append(linesx.split("\n")[0])
+        announce_file.close()
+    else:
+        return
+    # concatenate line with the same commandtoken
+    # must have the same commandtype
+    file1 = []
+    for lines in file:
+        item = lines.split(";")
+        if item[0] in v_configparameter.other_lines:
+            file1.append(lines)
+            continue
+        linenumber = 0
+        found = 0
+        for lines1 in file1:
+            # must be previous line -> file1
+            newline = lines1.split(";")
+            if item[0] == newline[0]:
+                if item[1].split(",")[0] == newline[1].split(",")[0]:
+                    # found; concatenate lines
+                    file1[linenumber] += ";".join(item[2:])
+                    found= 1
+                else:
+                    # identical commandtoken, different commandtype: drop line
+                    write_log(str(item[0]) + item[1] + newline[1] + "identical commandtoken, different commandtype in device "+ str(device_dir))
+            linenumber += 1
+        if found == 0:
+            file1.append(lines)
+
+    # resolve "as" lines
+    file = []
+    for announce in file1:
+        item = announce.split(";")
+        item1 = item[1].split(",")
+        tok = item[0]
+        if len(item1) > 1:
+            # in commandlines here may be something as "as123"
+            if item1[1][0:2] == "as":
+                # "as"line found
+                # nothing will follow the "as" number (string)
+                as_number = item1[1].split("as")[1]
+                as_type = item1[0].split(",")[0][1]
+                # search for "as" token
+                found = 0
+                for lines in file:
+                    if found== 0:
+                        newline = lines.split(";")
+                        if as_number == newline[0]:
+                            # "as" line found, original type + ext
+                            new_commandtype = newline[1].split(",")[0][1]
+                            if new_commandtype == as_type:
+                                new_commandtype = "a" + new_commandtype + ",ext" + newline[0]
+                                # add original token and commandtype
+                                newline[0] = tok
+                                newline[1] = new_commandtype
+                                file.append(";".join(newline))
+                                v_dev.a_to_o[device_dir][as_number] = tok
+                                v_dev.o_to_a[device_dir][tok] = as_number
+                                found = 1
+            else:
+                file.append(announce)
+        else:
+            file.append(announce)
+
+    # check command lines
+    # count commands and check if match
+    commands_of_device = 0
+    v_dev.announcements[device_dir] = []
+    for lines in file:
+        #line ready now; check for valid values
+        if lines[0] in v_configparameter.other_lines:
+            v_dev.announcements[device_dir].append(lines)
+            continue
+        stripped = misc_functions.strip_des_chapter(lines)
+        error = check_parameters(stripped)
+        if error != "":
+            write_log(str([device_dir]) + " " + str(lines) + " " + error + " line ignored for device" + str(device_dir))
+        else:
+            commands_of_device += 1
+            v_dev.announcements[device_dir].append(lines)
+
+    # check basic line
+    temp_length_commandtoken = 1
+    for lines in v_dev.announcements[device_dir]:
+        if lines[0] in v_configparameter.other_lines:
+            continue
+        item = lines.split(";")
+        temp = item[1].split(",")[0]
+        if temp == "m" or temp == "l" or temp == "r" or temp == "c" or temp == "h":
+            if len(item) != 10:
+                # wrong basic announcement
+                # ignore that device
+                write_log(
+                    "wrong number of parameters in basic announcement of device, device ignored: " + str(device_dir))
+                v_dev.announcements[device_dir] = []
+                return
+            try:
+                temp_length_commandtoken = int(item[7])
+            except ValueError:
+                # ignore that device
+                write_log("wrong commandlength in basic announcment, device ignored: " + device_dir)
+                v_dev.announcements[device_dir] = []
+                return
+
+    # length of commandtoken must match the value of the basic announcement
+    # + 16 due to reserved token
+    if device_length_of_commandtoken(commands_of_device + 16) > temp_length_commandtoken:
+        write_log("number of commands do not match in " + str(device_dir) + ", device ignored")
+        v_dev.announcements[device_dir] = []
+        return
+
+    # create v_dev.tok
+    i = 0
+    for lines in v_dev.announcements[device_dir]:
+        if lines[0] in v_configparameter.other_lines:
+            i += 1
+            continue
+        v_dev.all_toks[device_dir].append(int(v_dev.announcements[device_dir][i].split(";")[0]))
+        i += 1
+
+    v_dev.length_commandtoken[device_dir] = temp_length_commandtoken
+    return
+
+def  check_parameters(stripped):
+    # check announceline for syntax errors
+    # stripped is list of announcements
+    ct = stripped[1]
+
+    # basic lines not checked
+    types = ["m", "l", "c", "r", "h", "s"]
+    if ct in types:
+        return ""
+    # no check necessary
+    types = ["ia", "ib", "if", "im", "in", "io", "ip", "ir", "is", "it", "iu"]
+    types += ["za", "zb", "zf", "zm", "zn", "zo", "zp", "zr", "zs", "zt", "zu"]
+    if stripped[1] in types:
+        return ""
+
     try:
         value = int(stripped[0])
     except ValueError:
         return "commandtoken not numeric"
 
     #commandtype
-    commandtype = ["m","l","c","r","h","s","iz","ia","ib","if","im","in","io","ip","iq","ir","is","it","or","kr","rr","os"]
-    commandtype += ["iu","ks","rs","ot","kt","rt","ou","ku","ru","ar","lr","sr","as","ls","ss","at","at","st","au","lu","su"]
-    commandtype += ["op","kp","rp","oo","ko","ro","ap","lp","sp","om","km","rm","on","kn","rn","of","kf","rf"]
-    commandtype += ["oa","ka","ra","ob","kb","rb","am","lm","sm","an","ln","sn","af","lf","sf","aa","sa","la","ab","lb","sb"]
-    if not stripped[1].split(",")[0] in commandtype:
-        return "unknown commandtype"
+    commandtype = ["ja","jb","jf","jm","jn","jo","jp","jr","js","jt","ju"]
+    commandtype += ["oa","ob","of","om","on","oo","op","or","os","ot","ou"]
+    commandtype += ["ra","rb","rf","rm","rn","ro","rp","rr","rs","rt","ru"]
+    commandtype += ["aa","ab","af","am","an","ao","ap","ar","as","at"]
+    commandtype += ["sa","sb","sf","sm","sn","so","sp","sr","ss","st","su"]
+    if not ct in commandtype:
+        return "unknown commandtype " + ct
 
-    # no check necessary
-    types = ["iz","ia","ib","if","im","in","io","ip","ir","is","it","iu"]
-    if stripped[1].split(",")[0] in types:
-        return ""
-
-    # check /drop DIMENSION and CHAPTER
-    i = 2
-    while i < len(stripped):
-        found = 0
-        item = lines.split(";")
-        if len(item)> 1:
-            item1 = item[i].split(",")
-            if len(item1)  > 1:
-                if item1[1] == "DIMENSION":
-                    type, length, max = misc_functions.length_of_typ((item1[0]))
-                    if type != "n":
-                        return "wrong commandtype for DIMENSION"
-                    else:
-                        del(stripped[i])
-                        found = 1
-                if i < len(stripped):
-                    # edl changes the index!!
-                    if item1[1] == "CHAPTER":
-                        type, length, max = misc_functions.length_of_typ((item1[0]))
-                        if type != "s":
-                            return "wrong commandtype for CHAPTER"
-                        else:
-                            del(stripped[i])
-                        found = 1
-        if found == 0:
-            # del changes the index!!
-            i += 1
-    # basic lines
-    types = ["m","l","c","r","h","s"]
-    if stripped[1].split(",")[0] in types:
-        # check done before
-        return ""
-
-    # all parameters should be numeric (switches), 4 positions as minimum
-    types = ["or","kr","rr","ar","lr","sr"]
-    if stripped[1] in types:
+    # all parameters should be numeric (switches),5 positions as minimum
+    types = ["or","rr","ar","sr","os","rs","ot","rt","ou","ru","as","ss","at","st","su"]
+    if ct in types:
         if len(stripped) < 4:
-            return "number of paramters not sufficient"
+            return "number of parameters not sufficient"
         i = 2
+        while i < len(stripped):
+            try:
+                value = int(stripped[i])
+            except ValueError:
+                return " for: "+ stripped[i] + ": parameter not numeric"
+            i += 1
+        return ""
+
+    # range control: 3rd, 4th and then every 3rd parameter numeric
+    types =["op","rp","ap","sp"]
+    if ct in types:
+        try:
+            # stack
+            value = int(stripped[2])
+        except ValueError:
+            return " for: "+ stripped[2] + ": parameter not numeric"
+        if len(stripped) < 6:
+               return "number of parameters not sufficient"
+        i = 3
+        while i < len(stripped):
+            try:
+                value = int(stripped[i])
+            except ValueError:
+                return " for: "+ stripped[i] + ": parameter not numeric"
+            # 2 other parameters (text) must follow
+            if len(stripped) < i + 3:
+                return "wrong number of parameters"
+            i += 3
+        return ""
+
+    # range control: 3rd, 4th 5th 7th (9th...) parameter is checked as numeric
+    types = ["oo", "ro"]
+    if ct in types:
+        # stack
+        try:
+            value = int(stripped[2])
+        except ValueError:
+            return "parameter not numeric"
+        i = 0
+        j = 7
+        k = 3
+        while k < len(stripped):
+            if i < 3:
+                try:
+                    value = int(stripped[k])
+                except ValueError:
+                    return "parameter not numeric"
+            if i == 3:
+                if stripped[k].split(",")[0] != "b":
+                    return "type for LOOP / LIMIT must be b"
+            if i == 4:
+                i = 0
+                j += 5
+            else:
+                i += 1
+                if i > j:
+                    return "wrong nmber of parameters"
+            k += 1
+        return ""
+
+    # memory 1st parameter. ty, others numeric
+    types = ["om","rm","am", "sm", "of", "rf", "af", "sf"]
+    if ct in types:
+        if len(stripped)  != 4:
+            return " number of parameters must be 2"
+
+        #type
+        x_type, length, x_max = misc_functions.length_of_typ(stripped[2])
+        if x_type == "e":
+            return "unknown parameter type"
+
+        # other must be numeric
+        try:
+            value = int(stripped[3])
+        except ValueError:
+            return "parameter not numeric"
+        return ""
+
+    # memory 1st parameter. ty, others numeric
+    types = ["on", "rn", "an", "sn"]
+    if ct in types:
+        if len(stripped) != 5:
+            return " number of parameters must be 5"
+
+        # type
+        x_type, length, x_max = misc_functions.length_of_typ(stripped[2])
+        if x_type == "e":
+            return "unknown parameter type"
+
+        # other must be numeric
+        i = 3
         while i < len(stripped):
             try:
                 value = int(stripped[i])
@@ -572,184 +523,51 @@ def  check_parameters(stripped, lines):
             i += 1
         return ""
 
-    # all parameters should be numeric (switches), 5 positions as minimum
-    types = ["os","ks","rs","ot","kt","rt","ou","ku","ru","as","ls","ss","at","at","st","au","lu","su"]
-    if stripped[1] in types:
-        if len(stripped) < 5:
-            return "number of paramters not sufficient"
-        i = 2
-        while i < len(stripped):
-            type, length, max = misc_functions.length_of_typ(stripped[i])
-            if type != "s":
-                return "parameter not numeric"
-            i += 1
-        return ""
-
-    # range control: 3rd, 4th and then every 3rd parameter numeric
-    types =["op","kp","rp","ap","lp","sp"]
-    if stripped[1] in types:
-        type, length, max = misc_functions.length_of_typ(stripped[2])
-        if type != "s":
-            return "parameter not numeric"
-        i = 3
-        if len(stripped) < 6:
-               return "number of parameters not sufficient"
-        while i < len(stripped):
-            type, length, max = misc_functions.length_of_typ(stripped[i])
-            if type != "s":
-                return "parameter not numeric"
-            # 2 other parameters must follow
-            if i + 2 > len(stripped):
-                return "wrong number of parameters"
-            i += 3
-        return ""
-
-    # range control: 3rd, 4th 5th 7th (9th...) parameter is checked as numeric
-    types = ["oo", "ko", "ro"]
-    if stripped[1] in types:
-        type, length, max = misc_functions.length_of_typ(stripped[2])
-        if type != "s":
-            return "parameter not numeric"
-        i = 3
-        while i < len(stripped):
-            if i + 5 > len(stripped):
-                return "wrong number of parameters"
-            type, length, max = misc_functions.length_of_typ(stripped[i])
-            if type != "s":
-                return "parameter not numeric"
-            type, length, max = misc_functions.length_of_typ(stripped[i + 1])
-            if type != "s":
-                return "parameter not numeric"
-            type, length, max = misc_functions.length_of_typ(stripped[i + 3])
-            if type != "s":
-                return "parameter not numeric"
-            type, length, max = misc_functions.length_of_typ(stripped[i + 4])
-            if type != "n":
-                return "parameter no numeric type"
-            i += 5
-        return ""
-
-    # memory 1st parameter. ty, others numeric
-    types = ["om","km","rm","on","kn","rn","am","lm","sm","an","ln","sn","of","kf","rf","af","lf","sf"]
-    if stripped[1] in types:
-        if len(stripped) < 4:
-            return "number of parameters not sufficient"
-
-        #type
-        type, length, max = misc_functions.length_of_typ(stripped[2])
-        if type == "e":
-            return "unknown parameter type"
-
-        # other must be numeric
-        i = 3
-        while i < len(stripped):
-            type, length, max = misc_functions.length_of_typ(stripped[i])
-            if type != "s":
-                return "parameter not numeric"
-            i += 1
-
-        if stripped[1] == "of" or stripped[2] == "af":
-            if len(stripped) != 4:
-                return "parameter number for of / af not 4"
-        return ""
-
     # array. all parameter are ty
-    types = ["oa","ka","ra","ob","kb","rb","aa","sa","la","ab","lb","sb"]
-    if stripped[1] in types:
+    types = ["oa","ra","ob","rb","aa","sa","ab","sb"]
+    if ct in types:
         if len(stripped) < 3:
-            return "number of parameters not sufficient"
+            return " number of parameters not sufficient"
 
         i = 2
         while i < len(stripped):
-            type, length, max = misc_functions.length_of_typ(stripped[i])
-            if type == "e":
-                return "parameter type not valid"
+            x_type, length, x_max = misc_functions.length_of_typ(stripped[i])
+            if x_type == "e":
+                return ";".join(stripped) + "parameter type not valid"
             i += 1
         return ""
     # other error
-    return "other error"
+    return ";".join(stripped) + "other error"
 
 
-def initialize_inputbuffer(lines):
-    # initialize commandrouter inputs for SK interface etc ...
-    item = lines.split(";")
-    # individual name and number
-    i = 4
-    # scan all i > 3
-    while i < len(item):
-        item1 = item[i].split(",")
-        if item1[1] == "TERMINAL" or item1[1] == "I2C" or item1[1] == "RC5" or item1[1] == "RC6":
-            try:
-                activ = int(item1[2])
-            except ValueError:
-                continue
-            m = create_inputbuffer(item1[1], activ)
-        if item1[1] == "TELNET" or item1[1] == "USB" or item1[1] == "SSH":
-            try:
-                activ = int(item1[2])
-            except ValueError:
-                continue
-            m = create_inputbuffer(item1[1],activ)
-        if item1[1] == "CAN" or item1[1] == "HTTP" or item1[1] == "HTTPS":
-            try:
-                activ = int(item1[2])
-            except ValueError:
-                continue
-            m = create_inputbuffer(item1[1], activ)
-        # the following parameters are added to the buffer m detected before
-        if item1[1] == "PORT":
-            v_sk_interface.interface_port[m] = int(item1[2])
-        if item1[1] == "TIMEOUT":
-            v_sk_interface.interface_timeout[m] = int(item1[2])
-        if item1[1] == "ADRESS":
-            v_sk_interface.interface_adress[m] = int(item1[2])
-        if item1[1] == "BAUDRATE":
-            v_sk_interface.baudrate[m] = int(item1[2])
-        if item1[1] == "COMPORT":
-            v_sk_interface.interface_port[m] = int(item1[2])
-        if item1[1] == "PORT":
-            v_sk_interface.socket[m] = int(item1[2])
-        if item1[1] == "NUMBER_OF_BITS":
-            v_sk_interface.number_of_bits[m] = item1[2]
-        i += 1
-    if v_sk_interface.interface_type[m] == "TELNET":
-        start_ethernet_server(v_sk_interface.socket[m], m)
+def create_sk_buffer():
+    # create 4 commandrouter inputs for SK interface
+    create_one_sk_buffer ("RS232")
+    create_one_sk_buffer("FILE")
+    create_one_sk_buffer("TERMINAL")
+    create_one_sk_buffer("TELNET")
+    start_ethernet_server(v_sk.ethernet_port[3],4)
     # other interfaces will follow...
 
-
-def create_inputbuffer(interface_type, activ,):
-    # create one v_sk
-    # name must be unique,
-    v_sk_interface.baudrate.append(0)
-    # actual input buffer
-    v_sk_interface.inputline.append(bytearray([]))
-    # actual input bufferlock for ethernet
-    v_sk_interface.inputline_active.append(0)
-    v_sk_interface.interface_adress.append("")
-    v_sk_interface.activ.append(activ)
-    v_sk_interface.interface_port.append(0)
-    v_sk_interface.interface_timeout.append(0)
-    v_sk_interface.interface_type.append(interface_type)
-    v_sk_interface.number_of_bits.append("")
-    v_sk_interface.socket.append([])
-    v_sk_interface.source.append([])
-    v_sk_interface.telnet_number.append([])
-    # contain s list of started ports
-    v_sk_interface.ethernet_server_started.append([])
-    create_sk()
-    return len(v_sk_interface.ethernet_server_started) - 1
-
-def create_sk():
+def create_one_sk_buffer(interface_type):
     v_sk.active.append(1)
-    v_sk.inputline.append([])
-    # actual_call in analyze_length for next action:
-    v_sk.len.append([0, 0, 0, 0, 0])
-    v_sk.last_error.append("no error")
+    v_sk.inputline.append(bytearray())
+    v_sk.interface_timeout.append(0)
+    v_sk.interface_type.append(interface_type)
+    v_sk.last_error.append("")
+    v_sk.len.append([0, 0, 0, 0, 0, 0, 0])
     v_sk.starttime.append(0)
-    # for command 0xxxf9
-    v_sk.channel_answer_token.append([])
-    # for multi channel
+    v_sk.baudrate.append(0)
+    v_sk.interface_com_port = v_configparameter.com_port
+    v_sk.number_of_bits.append(0)
+    v_sk.ethernet_port.append(v_configparameter.ethernet_port)
+    v_sk.channel_answer_token.append(0)
     v_sk.channel_number.append(0)
     v_sk.channel_timeout.append(0)
+    v_sk.info_to_telnet.append("")
     v_sk.multi_channel.append(0)
+    v_sk.source.append(0)
+    v_sk.socket.append(0)
+    v_sk.telnet_number.append(0)
+    v_sk.ethernet_server_started.append(0)
     return

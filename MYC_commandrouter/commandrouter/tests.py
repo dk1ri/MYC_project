@@ -1,7 +1,10 @@
-#
-#import time
-
-import time
+"""
+name: tests.py
+last edited: 20250309
+other misc functions
+Copyright : DK1RI
+If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+"""
 
 from misc_functions import *
 
@@ -9,13 +12,12 @@ import v_announcelist
 import v_configparameter
 import v_cr_params
 import v_dev
-import v_device_names_and_indiv
-import v_kbd_input
 import v_linelength
 import v_sk
-import v_sk_interface
+import v_io
 import v_time_values
 import v_token_params
+import v_logicdevice
 
 # ------------------------------------------------
 # subprograms for tests
@@ -23,24 +25,24 @@ import v_token_params
 
 
 def print_for_test():
+    print_for_test1("v_announcelist_all_tokn", v_announcelist.all_token)
     print_for_test1("v_announcelist_basic", v_announcelist.basic)
-    print_for_test1("v_announcelist_full", v_announcelist.full)
+    print_for_test1("v_announcelists_o_to_a", v_announcelist.a_to_o)
+    print_for_test2("v_announcelist_full", v_announcelist.full)
+    print_for_test1("v_announcelist_full_240", v_announcelist.full_240)
+    print_for_test1("v_announcelists_o_to_a", v_announcelist.o_to_a)
+    print_for_test1("v_announcelists_a_to_o", v_announcelist.a_to_o)
+    print_for_test3("v_announcelist_length_of_full_elements", v_announcelist.length_of_full_elements)
     print_for_test1("v_announcelist_rules", v_announcelist.rules)
-    print_for_test3("v_command_length_adder", v_cr_params.adder)
-    print_for_test3("v_command_length_commandtokenlength", v_cr_params.length_commandtoken)
-    print_for_test3("v_command_length_reserved_token_start", v_cr_params.reserved_token_start)
+    print_for_test1("v_announcelist_administration", v_announcelist.administration)
     print_for_test3("v_command_length_startnumber", v_cr_params.startnumber)
-    print_for_test3("v_command_index_of_cr-commands", v_token_params.index_of_cr_commands)
-    print_for_test3("v_cr_params_cr_announcement", v_cr_params.cr_announcement)
     print_for_test3("v_cr_params_name", v_cr_params.full_device_name)
-    print_for_test3("v_cr_params_length_of_announcement_length", v_cr_params.length_of_announcement_length)
-    print_for_test3("v_cr_params_length_of_last_error_length", v_cr_params.length_last_error_length)
-    print_for_test3("v_configparameter_devicegroup", v_configparameter.devicegroup)
-    print_for_test3("v_configparameter_my_devices_file", v_configparameter.my_devices_file)
     print_for_test3("v_configparameter_time_for_activ_check", v_configparameter.time_for_activ_check)
     print_for_test3("v_configparameter_time_for_device_search", v_configparameter.time_for_device_search)
     print_for_test3("v_configparameter_time_for_command_timeout", v_configparameter.time_for_command_timeout)
-    print_for_test3("v_dev_announceline", v_dev.announceline)
+    print_for_test4("v_dev_announceline", v_dev.announcements)
+    print_for_test3("v_dev_all_toks", v_dev.all_toks)
+    print_for_test3("v_dev_a_to_o", v_dev.a_to_o)
     print_for_test3("v_dev_name", v_dev.name)
     print_for_test3("v_dev_interface_adress", v_dev.interface_adress)
     print_for_test3("v_dev_interface_baudrate", v_dev.interface_baudrate)
@@ -49,35 +51,35 @@ def print_for_test():
     print_for_test3("v_dev_interface_port", v_dev.interface_port)
     print_for_test3("v_dev_interface_timeout", v_dev.interface_timeout)
     print_for_test3("v_dev_interface_type", v_dev.interface_type)
+    print_for_test3("v_dev_o_to_a", v_dev.o_to_a)
     print_for_test3("v_dev_commandtokenlength", v_dev.length_commandtoken)
-    print_for_test3("v_dev_data_to_device", v_dev.data_to_device)
-    print_for_test3("v_dev_data_to_CR", v_dev.data_to_CR)
+    print_for_test2("v_line_length_answer", v_linelength.answer)
+    print_for_test2("v_line_length_command", v_linelength.command)
+    print_for_test1("v_kbd_input_data", v_io.data)
+    print_for_test3("ld_left_tok_by_index", v_logicdevice.left_tok_by_index)
+    print_for_test3("ld_updated", v_logicdevice.updated)
+    print_for_test3("ld_direct_command_by_index", v_logicdevice.direct_command_by_index)
+    print_for_test1("ld_ct", v_logicdevice.ct)
+    print_for_test3("ld_if_unless", v_logicdevice.if_unless)
+    print_for_test3("ld_value", v_logicdevice.value)
+    print_for_test3("ld_all_condition_per_index", v_logicdevice.all_condition_per_index)
+    print_for_test3("ld_all_by_index", v_logicdevice.all_by_index)
+    print_for_test3("ld_after_by_index", v_logicdevice.after_by_index)
+    print_for_test3("ld_stringparameters", v_logicdevice.stringparameters)
+    print_for_test3("v_sk_buffer_baudrate", v_sk.baudrate)
+    print_for_test3("v_sk_buffer_interface_port", v_sk.interface_com_port)
+    print_for_test3("v_sk_buffer_interface_timeout", v_sk.interface_timeout)
+    print_for_test3("v_sk_interface_type", v_sk.interface_type)
+    print_for_test3("v_sk_buffer_numberofbits", v_sk.number_of_bits)
+    print_for_test3("v_sk_buffer_starttime", v_sk.starttime)
+    print_for_test3("v_sk_last_error", v_sk.last_error)
+    print_for_test3("v_sk_buffer_socket", v_sk.socket)
+    print_for_test3("v_sk_buffer_source", v_sk.source)
+    print_for_test3("v_sk_buffer_telnet_no", v_sk.telnet_number)
+    print_for_test1("v_token_params_cr_token", v_token_params.cr_token)
+    print_for_test1("v_token_params_a_to_o", v_token_params.a_to_o)
     print_for_test1("v_token_params_dev_token", v_token_params.dev_token)
     print_for_test1("v_token_params_device", v_token_params.device)
-    print_for_test1("v_token_params_index_of_cr_commands", v_token_params.index_of_cr_commands)
-    print_for_test1("v_token_params_index_of_cr_commands_r", v_token_params.index_of_cr_commands_r)
-    print_for_test3("v_device_names_and_indiv_nmae", v_device_names_and_indiv.name)
-    print_for_test1("v_device_names_and_indiv_active", v_device_names_and_indiv.activ)
-    print_for_test1("v_device_names_and_indiv_last", v_device_names_and_indiv.last)
-    print_for_test3("v_input_buffer_baudrate", v_sk_interface.baudrate)
-    print_for_test3("v_input_buffer_interface_adress", v_sk_interface.interface_adress)
-    print_for_test3("v_input_buffer_interface_port", v_sk_interface.interface_port)
-    print_for_test3("v_input_buffer_interface_timeout", v_sk_interface.interface_timeout)
-    print_for_test3("v_input_buffer_interface_type", v_sk_interface.interface_type)
-    print_for_test3("v_input_buffer_numberofbits", v_sk_interface.number_of_bits)
-    print_for_test3("v_input_buffer_starttime", v_sk.starttime)
-    print_for_test3("v_input_buffer_last_error", v_sk.last_error)
-    print_for_test3("v_input_buffer_socket", v_sk_interface.socket)
-    print_for_test3("v_input_buffer_source", v_sk_interface.source)
-    print_for_test3("v_input_buffer_telnet_no", v_sk_interface.telnet_number)
-    print_for_test1("v_kbd_input_data", v_kbd_input.data)
-    print_for_test3("v_kbd_input_skdev", v_kbd_input.skdev)
-    print_for_test3("v_line_length_answer", v_linelength.answer)
-    print_for_test3("v_line_length_command", v_linelength.command)
-    print_for_test3("v_line_length_info", v_linelength.info)
-    print_for_test3("v_time_values_last_activity", v_time_values.last_activity)
-    print_for_test3("v_time_values_last_device_search", v_time_values.last_device_search)
-
     return
 
 
@@ -88,6 +90,16 @@ def print_for_test1(file, data):
     handle.close()
     return
 
+def print_for_test2(file, data):
+    # tok as index
+    handle = open("check_output/" + file, "w")
+    for tok in v_announcelist.all_token:
+        try:
+            handle.write(str(tok) + ": " + str(data[tok]) + "\n")
+        except:
+            pass
+    handle.close()#
+    return
 
 def print_for_test3(file, data):
     # ------------------------for check
@@ -96,6 +108,16 @@ def print_for_test3(file, data):
     handle.close()
     return
 
+def print_for_test4(file, data):
+    # device as index
+    handle = open("check_output/" + file, "w")
+    device = 1
+    while device < len(v_dev.announcements):
+        for line in data[device]:
+            handle.write((line) + "\n")
+        device += 1
+    handle.close()#
+    return
 
 def load_check():
     check_file = open(v_time_values.command_file)

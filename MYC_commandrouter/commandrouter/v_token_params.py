@@ -1,11 +1,13 @@
 """"
 name: v_token_params.py
-last edited: 201802
+last edited: 202512
 per commandtoken of full list (R, I Q lines skipped)
+Copyright : DK1RI
+If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
-dev_token = []                              # original commandtoken (used by a device) for a tok
-token_number = []                           # tokennumber is != index (tok) for multibyte commandtoken
-device = []                                 # device, that tok should be send to
-index_of_cr_commands = {}                   # directory 240 -> tok, nextline of full list -> 1 ... for CR commands
-index_of_cr_commands_r = {}                 # directory tok -> 240, 1 -> nextline of full list ... for CR commands
-announcements ={}                           # tok -> announcement (because of "R" and "I" lines)  (???stimmt nicht??)
+
+cr_token = []                               # CR_tok for device_tok per device cr_token is != index (tok)
+dev_token = {}                              # original commandtoken for a CR tok
+device = {}                                 # device, that tok should be sent to
+a_to_o = {}
+o_to_a = {}

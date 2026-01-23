@@ -1,6 +1,5 @@
 """
 missing topics (checked against specification:
-last updated: no complete check yet
 
 startup communication
 rules device handling
@@ -17,9 +16,6 @@ device interfaces
 lower level CR
 keyboard and one ethernet interface only for user interface
 non blocking ethernet and keyboard handling for win and linux
-using interrupts?
 very limited errorhandling
-r / s command handling
-	- detailed spec
 
 """

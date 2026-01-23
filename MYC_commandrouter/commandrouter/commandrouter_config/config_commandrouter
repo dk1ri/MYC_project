@@ -1,8 +1,8 @@
 #sequence must not be changed !!!
-#line 0 filename for my_devices (home: commandrouter_config/my_devices)
+#line 0 filename for connection_of_devices (home: commandrouter_config/connection_of_devices)
 home
-#line 1: directory for local devicegroupfiles (home: commandrouter_config/)
-commandrouter_config/devicegroupfiles/
+#line 1: directory for local annoncelists (home: commandrouter_config/devices)
+home
 #line 2: time in sec for checking weather a device is active (0:  no search)
 100
 #line 3: time in sec for searching for new and deleted my_devices (should be higher than line 4)
@@ -25,3 +25,23 @@ home
 10000
 # line 12: limit for number of bytes of SK buffer for testmode
 30
+# line 13:sk buffer limit hysteresys ????
+10
+# line 14: directory for various LD files)
+files\
+# line 15: CR line 0
+0;c;DK1RI;CR0;1;1;145;1;4;1-1
+# line16; CR line 240
+240;an,ANNOUNCEMENTS;145;4,start at;4,elements
+# line17; CR line 241
+241;an,BASIC ANNOUNCEMENTS;145;4,start at;4,elements
+# line18; CR line 242
+242;an,ADMIN ANNOUNCEMENTS;145;4,start at;4,elements
+# line 19: CR line 254
+254;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,RS232,1;a,TELNET,1;a,FILE,1;a,TRMINAL,1;22,CHAPTER,ADMINISTRATION"
+# line 20:CR line 255
+255;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,RS232,1;a,TELNET,1;a,FILE,1;a,TERMINAL,1
+# line 21: COM Port for connect by SK
+6
+# line 22: Ethernet Port for connect by SK
+22

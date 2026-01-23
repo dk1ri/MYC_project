@@ -1,13 +1,17 @@
 """
 name : misc_functions.py
-last edited:
+last edited: 202512
 misc functions
+Copyright : DK1RI
+If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
 
 import time
-
+import os
 import v_cr_params
 import v_configparameter
+import v_ld
+import v_sk
 
 
 def str_to_bytearray(string):
@@ -73,14 +77,17 @@ def add_length_to_ba(ba, l):
 
 
 def length_of_int(i):
-    # return the number of bytes to be used ( 1, 2, 3) depending on i
-    k = 256
-    l = 256
-    j = 1
-    while l - 1 < i:
-        l *= k
-        j += 1
-    return j
+    # return the number of bytes to be used ( 1, 2, 3, 4) depending on i
+    if i > 0xFFFFFFFF:
+        return 5
+    if i > 0xFFFFFF:
+        return 4
+    elif i > 0xFFFF:
+        return 3
+    elif i > 0xFF:
+        return 2
+    else:
+        return 1
 
 
 def int_to_bytes(integ, length):
@@ -132,27 +139,6 @@ def bytes_to_int_ba(ba):
     return temp
 
 
-def calculate_length_of_commandtoken(number):
-    # for CR only
-    # number is highest tokennumber of other devices in full CR announcelist
-    multi = 256
-    # length_of_commandtoken:
-    v_cr_params.length_commandtoken = 1
-    # avoid 0 as first byte:
-    v_cr_params.startnumber = 1
-    while number + 32 >= multi:
-        multi = multi * 256
-        v_cr_params.startnumber = v_cr_params.startnumber * 256
-        v_cr_params.length_commandtoken += 1
-    # adder for 0hxxFx commands: n + f0 = 0hxxf0
-    v_cr_params.adder = multi - 0x100
-    # reserved commandtoken last 16 reserved
-    v_cr_params.reserved_token_start = multi - 0x10
-
-    v_cr_params.startindex = v_cr_params.startnumber - 1
-    return
-
-
 def device_length_of_commandtoken(number):
     # for devices only
     # number is highest tokennumber of other devices with a device for check with given value
@@ -166,26 +152,25 @@ def device_length_of_commandtoken(number):
 
 
 def length_of_typ(c_type):
-    # c_type is parameter - type: a, b, L d, .... or numner for string
-    # return 1st element: n|s|e   2nd element: length of parameter or length of stringlength, 3rd element: max value
+    # c_type is parameter - type: a, b, L d, .... or number for string
+    # return 1st element: n|s   2nd element: length of parameter or length of stringlength, 3rd element: max value
+    # without <des>
+    if c_type in v_cr_params.length_of_par:
+        # as lin,...
+        return "n", v_cr_params.length_of_par[c_type], v_cr_params.max_of_par[c_type]
     if c_type == "c":
         # commands
-        return "n", v_cr_params.length_commandtoken
+        return "n", v_cr_params.length_commandtoken,
     else:
-        try:
-            # numeric: temp[1]: parameterlength
-            return "n", v_cr_params.length_of_par[c_type],v_cr_params.max_of_par[c_type]
-        except KeyError:
-            # string
-            try:
-                # temp[1] length of stringlength
-                return "s", length_of_int(int(c_type)), int(c_type)
-            except ValueError:
-                # error
-                Exit("length of typ error ",ctype)
+        # string
+        return "s", length_of_int(int(c_type)), int(c_type)
 
 def write_log(line):
     # remove after tests
+    with open(v_configparameter.logfile) as file:
+        i = len(file.readlines())
+    if i > v_configparameter.max_log_lines:
+        os.remove(v_configparameter.logfile)
     if v_configparameter.test_mode == 1:
         print(line)
     handle = open(v_configparameter.logfile, "a")
@@ -194,21 +179,22 @@ def write_log(line):
     return
 
 
-def strip_dimension(announcement):
-    #strip <des>
+def strip_des_chapter(announcement):
+    # strip <des> and CHAPTER
+    # returns list
     i = 0
-    stripped = announcement.split(";")
-    number_of_items = 0
-    while i < len(stripped):
-        item = stripped[i].split(",")
+    a = announcement.split(";")
+    stripped = []
+    while i < len(a):
+        drop = 0
+        item = a[i].split(",")
         if len(item) > 1:
-            if (item[1] != "DIMENSION") and (item[1] != "CHAPTER"):
-                number_of_items += 1
-        else:
-            number_of_items += 1
-        stripped[i] = item[0]
+            if (item[1] == "CHAPTER"):
+                drop = 1
+        if drop == 0:
+            stripped.append(item[0])
         i += 1
-    return number_of_items, stripped
+    return stripped
 
 
 def stacklength(stripped):
@@ -219,7 +205,29 @@ def stacklength(stripped):
         stacks = 1
     stacks -= 1
     if stacks == 0:
+        # nothing transmitted
         stack_length = 0
     else:
         stack_length = length_of_int(stacks)
     return  stacks, stack_length
+
+def finish_sk(input_device, to_ld):
+    # transfer data
+    # send command to LD as listelement containing data for one command
+    if to_ld == 1:
+        v_ld.from_sk_to_ld.extend(v_sk.inputline[input_device][:v_sk.len[input_device][0]])
+        print ("to ld ")
+        print (v_ld.from_sk_to_ld)
+    # reset some values of v_sk after command finished
+    v_sk.inputline[input_device] = v_sk.inputline[input_device][v_sk.len[input_device][0]:]
+    v_sk.len[input_device] = [0,0,0,0,0,0,0]
+    v_sk.starttime[input_device] = 0
+    # avoid channel timeout
+ #   if v_sk.multi_channel == 1:
+  #      v_sk.channel_timeout[input_device] = time.time()
+  #  if len(v_sk.inputline[input_device]) > v_cr_params.sk_buffer_limit_low:
+   #     if len(v_sk.inputline[input_device]) > v_cr_params.sk_buffer_limit:
+    #        v_sk.active[input_device] = 2
+   # else:
+    #    v_sk.active[input_device] = 1
+    return

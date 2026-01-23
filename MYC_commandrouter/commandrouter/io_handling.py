@@ -1,28 +1,51 @@
 """
 name : io_handlings.py
-last edited: 201802
-winterminal and ethernet handling using threads
+last edited: 202512
+Copyright : DK1RI
+If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
 
-import sys
 import socket
 import threading
-import msvcrt
-
+import platform
+import serial
 from misc_functions import *
-from tests import load_check
-
 import v_configparameter
-import v_cr_params
 import v_dev
-import v_kbd_input
 import v_sk
-import v_sk_interface
-import v_time_values
+import  v_io
 
-# Ethernet:
+if platform.system() == "Windows":
+    import msvcrt
+    getch = msvcrt.getch()
+    Unix_windows = 1
+else:
+    import sys, termios
+
+    fd = sys.stdin.fileno()
+    # get the current settings se we can modify them
+    newattr = termios.tcgetattr(fd)
+    newattr[3] = newattr[3] & ~termios.ICANON
+    newattr[3] = newattr[3] & ~termios.ECHO
+    termios.tcsetattr(fd, termios.TCSANOW, newattr)
+
+    # set the terminal to uncanonical mode and turn off
+    # input echo.
+    newattr[3] &= ~termios.ICANON & ~termios.ECHO
+
+    import select
 
 
+    def kbhitu():
+        dr, dw, de = select.select([sys.stdin], [], [], 0)
+        return dr != []
+
+    def getchu():
+        return sys.stdin.read(1)
+
+    Unix_windows = 0
+
+# Ethernet (sk only):
 class ServerThread (threading.Thread):
     # ethernet server Part, connecting to HI, PR...
     def __init__(self, server_socket, input_buffer_number):
@@ -94,12 +117,6 @@ class ServerThreadWrite (threading.Thread):
 
 
 def start_ethernet_server(port, input_buffer_number):
-    i = 0
-    while i < len(v_sk_interface.ethernet_server_started):
-        if port in v_sk_interface.ethernet_server_started[i]:
-            return
-        i += 1
-    v_sk_interface.ethernet_server_started[input_buffer_number].append(port)
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     try:
         server_socket.bind(("", port))
@@ -178,100 +195,96 @@ def start_ethernet_client(host, port, device_buffer_number):
     client_thread.start()
 
 
-# Terminal:
-
-
-def win_terminal(input_buffer_number, device_buffer_number):
-    # can be used to input data to SK or device side
-    if msvcrt.kbhit():
-        t = msvcrt.getwch()
-        if v_time_values.auto == 1:
-            # ignore other characters in this mode except "a"
-            if t == "a":
-                v_time_values.auto = 0
-                write_log("input from file stopped")
-        else:
-            if t == " ":
-                # add to inputline
-                if v_kbd_input.data != "":
-                    if v_kbd_input.data[0] == "a":
-                        try:
-                            i = int(v_kbd_input.data[1:])
-                            v_time_values.command_file = "commandfiles\_commandfile_test" + str(i)
-                            v_time_values.auto = 1
-                            v_time_values.check_number = 0
-                            # there must be a timeout for invalid commands:
-                            v_configparameter.time_for_command_timeout = v_configparameter.time_for_command_timeout / 10
-                            v_time_values.checktime = v_configparameter.time_for_command_timeout - 0.5
-                            v_time_values.number_of_ok = 0
-                            v_time_values.number_of_nok = 0
-                            v_time_values.number_of_ok_nok = 0
-                            v_time_values.part = 1
-                            v_time_values.all = 0
-                            load_check()
-                            print("input from file _commandfile_test" + str(i) + " started")
-                        except ValueError:
-                           print (" win terminal input: ValueError")
-                           v_kbd_input.data = ""
-                    elif v_kbd_input.data[0] == "r":
-                        if v_time_values.auto == 10:
-                            v_time_values.auto = 0
-                        else:
-                            v_time_values.auto = 10
-                            v_time_values.random_i = 0
-                            v_time_values.random_j = 0
-                            v_time_values.random_k = 4
-                            v_time_values.random_time = time.time()
-                    else:
-                        i = (int(v_kbd_input.data))
-                        if i < 256:
-                            # 0: buffer for SK, 1: buffer for device
-                            if v_kbd_input.skdev == 0:
-                                v_sk.inputline[input_buffer_number].extend(bytearray([i]))
-                                print("from SK to CR ", input_buffer_number, " : ", v_kbd_input.data)
-                            else:
-                                v_dev.data_to_CR[device_buffer_number].append(int_to_bytes(i, 1))
-                                print("from device to CR ", device_buffer_number, v_kbd_input.data)
-                    v_kbd_input.data = ""
-            elif str.isnumeric(t) == 1:
-                v_kbd_input.data += t
-            elif t == "d":
-                v_kbd_input.skdev = 1
-                v_kbd_input.data = ""
-                print("next kbd input to device_in")
-            elif t == "S":
-                v_kbd_input.skdev = 0
-                v_kbd_input.data = ""
-                print("next kbd input to SK_in")
-            elif t == "e":
-                sys.exit(0)
-            elif t == "a":
-                v_kbd_input.data = t
-            elif t == "r":
-                v_kbd_input.data = t
-        # ignore other characters
-    return
-
-
-def terminal_out(text, input_buffer):
-    # for bytearrays
-    if text == "":
-        return
-    tt = "from SK " + str(input_buffer) + " to CR: "
-    t = ""
-    i = 0
-    while i < len(text):
-        try:
-            t += (chr(text[i]))
-        except UnicodeEncodeError:
-            t += "length unprintable "
-        i += 1
-    tt += t
-    if v_time_values.auto == 0:
-        pass
+# Terminal (SK only):
+def sk_terminal_in(input_buffer_number):
+    t = None
+    if Unix_windows == 0:
+        if kbhitu():
+            t = getchu()
     else:
-        if t == v_time_values.to_sk[v_time_values.check_number - 1]:
-            print(v_time_values.check_number - 1, "ok: ", tt)
-        else:
-            print(v_time_values.check_number - 1, "nok", tt, v_time_values.to_sk[v_time_values.check_number - 1])
+        if msvcrt.kbhit():
+            t = msvcrt.getwch()
+
+    if t != None:
+        try:
+            result = int(t, 16)
+        except:
+            return
+        v_io.data += t
+        if len(v_io.data) >= 2:
+            r = int(v_io.data, 16)
+            v_sk.inputline[input_buffer_number].append(r)
+            print (v_sk.inputline[input_buffer_number])
+            v_io.data = ""
     return
+
+def sk_terminal_out():
+    print("info to all SK:", v_sk.info_to_all)
+    return
+
+# serial:
+def serial_in(input_buffer_number, sk_dev):
+    if sk_dev == 0:
+        try:
+            ser = serial.Serial(str(v_configparameter.com_port), 19200, timeout=1.0)
+        except:
+            return
+    else:
+        try:
+            ser = serial.Serial(str(v_dev.interface_comport), 19200, timeout=1.0)
+        except FileNotFoundError:
+            return
+    while 1:
+        if sk_dev == 0:
+            v_sk.inputline[input_buffer_number] = ser.read(600)
+        else:
+            v_dev.data_to_CR = ser.read(600)
+        return
+
+def sk_serial_out():
+    try:
+        ser = serial.Serial(str(v_configparameter.com_port), 19200, timeout=1.0)
+    except:
+        return
+    i = 0
+    s = ""
+    while i < len(v_sk.info_to_all):
+        s += v_sk.info_to_all[i]
+        i += 1
+    ser.write(s)
+
+def dev_serial_out(device):
+    try:
+        ser = serial.Serial(str(v_dev.interface_comport), 19200, timeout=1.0)
+    except FileNotFoundError:
+        return
+    ser.write(v_dev.data_to_device[device])
+
+# FILE:
+def sk_file_in(input_buffer_number):
+    file = v_io.from_sk
+    if os.path.exists(file):
+        f = open(file)
+        v_sk.inputline[input_buffer_number] = f.readline()
+        f.close()
+        os.remove(v_io.from_sk)
+
+def dev_file_in(input_buffer_number):
+    file = v_io.from_dev
+    if os.path.exists(file):
+        f = open(file)
+        v_dev.data_to_CR = f.readline()
+        f.close()
+        os.remove(v_io.from_dev)
+
+def file_out(file):
+    if os.path.exists(file):
+        os.remove(file)
+    i = 0
+    s = ""
+    while i < len(v_sk.info_to_all):
+        s += str(v_sk.info_to_all[i])
+        i += 1
+    f = open(v_io.to_sk, "a")
+    f.write(s)
+    f.close()

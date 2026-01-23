@@ -1,7 +1,9 @@
 """"
 name: v_time_values.py
-last edited: 201802
+last edited: 202512
 time parameters
+Copyright : DK1RI
+If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
 time_for_activ_check = 0
 time_for_device_search = 0
@@ -23,7 +25,6 @@ out_device = 0
 number_of_ok = 0
 number_of_nok = 0
 number_of_ok_nok = 0
-all = 0
 data = bytearray([])            #store intermediate data
 command_file = 0
 # for random test
@@ -32,3 +33,5 @@ random_time = 0
 random_k = 10
 mess = 0                        # for performancemeasurement
 mess_byte = 0                   # for performancemeasurement
+mess_number = 0                 # for performancemeasurement
+to_sk = ""

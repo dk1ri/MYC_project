@@ -1,60 +1,75 @@
-1492939877.564887 check_log
-1492939877.735077 dev, no vaid token
-1492939877.9352517 dev, no vaid token
-1492939878.1355438 dev, no vaid token
-1492939878.335745 dev, no vaid token
-1492939878.5359304 dev, no vaid token
-1492939878.7362003 dev, no vaid token
-1492939878.9365234 dev, no vaid token
-1492939879.1367452 SK switch parameter value too high, loop:0 187 3
-1492939879.1367452 from SK: no valid commandtoken 213
-1492939879.1367452 from SK: no valid commandtoken 186
-1492939879.1367452 from SK: no valid commandtoken 168
-1492939879.1367452 from SK: no valid commandtoken 216
-1492939879.1367452 from SK: no valid commandtoken 174
-1492939879.1367452 from SK: no valid commandtoken 178
-1492939879.1467469 from SK: no valid commandtoken 189
-1492939879.1467469 SK om string parameter value too high, loop:0 215 119
-1492939879.246924 SK timeout  1
-1492939879.3372452 SK switch parameter value too high, loop:0 82 1
-1492939879.3372452 from SK: no valid commandtoken 189
-1492939879.437338 SK timeout  1
-1492939879.5375657 dev, no vaid token
-1492939879.737732 from SK: no valid commandtoken 229
-1492939879.737732 from SK: no valid commandtoken 206
-1492939879.737732 from SK: no valid commandtoken 207
-1492939879.837824 SK timeout  1
-1492939879.9379213  from SK: commandtoken with no action145
-1492939879.9379213 from SK: no valid commandtoken 233
-1492939879.9379213 SK switch parameter value too high, loop:0 8473 269
-1492939879.9379213 SK switch parameter value too high, loop:0 59741 269
-1492939880.038037 SK timeout  1
-1492939880.1381197 SK om string parameter value too high, loop:0 129 119
-1492939880.1381197 SK of numeric parameter value too high, loop:0 5 2
-1492939880.1381197 SK of numeric parameter value too high, loop:0 5283458 65999
-1492939880.1381197 SK switch parameter value too high, loop:0 109 100
-1492939880.1381197 from SK: no valid commandtoken 210
-1492939880.1381197 from SK: no valid commandtoken 161
-1492939880.1381197 SK switch parameter value too high, loop:0 161 3
-1492939880.1381197 from SK: no valid commandtoken 184
-1492939880.4481177 SK timeout  1
-1492939880.548156 dev, no vaid token
-1492939880.7483964 dev, no vaid token
-1492939880.9490292 from SK: no valid commandtoken 228
-1492939880.9490292 from SK: no valid commandtoken 243
-1492939880.9490292 SK switch parameter value too high, loop:0 194 13
-1492939880.9490292 from SK: no valid commandtoken 189
-1492939880.9490292 SK switch parameter value too high, loop:0 1233206 65999
-1492939880.9490292 from SK: no valid commandtoken 196
-1492939880.9490292 SK switch parameter value too high, loop:0 187 119
-1492939881.1588223 SK switch parameter value too high, loop:0 21830 1199
-1492939881.1588223 SK switch parameter value too high, loop:0 253 1
-1492939881.1588223 from SK: no valid commandtoken 242
-1492939881.1588223 from SK: no valid commandtoken 255
-1492939881.1588223 from SK: no valid commandtoken 206
-1492939881.2589493 SK timeout  1
-1492939881.3590984 from SK: no valid commandtoken 189
-1492939881.3590984 SK switch parameter value too high, loop:0 209 1
-1492939977.5606992 re_read  my devices
-1492939977.5706995 check_log
-1492940001.3609262 user timeout0
+1769092967.86235 of number of elements too high:767 should be 256
+1769092981.1901462 of number of elements too high:767 should be 256
+1769093019.3037486 Server started
+1769094774.5267308 of number of elements too high:4 should be 3
+1769094799.6841154 of value too high:3 should be <= 1
+1769095025.440278 oa stringlength too high:6 should be 5
+1769095062.2445028 of number of elements too high:4 should be 3
+1769095069.2236402 oa stringlength too high:255 should be 5
+1769095108.1230752 transfertype 1 value too high, 5 should be 4
+1769095171.6992486 transfertype 1 value too high, 5 should be 4
+1769095190.866678 transfertype 1 value too high, 16777215 should be 65536
+1769095228.4265952 transfertype 1 value too high, 11 should be 10
+1769096597.4644418 Server started
+1769096919.237223 transfertype 1 value too high, 4 should be 2
+1769096929.2219863 transfertype 1 value too high, 2 should be 1
+1769097049.225174 channel timeout
+1769097118.8509834 transfertype 1 value too high, 4 should be 2
+1769097131.7393763 transfertype 1 value too high, 3 should be 2
+1769097147.509606 transfertype 1 value too high, 3 should be 2
+1769097183.2523253 transfertype 1 value too high, 255 should be 2
+1769097197.5736792 transfertype 1 value too high, 255 should be 2
+1769097212.8383555 transfertype 1 value too high, 255 should be 2
+1769097344.5011368 channel timeout
+1769097345.381689 transfertype 1 value too high, 4 should be 2
+1769097348.3700473 transfertype 1 value too high, 3 should be 2
+1769097468.3730505 channel timeout
+1769097520.138784 Server started
+1769097987.7490284 Server started
+1769098070.125571 Server started
+1769098104.1453962 ob start value too high:5 should be <=4
+1769098224.1494973 channel timeout
+1769098270.5425277 transfertype 1 value too high, 4 should be 2
+1769098457.3815444 channel timeout
+1769098622.1009524 Server started
+1769098650.2192554 ob value too high:4 should be <=3
+1769098770.2228403 channel timeout
+1769099805.2291062 server socket failed
+1769099827.467643 Server started
+1769099884.7710996 Server started
+1769099912.0118368 ob memoryposition too high:4 should be <=3
+1769100065.018411 Server started
+1769100342.6119208 on start value too high:6 should be 5
+1769100462.61564 channel timeout
+1769101108.849822 Server started
+1769101449.4767795 Server started
+1769102740.846308 Server started
+1769102832.3909152 Server started
+1769103025.5652692 Server started
+1769103334.8148017 Server started
+1769103338.3041325 on start value too high:5 should be 4
+1769103365.097425 on element value too high:2 should be 1
+1769103481.5898514 on start value too high:3 should be 2
+1769103632.9474106 channel timeout
+1769103988.0336878 Server started
+1769156191.5142884 Server started
+1769156714.225951 on start value too high:5 should be 4
+1769156722.7704186 on element value too high:2 should be 1
+1769156739.6251905 on start value too high:3 should be 2
+1769156859.6282532 channel timeout
+1769157065.2066133 channel timeout
+1769160293.5899608 Server started
+1769160520.5619318 on position too high:5 should be 4
+1769160533.1325426 on element value too high:2 should be 1
+1769160555.0865006 on position too high:3 should be 2
+1769160675.0902743 channel timeout
+1769160796.6661284 Server started
+1769160856.6939075 on element value too high:255 should be 1
+1769160889.337762 on position too high:3 should be 2
+1769160944.9313507 on position too high:255 should be 254
+1769161123.0637138 transfertype 1 value too high, 4 should be 1
+1769161132.068369 transfertype 1 value too high, 3 should be 1
+1769161169.510262 transfertype 1 value too high, 255 should be 1
+1769161174.3623621 transfertype 1 value too high, 254 should be 1
+1769161224.9375675 transfertype 1 value too high, 65535 should be 256
+1769161238.0156195 transfertype 1 value too high, 65535 should be 256
