@@ -1,6 +1,6 @@
 """
 name : commandrouterlength_of_commandtypes.py
-last edited: 202601
+last edited: 20260224
 calculate the length of transmitted data for command, answer / info
 called at initialization
 ct_xx :xx is the commmandtyp, for detailed description see MYC documentation
@@ -182,7 +182,7 @@ def ct_as(stripped):
 
 def ct_at(stripped):
     # toggling switch
-    # <c>;ot;number_of_stacks;pos0;...;posn
+    # <c>;at;number_of_stacks;pos0;...;posn
     command_list = []
     answer_list = []
     stacks, stack_length = misc_functions.stacklength(stripped)
@@ -413,7 +413,6 @@ def c_om(stripped):
 def ct_am(stripped):
     # c>;am;<ty>;m
     command_list = []
-    tok = stripped[0]
     positions = int(stripped[3]) - 1
     positionlength = misc_functions.length_of_int(positions)
     command_list.append("1")
@@ -444,7 +443,7 @@ def c_on(stripped):
     # 1: length of first loop: added later
     command_list.append(1)
 
-    positions = int(stripped[3]) - 1
+    positions = int(stripped[3])
     elements = int(stripped[4])
     positionlength = misc_functions.length_of_int(positions)
     elementlength = misc_functions.length_of_int(elements)
@@ -471,9 +470,12 @@ def c_on(stripped):
         # 10: length
         command_list.append(length)
         # string
-    if p_type == "n":
         command_list.append(0)
     else:
+        # 9: max of length
+        command_list.append(maxpar)
+        # 10: length
+        command_list.append(length)
         command_list.append(1)
     return command_list
 
@@ -484,8 +486,7 @@ def ct_an(stripped):
     command_list.append("1")
     # 1: length of first loop: added later
     command_list.append(v_announcelist.length_of_full_elements)
-
-    positions = int(stripped[3]) - 1
+    positions = int(stripped[3])
     elements = int(stripped[4])
     positionlength = misc_functions.length_of_int(positions)
     elementlength = misc_functions.length_of_int(elements)
@@ -504,7 +505,6 @@ def ct_an(stripped):
     command_list[1] += elementlength
     # 8: string
     command_list.append(0)
-
     answer_list = c_on(stripped)
     return command_list, answer_list
 

@@ -1,186 +1,133 @@
 """
 name : ld_buffer_handling.py
-last edited: 202512
+last edited: 20260224
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
 
-from time import sleep
-from ld_misc import *
-from misc_functions import *
-import v_logicdevice
 import v_ld
+import v_announcelist
+import misc_functions
+import v_token_params
+import v_linelength
+import v_sk
+
+
+def store_by_ld():
+    # data from dev are stored and send back to CR
+    if v_ld.from_dev_to_ld != []:
+        if v_ld.from_dev_to_ld[0] in v_ld.s_r_p_a_dev:
+            store_data(v_ld.from_dev_to_ld[0], v_ld.from_dev_to_ld)
+        v_ld.from_dev_to_sk = v_ld.from_dev_to_ld
+    return
 
 def ld_analyze():
     # the values of the transmitted data are checked by CR to be in the allowed range.
     # so check is not done
-    # from_sk_to_dev:
-    # if a command is blocked -> v_logicdevice.inputline = []
-    # block: 0: no store, not in rules; 1: in rules, not blocked; true == 1: blocked
-    if v_ld.from_sk_to_ld == [] and v_ld.from_dev_to_ld == []:
+    # input_as_parameter_list is list of parameters (int or string)
+    if v_sk.input_as_parameter_list == []:
+        v_ld.from_ld_to_dev = v_sk.orig_to_ld
+        v_sk.orig_to_ld = []
         return
-    if v_ld.from_sk_to_ld != []:
-        print ("from sk to ld")
-        print (v_ld.from_sk_to_ld)
-        v_ld.from_ld_to_dev = v_ld.from_sk_to_ld
-        v_ld.from_sk_to_ld = []
-        # analyze and update
-    if v_ld.from_dev_to_ld == []:
-        v_ld.from_ld_to_sk = v_ld.from_dev_to_ld
-        v_ld.from_dev_to_ld = []
-    return
-        # analyze and update
-    print (v_ld.from_dev_to_ld)
-    print("from CR:" , v_logicdevice.inputline)
-    s_or_d = v_logicdevice.inputline[0]
-    if s_or_d != "s" and s_or_d != "u":
-        v_logicdevice.inputline = []
-        write_log("wrong s or d")
+    tok = int.from_bytes(v_sk.orig_to_ld[:v_announcelist.length_of_full_elements])
+    ct = v_announcelist.full[tok][1]
+    if not ct in v_ld.s_r_p_a_sk:
+        v_ld.from_ld_to_dev = v_ld.orig_to_ld
+        v_ld.input_as_parameter_list = []
+        v_sk.orig_to_ld = []
         return
-    inputline = v_logicdevice.inputline[1:]
-    if inputline[0] == "":
-        v_logicdevice.inputline = []
-        write_log("no tok")
-        return
-    update = 0
-    blocked = 0
-    tok_in_rules = 0
-    tok = int(inputline[0], 16)
-    inputline = inputline[1:]
-    direct_commands = {}
-    direct_command_index = 0
-    # answer commands from Skin are forwarded, (no store no check)
-    if tok in v_logicdevice.all_used_toks or v_logicdevice.all_by_index != {}:
-        tok_in_rules = 1
-        ct = v_logicdevice.ct[tok]
-        if ct in v_logicdevice.s_r:
-            # switches, range and "xa" only
-            if ct[0] == "a" and s_or_d == "s":
-                # answer commands from SK require no update
-                if tok in v_logicdevice.left_tok_by_index:
-                    i = 0
-                    while i < len(v_logicdevice.left_tok_by_index):
-                        if tok == v_logicdevice.left_tok_by_index[i]:
-                            if parse_condition(i):
-                                blocked = 1
-                        i += 1
-            else:
-                # answers from device and operate commands from SK (data update)
-                update = 1
-            if s_or_d == "s":
-                if tok in v_logicdevice.left_tok or v_logicdevice.all_by_index != {}:
-                    # block SK commands only (answer and operate)
-                    write_log("rulecheck for left tok")
-                    rule_index = 0
-                    enable = 1
-                    true_ = 0
-                    while rule_index < len(v_logicdevice.left_tok_by_index):
-                        # all rules are used
-                        if v_logicdevice.left_tok_by_index[rule_index] == "$~":
-                            if parse_condition(rule_index):
-                                enable = 0
-                        elif v_logicdevice.left_tok_by_index[rule_index] == "!$~":
-                            # not as last rule
-                            if rule_index < len(v_logicdevice.left_tok_by_index) - 1:
-                                if parse_condition(rule_index):
-                                    enable = 1
-                        else:
-                            if enable:
-                                # check all rules for actual tok
-                                true = parse_condition(rule_index)
-                                if v_logicdevice.if_unless[rule_index] == 1:
-                                    # "UNLESS"
-                                    # due to "OR" only with true == 0
-                                    if  not true:
-                                        true_ = 1
-                                else:
-                                    if true == 1:
-                                        true_= 1
-                                if not true_:
-                                    j = rule_index + 1
-                                    found = 1
-                                    while j < len(v_logicdevice.left_tok_by_index) and found == 1:
-                                        if rule_index in v_logicdevice.after_by_index:
-                                            if parse_condition(rule_index):
-                                                direct_commands[direct_command_index] = v_logicdevice.left_tok[j]
-                                                direct_command_index += 1
-                                            j += 1
-                                            rule_index+= 1
-                                        else:
-                                            found = 0
-                        rule_index += 1
-                    if not enable or true_:
-                        # not unblocked
-                        blocked = 1
-                        # blocked are not updated
-                        update = 0
-    # send direct commands once always (if condition is true)
-    rule_index = 0
-    while  rule_index < len(v_logicdevice.left_tok_by_index):
-        if rule_index in v_logicdevice.direct_command_by_index:
-            # direct commands are send if not blocked
-            if parse_condition(rule_index):
-                if v_logicdevice.command_sent_by_index[rule_index] == 0:
-                    # not yet sent
-                    if check_direct_command():
-                        direct_commands[direct_command_index] = v_logicdevice.direct_command_by_index[rule_index]
-                        direct_command_index += 1
-                    v_logicdevice.command_sent_by_index[rule_index] = 1
-            else:
-                if v_logicdevice.command_sent_by_index[rule_index] == 1:
-                    # renable
-                    v_logicdevice.command_sent_by_index[rule_index] = 1
-        rule_index += 1
-
-    if tok_in_rules == 0:
-        write_log ("tok not in rules")
-  #      data_to_cr = v_logicdevice.inputline
+    print ("for LD", v_sk.orig_to_ld)
+    if  tok in v_ld.right_tok:
+        # store if tok in right side
+        store_data(tok, v_sk.input_as_parameter_list)
+    if tok in v_ld.blockd_toks:
+        misc_functions.write_log("blocked: " + str(tok))
     else:
-        if direct_commands:
-            i = 0
-            while i < len(direct_commands):
-                v_ld.data_to_cr = direct_commands[i]
-                sleep(0.001)
-                i += 1
-        if blocked:
-            # block
-            write_log (str(tok) + " blocked")
-        # else:
-   #         data_to_cr = concat_send(v_logicdevice.inputline)
-    if update == 1:
-        # store new value
-        store_data(tok, inputline)
-        check_change_of_direct_command_condition(tok)
-    v_logicdevice.inputline = []
+        # not blocked
+        # update for oo command
+        if v_announcelist.full[tok][1] == "oo":
+            update_op_with_oo()
+        v_ld.from_ld_to_dev = v_sk.orig_to_ld
+    v_sk.orig_to_ld = []
+    v_sk.input_as_parameter_list = []
     return
 
+def find_blocked_toks():
+    # find all left toks to be blocked by right side
+    v_ld.blockd_toks = []
+    all_blocked = 0
+    rule_index = 0
+    right_side_blocked = 0
+    while rule_index < len(v_ld.left_tok_by_index):
+        not_done = 1
+        left_tok = v_ld.left_tok_by_index[rule_index]
+        # there must be a actual status to be blocked
+        # first check, if rules should be blocked
+        if all_blocked == 1:
+            # all blocked, search valid !!$~
+            if rule_index in v_ld.index_of_not_tilde:
+                right_side_blocked = parse_condition(v_ld.all_condition_per_index[rule_index])
+                if right_side_blocked == 1:
+                    all_blocked = 0
+            # next rule
+            not_done = 0
+        if not_done and rule_index in v_ld.index_of_tilde:
+            right_side_blocked = parse_condition(v_ld.all_condition_per_index[rule_index])
+            if right_side_blocked == 1:
+                all_blocked = 1
+                not_done = 0
+        if not_done and all_blocked == 1:
+            not_done = 0
+        if not_done and rule_index in v_ld.direct_command_by_index:
+            right_side_blocked = parse_condition(v_ld.all_condition_per_index[rule_index])
+            if right_side_blocked == 0:
+                # true!!
+                if rule_index in v_ld.command_sent_by_index[rule_index]:
+                    if v_ld.command_sent_by_index[rule_index] == 0:
+                        # not yet sent
+                        v_ld.direct_commands.append(v_ld.direct_command_by_index[rule_index])
+                        v_ld.command_sent_by_index[rule_index] = 1
+                else:
+                    # allow again
+                    v_ld.command_sent_by_index[rule_index] = 0
+            not_done = 0
+        # normal commands on left side
+        if not_done:
+            if v_ld.all_condition_per_index[rule_index] == "~":
+                # block always
+                right_side_blocked = 1
+            else:
+                right_side_blocked = parse_condition(v_ld.all_condition_per_index[rule_index])
+            if v_ld.if_unless[rule_index] == 1:
+                # "UNLESS"
+                if right_side_blocked:
+                    right_side_blocked = 0
+                else:
+                    right_side_blocked = 1
+        if right_side_blocked or all_blocked:
+            v_ld.blockd_toks.append(left_tok)
+        rule_index += 1
+    print(v_ld.blockd_toks)
+    return
 
-def parse_condition(rule_index):
+def parse_condition(full_condition):
     # check match of a rule
-    condition_result = []
-    condition_result.append(1)
     operator_stack = []
     actual = 0
-    result = 0
-    block_compare_by_ct = 0
-    all_condition_per_index = v_logicdevice.all_condition_per_index[rule_index]
-    for element_index in all_condition_per_index:
-        # all conditions
-        condition = all_condition_per_index[element_index]
-        if condition[0] in v_logicdevice.condition_operators:
+    element_index = 0
+    while element_index < len(full_condition):
+        # all conditions of a rule
+        condition = full_condition[element_index]
+        if condition[0] in v_ld.condition_operators:
             match condition[0]:
                 case "(":
-                    condition_result.append(actual)
                     operator_stack.append("(")
                 case ")":
                     pop_result = operator_stack.pop()
                     if pop_result != "(":
-                        write_log("wrong operator stack")
+                        misc_functions.write_log("wrong operator stack")
                     else:
-                        # the "old"data will be compared wil the actual
-                        result = actual or condition_result.pop()
-                        block_compare_by_ct = 1
-                        actual , operator_stack = handle_operator_stack(all_condition_per_index, block_compare_by_ct, element_index, operator_stack, result, actual)
+                        actual , operator_stack = handle_operator_stack(condition, operator_stack, actual)
                     operator_stack.append(")")
                 case "AND":
                     operator_stack.append("A")
@@ -189,13 +136,12 @@ def parse_condition(rule_index):
                 case "!":
                     operator_stack.append("!")
         else:
-            actual, operator_stack = handle_operator_stack(all_condition_per_index, block_compare_by_ct, element_index, operator_stack, result, actual)
-    true_ = actual
-    return true_
+            actual, operator_stack = handle_operator_stack(condition, operator_stack, actual)
+        element_index += 1
+    return actual
 
-def handle_operator_stack(all_condition_per_index, block_compare_by_ct, element_index,operator_stack, result, actual ):
-    if block_compare_by_ct == 0:
-        result = comapare_by_ct(all_condition_per_index[element_index])
+def handle_operator_stack(condition, operator_stack, actual ):
+    result = comapare(condition)
     if len(operator_stack) == 0:
         # first element
         actual = result
@@ -221,241 +167,331 @@ def handle_operator_stack(all_condition_per_index, block_compare_by_ct, element_
                         stop = 1
     return actual, operator_stack
 
-def concat_send(data):
-    # array to string
-    i = 0
-    string = ""
-    while i < len(data):
-        string += data[i]
-        i += 1
-    return string
+def comapare (condition):
+    # tok for this condition
+    ctok = condition[0]
+    match_ = 1
+    stat = v_ld.actual_status[ctok]
+    match v_ld.ld_type_by_rtok[ctok]:
+        case 1:
+            # os no stack: 1 transmitted parameter
+            match_ = m(0, condition[1], stat)
+        case 2:
+            # os with stack, or no stack ; 2 transmitted parameters
+            max_ = v_announcelist.full[ctok][2]
+            match_ = condition2(condition[1], stat, int(max_))
+        case 3:
+            # or with stack
+            max_stack = v_announcelist.full[ctok][2]
+            max_pos = len(v_announcelist.full[ctok]) - 2
+            match_ = condition_3(condition[1], stat, int(max_stack), max_pos)
+        case 4:
+            # op no stack
+            match_ = condition_4(condition)
+        case 5:
+            # op with stack
+            match_ = condition_5(condition)
+        case 10:
+            # "oa" one parameter
+            match_ = condition_10(condition)
+        case 11:
+            # "oa" more parameters
+            match_ = condition_11(condition)
+    return match_
 
-def  check_change_of_direct_command_condition(tok):
-    ct = v_logicdevice.ct[tok]
-    match ct:
-        case "os" | "as":
-            # check change of condition for directcommand:
+def m(i, condition, stat):
+    match_ = 0
+    if condition[i+ 2] == "~":
+        if condition[i] == "=":
+            match_ = 1
+        else:
+            match_ = 0
+    elif condition[i] == "=":
+        if condition[i + 2] == stat:
+            match_ = 1
+    elif condition[i] == "<":
+        if stat < condition[i + 2]:
+            match_ = 1
+    elif condition[i] == ">":
+        if stat > condition[i + 2]:
+            match_ = 1
+    elif condition[i] == "!":
+        if condition[i + 2] != stat:
+            match_ = 1
+    return match_
+
+def condition2(all_params, status_for_tok, max_):
+    match_ = 0
+    match all_params[0]:
+        case "=":
+           match_ = m(3, all_params, status_for_tok[int(all_params[2])])
+        case "<":
             i = 0
-            while i < len(v_logicdevice.command_sent_by_index):
-                if v_logicdevice.command_sent_by_index[i] == 1:
-                    # these were sent and are blocke for resend
-                    true = parse_condition(i)
-                    if not true:
-                        v_logicdevice.command_sent_by_index[i] = 0
+            while i < int(all_params[2]) and match_ == 0:
+                match_ = m(3, all_params, status_for_tok[i])
                 i += 1
-    return
+        case ">":
+            i = int(all_params[2] + 1)
+            while i < max_ and match_ == 0:
+                match_ = m(3, all_params, status_for_tok[i])
+                i += 1
+        case "!":
+            i = 0
+            while i < max_ and match_ == 0:
+                if i != all_params[2]:
+                    match_ = m(3, all_params, status_for_tok[i])
+                i += 1
+    return match_
 
-def comapare_by_ct(data_array):
-    tok = data_array[0]
-    line = v_logicdevice.announcelist_basic[tok].replace("\n", "")
-    linex = line.split(";")
-    ct = v_logicdevice.ct[tok]
-    linex = linex[2:]
-    true_ = 0
-    # nothing done for "ou", "oo", "xm", "xn" and "xf"
-    match ct:
-        case "os" | "as":
-            if int(linex[0]) == 1:
-                # no stack
-                is_value = v_logicdevice.value[tok]
-                compare_value = calulate_compare_value(data_array[2])
-                relation = data_array[1]
-                true_ = compare(is_value, compare_value, relation)
-            else:
-                # for stack
-                relation_location = data_array[1]
-                compare_value_location = calulate_compare_value(data_array[2])
-                relation = data_array[3]
-                compare_value = calulate_compare_value(data_array[4])
-                stack_no = 0
-                stack = data_array[0]
-                while not true_ and stack_no <= stack:
-                    true, stack_no = comparelocation(stack_no, relation_location, compare_value_location)
-                    if not true:
-                        is_value = v_logicdevice.value[tok][stack_no]
-                        true_ = compare(is_value, compare_value, relation)
-                    stack_no += 1
-        case "or" | "ar":
-            if int(linex[0]) == 1:
-                # no stack
-                relation_location = data_array[1]
-                compare_value_location = calulate_compare_value(data_array[2])
-                relation = data_array[3]
-                compare_value = calulate_compare_value(data_array[4])
-                position_no = 0
-                while not true_ and position_no <= len(linex) - 2:
-                    continue_, position_no = comparelocation(position_no, relation_location, compare_value_location)
-                    if not continue_:
-                        is_value = v_logicdevice.value[tok][position_no]
-                        true_ = compare(is_value, compare_value, relation)
-                    position_no += 1
-            else:
-                # with stack
-                relation_location = data_array[1]
-                compare_value_location = calulate_compare_value(data_array[2])
-                relation_location1 = data_array[3]
-                compare_value_location1 = calulate_compare_value(data_array[4])
-                relation = data_array[5]
-                compare_value = calulate_compare_value(data_array[6])
-                stack_no = 0
-                continue_ = 1
-                while not true_ and continue_ and stack_no <= len(linex) - 2:
-                    continue_, stack_no = comparelocation(stack_no, relation_location, compare_value_location)
-                    if not continue_:
-                        position_no = 0
-                        while not true_ and  position_no <= len(linex):
-                            continue__, stack_no = comparelocation(position_no, relation_location1, compare_value_location1)
-                            if not continue__:
-                                is_value = v_logicdevice.value[tok][stack_no][position_no]
-                                true_ = compare(is_value, compare_value, relation)
-                            position_no += 1
-                    stack_no += 1
-        case "op" | "ap":
-            if int(linex[0]) == 1:
-                # no stack
-                if len(linex) > 4:
-                    # more dimensions
-                    positionadder = calulate_compare_value(data_array[2])
-                    compare_value = calulate_compare_value(data_array[4])
-                    is_value = v_logicdevice.value[tok][positionadder]
-                    relation = data_array[3]
-                else:
-                    compare_value = calulate_compare_value(data_array[2])
-                    is_value = v_logicdevice.value[tok][0]
-                    relation = data_array[1]
-                true_ = compare(is_value, compare_value, relation)
-            else:
-                # for stack
-                relation_location = data_array[1]
-                compare_value_location = calulate_compare_value(data_array[2])
-                stack_no = 0
-                stack = data_array[0]
-                while not true_ and stack_no <= stack:
-                    continue_, stack_no = comparelocation(stack_no, relation_location, compare_value_location)
-                    if not continue_:
-                        # stack found
-                        if len(linex) > 4:
-                            # more dimensions
-                            positionadder = calulate_compare_value(data_array[4])
-                            compare_value = calulate_compare_value(data_array[6])
-                            is_value = v_logicdevice.value[tok][stack_no][positionadder]
-                            relation = data_array[5]
-                        else:
-                            compare_value = calulate_compare_value(data_array[4])
-                            is_value = v_logicdevice.value[tok][stack_no][0]
-                            relation = data_array[3]
-                        true_ = compare(is_value, compare_value, relation)
-                    stack_no += 1
-        case "oa" | "aa":
-            if len(linex) == 1:
-                # one element
-                relation = data_array[1]
-                compare_value = calulate_compare_value(data_array[2])
-                if tok in v_logicdevice.stringparameters:
-                    data = v_logicdevice.value[tok][0]
-                else:
-                    data = v_logicdevice.value[tok][0]
-                true_ = compare(data, compare_value, relation)
-            else:
-                position = calulate_compare_value(data_array[2])
-                relation = data_array[3]
-                compare_value = calulate_compare_value(data_array[4])
-                data = v_logicdevice.value[tok][position]
-                if type(data) == type(compare_value):
-                    true_ = compare(data, compare_value, relation)
-        case "oo" | "ou":
-            # executed always
-            true_ = 1
-    return true_
+def condition_3(all_params, status_for_tok, max_stack, max_pos):
+    # or with stack
+    match_ = 0
+    match all_params[0]:
+        case "=":
+           match_ =condition99(all_params, status_for_tok, max_pos)
+        case "<":
+            i = 0
+            while i < int(all_params[2]) and match_ == 0:
+                match_ = condition99(all_params, status_for_tok, max_pos)
+                i += 1
+        case ">":
+            i = int(all_params[2] + 1)
+            while i < max_stack and match_ == 0:
+                match_ = condition99(all_params, status_for_tok, max_pos)
+                i += 1
+        case "!":
+            i = 0
+            while i < max_stack and match_ == 0:
+                if i != all_params[2]:
+                    match_ = condition99(all_params, status_for_tok, max_pos)
+                i += 1
+    return match_
+
+def condition99(all_params, status_for_tok, max_pos):
+    match_ = 0
+    match all_params[3]:
+        case "=":
+           match_ = m(6, all_params, status_for_tok[int(all_params[2])][int(all_params[5])])
+        case "<":
+            i = 0
+            while i < int(all_params[5]) and match_ == 0:
+                match_ = m(6, all_params, status_for_tok[i])
+                i += 1
+        case ">":
+            i = int(all_params[5] + 1)
+            while i < max_pos and match_ == 0:
+                match_ = m(6, all_params, status_for_tok[i])
+                i += 1
+        case "!":
+            i = 0
+            while i < max_pos and match_ == 0:
+                if i != all_params[5]:
+                    match_ = m(6, all_params, status_for_tok[i])
+                i += 1
+    return match_
+
+def condition_4(condition):
+    # op cammand no stack
+    match_ = 0
+    # tok for this condition
+    ctok = condition[0]
+    stat = v_ld.actual_status[ctok]
+    i = 0
+    j = 0
+    while i < len(stat) and match_ == 0:
+        match_ = m(j, condition[1], stat[i])
+        i += 1
+        j += 3
+    return match_
+
+def condition_5(condition):
+    # op cammand with stack
+    match_ = 0
+    # tok for this condition
+    ctok = condition[0]
+    max_stack = int(v_announcelist.full[ctok][2])
+    dimensions = (len(v_announcelist.full[ctok]) - 2) / 3
+    stack = 0
+    while stack < max_stack and match_ == 0:
+        match_ = m(0, condition[1], v_ld.actual_status[ctok][stack][0])
+        if match_ == 1:
+            i = 0
+            while i <  dimensions and match_ == 0:
+                match_ = m(i, condition[1], v_ld.actual_status[ctok][stack][i])
+                i += 1
+        stack += 1
+    return match_
+
+def condition_10(condition):
+    # oa one parameter
+    i = 0
+    tok = condition[0]
+    match_ = m(i, condition[1], v_ld.actual_status[tok][0])
+    return match_
+
+def condition_11(condition):
+    match_ = 0
+    tok = condition[0]
+    i = 0
+    j = 0
+    while i < len(condition[1]) and match_ == 0:
+        match_ = m(i, condition[1], v_ld.actual_status[tok][j])
+        i += 3
+        j += 1
+    return match_
 
 def store_data(tok, inputline):
-    line = v_logicdevice.announcelist_basic[tok].replace("\n", "")
-    linex = line.split(";")
-    ct = v_logicdevice.ct[tok]
-    linex = linex[2:]
+    # inputline without tok
+    if not tok in v_ld.actual_status:
+        return
+    ct = v_announcelist.full[tok][1]
+    announce_line_tok = v_announcelist.full[tok]
     # nothing done for "ou", "oo", "xm", "xn" and "xf"
     match ct:
         case "os" | "as":
             # less than 256 positions only
-            if int(linex[0]) == 1:
+            if int(announce_line_tok[2]) == 1:
                 # no stack
-                v_logicdevice.value[tok] = int(inputline[0],16)
-                if tok in v_logicdevice.o_to_a:
-                    v_logicdevice.value[v_logicdevice.o_to_a[tok]] = int(inputline[0],16)
-                if tok in v_logicdevice.a_to_o:
-                    v_logicdevice.value[v_logicdevice.a_to_o[tok]] = int(inputline[0],16)
+                value = inputline[1]
+                v_ld.actual_status[tok] = value
+                if tok in v_token_params.o_to_a:
+                    v_ld.actual_status[v_token_params.o_to_a[tok]] = value
+                if tok in v_token_params.a_to_o:
+                    v_ld.actual_status[v_token_params.a_to_o[tok]] = value
             else:
                 # with stack
-                v_logicdevice.value[tok][int(inputline[0],16)] = int(inputline[1],16)
-                if tok in v_logicdevice.o_to_a:
-                    v_logicdevice.value[v_logicdevice.o_to_a[tok]][int(inputline[0],16)] = int(inputline[1],16)
-                if tok in v_logicdevice.a_to_o:
-                    v_logicdevice.value[v_logicdevice.a_to_o[tok]][int(inputline[0],16)] = int(inputline[1],16)
+                stack = inputline[1]
+                value = inputline[2]
+                v_ld.actual_status[tok][stack] = value
+                if tok in v_token_params.o_to_a:
+                    v_ld.actual_status[v_token_params.o_to_a[tok]][stack] = value
+                if tok in v_token_params.a_to_o:
+                    v_ld.actual_status[v_token_params.a_to_o[tok]][stack] = value
         case "or" | "ar":
-            if int(linex[0]) == 1:
+            if int(announce_line_tok[2]) == 1:
                 # no stack
-                v_logicdevice.value[tok][int(inputline[0],16)] = int(inputline[1],16)
-                if tok in v_logicdevice.o_to_a:
-                    v_logicdevice.value[v_logicdevice.o_to_a[tok]][int(inputline[0],16)] = int(inputline[1],16)
-                if tok in v_logicdevice.a_to_o:
-                    v_logicdevice.value[v_logicdevice.a_to_o[tok]][int(inputline[0],16)] = int(inputline[1],16)
+                pos = inputline[1]
+                value = inputline[2]
+                v_ld.actual_status[tok][pos] = value
+                if tok in v_token_params.o_to_a:
+                    v_ld.actual_status[v_token_params.o_to_a[tok]][pos] = value
+                if tok in v_token_params.a_to_o:
+                    v_ld.actual_status[v_token_params.a_to_o[tok]][pos] = value
             else:
                 # with stack
-                v_logicdevice.value[tok][int(inputline[0],16)][int(inputline[1],16)] = int(inputline[2],16)
-                if tok in v_logicdevice.o_to_a:
-                    v_logicdevice.value[v_logicdevice.o_to_a[tok]][int(inputline[0],16)][int(inputline[1],16)] = int(inputline[2],16)
-                if tok in v_logicdevice.a_to_o:
-                    v_logicdevice.value[v_logicdevice.a_to_o[tok]][int(inputline[0],16)][int(inputline[1],16)] = int(inputline[2],16)
+                stack = inputline[1]
+                pos = inputline[2]
+                value = inputline[3]
+                v_ld.actual_status[tok][stack][pos] = value
+                if tok in v_token_params.o_to_a:
+                    v_ld.actual_status[v_token_params.o_to_a[tok]][stack][pos] = value
+                if tok in v_token_params.a_to_o:
+                    v_ld.actual_status[v_token_params.a_to_o[tok]][stack][pos] = value
 
         case "op" |"ap":
-            if int(linex[0]) == 1:
+            if int(announce_line_tok[2]) == 1:
                 # no stack
-                k = 0
+                k = 1
                 while k < len(inputline):
                     # all values
-                    v_logicdevice.value[tok][k] = int(inputline[k], 16)
-                    if tok in v_logicdevice.o_to_a:
-                        v_logicdevice.value[v_logicdevice.o_to_a[tok]][k] = int(inputline[k], 16)
-                    if tok in v_logicdevice.a_to_o:
-                        v_logicdevice.value[v_logicdevice.a_to_o[tok]][k] = int(inputline[k], 16)
+                    v_ld.actual_status[tok][k - 1] = inputline[k]
+                    if tok in v_token_params.o_to_a:
+                        v_ld.actual_status[v_token_params.o_to_a[tok]][k] = int.from_bytes(inputline[k])
+                    if tok in v_token_params.a_to_o:
+                        v_ld.actual_status[v_token_params.a_to_o[tok]][k] = int.from_bytes(inputline[k])
                     k += 1
             else:
                 # with stack
-                k = 0
-                while k < len(inputline) - 1:
-                    v_logicdevice.value[tok][int(inputline[0])][k] = int(inputline[k + 1], 16)
-                    if tok in v_logicdevice.o_to_a:
-                        v_logicdevice.value[v_logicdevice.o_to_a[tok]][int(inputline[0])][k] = int(inputline[k + 1], 16)
-                    if tok in v_logicdevice.a_to_o:
-                        v_logicdevice.value[v_logicdevice.a_to_o[tok]][int(inputline[0], 16)][k] = int(inputline[k + 1], 16)
+                k = 2
+                while k < len(inputline):
+                    v_ld.actual_status[tok][int(inputline[1])][k -2] = inputline[k]
+                    if tok in v_token_params.o_to_a:
+                        v_ld.actual_status[v_token_params.o_to_a[tok]][int.from_bytes(inputline[0])][k] = int.from_bytes(inputline[k + 1])
+                    if tok in v_token_params.a_to_o:
+                        v_ld.actual_status[v_token_params.a_to_o[tok]][int.from_bytes(inputline[0])][k] = int.from_bytes(inputline[k + 1])
                     k += 1
 
         case "oa" | "aa":
-            if len(linex) == 1:
+            if len(announce_line_tok) == 3:
+                if announce_line_tok[2].isdigit():
+                    # string
+                    data = ""
+                    i = 0
+                    while i < len(inputline):
+                        data += chr(inputline[i])
+                        i += 1
+                else:
+                    data = inputline
                 # one element only
-                if tok in v_logicdevice.stringparameters:
-                    data = concat(inputline)
-                    v_logicdevice.inputline = "s" + data
-                else:
-                    data = int(inputline[0], 16)
-                v_logicdevice.value[tok][0] = data
-                if tok in v_logicdevice.o_to_a:
-                    v_logicdevice.value[v_logicdevice.o_to_a[tok]][0] = data
-                if tok in v_logicdevice.a_to_o:
-                    v_logicdevice.value[v_logicdevice.a_to_o[tok]][0] = data
+                v_ld.actual_status[tok][0] = data
+                if tok in v_token_params.o_to_a:
+                    v_ld.actual_status[v_token_params.o_to_a[tok]][0] = data
+                if tok in v_token_params.a_to_o:
+                    v_ld.actual_status[v_token_params.a_to_o[tok]][0] = data
             else:
-                pos = int(inputline[0], 16)
-                if tok in v_logicdevice.stringparameters:
-                    data = concat(inputline[1:])
-                    v_logicdevice.inputline = "s" + data
+                pos = inputline[0]
+                if announce_line_tok[2 + pos].isdigit():
+                    # string
+                    data = ""
+                    i = 0
+                    while i < len(inputline[1]):
+                        data += chr(inputline[1][i])
+                        i += 1
                 else:
-                    data = int(inputline[1], 16)
-                v_logicdevice.value[tok][pos] = data
-                if tok in v_logicdevice.o_to_a:
-                    v_logicdevice.value[v_logicdevice.o_to_a[tok]][pos] = data
-                if tok in v_logicdevice.a_to_o:
-                    v_logicdevice.value[v_logicdevice.a_to_o[tok]][pos] = data
+                    data = inputline[1]
+                v_ld.actual_status[tok][pos] = data
+                if tok in v_token_params.o_to_a:
+                    v_ld.actual_status[v_token_params.o_to_a[tok]][pos] = data
+                if tok in v_token_params.a_to_o:
+                    v_ld.actual_status[v_token_params.a_to_o[tok]][pos] = data
 
-  #  print (v_logicdevice.value)
+    print ("store",v_ld.actual_status)
+    find_blocked_toks()
     return
 
+def update_op_with_oo():
+    oo_tok = v_ld.from_sk_to_ld[0]
+    op_tok = v_announcelist.oo_ext[oo_tok]
+    if op_tok in v_ld.actual_status:
+        if v_announcelist.full[op_tok][2] == 1:
+            # no stack
+            i = 0
+            j = 2
+            while i < len(v_ld.from_sk_to_ld):
+                v_ld.actual_status[op_tok][0][i] += v_ld.from_sk_to_ld[j]
+                i += 1
+                j += 3
+        else:
+            i = 0
+            j = 2
+            stack = v_ld.from_sk_to_ld[1]
+            dimensions = (len(v_ld.from_sk_to_ld) - 2) / 3
+            while i < dimensions:
+                if v_ld.actual_status[op_tok][stack][i] == -1:
+                    v_ld.actual_status[op_tok][stack][i] = 0
+                adder = v_ld.from_sk_to_ld[j] * v_ld.from_sk_to_ld[j+ 1]
+                if adder + v_ld.actual_status[op_tok][stack][i] < v_announcelist.max_oo[oo_tok][i]:
+                    v_ld.actual_status[op_tok][stack][i] += adder
+                else:
+                    # loop or limt
+                    if v_announcelist.loop_limit[oo_tok][i] == 0:
+                        # LOOP
+                        v = v_ld.actual_status[op_tok][stack][i] + v_ld.from_sk_to_ld[j] - v_announcelist.max_oo[oo_tok][i]
+                        v_ld.actual_status[op_tok][stack][i] = v
+                    else:
+                        # LIMIT
+                        v_ld.actual_status[op_tok][stack][i] = v_announcelist.max_oo[oo_tok][i]
+                i += 1
+                j += 3
+    return
+
+def send_direct_commands():
+    if v_ld.direct_commands != []:
+        # is HEX string: split to tok and data (CR do not check parameter)
+        tok = v_ld.direct_commands[0][:v_announcelist.length_of_full_elements]
+        data = v_ld.actual_status[tok][0][v_announcelist.length_of_full_elements:]
+        v_ld.from_ld_to_dev = []
+        v_ld.from_ld_to_dev.append(tok)
+        v_ld.from_ld_to_dev.append(data)
+        v_ld.direct_commands = v_ld.direct_commands[1:]
+    return

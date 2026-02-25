@@ -1,18 +1,25 @@
 """
 name : misc_functions.py
-last edited: 202512
+last edited: 20260224
 misc functions
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
 
-import time
 import os
+from lib2to3.fixes.fix_print import FixPrint
+
+from buffer_handling import *
+from command_handling import *
+
+import v_announcelist
 import v_cr_params
 import v_configparameter
 import v_ld
+import v_linelength
 import v_sk
-
+import v_token_params
+import v_time_values
 
 def str_to_bytearray(string):
     # for string s: length with length l
@@ -78,6 +85,7 @@ def add_length_to_ba(ba, l):
 
 def length_of_int(i):
     # return the number of bytes to be used ( 1, 2, 3, 4) depending on i
+    # for positions etc
     if i > 0xFFFFFFFF:
         return 5
     if i > 0xFFFFFF:
@@ -89,12 +97,11 @@ def length_of_int(i):
     else:
         return 1
 
-
 def int_to_bytes(integ, length):
     # convert a integer to a string of bytes (0-255)
     # length 0: use CR tokenlength
     if length == 0:
-        length = v_cr_params.length_commandtoken
+        length = v_announcelist.length_of_full_elements
     s = ""
     i = 0
     while i < length:
@@ -114,7 +121,7 @@ def int_to_ba(integ, length):
     # convert a integer to a bytearray of of int (0-255) with a length  ( 1, 2, 4, 8 )
     # length 0: use CR tokenlength
     if length == 0:
-        length = v_cr_params.length_commandtoken
+        length = v_announcelist.length_of_full_elements
     ba = bytearray([])
     i = 0
     while i < length:
@@ -160,7 +167,7 @@ def length_of_typ(c_type):
         return "n", v_cr_params.length_of_par[c_type], v_cr_params.max_of_par[c_type]
     if c_type == "c":
         # commands
-        return "n", v_cr_params.length_commandtoken,
+        return "n", v_announcelist.length_of_full_elements,
     else:
         # string
         return "s", length_of_int(int(c_type)), int(c_type)
@@ -178,7 +185,6 @@ def write_log(line):
     handle.close()
     return
 
-
 def strip_des_chapter(announcement):
     # strip <des> and CHAPTER
     # returns list
@@ -189,7 +195,7 @@ def strip_des_chapter(announcement):
         drop = 0
         item = a[i].split(",")
         if len(item) > 1:
-            if (item[1] == "CHAPTER"):
+            if item[1] == "CHAPTER":
                 drop = 1
         if drop == 0:
             stripped.append(item[0])
@@ -211,23 +217,253 @@ def stacklength(stripped):
         stack_length = length_of_int(stacks)
     return  stacks, stack_length
 
-def finish_sk(input_device, to_ld):
-    # transfer data
-    # send command to LD as listelement containing data for one command
-    if to_ld == 1:
-        v_ld.from_sk_to_ld.extend(v_sk.inputline[input_device][:v_sk.len[input_device][0]])
-        print ("to ld ")
-        print (v_ld.from_sk_to_ld)
-    # reset some values of v_sk after command finished
-    v_sk.inputline[input_device] = v_sk.inputline[input_device][v_sk.len[input_device][0]:]
-    v_sk.len[input_device] = [0,0,0,0,0,0,0]
-    v_sk.starttime[input_device] = 0
-    # avoid channel timeout
- #   if v_sk.multi_channel == 1:
-  #      v_sk.channel_timeout[input_device] = time.time()
-  #  if len(v_sk.inputline[input_device]) > v_cr_params.sk_buffer_limit_low:
-   #     if len(v_sk.inputline[input_device]) > v_cr_params.sk_buffer_limit:
-    #        v_sk.active[input_device] = 2
-   # else:
-    #    v_sk.active[input_device] = 1
+def split_rule(line):
+    typ = " IF"
+    if " UNLESS " in line:
+        typ = " UNLESS "
+    li_ = line.split(typ)
+    left = li_[0]
+    if len(li_) > 1:
+        right = li_[1]
+    else:
+        right = ""
+    return left, right, typ
+
+def split_input_line_for_oa(tok, input_):
+    # for sk / dev to ld: list of hex parameters
+    # split tok
+    # for oa aa only: convert numeric to int for use by LD
+    # oa aa only
+    # strip tok
+    ct = v_announcelist.full[tok][1].split(",")[0]
+    if ct == "oa" or ct == "aa":
+        if len(v_linelength.command[tok]) == 5:
+            # no position: one parameter
+            if v_announcelist.full[tok][2].split(",")[0].isdigit:
+                # string
+                result = input_
+            else:
+                # numeric
+                result = int.from_bytes(input_)
+        else:
+            # more than one parameter
+            pos_len = v_linelength.command[tok][3]
+            pos = int.from_bytes(input_[:pos_len])
+            # strip pos_len
+            input_ = input_[pos_len:]
+            result = [pos]
+            pos_in_linelength = 4 + pos * 3
+            n_s = v_linelength.command[tok][pos_in_linelength]
+            print ("n_s",n_s)
+            if n_s == 0:
+                result.append(int.from_bytes(input_))
+            else:
+                result.append(input_[v_announcelist.length_of_full_elements:])
+    else:
+        result = input_
+    print("result",result)
+    return result
+
+def default_data():
+    for tok in v_ld.right_tok:
+        ct = v_announcelist.full[tok][1]
+        announce = v_announcelist.full[tok][2:]
+        # nothing done for "ou", "oo", "xm", "xn" and "xf"
+        if not tok in v_ld.actual_status:
+            v_ld.actual_status[tok] = {}
+        match ct:
+            case "os" | "as" | "rs" | "ss":
+                # less than 256 positions only
+                if int(announce[0]) == 1:
+                    # no stack
+                    v_ld.actual_status[tok] = -1
+                    if tok in v_token_params.o_to_a:
+                        v_ld.actual_status[v_token_params.o_to_a[tok]] = -1
+                    if tok in v_token_params.a_to_o:
+                        v_ld.actual_status[v_token_params.a_to_o[tok]] = -1
+                else:
+                    # with stack
+                    stack = 0
+                    while stack < int(announce[0]):
+                        v_ld.actual_status[tok][stack] = -1
+                        if tok in v_token_params.o_to_a:
+                            v_ld.actual_status[v_token_params.o_to_a[tok]][stack][stack] = -1
+                        if tok in v_token_params.a_to_o:
+                            v_ld.actual_status[v_token_params.a_to_o[tok]][stack][stack] = -1
+                        stack += 1
+            case "or" | "ar" | "rr"| "sr":
+                if int(announce[0]) == 1:
+                    # no stack
+                    pos = 0
+                    while pos < len(announce) - 1:
+                        v_ld.actual_status[tok][pos] = -1
+                        if tok in v_token_params.o_to_a:
+                            v_ld.actual_status[v_token_params.o_to_a[tok]][pos] = -1
+                        if tok in v_token_params.a_to_o:
+                            v_ld.actual_status[v_token_params.a_to_o[tok]][pos] = -1
+                        pos += 1
+                else:
+                    # with stack
+                    stack = 0
+                    while stack < int(announce[0]):
+                        v_ld.actual_status[tok][stack] = []
+                        pos = 0
+                        while pos < len(announce) -1:
+                            v_ld.actual_status[tok][stack].append([])
+                            v_ld.actual_status[tok][stack][pos] = -1
+                            if tok in v_token_params.o_to_a:
+                                v_ld.actual_status[v_token_params.o_to_a[tok]][stack][pos] = -1
+                            if tok in v_token_params.a_to_o:
+                                v_ld.actual_status[v_token_params.a_to_o[tok]][stack][pos] = -1
+                            pos += 1
+                        stack += 1
+
+            case "op" |"ap"  | "rp"| "sp":
+                if int(announce[0]) == 1:
+                    # no stack
+                    k = 0
+                    p = 1
+                    while p < len(announce):
+                        # all values
+                        v_ld.actual_status[tok][k] = -1
+                        if tok in v_token_params.o_to_a:
+                            v_ld.actual_status[v_token_params.o_to_a[tok]][k]= -1
+                        if tok in v_token_params.a_to_o:
+                            v_ld.actual_status[v_token_params.a_to_o[tok]][k] = -1
+                        k += 1
+                        p += 3
+                else:
+                    # with stack
+                    stack = 0
+                    while stack < int(announce[0]):
+                        if not stack in v_ld.actual_status[tok]:
+                            v_ld.actual_status[tok][stack] = {}
+                        k = 0
+                        p = 1
+                        while p < len(announce):
+                            v_ld.actual_status[tok][stack][k] = -1
+                            if tok in v_token_params.o_to_a:
+                                v_ld.actual_status[v_token_params.o_to_a[tok]][stack][k] = -1
+                            if tok in v_token_params.a_to_o:
+                                v_ld.actual_status[v_token_params.a_to_o[tok]][stack][k] = -1
+                            k += 1
+                            p += 3
+                        stack += 1
+
+            case "oa" | "aa"  | "ra"| "sa":
+                pos = 0
+                while pos < len(announce):
+                    c_type, length, c = length_of_typ(announce[pos])
+                    if c_type == "s":
+                        v = ""
+                    else:
+                        v = -1
+                    v_ld.actual_status[tok][pos] = v
+                    if tok in v_token_params.o_to_a:
+                        v_ld.actual_status[v_token_params.o_to_a[tok]][pos] = v
+                    if tok in v_token_params.a_to_o:
+                        v_ld.actual_status[v_token_params.a_to_o[tok]][pos] = v
+                    pos += 1
+    return
+
+def create_len_of_string_length():
+    # for xa und xb commands only
+    for tok in v_announcelist.full:
+        line = v_announcelist.full[tok]
+        ct =  line[1].split(",")[0]
+        if ct == "oa" or ct == "aa" or ct == "ob" or ct == "ab":
+            i = 2
+            if not tok in v_announcelist.string_length_ab:
+                v_announcelist.string_length_ab[tok] = []
+            while i < len(line):
+                val = line[i].split(",")[0]
+                if val.isdigit():
+                    val = int(val)
+                    v_announcelist.string_length_ab[tok].append(val)
+                else:
+                    v_announcelist.string_length_ab[tok].append(-1)
+                i  += 1
+    return
+
+def handle_check():
+    # handling of commandfiles
+    # for auto # delete!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    if v_time_values.terminal == 255:
+        # find terminal
+        j = 0
+        while j < len(v_sk.interface_type):
+            j += 1
+            if v_sk.interface_type[j - 1] == "TERMINAL":
+                v_time_values.terminal = j
+    if v_time_values.terminal == 255:
+        v_time_values.auto = 0
+        v_time_values.part = 0
+        print("no Terminal found")
+        return
+    while v_time_values.check_number < len(v_time_values.from_sk):
+        v_sk.inputline[v_time_values.terminal] = bytearray([])
+        v_sk.len[v_time_values.terminal] = [0,0,0,0,0,0,0]
+        v_sk.starttime[v_time_values.terminal] = 0
+        # avoid user timeout
+        # avoid user timeout
+        v_sk.channel_timeout[v_time_values.terminal] = time.time()
+        v_time_values.part = 1
+        v_time_values.data = bytearray([])
+
+        # line 1 and 2
+        v_time_values.check_line_finished = 0
+        print("")
+        print(v_time_values.check_number,"announcement: ", v_time_values.announcement[v_time_values.check_number])
+        v_time_values.last_checktime = time.time()
+        v_sk.inputline[v_time_values.terminal] = v_time_values.from_sk[v_time_values.check_number]
+        tok = 0
+        if v_time_values.from_sk[v_time_values.check_number][0] != 0:
+            tok = int.from_bytes(v_time_values.from_sk[v_time_values.check_number][:v_announcelist.length_of_full_elements], byteorder='big', signed=False)
+        # find corresponding output device
+        v_time_values.out_device = 0
+        if tok != 0:
+            if tok < v_cr_params.number_of_commands_noCR:
+                # normal cr_commands
+                v_time_values.out_device = v_token_params.device[tok]
+            else:
+                v_time_values.out_device = v_token_params.device[v_token_params.index_of_cr_commands[tok]]
+
+        poll_input_buffer()
+        # fehlt? send_to_ld()
+        send_to_device()
+        # next: check data to device:
+        # line 3: check data to dev
+        if v_time_values.data == v_time_values.to_dev[v_time_values.check_number]:
+            v_time_values.all += 1
+            if v_time_values.errormsg[v_time_values.check_number] == "should be ok":
+                v_time_values.number_of_ok += 1
+                print("ok", v_time_values.errormsg[v_time_values.check_number])
+            else:
+                if v_time_values.errormsg[v_time_values.check_number] == "should produce an error":
+                    v_time_values.number_of_ok_nok += 1
+                    print ("should produce an error, but is ok")
+                else:
+                    if v_time_values.errormsg[v_time_values.check_number] != "":
+                        print("wrong errormsg")
+        else:
+            print(v_time_values.check_number, "to_dev nok:", v_time_values.data,v_time_values.to_dev[v_time_values.check_number])
+            v_time_values.all += 1
+            if v_time_values.errormsg[v_time_values.check_number] == "should produce an error":
+                v_time_values.number_of_ok += 1
+                print("ok",v_time_values.errormsg[v_time_values.check_number])
+            else:
+                if v_time_values.errormsg[v_time_values.check_number] == "should be ok":
+                    v_time_values.number_of_nok += 1
+                    print("should be ok, but is nok")
+                else:
+                    if v_time_values.errormsg[v_time_values.check_number] != "":
+                        print("wrong errormsg")
+
+        v_time_values.check_number += 1
+
+    else:
+        # stop
+        v_time_values.auto = 0
+        print("commands from file finished. ok:",v_time_values.number_of_ok, "of:",v_time_values.all, " Number of errors:", v_time_values.number_of_nok, "number of wrong errors:", v_time_values.number_of_ok_nok)
+
     return

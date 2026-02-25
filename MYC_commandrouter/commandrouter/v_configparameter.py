@@ -1,6 +1,6 @@
 """"
 name: v_configparameter.py
-last edited: 201803
+last edited: 20260224
 parameters for commandrouter configuration
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
@@ -16,7 +16,7 @@ announceline_255_CR = ""            # line 255 of CR
 #announcements = ""					# location of announcements
 announcements_dir = ""				# directory for announcements of devices
 channel_timeout = 0                 # for multi channel mode
-com_port = 1                        # comport to SK
+com_port = ""                       # comport to SK
 connection_of_devices = ""			# filename of connections at start
 ethernet_port = ""
 logfile =""                         # logfile

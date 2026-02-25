@@ -1,6 +1,6 @@
 """
 name: cr_own_commands.py
-last edited: 202512
+last edited: 20260225
 handling of commands for CR
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
@@ -109,6 +109,7 @@ def com251(line, token, input_device):
     length_of_activ_input = v_announcelist.full_elements + 2
     # set length of name /passwd
     set_length = 0
+    passwordlength = 0
     while j < elements:
         if len(line) > pointer:
             if i == 2:
@@ -131,6 +132,7 @@ def com251(line, token, input_device):
                     set_length = 1
 
             elif i == 1:
+                namelength = 0
                 if set_length == 2:
                     name = ba_to_str(line[pointer:pointer + namelength])
                     i = 2

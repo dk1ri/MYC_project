@@ -1,6 +1,6 @@
 """
 name : v_linelength.py
-last edited: 202512
+last edited: 20260224
 list of required command /answer length used for parsing
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
@@ -58,7 +58,7 @@ Detailed description of v_linelength.command , v_line_length.answer for each tok
             
 type 2:             operate commands and answers for n
             0       2
-            1       1ength: to be copied to v_sk.len[0]
+            1       length: to be copied to v_sk.len[0]
             
             2       max of start
             3       length of start
@@ -83,10 +83,10 @@ type 3:             operate oa / answer aa with position + one or more string or
                     
             0:      3
             1       1ength: to be copied to v_sk.len[0]
-            2:      max of position
-            3:      length of position
-            4:      0
-            5:      max of 1st parameter
+            2:      max of position (for more than one paramter)
+            3:      length of position (for more than one paramter)
+            4:      0 (for more than one paramter)
+            5:      max of 1st parameter (max stringlength for strings)
             6:      length of 1st parameter
             7:      string: 0 or 1
             8:      ..

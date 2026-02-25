@@ -1,6 +1,6 @@
 """"
 name: v_cr_params.py
-last edited: 202512
+last edited: 20260224
 commandrouter parameters
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
@@ -18,7 +18,6 @@ length_of_par = {"z": 0,
                 "e": 4,
                 "L": 4,
                 "s": 4,
-                "t": 8,
                 "d": 8,
                 }
 max_of_par =    {"z": 0,
@@ -33,6 +32,7 @@ max_of_par =    {"z": 0,
                 "d": 0xffffffffffffffff,
                 }
 
+command_types = ["a", "b", "c", "i", "w", "e", "L", "s", "d"]
 
 c_249_elements = 0              # max (number of ASIC commands * commandlength)
 c_251_name_length = 0           #

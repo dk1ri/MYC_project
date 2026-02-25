@@ -1,14 +1,17 @@
-#This file show connections of all devices used by CR #
+# connections for devices
+#This file show connections of all devices used by CR
 #
-# The CR will contact these interfaces at startup!!!
+# The CR will contact these interfaces at start!!!
 #
 # # as first char of a line for comments are allowed.
 #
-# The following type of Connections are allowes:
-# RS232n	COM port for Serial Connection
-# FILE
+# The following types of connections are allowed:
+# RS232n	RS232 port n for Serial Connection
+# USBCOMn	RS232 port n for Serial Connection
+# FILE<s>	to_<s> and from<s> in file_interface dir
 # 
 #The following connetion are allowed, but not implemented now:
-# I2C CAN RC5 RC6 SPI USB TELNET HTTP HTTPS TERMINAL SSH RADIO
+# I2C CAN RC5 RC6 SPI TELNET HTTP HTTPS TERMINAL SSH RADIO
 #
-RS2321
+USBCOM1
+FILEtest1

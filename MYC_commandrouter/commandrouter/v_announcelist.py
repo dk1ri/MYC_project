@@ -1,6 +1,6 @@
 """"
 name: v_announcelist.py
-last edited: 201803
+last edited: 20260224
 the 3 announcement lists
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
@@ -26,3 +26,8 @@ admin_elements = 0
 length_of_admin_elements = 0
 start_of_reserved_token = 0xf0
 start_of_cr_token = 1               # &H01, &H01000, &H010000,
+oo_ext = {}                         # used by LD to find oo command
+loop_limit = {}                     # 0: LOOP 1 : LIMIT of oo commands
+max_oo = {}                         # max of value of corresponding op command
+string_length_ab = {}               # length of stringlength for xa xb commands
+other_lines = ["I","L","Q","R","S","T"]

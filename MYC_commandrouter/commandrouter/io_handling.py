@@ -1,6 +1,6 @@
 """
 name : io_handlings.py
-last edited: 202512
+last edited: 20260224
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
@@ -20,6 +20,7 @@ if platform.system() == "Windows":
     getch = msvcrt.getch()
     Unix_windows = 1
 else:
+    Unix_windows = 0
     import sys, termios
 
     fd = sys.stdin.fileno()
@@ -36,14 +37,12 @@ else:
     import select
 
 
-    def kbhitu():
-        dr, dw, de = select.select([sys.stdin], [], [], 0)
-        return dr != []
+def kbhitu():
+    dr, dw, de = select.select([sys.stdin], [], [], 0)
+    return dr != []
 
-    def getchu():
-        return sys.stdin.read(1)
-
-    Unix_windows = 0
+def getchu():
+    return sys.stdin.read(1)
 
 # Ethernet (sk only):
 class ServerThread (threading.Thread):
@@ -89,6 +88,7 @@ class ServerThreadRead (threading.Thread):
                 write_log(" input read aborted")
                 self.connection.close()
                 exit()
+        return
 
 
 class ServerThreadWrite (threading.Thread):
@@ -127,6 +127,7 @@ def start_ethernet_server(port, input_buffer_number):
     ethernet = ServerThread(server_socket, input_buffer_number)
     ethernet.start()
     write_log("Server started")
+    return
 
 
 class ClientThread (threading.Thread):
@@ -178,21 +179,23 @@ class ClientThreadWrite (threading.Thread):
         self.client_socket = client_socket
         self.device_buffer_number = device_buffer_number
 
-    def run(self):
-        while True:
-            if len((v_dev.data_to_device[self.device_buffer_number])) > 0:
-                i = 0
-                out = bytearray([])
-                while i < (v_dev.data_to_device[self.device_buffer_number]):
-                    out += v_dev.data_to_device[self.device_buffer_number][i]
-                self.client_socket.sendall(out)
-        self.client_socket.close()
+def run(self):
+    while True:
+        if len((v_dev.data_to_device[self.device_buffer_number])) > 0:
+            i = 0
+            out = bytearray([])
+            while i < (v_dev.data_to_device[self.device_buffer_number]):
+                out += v_dev.data_to_device[self.device_buffer_number][i]
+            self.client_socket.sendall(out)
+    self.client_socket.close()
+    return
 
 
 def start_ethernet_client(host, port, device_buffer_number):
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     client_thread = ClientThread(client_socket, host, port, device_buffer_number)
     client_thread.start()
+    return
 
 
 # Terminal (SK only):
@@ -214,7 +217,6 @@ def sk_terminal_in(input_buffer_number):
         if len(v_io.data) >= 2:
             r = int(v_io.data, 16)
             v_sk.inputline[input_buffer_number].append(r)
-            print (v_sk.inputline[input_buffer_number])
             v_io.data = ""
     return
 
@@ -223,27 +225,27 @@ def sk_terminal_out():
     return
 
 # serial:
-def serial_in(input_buffer_number, sk_dev):
-    if sk_dev == 0:
-        try:
-            ser = serial.Serial(str(v_configparameter.com_port), 19200, timeout=1.0)
-        except:
-            return
-    else:
-        try:
-            ser = serial.Serial(str(v_dev.interface_comport), 19200, timeout=1.0)
-        except FileNotFoundError:
-            return
-    while 1:
-        if sk_dev == 0:
-            v_sk.inputline[input_buffer_number] = ser.read(600)
-        else:
-            v_dev.data_to_CR = ser.read(600)
+def serial_in_from_sk():
+    try:
+        ser = serial.Serial(v_configparameter.com_port, 19200, timeout=1.0)
+    except:
         return
+    while 1:
+        v_sk.inputline = ser.read(600)
+    return
+
+def serial_in_from_dev(input_buffer_number):
+    try:
+        ser = serial.Serial(v_dev.interface_comport[input_buffer_number], 19200, timeout=1.0)
+    except:
+        return
+    while 1:
+        v_dev.data_to_CR = ser.read(600)
+    return
 
 def sk_serial_out():
     try:
-        ser = serial.Serial(str(v_configparameter.com_port), 19200, timeout=1.0)
+        ser = serial.Serial(v_configparameter.com_port, 19200, timeout=1.0)
     except:
         return
     i = 0
@@ -251,40 +253,75 @@ def sk_serial_out():
     while i < len(v_sk.info_to_all):
         s += v_sk.info_to_all[i]
         i += 1
-    ser.write(s)
+    ser.write(b's')
+    return
 
-def dev_serial_out(device):
+def dev_serial_out(input_buffer_number):
     try:
-        ser = serial.Serial(str(v_dev.interface_comport), 19200, timeout=1.0)
-    except FileNotFoundError:
+        ser = serial.Serial(v_dev.interface_comport[input_buffer_number], 19200, timeout=1.0)
+    except:
         return
-    ser.write(v_dev.data_to_device[device])
+    ser.write(v_dev.data_to_device[input_buffer_number])
+    return
 
 # FILE:
-def sk_file_in(input_buffer_number):
+def sk_file_in():
     file = v_io.from_sk
     if os.path.exists(file):
-        f = open(file)
-        v_sk.inputline[input_buffer_number] = f.readline()
+        if v_io.sk_file_removed == 1:
+            # read data once only
+            f = open(file)
+            data = f.readline()
+            i = 0
+            v_sk.inputline = bytearray()
+            while i < len(data):
+                v_sk.inputline.append(ord(data[i]))
+                i += 1
+            f.close()
+        try:
+            os.remove(v_io.from_sk)
+            v_io.sk_file_removed = 1
+        except:
+            v_io.sk_file_removed = 0
+    return
+
+def sk_file_out():
+    file = v_io.to_sk
+    if os.path.exists(file):
+        try:
+            os.remove(v_io.from_sk)
+            v_io.sk_file_removed = 1
+        except:
+            pass
+        i = 0
+        s = ""
+        while i < len(v_sk.info_to_all):
+            s += str(v_sk.info_to_all[i])
+            i += 1
+        f = open(v_io.to_sk, "a")
+        f.write(s)
         f.close()
-        os.remove(v_io.from_sk)
+    return
 
 def dev_file_in(input_buffer_number):
-    file = v_io.from_dev
+    file = v_dev.filename_in[input_buffer_number]
     if os.path.exists(file):
         f = open(file)
-        v_dev.data_to_CR = f.readline()
+        v_dev.data_to_CR[input_buffer_number] = f.readline()
         f.close()
         os.remove(v_io.from_dev)
+    return
 
-def file_out(file):
+def dev_file_out(input_buffer_number):
+    file = v_dev.filename_out[input_buffer_number]
     if os.path.exists(file):
         os.remove(file)
     i = 0
     s = ""
-    while i < len(v_sk.info_to_all):
-        s += str(v_sk.info_to_all[i])
+    while i < len(v_dev.data_to_device):
+        s += str(v_dev.data_to_device[i])
         i += 1
     f = open(v_io.to_sk, "a")
     f.write(s)
     f.close()
+    return

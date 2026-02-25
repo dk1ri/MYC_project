@@ -1,11 +1,13 @@
 """"
 name: v_sk.py
-last edited: 202512
+last edited: 20260224
 parameters for SK channel
 channel may be (non permanent) virtual for multi-channel interfaces
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
+from sys import orig_argv
+
 # one item for each SK channel
 active = []                             # 0: not available, 1: active, 2: input buffer full
 channel_answer_token = []               # token of commands, for which the user want answers
@@ -19,6 +21,9 @@ starttime = []                          # starttime of command
 source = []
 timeout = []
 type = []
+#  input_as_list = []                      # to be replaced
+orig_to_ld = []                         # original input from CR to LD (to send to back to CR -> dev without additional handling
+input_as_parameter_list = []            # input splitted to parameters (integer or string for LD
 
 # parameters for SK hardware interface
 baudrate = []                           # for RS232

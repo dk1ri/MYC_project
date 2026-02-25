@@ -1,38 +1,37 @@
 """
 name : commandrouter.py
-Version 03.01 , 20251215
+Version 03.02 , 20260224
 Purpose : Program for a MYC commandrouter
 The Programm supports the MYC protocol
 developed using PyCharm
 tested with win Python >= 312
-Should be used with raspberry Pi Hardware
+Should be used with raspberry Pi Hardware (actual version not tested)
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
-The programm is not ready, see documentation
 """
+import v_configparameter
+from buffer_handling import *
+from device_handling import *
 from init import *
+from io_handling import *
+from ld_init import  *
+from ld_buffer_handling import *
+from misc_functions import *
 from tests import *
-from tests2 import *
-import device_handling
 
 import v_time_values
-
 import v_dev
-
-from ld_init import  *
-from ld_buffer_handling import  *
 
 def time_dependent_tasks():
     # check existance of devices
- #   if time.time() - v_time_values.time_for_activ_check > v_configparameter.time_for_activ_check:
-  #      check_activity_of_devices()
-   #     v_time_values.time_for_activ_check = time.time()
+    # if time.time() - v_time_values.time_for_activ_check > v_configparameter.time_for_activ_check:
+    # check_activity_of_devices()
+    # v_time_values.time_for_activ_check = time.time()
     # check for new / deleted devices
-  #  if time.time() - v_time_values.time_for_device_search > v_configparameter.time_for_device_search:
-   #     read_devices()
-    #    write_log("re_read  my devices")
-     #   v_time_values.time_for_device_search = time.time()
-
+    # if time.time() - v_time_values.time_for_device_search > v_configparameter.time_for_device_search:
+    # read_devices()
+    # write_log("re_read  my devices")
+    # v_time_values.time_for_device_search = time.time()
 
     # check for timeout of SK...,
     input_device = 0
@@ -50,30 +49,71 @@ def time_dependent_tasks():
                 # delete interface: missing
 
         input_device += 1
-    device = 0
+    device = 1
     while device < len(v_dev.start_time):
         if v_dev.start_time[device] != 0:
             if time.time() - v_dev.start_time[device] > v_configparameter.time_for_command_timeout:
                 write_log("dev timeout: " + str(device))
                 # purge complete line
-                device_handling.clear_dev(device)
+                clear_dev(device)
         device += 1
-    # (re-)start sending input from file
-    #  slow
-  #  if v_time_values.auto == 10 and time.time() - v_time_values.random_time > 0.1:
-    if v_time_values.auto == 10 :
-        # no delay
-        random_data()
     return
 
 
 # Main#
-start_time = time.time()
+init_start_time = time.time()
+readconfig()
+read_device_interface_list()
+if v_configparameter.test_mode == 0:
+    v_dev.init_ready  = 0
+    v_dev.init_sequence = 0
+    v_dev.init_device = 0
+    init_start = time.time()
+    while v_dev.init_ready  == 0:
+        if time.time() - init_start_time > 1:
+            v_dev.init_sequence = 5
+            start_time = time.time()
+        read_interfaces_anouncefilenames()
+        poll_devices()
+        # analyzes the answers and info from devices:
+        poll_device_buffer()
+else:
+    # device0 is CR!!
+    v_dev.active[0] = 1
+    v_dev.anouncefile_name[1] = "Test1_V06_1_Device 1_1"
+    v_dev.active[1] = 1
+    v_dev.anouncefile_name[2] = "Test2_V06_1_Device 1_1"
+    v_dev.active[2]= 1
+    print ("devices read")
 initialization()
-ld_initialization()
 print_for_test()
-print("ready")
+if v_configparameter.test_mode == 1:
+    print("ready")
+"""
+loops = 0
+all_time = 0
+last_time = time.time()
+display_loops = 0
+"""
 while 1:
+    """
+    # measure loop time
+    # 20260217: 65us idle
+    if loops < 1000:
+        act_time = time.time()
+        all_time += act_time - last_time
+        loops += 1
+    else:
+        act_time = time.time()
+        act_loop_time = act_time - last_time
+        last_time = act_time
+        all_time = all_time - all_time / 1000 + act_loop_time
+        display_loops += 1
+        if display_loops >= 10000:
+            print(all_time / 1000)
+            print(act_loop_time)
+            display_loops = 0
+    """
     time_dependent_tasks()
     if v_time_values.auto == 1:
         handle_check()
@@ -87,16 +127,18 @@ while 1:
         poll_input_buffer()
         # LD checks for rules:
         ld_analyze()
-
-        # analyzes data from LD:
-        poll_ld()
-
         # send commands to devices:
         send_to_device()
         # get answers and info from normal device and lower level CR:
         poll_devices()
         # analyzes the answers and info from devices:
-        device_handling.poll_device_buffer()
+        poll_device_buffer()
+        # store data by LD and send to CR
+        store_by_ld()
         # info to all SK
         # send to individual SK not yet implemented
         send_to_sk()
+        # send direct commands to dev, if available
+        send_direct_commands()
+        # send direct commands to devices:
+        send_to_device()

@@ -1,14 +1,16 @@
 """
 name : device_handling.py
-last edited: 202512
+last edited: 202560224
 devicehandling subprograms
 analyzes the answers and info and transfer to SK devices buffers
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
+
+from data_handling import *
+from misc_functions import *
 import v_ld
 import v_token_params
-from data_handling import *
 
 import v_linelength
 import v_dev
@@ -21,19 +23,17 @@ def poll_device_buffer():
     # before switching to the next device
     # input is a bytearray for each device
     tok = 0
-    device = 0
-    for device_line in v_dev.data_to_CR:
+    for device in v_dev.data_to_CR:
         #  all devices
         line = v_dev.data_to_CR[device]
         # wait for complete commandtoke
-        if len(device_line) < v_dev.length_commandtoken[device]:
-            # not enough bytes
+        if v_dev.data_to_CR[device] == []:
             device += 1
             continue
         device_tokennumber = int.from_bytes(line[:v_dev.length_commandtoken[device]], byteorder='big', signed=False)
         finish = 0
         # usually should be true:
-        if device_tokennumber in v_dev.tok[device]:
+        if device_tokennumber in v_dev.all_toks[device]:
             # cr_token
             try:
                 tok = v_token_params.cr_token[device][device_tokennumber]
@@ -65,19 +65,19 @@ def poll_device_buffer():
 
 # switches,range commands and numeric om, am
                 elif line_length_index_0 == "1":
-                    v_dev.len[device], finish = data_1(line,got_bytes,v_dev.len[device],v_linelength.answer[tok])
+                    v_dev.len[device], finish = data_1(tok, line,got_bytes,v_dev.len[device],v_linelength.answer[tok], device)
 
 # an string
                 elif line_length_index_0 == "2":
-                    v_dev.len[device], finish = data_4(line, got_bytes,v_dev.len[device], v_linelength.answer[tok])
+                    v_dev.len[device], finish = data_4(line, got_bytes,v_dev.len[device], v_linelength.answer[tok], device)
 
 # aa
                 elif line_length_index_0 == "3":
-                    v_dev.len[device], finish = data_3(line, got_bytes,v_dev.len[device], v_linelength.answer[tok])
+                    v_dev.len[device], finish = data_3(tok, line, got_bytes,v_dev.len[device], v_linelength.answer[tok], device)
 
 # ab
                 elif line_length_index_0 == "4":
-                    v_dev.len[device], finish = data_4(line, got_bytes,v_dev.len[device], v_linelength.answer[tok])
+                    v_dev.len[device], finish = data_4(line, got_bytes,v_dev.len[device], v_linelength.answer[tok], device)
                 else:
                     finish = 2
         else:

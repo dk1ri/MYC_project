@@ -1,6 +1,6 @@
 """"
 name: v_token_params.py
-last edited: 202512
+last edited: 20260224
 per commandtoken of full list (R, I Q lines skipped)
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)

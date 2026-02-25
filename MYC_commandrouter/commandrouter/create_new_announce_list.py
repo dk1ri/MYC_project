@@ -1,20 +1,19 @@
 """"
 name : create_new_announce_list.py
-last edited: 202512
+last edited: 20260224
 new announcelist is created or modified and some associated lists and parameters
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
 import misc_functions
 from length_of_commandtypes import *
-from cr_own_commands import  *
+from misc_functions import *
 import v_announcelist
 import v_cr_params
 import v_dev
 import v_token_params
 import v_linelength
-import v_logicdevice
-
+import v_configparameter
 
 def create_new_announce_list():
     # count number of all announcements
@@ -95,7 +94,6 @@ def create_new_announce_list():
         v_token_params.cr_token.append([])
         v_token_params.cr_token[device_number] = {}
         for announce in v_dev.announcements[device_number]:
-            tok = announce[0]
             if announce[0] in v_configparameter.other_lines:
                 continue
             tok = int(announce.split(";")[0])
@@ -116,48 +114,62 @@ def create_new_announce_list():
                 v_announcelist.admin_elements += 1
         device_number += 1
 
-    # create rules announcelist with new commandtoken
+    # create rules announcelist with new commandtoken, add !!$~ if necessary
+    # v_announcelist.rules is used with 240 command!
+    # other changes made with ld_init
     v_announcelist.rules = []
     device_number = 1
     while device_number < number_of_devices:
+        found_tilde = 0
         for announce in v_dev.announcements[device_number]:
             if announce[0] == "R" or announce[0] == "Q" or announce[0] == "S":
                 #
-                # commandnumbers follow "$" only
-                items = announce.split("$")
-                ij = 0
-                # one $xx command:
-                for item in items:
-                    if ij == 0:
-                        # chars before 1st "$"
-                        ij += 1
-                        continue
-                    number = ""
-                    # search for complete number not finished
-                    finished = 0
-                    ik = 0
-                    while ik < len(item):
-                        if finished  == 0:
-                            # number follows $
-                            if item[ik] != "~":
-                                if item[ik] == " " or item[ik] in v_logicdevice.all_operators:
-
-                                    # number finished, search new token
-                                    if number != "~":
-                                        new_item = str(v_token_params.cr_token[device_number][int(number)])
-                                        # modified field
-                                        new_item = new_item + item[ik:]
-                                        items[ij] = new_item
-                                    finished = 1
-                                else:
-                                    number = number + item[ik]
+                left, right, typ = split_rule(announce)
+                # left side
+                left_items = left.replace("R;","").split(" ")
+                m = 0
+                while m < len(left_items):
+                    if "!$~" in left_items[m]:
+                        found_tilde = 1
+                    elif "!!$~" in left_items[m]:
+                        found_tilde = 0
+                    elif "!$" in left_items[m]:
+                        # normal commands start with "!$"
+                        number = left_items[m][2:]
+                        left_items[m] = "!$" + str(v_token_params.cr_token[device_number][int(number)])
+                    else:
+                        # direct commands
+                        pass
+                    m += 1
+                left =  " ".join(left_items)
+                # right side
+                right.replace("$", "").replace("&", "")
+                right_space = right.split(" ")
+                condition = 0
+                new_right = []
+                # right_space: <tok><campare><value>
+                # modify tok
+                new_tok = ""
+                while condition < len(right_space):
+                    if right_space[condition] != "":
+                        j = 0
+                        fin = 0
+                        while j < len(right_space[condition]) and fin == 0:
+                            if right_space[condition][j].isnumeric():
+                                new_tok += right_space[condition][j]
                             else:
-                                finished = 1
-                        ik += 1
-                    ij += 1
-                announce = "$".join(items)
-                v_announcelist.rules.extend([announce])
+                                new_tok = str(v_token_params.cr_token[device_number][int(new_tok)])
+                                new_right.append(new_tok + right_space[condition][j:])
+                                fin = 1
+                            j += 1
+                    condition += 1
+                right = " ".join(new_right)
+                v_announcelist.rules.extend([left +" " + typ + " " + right  ])
                 v_announcelist.rules_elements += 1
+        if found_tilde == 1:
+            # stop all block with
+            v_announcelist.rules.extend("!!$~ IF ~")
+            v_announcelist.rules_elements += 1
         device_number += 1
 
     # create basic announcelist with new commandtoken
@@ -171,6 +183,41 @@ def create_new_announce_list():
                 items[0] = str(v_token_params.cr_token[device_number][int(items[0])])
                 v_announcelist.basic.append(";".join(items))
                 v_announcelist.basic_elements += 1
+        device_number += 1
+
+    # create oo_ext list and LOOP LIMIT list
+    device_number = 1
+    while device_number < number_of_devices:
+        for announce in v_dev.announcements[device_number]:
+            ct = announce.split(";")[1].split(",")
+            if ct[0] != "oo":
+                continue
+            oo_tok = announce.split(";")[0]
+            oo_tok = v_token_params.cr_token[device_number][int(oo_tok)]
+            if len(ct) > 1:
+                if ct[1][:3] == "ext":
+                    op_tok = ct[1][3:]
+                    op_tok = v_token_params.cr_token[device_number][int(op_tok)]
+                    if op_tok != "":
+                        v_announcelist.oo_ext[oo_tok] = op_tok
+                        i = 0
+                        j = 3
+                        k = 6
+                        while j < len(announce.split(";")):
+                            # for LD - oo command: max value posible
+                            if oo_tok not in v_announcelist.max_oo:
+                                v_announcelist.max_oo[oo_tok] = {}
+                            v_announcelist.max_oo[oo_tok][i] = int(announce.split(";")[j])
+                            # LOOP LIMIT list
+                            if oo_tok not in v_announcelist.loop_limit:
+                                v_announcelist.loop_limit[oo_tok] = {}
+                            if announce.split(";")[k] == "4,LOOP":
+                                v_announcelist.loop_limit[oo_tok][i] = 0
+                            else:
+                                v_announcelist.loop_limit[oo_tok][i] = 1
+                            i += 1
+                            j += 5
+                            k += 5
         device_number += 1
 
     # create full announcelist with new commandtoken (all with tok)
@@ -262,6 +309,17 @@ def create_new_announce_list():
                 v_announcelist.a_to_o[v_token_params.cr_token[device_number][tok]] = v_dev.a_to_o[tok]
             except:
                 pass
+        device_number += 1
+
+    # ignore CR device
+    device_number = 1
+    i = 0
+    while device_number < number_of_devices:
+        while i < len(v_dev.all_toks[device_number]):
+            dev_tok = v_dev.all_toks[device_number][i]
+            cr_tok = v_token_params.cr_token[device_number][dev_tok]
+            v_dev.device_by_tok[cr_tok] = device_number
+            i += 1
         device_number += 1
     return
 

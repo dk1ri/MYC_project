@@ -1,0 +1,20 @@
+# name : announcements
+# last edited: 20260217
+# Copyright : DK1RI
+# If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+#
+# announcements for Tests
+#
+# no answer commands for commands with rules (1 -13) (not needed for rules test: syntax as per commands)
+# for rules test: r s p o a commands only; t command (as answer) is equal to s command
+#
+0;m;DK1RI;Test2;V06.0;1;145;1;9;1-1
+1;at;1;0,on;1,aus;2,idle;3,other
+2;at,;300;0,on;1,aus;2,idle;3,other
+3;ou,;1;0,idle;1,on
+#
+240;an,ANNOUNCEMENTS;100;9;9
+252;aa,LAST ERROR;20,last_error
+253;aa,MYC INFO;b,BUSY
+254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
+255;aa,as254

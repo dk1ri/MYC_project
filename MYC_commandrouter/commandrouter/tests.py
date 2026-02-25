@@ -5,7 +5,7 @@ other misc functions
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
-
+import v_ld
 from misc_functions import *
 
 import v_announcelist
@@ -17,7 +17,6 @@ import v_sk
 import v_io
 import v_time_values
 import v_token_params
-import v_logicdevice
 
 # ------------------------------------------------
 # subprograms for tests
@@ -56,16 +55,15 @@ def print_for_test():
     print_for_test2("v_line_length_answer", v_linelength.answer)
     print_for_test2("v_line_length_command", v_linelength.command)
     print_for_test1("v_kbd_input_data", v_io.data)
-    print_for_test3("ld_left_tok_by_index", v_logicdevice.left_tok_by_index)
-    print_for_test3("ld_updated", v_logicdevice.updated)
-    print_for_test3("ld_direct_command_by_index", v_logicdevice.direct_command_by_index)
-    print_for_test1("ld_ct", v_logicdevice.ct)
-    print_for_test3("ld_if_unless", v_logicdevice.if_unless)
-    print_for_test3("ld_value", v_logicdevice.value)
-    print_for_test3("ld_all_condition_per_index", v_logicdevice.all_condition_per_index)
-    print_for_test3("ld_all_by_index", v_logicdevice.all_by_index)
-    print_for_test3("ld_after_by_index", v_logicdevice.after_by_index)
-    print_for_test3("ld_stringparameters", v_logicdevice.stringparameters)
+    print_for_test3("ld_index_of_tilde", v_ld.index_of_tilde)
+    print_for_test3("ld_all_condition_per_index", v_ld.all_condition_per_index)
+    print_for_test3("ld_all_used_toks", v_ld.all_used_toks)
+    print_for_test3("ld_direct_command_by_index", v_ld.direct_command_by_index)
+    print_for_test3("ld_if_unless", v_ld.if_unless)
+    print_for_test3("ld_index_by_tok", v_ld.index_by_tok)
+    print_for_test3("ld_left_tok_by_index", v_ld.left_tok_by_index)
+    print_for_test3("ld_updated", v_ld.updated)
+    print_for_test3("ld_stringparameters", v_ld.stringparameters)
     print_for_test3("v_sk_buffer_baudrate", v_sk.baudrate)
     print_for_test3("v_sk_buffer_interface_port", v_sk.interface_com_port)
     print_for_test3("v_sk_buffer_interface_timeout", v_sk.interface_timeout)
@@ -114,7 +112,7 @@ def print_for_test4(file, data):
     device = 1
     while device < len(v_dev.announcements):
         for line in data[device]:
-            handle.write((line) + "\n")
+            handle.write(line + "\n")
         device += 1
     handle.close()#
     return

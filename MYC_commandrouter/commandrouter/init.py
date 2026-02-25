@@ -1,6 +1,6 @@
 """
 name : init.py
-last edited: 20250309
+last edited: 20260224
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 other misc functions
@@ -11,63 +11,16 @@ others are called by read_my_devices only
 ------------------------------------------------
 """
 
+import pathlib
 from io_handling import *
 from create_new_announce_list import  *
-
-import v_configparameter
-import v_cr_params
-
-# variables per device#
+from ld_init import *
 from pathlib import Path
+
 import v_dev
 import v_sk
 import sys
 import v_time_values
-
-
-def dummy_sub():
-    return
-
-
-def initialization():
-    # read config data
-    readconfig()
-    v_configparameter.other_lines = ["I","L","Q","R","S","T"]
-    #
-    # create / read all FU data
-    read_device_interface_list()
-    # # temporary solution for announcements of up to 6 devices (in devices dir)
-    v_dev.name[1] = "1"
-    """
-    v_dev.name[2] = "2"
-    v_dev.name[3] = "3"
-    v_dev.name[4] = "4"
-    v_dev.name[5] = "5"
-    v_dev.name[6] = "6"
-    v_dev.name[7] = "7"
-    v_dev.name[8] = "8"
-    v_dev.name[9]= "9"
-    v_dev.name[10] = "10"
-    v_dev.name[11] = "11"
-    v_dev.name[12] = "12"
-    v_dev.name[13] = "13"
-    v_dev.name[14] = "14"
-    """
-    i = 0
-    while i < len(v_dev.announcements):
-        # announcelist may be empty, if file not found
-        read_announcements_of_a_device(i)
-        i += 1
-    create_new_announce_list()
-    create_sk_buffer()
-    # not ready:
-    #  check_activity_of_devices()
-    v_time_values.last_device_search = int(time.time())
-    v_time_values.last_activity = time.time()
-    v_time_values.time_for_activ_check = time.time()
-    v_time_values.last_checktime = time.time()
-    return
-
 
 def readconfig():
     # configfile can be given with full path
@@ -164,7 +117,7 @@ def readconfig():
         if i == 20:
             v_configparameter.announceline_255_CR =  lines.rstrip()
         if i == 21:
-            v_configparameter.com_port =  int(lines.rstrip())
+            v_configparameter.com_port =  lines.rstrip()
         if i == 22:
             v_configparameter.ethernet_port =  int(lines.rstrip())
         i += 1
@@ -179,73 +132,149 @@ def readconfig():
         v_cr_params.sk_buffer_limit_low = v_cr_params.sk_buffer_limit * v_configparameter.sk_hysteresys / 100
     return
 
-
 def read_device_interface_list():
     # all devices of connection_file
 
     connection_file = open(v_configparameter.connection_of_devices)
-    # own CR must be 1st device, own_cr is reset after the first device
-    # dvice for local CR
-    create_device()
-    i = 1
+    # device[0] is for local CR
+    device = 1
     for linesx in connection_file:
         # skip commants andempty lines
         if linesx[0] == "#" or linesx == "":
             continue
-        create_device()
-        linesx.rstrip()
-        if linesx[0:4] == "RS232":
-            v_dev.interface_comport[i] = linesx[5:]
-            linesx= linesx[0:4]
-        v_dev.interface_type[i] = linesx[0:4]
-        # read announcments missing
-        v_dev.avtive.append(1)
-      #  v_device_names_and_indiv.name.append(i)
-        # active by default
-       # v_device_names_and_indiv.activ.append(i)
-        i += 1
+        create_device(device)
+        linesx = linesx.rstrip()
+        found = 0
+        if linesx[:5] == "RS232":
+            v_dev.interface_type[device] = linesx[:5]
+            v_dev.interface_comport[device] = linesx[5:]
+            found = 1
+        if linesx[0:3] == "USB":
+            v_dev.interface_type[device] = linesx[:3]
+            v_dev.interface_comport[device] = linesx[3:]
+            found = 1
+        if linesx[:4] == "FILE":
+            v_dev.interface_type[device] = linesx[:4]
+            v_dev.filename_in[device] = v_io.filedir + "/from_" + linesx[4:]
+            v_dev.filename_out[device] = v_io.filedir + "/to_" + linesx[4:]
+            found = 1
+        if found:
+            device += 1
     connection_file.close()
     return
 
+def read_interfaces_anouncefilenames():
+    # the user must provide the device interface
+    # the CR will check if it is available and read the basic command and the devidce name and number
+    # if the device is not in the devices dir, it will load it.
+    # dirname is something like Test1_V06_1_Device 1_1 (name, version, individual name, individual number)
+    # for all aktive devices in the device dir it will create a device and load the announcelist
+    if v_dev.init_sequence == 0:
+        # fffd ?
+        v_dev.data_to_device[v_dev.init_device] = [0xFD]
+        init_send()
+        v_dev.init_sequence = 1
+        # default not active
+        v_dev.active[v_dev.init_device] = 0
+        return
+    if v_ld.from_dev_to_ld != []:
+        # data arrived
+        match v_dev.init_sequence:
+            case 1:
+                #
+                if v_ld.from_dev_to_ld == 0x4:
+                    # device available
+                    v_dev.data_to_device[v_dev.init_device] = [0x00]
+                    v_dev.init_sequence = 2
+                else:
+                    v_dev.init_sequence = 5
+            case 2:
+                # got basic_command
+                v_dev.data_to_device[v_dev.init_device] = [0xF0,00,0xff]
+                # device stored?
+                # missing
+                v_dev.init_sequence = 3
+            case 3:
+                v_dev.data_to_device[v_dev.init_device] = [0xFE, 0x02]
+                v_dev.init_sequence = 4
+            case 4:
+                v_dev.data_to_device[v_dev.init_device] = [0xFE, 0x03]
+                v_dev.init_sequence = 5
 
-def create_device():
-    v_dev.avtive.append(1)
-    v_dev.announcements.append([])
-    # commandlength of commands for device
-    v_dev.length_commandtoken.append(1)
-    # data to send to CR
-    v_dev.data_to_CR.append([])
-    #  received  from SK
-    v_dev.data_to_device.append([])
-    v_dev.rules.append([])
-    # list of devicetoken
-    v_dev.all_toks.append([])
-    # v_dev.info.append(0)
-    v_dev.input_device.append(0)
-    v_dev.interface_adress.append(0)
-    v_dev.interface_baudrate.append(0)
-    v_dev.interface_comport.append(0)
-    v_dev.interface_number_of_bits.append(0)
-    v_dev.interface_port.append(0)
-    v_dev.interface_timeout.append(0)
-    v_dev.interface_type.append("")
-    # linelength parameters modified at real time: number of byte for next action
-    v_dev.len.append([0,0,0,0,0,0])
-    v_dev.name.append("")
-    v_dev.start_time.append(0)
-    v_dev.a_to_o.append({})
-    v_dev.o_to_a.append({})
-    v_dev.all_toks.append([])
+    if v_dev.init_sequence == 5:
+        # create v_dev.anouncefile_name[v_dev.init_device]
+        # missing
+        if v_dev.init_device < len(v_dev.interface_type):
+            v_dev.init_device += 1
+            v_dev.init_sequence = 0
+            v_dev.active[v_dev.init_device] = 1
+        else:
+            v_dev.init_ready = 1
     return
 
-"""
-------------------------------------------------
-tasks, with new device
-------------------------------------------------
-"""
+def init_send():
+    if v_dev.interface_type[v_dev.init_device] == "RS232":
+        dev_serial_out(v_dev.init_device)
+    if v_dev.interface_type[v_dev.init_device]  == "FILE":
+        dev_file_out(v_io.to_dev)
+    return
 
+def create_device(device):
+    v_dev.active[device] = 1
+    v_dev.announcements[device] = []
+    # commandlength of commands for device
+    v_dev.length_commandtoken[device] = 1
+    # data to send to CR
+    v_dev.data_to_CR[device] = []
+    #  received  from SK
+    v_dev.data_to_device[device] = []
+    v_dev.rules[device] = []
+    # list of devicetoken
+    v_dev.all_toks[device] = []
+    # v_dev.info.append(0)
+ #   v_dev.input_device[device] = 0
+    v_dev.interface_adress[device] = 0
+    v_dev.interface_baudrate[device] = 0
+    v_dev.interface_comport[device] = 0
+    v_dev.interface_number_of_bits[device] = 0
+    v_dev.interface_port[device] = 0
+    v_dev.interface_timeout[device] = 0
+    v_dev.interface_type[device] = ""
+    # linelength parameters modified at real time: number of byte for next action
+    v_dev.len[device] = [0,0,0,0,0,0]
+    v_dev.name[device] = ""
+    v_dev.start_time[device] = 0
+    v_dev.a_to_o[device] = {}
+    v_dev.o_to_a[device] = {}
+    return
 
-def read_announcements_of_a_device(device_dir):
+def initialization():
+    v_configparameter.other_lines = ["I","L","Q","R","S","T"]
+
+    device = 0
+    while device < len(v_dev.anouncefile_name):
+        # announcelist may be empty, if file not found
+        read_announcements_of_a_device(device)
+        device += 1
+    create_new_announce_list()
+    create_sk_buffer()
+    # not ready:
+    #  check_activity_of_devices()
+    v_time_values.last_device_search = int(time.time())
+    v_time_values.last_activity = time.time()
+    v_time_values.time_for_activ_check = time.time()
+    v_time_values.last_checktime = time.time()
+    # LD init
+    create_len_of_string_length()
+    read_read_rulelists()
+    #   create_a_to_o()
+    more_all_used_toks()
+    find_string_parameters()
+    default_data()
+    create_ld_type_for_right_side_tok()
+    return
+
+def read_announcements_of_a_device(device):
     # read announcements of one device from file in device_dir
     # resolve duplicate commandtoken / commandtype:
     # do some checks on announcement data: return in case of error
@@ -254,15 +283,16 @@ def read_announcements_of_a_device(device_dir):
     # missing: ask device, if file not available
 
     # read announcement drop comment and empty lines
-    if device_dir == 0:
+    v_dev.announcements[device] = []
+    if device == 0:
         # CR
-        # only basic announcment, other command awre added later to the end
-        v_dev.announcements[device_dir].append(v_configparameter.announceline_0_CR)
+        # only basic announcement, other command are added later to the end
+        v_dev.announcements[device].append(v_configparameter.announceline_0_CR)
         return
     file = []
-    f = Path(v_configparameter.announcements_dir + "devices/" + v_dev.name[device_dir] + "/_announcements")
+    f = Path("devices/" + v_dev.anouncefile_name[device])
     if f.exists():
-        announce_file = open(v_configparameter.announcements_dir + "devices/" + v_dev.name[device_dir] + "/_announcements")
+        announce_file = open("devices/" + v_dev.anouncefile_name[device])
         for linesx in announce_file:
             if linesx == "" or linesx[0] == "#":
                 continue
@@ -275,7 +305,7 @@ def read_announcements_of_a_device(device_dir):
     file1 = []
     for lines in file:
         item = lines.split(";")
-        if item[0] in v_configparameter.other_lines:
+        if item[0] in v_announcelist.other_lines:
             file1.append(lines)
             continue
         linenumber = 0
@@ -290,7 +320,7 @@ def read_announcements_of_a_device(device_dir):
                     found= 1
                 else:
                     # identical commandtoken, different commandtype: drop line
-                    write_log(str(item[0]) + item[1] + newline[1] + "identical commandtoken, different commandtype in device "+ str(device_dir))
+                    write_log(str(item[0]) + item[1] + newline[1] + "identical commandtoken, different commandtype in device "+ str(device))
             linenumber += 1
         if found == 0:
             file1.append(lines)
@@ -322,8 +352,8 @@ def read_announcements_of_a_device(device_dir):
                                 newline[0] = tok
                                 newline[1] = new_commandtype
                                 file.append(";".join(newline))
-                                v_dev.a_to_o[device_dir][as_number] = tok
-                                v_dev.o_to_a[device_dir][tok] = as_number
+                                v_dev.a_to_o[device][as_number] = tok
+                                v_dev.o_to_a[device][tok] = as_number
                                 found = 1
             else:
                 file.append(announce)
@@ -333,23 +363,22 @@ def read_announcements_of_a_device(device_dir):
     # check command lines
     # count commands and check if match
     commands_of_device = 0
-    v_dev.announcements[device_dir] = []
     for lines in file:
         #line ready now; check for valid values
         if lines[0] in v_configparameter.other_lines:
-            v_dev.announcements[device_dir].append(lines)
+            v_dev.announcements[device].append(lines)
             continue
         stripped = misc_functions.strip_des_chapter(lines)
         error = check_parameters(stripped)
         if error != "":
-            write_log(str([device_dir]) + " " + str(lines) + " " + error + " line ignored for device" + str(device_dir))
+            write_log(str([device]) + " " + str(lines) + " " + error + " line ignored for device" + str(device))
         else:
             commands_of_device += 1
-            v_dev.announcements[device_dir].append(lines)
+            v_dev.announcements[device].append(lines)
 
     # check basic line
     temp_length_commandtoken = 1
-    for lines in v_dev.announcements[device_dir]:
+    for lines in v_dev.announcements[device]:
         if lines[0] in v_configparameter.other_lines:
             continue
         item = lines.split(";")
@@ -359,34 +388,35 @@ def read_announcements_of_a_device(device_dir):
                 # wrong basic announcement
                 # ignore that device
                 write_log(
-                    "wrong number of parameters in basic announcement of device, device ignored: " + str(device_dir))
-                v_dev.announcements[device_dir] = []
+                    "wrong number of parameters in basic announcement of device, device ignored: " + str(device))
+                v_dev.announcements[device] = []
                 return
             try:
                 temp_length_commandtoken = int(item[7])
             except ValueError:
                 # ignore that device
-                write_log("wrong commandlength in basic announcment, device ignored: " + device_dir)
-                v_dev.announcements[device_dir] = []
+                write_log("wrong commandlength in basic announcment, device ignored: " + device)
+                v_dev.announcements[device] = []
                 return
 
     # length of commandtoken must match the value of the basic announcement
     # + 16 due to reserved token
     if device_length_of_commandtoken(commands_of_device + 16) > temp_length_commandtoken:
-        write_log("number of commands do not match in " + str(device_dir) + ", device ignored")
-        v_dev.announcements[device_dir] = []
+        write_log("number of commands do not match in " + str(device) + ", device ignored")
+        v_dev.announcements[device] = []
         return
 
     # create v_dev.tok
     i = 0
-    for lines in v_dev.announcements[device_dir]:
+    for lines in v_dev.announcements[device]:
         if lines[0] in v_configparameter.other_lines:
             i += 1
             continue
-        v_dev.all_toks[device_dir].append(int(v_dev.announcements[device_dir][i].split(";")[0]))
+        dev_tok = int(v_dev.announcements[device][i].split(";")[0])
+        v_dev.all_toks[device].append(dev_tok)
         i += 1
 
-    v_dev.length_commandtoken[device_dir] = temp_length_commandtoken
+    v_dev.length_commandtoken[device] = temp_length_commandtoken
     return
 
 def  check_parameters(stripped):
@@ -471,9 +501,6 @@ def  check_parameters(stripped):
                     value = int(stripped[k])
                 except ValueError:
                     return "parameter not numeric"
-            if i == 3:
-                if stripped[k].split(",")[0] != "b":
-                    return "type for LOOP / LIMIT must be b"
             if i == 4:
                 i = 0
                 j += 5

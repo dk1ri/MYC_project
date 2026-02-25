@@ -1,0 +1,258 @@
+# name : announcements
+# last edited: 20260217
+# Copyright : DK1RI
+# If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+#
+# announcements for Tests
+#
+# no answer commands for commands with rules (1 -13) (not needed for rules test: syntax as per commands)
+# for rules test: r s p o a commands only; t command (as answer) is equal to s command
+#
+0;m;DK1RI;Test1;V06.0;1;145;1;93;1-1
+1;os,mode;1;0,off;1,V;2,I;3,P;4,R;5,calibrate V;6,calibrate I
+2;os,mode;6;0,off;3,V;2,I;3,P;4,R;5,calibrate V;6,calibrate I
+3;or,on off mode;1;0,off;1,regulated;2,fixed;3,x
+4;or,on off mode;5;0,off;1,regulated;2,fixed;3,e;4,w
+5;op,required voltage;1;896;lin;V
+6;op,required voltage;5;896;lin;V
+7;op,;1;15,;lin;A;20;lin;B
+8;op,;5;15,;lin;A;20;lin;B
+9;oo,ext8;5;12;10;10;4,LOOP;sec;12;10;10;6,LIMIT;sec
+#0A 0b
+10;oa,;i
+0b 0c
+11;oa;a;b;w
+#0c 0d
+12;oa;20
+#0d 0e
+13;oa;20;10;i
+#
+# oa
+#0e 0f
+14;oa;a
+#0f 10
+15;oa;5
+#10:11
+16;oa,;b,;a,
+#11 12
+17;oa;i;w,
+#12 13
+18;oa;e
+#13 14
+19;oa;L;s
+#14 15
+20;oa;d;d;d,
+#15 16
+21;oa;256,yyy;b,
+#16 17
+22;oa;3;2
+#17 18
+23;aa;b
+#18 19
+24;aa;b;e,yyy;b
+#19 1a
+25;aa;2;5;4;6
+#
+# ob
+#1a 1b
+26;ob;a
+1b 1c
+27;ob;5,
+1c 1d
+28;ob;a;b
+#1d 1e
+29;ob;5;w,
+1e 1f
+30;ob;e;5;b;3;w;a
+#1f 20
+31;ab;b
+#20 21
+32;ab;5;b
+#21 22
+33;ab;b;e,yyy;b;w
+#
+# of
+#22 23
+34;of;a;3
+#23 24
+35;of,;b;256,yyy
+#24 25
+36;of;w,;456
+#25 26
+37;of;w,;65535
+#26 27
+38;of;5;3
+#27 28
+39;af;L;4
+#28 29
+40;af;s;65536
+#29 2a
+41;af;d;10,xxx
+#
+# om
+#2a 2b
+42;om;a;3
+#2b 2c
+43;om;b;256,yyy
+#2c 2d
+44;om;i;3
+#2d 2e
+45;om;w;3
+#2e 2f
+46;om;e;3
+#2f 30
+47;om;L;256
+#30 31
+48;om;s;65536
+#31 32
+49;om;d;255,xxx
+#32 33
+50;om;d;256,xxx
+#33 34
+51;om,;4,;4,
+#34 35
+52;am,;b,;256
+#35 36
+53;am;a;3
+#36 37
+54;am;b;256,yyy
+#
+# on
+#37 38
+55;on;a;5;5
+#38 39
+56;on;b;3;3
+#39 3a
+57;on;i;255;255
+#3a 3b
+58;on,;w;256,;256,
+#3b 3c
+59;on;3;2,;2,
+#3c 3d
+60;an,;3;2;2
+#3d 3e
+61;an;b;255;255
+#3e 3f
+62;an;10;256;256
+#
+# op
+#3f 40
+63;op,;1;10,;lin;Hz,unit;300,;lin;Hz
+#40 41
+64;op;1;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz;3,CHAPTER,123
+#41 42
+65;op;2;100;lin;Hz,unit;1000,{100 to 4000};log;Hz;100000000;lin;Hz
+#42 43
+66;ap,as65
+#43 44
+67;oo,;1;255,steps;100,stepsize;1000,time;b;up,down
+#44 45
+68;oo;2;256,steps;1000,stepsize;100000,time;b;up
+#45 46
+69;oo;1;256;0;100;b;unit
+#46 47
+70;oo;2;300;0;10;b;unit
+#47 48
+71;ap,;1;10;lin;Hz;3,CHAPTER,123
+#48 49
+72;ap;1;1000;lin;Hz;10000000;lin;Hz
+#
+#os
+#49 4a
+73;m;DK1RI;Test2;V01;1;100;1;28;1-1
+#4a 4b
+74;or,;1;0,on,;4,CHAPTER,edrf
+#4b 4c
+75;or;1;0,on;1,aus;2,idle;3,other
+#4c 4d
+76;or;2;0,on;1,aus;2,idle;3,other
+#4d 4e
+77;os;1;0,on;1,aus
+#4E 4f
+78;os,;1;0,on;1,aus;2,idle;3,other
+#4f 50
+79;os;2;0,on;1,aus;2,idle;3,other
+# 50 51
+80;ar,;1;0,on;1,off
+#51 52
+81;ar;2;0,on;1,off
+#52 53
+82;ar;1;0,on;1,aus;2,idle;3,other
+#53 54
+83;ar;2;0,on;1,aus;2,idle;3,other
+#54 55
+84;as;1;0,on;1,aus;2,idle;3,other
+#55 56
+85;as;2;0,on;1,aus
+#56 57
+86;as;1;0,on;1,aus;2,idle;3,other
+# 57 58
+87;as;300;0,on;1,aus;2,idle;3,other144
+# 58 59
+88;at,;1;0,on;1,aus
+# 59 5a
+89;at,;2;0,aus;1,an
+#
+240;an,ANNOUNCEMENTS;100;93;93
+252;aa,LAST ERROR;20,last_error
+253;aa,MYC INFO;b,BUSY
+254;oa,INDIVIDUALIZATION;20,NAME,Device 1;b,NUMBER,1;a,I2C,1;b,ADRESS,2
+255;aa,as254
+#
+# for tests please uncomment the rules of interest.
+# only s or d:
+# "" as tok:
+# tok not in rules:
+# split multiple left tok:
+#R;!$1 !$2 !$5 IF 3=0=1
+#
+# check left side:
+# check ~: , direct commands: UNLESS:
+#R;!$~ IF 2=1
+#
+# os
+#R;!$2 IF 1=1
+#R;!$1 IF 2=4=1
+#R;!$1 IF 2<3=1
+#R;!$1 IF 2>3=1
+#R;!$1 IF 2!3=1
+#
+# or 
+#R;!$1 IF 3>1=1
+#R;!$1 IF 4=4=3=1
+#R;!$1 UNLESS 3=2=1
+#R;!$1 IF 4>2=3=1
+#R;!$1 IF 4!2=3=1
+#
+# op
+#R;!$1 IF 5=200
+#R;!$1 IF 6>2=256
+#R;!$1 IF 7>10=14
+#R;!$1 IF 8!4>10=14
+#
+# "oo"
+# 
+# oo has no rule with rught side tok
+# but the corresponding op command must have a rule (and status)
+# check Status after sending command
+#R;!$1 IF 8=10
+#
+# "xa"
+# all numeric data are handled in the same way, so not all are tested
+R;!$1 IF 10=1
+#R;!$1 IF 11=1=2
+#R;!$1 IF 12=st
+R;!$2 IF 13=1=uv
+# cmd only:
+#R;0302 IF $1=0
+#
+#R;!$1 IF $1=1 $2&=0&=3
+#
+# "AND"
+#R;!$5 IF $5&=1&=0 AND $4&=3&=1
+#
+# "AND" "!"
+#R;!$5 IF $5&=1&=0 AND ! $5&=1
+#
+# "TO"
+#R;!$1 IF $1&2TO4

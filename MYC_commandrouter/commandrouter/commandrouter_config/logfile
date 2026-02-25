@@ -1,75 +1,100 @@
-1769092967.86235 of number of elements too high:767 should be 256
-1769092981.1901462 of number of elements too high:767 should be 256
-1769093019.3037486 Server started
-1769094774.5267308 of number of elements too high:4 should be 3
-1769094799.6841154 of value too high:3 should be <= 1
-1769095025.440278 oa stringlength too high:6 should be 5
-1769095062.2445028 of number of elements too high:4 should be 3
-1769095069.2236402 oa stringlength too high:255 should be 5
-1769095108.1230752 transfertype 1 value too high, 5 should be 4
-1769095171.6992486 transfertype 1 value too high, 5 should be 4
-1769095190.866678 transfertype 1 value too high, 16777215 should be 65536
-1769095228.4265952 transfertype 1 value too high, 11 should be 10
-1769096597.4644418 Server started
-1769096919.237223 transfertype 1 value too high, 4 should be 2
-1769096929.2219863 transfertype 1 value too high, 2 should be 1
-1769097049.225174 channel timeout
-1769097118.8509834 transfertype 1 value too high, 4 should be 2
-1769097131.7393763 transfertype 1 value too high, 3 should be 2
-1769097147.509606 transfertype 1 value too high, 3 should be 2
-1769097183.2523253 transfertype 1 value too high, 255 should be 2
-1769097197.5736792 transfertype 1 value too high, 255 should be 2
-1769097212.8383555 transfertype 1 value too high, 255 should be 2
-1769097344.5011368 channel timeout
-1769097345.381689 transfertype 1 value too high, 4 should be 2
-1769097348.3700473 transfertype 1 value too high, 3 should be 2
-1769097468.3730505 channel timeout
-1769097520.138784 Server started
-1769097987.7490284 Server started
-1769098070.125571 Server started
-1769098104.1453962 ob start value too high:5 should be <=4
-1769098224.1494973 channel timeout
-1769098270.5425277 transfertype 1 value too high, 4 should be 2
-1769098457.3815444 channel timeout
-1769098622.1009524 Server started
-1769098650.2192554 ob value too high:4 should be <=3
-1769098770.2228403 channel timeout
-1769099805.2291062 server socket failed
-1769099827.467643 Server started
-1769099884.7710996 Server started
-1769099912.0118368 ob memoryposition too high:4 should be <=3
-1769100065.018411 Server started
-1769100342.6119208 on start value too high:6 should be 5
-1769100462.61564 channel timeout
-1769101108.849822 Server started
-1769101449.4767795 Server started
-1769102740.846308 Server started
-1769102832.3909152 Server started
-1769103025.5652692 Server started
-1769103334.8148017 Server started
-1769103338.3041325 on start value too high:5 should be 4
-1769103365.097425 on element value too high:2 should be 1
-1769103481.5898514 on start value too high:3 should be 2
-1769103632.9474106 channel timeout
-1769103988.0336878 Server started
-1769156191.5142884 Server started
-1769156714.225951 on start value too high:5 should be 4
-1769156722.7704186 on element value too high:2 should be 1
-1769156739.6251905 on start value too high:3 should be 2
-1769156859.6282532 channel timeout
-1769157065.2066133 channel timeout
-1769160293.5899608 Server started
-1769160520.5619318 on position too high:5 should be 4
-1769160533.1325426 on element value too high:2 should be 1
-1769160555.0865006 on position too high:3 should be 2
-1769160675.0902743 channel timeout
-1769160796.6661284 Server started
-1769160856.6939075 on element value too high:255 should be 1
-1769160889.337762 on position too high:3 should be 2
-1769160944.9313507 on position too high:255 should be 254
-1769161123.0637138 transfertype 1 value too high, 4 should be 1
-1769161132.068369 transfertype 1 value too high, 3 should be 1
-1769161169.510262 transfertype 1 value too high, 255 should be 1
-1769161174.3623621 transfertype 1 value too high, 254 should be 1
-1769161224.9375675 transfertype 1 value too high, 65535 should be 256
-1769161238.0156195 transfertype 1 value too high, 65535 should be 256
+1771935108.9635406 transfertype 1 value too high, 5 should be 4
+1771935160.541114 on position too high:4 should be <= 3
+1771935245.9635644 Server started
+1771935336.393055 Server started
+1771935785.18453 transfertype 1 value too high, 3 should be 2
+1771935859.2764077 ob memoryposition too high:255 should be <=3
+1771935910.4057968 om stringlength too high:255 should be <=4
+1771935984.3003833 ob memoryposition too high:4 should be <=3
+1771936015.9104717 om stringlength too high:5 should be <=4
+1771936135.9150655 channel timeout
+1771936143.3413446 ob memoryposition too high:255 should be <=3
+1771936163.6403813 transfertype 1 value too high, 65535 should be 256
+1771936209.4469078 transfertype 1 value too high, 61440 should be 256
+1771936329.4504404 channel timeout
+1771936623.427927 transfertype 1 value too high, 3 should be 2
+1771936699.4816499 transfertype 1 value too high, 3 should be 2
+1771936808.2656868 transfertype 1 value too high, 3 should be 2
+1771936815.189163 transfertype 1 value too high, 2 should be 1
+1771936935.1918597 channel timeout
+1771938292.5980575 transfertype 1 value too high, 11 should be 10
+1771938321.2696657 transfertype 1 value too high, 16777200 should be 65536
+1771938353.8582406 transfertype 1 value too high, 65537 should be 65536
+1771938388.8054266 transfertype 1 value too high, 5 should be 4
+1771938531.433248 Server started
+1771938769.8568497 Server started
+1771938950.129175 Server started
+1771938967.6872182 of number of elements too high:4 should be 3
+1771938979.3692079 oa stringlength too high:52 should be 5
+1771939010.984541 transfertype 1 value too high, 17476 should be 1000
+1771939090.0580516 oa stringlength too high:51 should be 5
+1771939160.0950823 transfertype 1 value too high, 65535 should be 896
+1771939242.9334064 Server started
+1771939307.5666401 Server started
+1771939383.381346 transfertype 1 value too high, 96 should be 1
+1771939438.0428417 Server started
+1771939469.4434137 Server started
+1771939519.4732122 of number of elements too high:512 should be 456
+1771939550.7617295 Server started
+1771939630.4207795 of value too high:2 should be <= 1
+1771939636.4809024 of value too high:2 should be <= 1
+1771939730.2286267 transfertype 1 value too high, 5 should be 3
+1771939740.0399754 transfertype 1 value too high, 4 should be 3
+1771939745.158374 transfertype 1 value too high, 5 should be 3
+1771939749.1138287 transfertype 1 value too high, 4 should be 3
+1771939757.0694065 transfertype 1 value too high, 5 should be 4
+1771939824.9949355 transfertype 1 value too high, 2 should be 1
+1771939837.5984535 transfertype 1 value too high, 2 should be 1
+1771939861.0587876 transfertype 1 value too high, 2 should be 1
+1771939981.0619469 channel timeout
+1771941463.4920855 transfertype 1 value too high, 33 should be 1
+1771941468.5552826 transfertype 1 value too high, 34 should be 1
+1771941490.2248712 transfertype 1 value too high, 4 should be 1
+1771941497.2576926 transfertype 1 value too high, 3 should be 1
+1771941606.8547845 transfertype 1 value too high, 10066217 should be 65536
+1771941730.2644396 channel timeout
+1771942023.29592 transfertype 1 value too high, 16128 should be 256
+1771942143.2992163 channel timeout
+1771942232.0210848 Server started
+1771942299.1746244 of number of elements too high:257 should be 256
+1771942366.7828708 Server started
+1771942561.1347136 Server started
+1771942871.1893723 Server started
+1771942914.9999294 Server started
+1771942986.2935755 Server started
+1771943077.0446188 Server started
+1771943234.2179546 Server started
+1771943344.2038822 Server started
+1771945122.9852448 Server started
+1771945177.8366725 ob start value too high:6 should be <=5
+1771945204.6525772 ob value or stringlenth too high:255 should be <= 1
+1771945242.9066606 oa value for stringlength too high:16 should be <= 5
+1771945291.9860756 ob value or stringlenth too high:6 should be <= 1
+1771945411.9894028 channel timeout
+1771945505.300252 Server started
+1771945519.4184585 ob value or stringlenth too high:6 should be <= 5
+1771945587.187508 ob value or stringlenth too high:2 should be <= 1
+1771945594.1109166 ob value or stringlenth too high:2 should be <= 1
+1771945714.1151774 channel timeout
+1771945795.4004598 ob value or stringlenth too high:2 should be <= 1
+1771945832.4407961 transfertype 1 value too high, 6 should be 1
+1771945890.1794257 transfertype 1 value too high, 2 should be 1
+1771945956.0140386 transfertype 1 value too high, 4 should be 3
+1771945992.6837804 transfertype 1 value too high, 3 should be 2
+1771946062.3432875 oa position too high:4 should be <= 1
+1771946081.8976645 oa stringlength too high:4 should be <= 3
+1771946109.2589297 oa stringlength too high:3 should be <= 2
+1771946167.0000274 oa stringlength too high:564 should be <= 256
+1771946188.237255 oa stringlength too high:565 should be <= 256
+1771946222.013318 oa stringlength too high:581 should be <= 256
+1771946351.1072156 oa position too high:4 should be <= 2
+1771946423.6737022 transfertype 1 value too high, 31 should be 10
+1771946452.6064074 oa position too high:2 should be <= 1
+1771946541.2379217 oa value too high:2 should be <= 1
+1771946547.4103715 oa position too high:2 should be <= 1
+1771946626.7989376 oa value too high:2 should be 1
+1771946667.482245 transfertype 1 value too high, 52 should be 6
+1771946693.863466 ob start value too high:3 should be <=1
+1771946727.7193418 oa position too high:3 should be <= 2
+1771946847.1235313 oa position too high:3 should be <= 2
+1771946865.6364577 oa value too high:2 should be <= 1
