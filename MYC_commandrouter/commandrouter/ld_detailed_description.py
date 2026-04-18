@@ -1,11 +1,11 @@
 """
 name : ld_detailed_description.py
-last edited: 20260224
-Copyright : DK1RI 20260224
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+last edited: 20260414
+Copyright : DK1RI
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 
 dataexchange is via variables only.
-LD related moduls start  with ld_
+LD related moduls start with ld_
 
 Basics:
 There are two inputs: one for check and the original from sk
@@ -19,7 +19,7 @@ At start the program read the rules
 -some more lists to speed up th program
 
 Operation:
-program reads data sent by CR.
+reads data sent by SK via.
 if commandtoken not in rules (left side):
     transfer unchanged answer via CR to SK and update status, if used on right side
     or
@@ -27,12 +27,9 @@ if commandtoken not in rules (left side):
 if commandtoken is in rules (left side):
     update status if in right side)
     send a command if required by rules and new status matches
-    if answer (from FU via CR):
-        transfer unchanged answer via CR to SK
-    if command:
-        block if required
-        if not blocked:
-            transfer command via CR to FU
+
+if answer (from FU to CR):
+    store only (LD do not get anwer)
 
 missing:
 float and double for conditions

@@ -1,22 +1,20 @@
 """
 name : commandrouter.py
-Version 03.02 , 20260224
+Version 03.02 , 20260414
 Purpose : Program for a MYC commandrouter
 The Programm supports the MYC protocol
 developed using PyCharm
 tested with win Python >= 312
+Tested with Win11
 Should be used with raspberry Pi Hardware (actual version not tested)
 Copyright : DK1RI
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
-import v_configparameter
+
 from buffer_handling import *
 from device_handling import *
 from init import *
-from io_handling import *
-from ld_init import  *
 from ld_buffer_handling import *
-from misc_functions import *
 from tests import *
 
 import v_time_values
@@ -59,12 +57,12 @@ def time_dependent_tasks():
         device += 1
     return
 
-
-# Main#
+# Main
 init_start_time = time.time()
 readconfig()
 read_device_interface_list()
 if v_configparameter.test_mode == 0:
+    # search devices not tested
     v_dev.init_ready  = 0
     v_dev.init_sequence = 0
     v_dev.init_device = 0
@@ -80,15 +78,14 @@ if v_configparameter.test_mode == 0:
 else:
     # device0 is CR!!
     v_dev.active[0] = 1
-    v_dev.anouncefile_name[1] = "Test1_V06_1_Device 1_1"
+    v_dev.anouncefile_name[1] = "DK1RI_test1_V01.0_D1_1.bas"
     v_dev.active[1] = 1
-    v_dev.anouncefile_name[2] = "Test2_V06_1_Device 1_1"
+    v_dev.anouncefile_name[2] = "DK1RI_test2_V01.0_D1_1.bas"
     v_dev.active[2]= 1
-    print ("devices read")
 initialization()
 print_for_test()
 if v_configparameter.test_mode == 1:
-    print("ready")
+    write_log("started")
 """
 loops = 0
 all_time = 0
@@ -115,30 +112,20 @@ while 1:
             display_loops = 0
     """
     time_dependent_tasks()
-    if v_time_values.auto == 1:
-        handle_check()
-    else:
-        # collect data from (SK )inputs:
-        poll_sk()
-
-        # analyzes the sk input_buffer
-        # send commands to LD
-        # data in v_ld.data_to_ld
-        poll_input_buffer()
-        # LD checks for rules:
-        ld_analyze()
-        # send commands to devices:
-        send_to_device()
-        # get answers and info from normal device and lower level CR:
-        poll_devices()
-        # analyzes the answers and info from devices:
-        poll_device_buffer()
-        # store data by LD and send to CR
-        store_by_ld()
-        # info to all SK
-        # send to individual SK not yet implemented
-        send_to_sk()
-        # send direct commands to dev, if available
-        send_direct_commands()
-        # send direct commands to devices:
-        send_to_device()
+    # collect data from (SK )inputs:
+    poll_sk()
+    # analyzes the sk input_buffer
+    # send commands to LD if applicable per inputdevice
+    # check for rules (ld_analyze)
+    poll_input_buffer()
+    # send commands to devices:
+    send_to_device()
+    # get answers and info from normal device and lower level CR:
+    poll_devices()
+    # analyzes the answers and info from devices:
+    poll_device_buffer()
+    # info to all SK
+    # send to individual SK not yet implemented
+    send_to_sk()
+    # send direct commands to dev, if available
+    send_direct_commands()

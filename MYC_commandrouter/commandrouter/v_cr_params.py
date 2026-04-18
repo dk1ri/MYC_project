@@ -1,9 +1,9 @@
 """"
 name: v_cr_params.py
-last edited: 20260224
+last edited: 20260414
 commandrouter parameters
 Copyright : DK1RI
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
 full_device_name = ""
 actual_cr_own_command = []      # depending on number of ccommands: list od CR own tokens
@@ -34,9 +34,15 @@ max_of_par =    {"z": 0,
 
 command_types = ["a", "b", "c", "i", "w", "e", "L", "s", "d"]
 
-c_249_elements = 0              # max (number of ASIC commands * commandlength)
 c_251_name_length = 0           #
 c_251_password_length = 0       #
 length_of_c_249_elements = 0    # length of this
 sk_buffer_limit = 0             # actual SK limit
 sk_buffer_limit_low = 0         # actual SK lower limit for enable again
+# parameter of CR announcement
+name = ""
+number = ""
+usb_active = 0
+telnet_active = 0
+file_active = 0
+terminal_active = 0

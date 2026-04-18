@@ -1,47 +1,62 @@
 #sequence must not be changed !!!
-#line 0 filename for connection_of_devices (home: commandrouter_config/connection_of_devices)
+# filenames and dirs are relativ to the program Location (-> ./xxx)
+# line 0 filename for connection_of_devices (home: commandrouter_config/connection_of_devices)
 home
-#line 1: directory for local annoncelists (home: commandrouter_config/devices)
+# line 1: directory for local announcelists (home: commandrouter_config/devices)
+# should bei local Always!
 home
-#line 2: time in sec for checking weather a device is active (0:  no search)
-100
-#line 3: time in sec for searching for new and deleted my_devices (should be higher than line 4)
-100
-#line 4: time in sec for command / answer timeout
-1000000
-# line 5 filename for logfile (home: commandrouter_config/logile)
-home
-# line 6: time in second for check of logtime length
-100
-# line 7: size of logfile; all lines are purged then
-100
-# line 8: system timeout (ms)
-2000
-# line 9: cannel timeout (s)
-120
-# line 10: testmode
+# line 2: dir for deviceinterface
+file_interface
+# line 3: for fileinterface to SK use: use xampp/htdocs/Usb_interface or local fileinterface to sk
 1
-# line 11: limit for number of bytes of SK buffer
+# line 4: dir for sk interface
+file_interface
+# line 5: filename from cr to sk (same names for CR and Web interface (SK))
+to_web
+# line 6: filename from sk to cr (same names for CR and Web interface (SK))
+from_web
+# line 7: time in sec for checking weather a device is active (0:  no search)
+100
+# line 8: time in sec for searching for new and deleted my_devices (should be higher than line 4)
+100
+# line 9: time in sec for command / answer timeout
+1000000
+# line 10 filename for logfile (home: commandrouter_config/logile)
+home
+# line 11: time in second for check of logtime length
+100
+# line 12: size of logfile; all lines are purged then
+100
+# line 13: system timeout (ms)
+2000
+# line 14: cannel timeout (s)
+120
+# line 15: testmode
+1
+# line 16: limit for number of bytes of SK buffer
 10000
-# line 12: limit for number of bytes of SK buffer for testmode
+# line 17: limit for number of bytes of SK buffer for testmode
 30
-# line 13:sk buffer limit hysteresys ????
+# line 18:sk buffer limit hysteresys ????
 10
-# line 14: directory for various LD files)
-files\
-# line 15: CR line 0
-0;c;DK1RI;CR0;1;1;145;1;4;1-1
-# line16; CR line 240
-240;an,ANNOUNCEMENTS;145;4,start at;4,elements
-# line17; CR line 241
-241;an,BASIC ANNOUNCEMENTS;145;4,start at;4,elements
-# line18; CR line 242
-242;an,ADMIN ANNOUNCEMENTS;145;4,start at;4,elements
-# line 19: CR line 254
-254;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,RS232,1;a,TELNET,1;a,FILE,1;a,TRMINAL,1;22,CHAPTER,ADMINISTRATION"
-# line 20:CR line 255
-255;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,RS232,1;a,TELNET,1;a,FILE,1;a,TERMINAL,1
-# line 21: COM Port for connect by SK
-COM6
-# line 22: Ethernet Port for connect by SK
+# line 19: COM Port for connect by SK
+COM22
+# line 20: Ethernet Port for connect by SK
 22
+# Parameter  of CR announcemet
+# line 21: Name
+Device 1
+# line 22: number
+0
+# line 23: USB active
+1
+# line 24: Telnet active
+0
+# line 25: file active
+1
+# line 26: terminal active
+1
+# filename from RU
+from_ru
+# filename to RU
+to_ru

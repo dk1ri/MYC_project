@@ -1,13 +1,12 @@
 """
 name: tests.py
-last edited: 20250309
-other misc functions
+last edited: 20250414
+subprograms for tests
 Copyright : DK1RI
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
-import v_ld
+import os.path
 from misc_functions import *
-
 import v_announcelist
 import v_configparameter
 import v_cr_params
@@ -15,32 +14,23 @@ import v_dev
 import v_linelength
 import v_sk
 import v_io
-import v_time_values
 import v_token_params
 
-# ------------------------------------------------
-# subprograms for tests
-# ------------------------------------------------
-
-
 def print_for_test():
-    print_for_test1("v_announcelist_all_tokn", v_announcelist.all_token)
+    if not os.path.isdir("check_output"):
+        os.mkdir("check_output")
+    print_for_test1("v_announcelist_all_token", v_announcelist.all_token)
+    print_for_test1("v_announcelist_all_answer_token", v_dev.all_answer_toks)
     print_for_test1("v_announcelist_basic", v_announcelist.basic)
-    print_for_test1("v_announcelists_o_to_a", v_announcelist.a_to_o)
     print_for_test2("v_announcelist_full", v_announcelist.full)
     print_for_test1("v_announcelist_full_240", v_announcelist.full_240)
-    print_for_test1("v_announcelists_o_to_a", v_announcelist.o_to_a)
-    print_for_test1("v_announcelists_a_to_o", v_announcelist.a_to_o)
     print_for_test3("v_announcelist_length_of_full_elements", v_announcelist.length_of_full_elements)
     print_for_test1("v_announcelist_rules", v_announcelist.rules)
     print_for_test1("v_announcelist_administration", v_announcelist.administration)
     print_for_test3("v_command_length_startnumber", v_cr_params.startnumber)
     print_for_test3("v_cr_params_name", v_cr_params.full_device_name)
-    print_for_test3("v_configparameter_time_for_activ_check", v_configparameter.time_for_activ_check)
-    print_for_test3("v_configparameter_time_for_device_search", v_configparameter.time_for_device_search)
-    print_for_test3("v_configparameter_time_for_command_timeout", v_configparameter.time_for_command_timeout)
     print_for_test4("v_dev_announceline", v_dev.announcements)
-    print_for_test3("v_dev_all_toks", v_dev.all_toks)
+    print_for_test4("v_dev_announceline_not_stripped", v_dev.announcments_not_stripped)
     print_for_test3("v_dev_a_to_o", v_dev.a_to_o)
     print_for_test3("v_dev_name", v_dev.name)
     print_for_test3("v_dev_interface_adress", v_dev.interface_adress)
@@ -52,13 +42,10 @@ def print_for_test():
     print_for_test3("v_dev_interface_type", v_dev.interface_type)
     print_for_test3("v_dev_o_to_a", v_dev.o_to_a)
     print_for_test3("v_dev_commandtokenlength", v_dev.length_commandtoken)
-    print_for_test2("v_line_length_answer", v_linelength.answer)
+    print_for_test5("v_line_length_answer", v_linelength.answer)
     print_for_test2("v_line_length_command", v_linelength.command)
     print_for_test1("v_kbd_input_data", v_io.data)
-    print_for_test3("ld_index_of_tilde", v_ld.index_of_tilde)
     print_for_test3("ld_all_condition_per_index", v_ld.all_condition_per_index)
-    print_for_test3("ld_all_used_toks", v_ld.all_used_toks)
-    print_for_test3("ld_direct_command_by_index", v_ld.direct_command_by_index)
     print_for_test3("ld_if_unless", v_ld.if_unless)
     print_for_test3("ld_index_by_tok", v_ld.index_by_tok)
     print_for_test3("ld_left_tok_by_index", v_ld.left_tok_by_index)
@@ -110,100 +97,31 @@ def print_for_test4(file, data):
     # device as index
     handle = open("check_output/" + file, "w")
     device = 1
-    while device < len(v_dev.announcements):
+    while device < len(data):
         for line in data[device]:
-            handle.write(line + "\n")
+            handle.write(str(line[0]) + ": " + ";".join(line))
+            handle.write("\n")
         device += 1
     handle.close()#
     return
 
-def load_check():
-    check_file = open(v_time_values.command_file)
-    v_time_values.announcement = []
-    v_time_values.from_sk = []
-    v_time_values.to_dev = []
-    v_time_values.errormsg =[]
-    v_time_values.check_number = 0
-    i = 0
-    for lines in check_file:
-        if lines[0] == "#":
-            continue
-        if i == 0:
-            v_time_values.announcement.append(lines.rstrip())
-        if i == 1:
-            v_time_values.from_sk.append(to_ba(lines.rstrip()))
-        if i == 2:
-            v_time_values.to_dev.append(to_ba(lines.rstrip()))
-        if i == 3:
-            # errormsg for dev
-            v_time_values.errormsg.append(lines.rstrip())
-        i += 1
-        if i == 4:
-            i = 0
-    check_file.close()
+def print_for_test5(file, data):
+    # device as index
+    handle = open("check_output/" + file, "w")
+    device = 0
+    for device in v_linelength.answer:
+        data = v_linelength.answer[device]
+        if len(data) > 0:
+            for tok, line in data.items():
+                i = 0
+                dat = line
+                da = "dev: " + str(device) + " tok: "+ str(tok ) + " : "
+                while i < len(dat):
+                    da += str(dat[i]) + " "
+                    i+= 1
+                handle.write(da)
+                handle.write("\n")
+        device += 1
+    handle.close()
     return
 
-
-def to_ba(string):
-    # convert (integer) number to bytearray
-    i = 0
-    ob = bytearray([])
-    tempi = ""
-    while i < len(string):
-        # read each character
-        if string[i] == " ":
-            # char found
-            ob.extend(bytearray([(int(tempi))]))
-            tempi = ""
-        else:
-            tempi += string[i]
-        i += 1
-    if tempi != "":
-        ob.extend(bytearray([int(tempi)]))
-    return ob
-
-
-def to_ba2(string):
-    # convert (integer) number  string mixture to bytearray
-    # strings are enclosed by the string " \\str\\ "
-    i = 0
-    str_active = 0
-    ob = bytearray([])
-    tempi = ""
-    last = ""
-    cont = 0
-    while i < len(string):
-        # read each character
-        if string[i] == " ":
-            # separator for all
-            if tempi == "xxstr":
-                # stringmarker found
-                if str_active == 0:
-                    str_active = 1
-                    last = ""
-                else:
-                    str_active = 0
-                    ob.extend(str_to_bytearray(last))
-                    cont = 0
-                tempi = ""
-            elif str_active == 1:
-                # space in string
-                if cont == 1:
-                    last += " "
-                last += tempi
-                cont = 1
-                tempi = ""
-            else:
-                # char found
-                ob.extend(bytearray([(int(tempi))]))
-                tempi = ""
-        else:
-            tempi += string[i]
-        i += 1
-    if tempi != "":
-        if str_active == 0:
-            ob.extend(bytearray([int(tempi)]))
-        else:
-            if tempi == "xxstr":
-                ob.extend(str_to_bytearray(last))
-    return ob

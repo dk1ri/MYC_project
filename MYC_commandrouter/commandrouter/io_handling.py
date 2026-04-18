@@ -1,9 +1,11 @@
 """
 name : io_handlings.py
-last edited: 20260224
+last edited: 20260414
 Copyright : DK1RI
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
+# all IO should use binary data with bytearrays ( not 100 % tested!!!!!!!!!!!!!)
+# exception: terminal input (use 2 hex characters for each byte of bytearray)
 
 import socket
 import threading
@@ -55,13 +57,13 @@ class ServerThread (threading.Thread):
     def run(self):
         while 1:
             connection, addr = self.server_socket.accept()
-            write_log("connected to: " + str(addr))
+            misc_functions.write_log("connected to: " + str(addr))
             server_read = ServerThreadRead(connection, self.input_buffer_number)
             server_read.start()
-            write_log("server read start")
+            misc_functions.write_log("server read start")
             server_write = ServerThreadWrite(connection, self.input_buffer_number)
             server_write.start()
-            write_log("server write start")
+            misc_functions.write_log("server write start")
 
 
 class ServerThreadRead (threading.Thread):
@@ -83,16 +85,16 @@ class ServerThreadRead (threading.Thread):
 #                while i < len(data_in):
                 v_sk.inputline[self.input_buffer_number].extend(data_in)
 #                    i += 1
-                write_log("Input read: " + str(v_sk.inputline[self.input_buffer_number]) + "end")
+                misc_functions.write_log("Input read: " + str(v_sk.inputline[self.input_buffer_number]) + "end")
             except (ConnectionAbortedError, OSError):
-                write_log(" input read aborted")
+                misc_functions.write_log(" input read aborted")
                 self.connection.close()
                 exit()
         return
 
 
 class ServerThreadWrite (threading.Thread):
-    # ethernet server Part, connecting to HI, PR...
+    # ethernet server Part, connecting to SK
     def __init__(self, connection, input_buffer_number):
         threading.Thread.__init__(self)
         self.connection = connection
@@ -110,7 +112,7 @@ class ServerThreadWrite (threading.Thread):
                     self.connection.sendall(stri)
                     v_sk.info_to_telnet = bytearray([])
                 except (ConnectionAbortedError, OSError):
-                    write_log("telnet server send aborted")
+                    misc_functions.write_log("telnet server send aborted")
                     self.connection.close()
                     exit()
         self.connection.close()
@@ -122,13 +124,14 @@ def start_ethernet_server(port, input_buffer_number):
         server_socket.bind(("", port))
     except socket.error:
         # to be replaced by entry to log
-        write_log("server socket failed")
+        misc_functions.write_log("server socket failed")
     server_socket.listen(10)
     ethernet = ServerThread(server_socket, input_buffer_number)
     ethernet.start()
-    write_log("Server started")
+    misc_functions.write_log("Server started")
     return
 
+# connecting to devices: not yet used!
 
 class ClientThread (threading.Thread):
     # ethernet client part, connecting to devices
@@ -210,6 +213,7 @@ def sk_terminal_in(input_buffer_number):
 
     if t != None:
         try:
+            #  must be HEX
             result = int(t, 16)
         except:
             return
@@ -221,26 +225,30 @@ def sk_terminal_in(input_buffer_number):
     return
 
 def sk_terminal_out():
-    print("info to all SK:", v_sk.info_to_all)
+    if v_sk.info_to_all != bytearray():
+        print("info to all SK: " , v_sk.info_to_all)
+        v_sk.info_to_all = bytearray()
     return
 
-# serial:
-def serial_in_from_sk():
+# serial (uses bytes):
+def serial_in_from_sk(input_buffer_number):
     try:
         ser = serial.Serial(v_configparameter.com_port, 19200, timeout=1.0)
     except:
         return
     while 1:
-        v_sk.inputline = ser.read(600)
+        v_sk.inputline[input_buffer_number] = ser.read(600)
     return
 
-def serial_in_from_dev(input_buffer_number):
+def serial_in_from_dev(device):
     try:
-        ser = serial.Serial(v_dev.interface_comport[input_buffer_number], 19200, timeout=1.0)
+        # 2ms would b enaugh to read 40 bytes
+        ser = serial.Serial(v_dev.interface_comport[device], 19200, timeout=.002)
     except:
         return
     while 1:
-        v_dev.data_to_CR = ser.read(600)
+        # if more bytes, read with next loop
+        v_dev.data_to_CR.append(ser.read(10))
     return
 
 def sk_serial_out():
@@ -248,80 +256,109 @@ def sk_serial_out():
         ser = serial.Serial(v_configparameter.com_port, 19200, timeout=1.0)
     except:
         return
-    i = 0
-    s = ""
-    while i < len(v_sk.info_to_all):
-        s += v_sk.info_to_all[i]
-        i += 1
-    ser.write(b's')
+    ser.write(v_sk.info_to_all)
+    v_sk.info_to_all = bytearray()
     return
 
-def dev_serial_out(input_buffer_number):
+def dev_serial_out(device):
     try:
-        ser = serial.Serial(v_dev.interface_comport[input_buffer_number], 19200, timeout=1.0)
+        ser = serial.Serial(v_dev.interface_comport[device], 19200, timeout=1.0)
     except:
         return
-    ser.write(v_dev.data_to_device[input_buffer_number])
+    ser.write(v_dev.data_to_device[device])
+    # there is one interface only -> can be deleted
+    v_dev.data_to_device[device] = bytearray()
     return
 
 # FILE:
-def sk_file_in():
+def remove_at_start():
+    if os.path.exists(v_io.from_sk):
+        os.remove(v_io.from_sk)
+    if os.path.exists(v_io.to_sk):
+        os.remove(v_io.to_sk)
+    return
+
+def sk_file_in(input_buffer_number):
     file = v_io.from_sk
     if os.path.exists(file):
         if v_io.sk_file_removed == 1:
             # read data once only
-            f = open(file)
+            f = open(file, "rb")
             data = f.readline()
-            i = 0
-            v_sk.inputline = bytearray()
-            while i < len(data):
-                v_sk.inputline.append(ord(data[i]))
-                i += 1
-            f.close()
+            if len(data) > 0:
+                # data must be appended always; do not empty v_sk.inputline[input_buffer_number]
+                # otherwise v_sk.data_len is not resetted!
+                i = 0
+                while i < len(data):
+                    v_sk.inputline[input_buffer_number].append(data[i])
+                    i += 1
+                f.close()
         try:
             os.remove(v_io.from_sk)
             v_io.sk_file_removed = 1
         except:
             v_io.sk_file_removed = 0
+    else:
+        v_io.sk_file_removed = 1
     return
 
 def sk_file_out():
     file = v_io.to_sk
+    if not os.path.exists(file):
+        f = open(v_io.to_sk, "ab")
+        f.write(v_sk.info_to_all)
+        f.close()
+        v_sk.info_to_all = bytearray()
+    return
+
+def file_in_from_dev(device):
+    # output should be bytearray
+    file = v_dev.filename_in[device]
     if os.path.exists(file):
-        try:
-            os.remove(v_io.from_sk)
-            v_io.sk_file_removed = 1
-        except:
-            pass
+        f = open(file, "rb")
+        line = f.read()
+        v_dev.data_to_CR[device].extend(line)
+        f.close()
         i = 0
-        s = ""
-        while i < len(v_sk.info_to_all):
-            s += str(v_sk.info_to_all[i])
-            i += 1
-        f = open(v_io.to_sk, "a")
-        f.write(s)
-        f.close()
+        done = 0
+        while i < 5 and done == 0:
+            try:
+                os.remove(v_dev.filename_in[device])
+                done = 1
+            except:
+                i += 1
     return
 
-def dev_file_in(input_buffer_number):
-    file = v_dev.filename_in[input_buffer_number]
-    if os.path.exists(file):
-        f = open(file)
-        v_dev.data_to_CR[input_buffer_number] = f.readline()
+def dev_file_out(device):
+    file = v_dev.filename_out[device]
+    if not os.path.exists(file):
+        f = open(v_io.to_sk, "ab")
+        f.write(v_dev.data_to_device[device])
         f.close()
-        os.remove(v_io.from_dev)
+        # there is one interface only -> can be deleted
+        v_dev.data_to_device[device] = bytearray()
     return
 
-def dev_file_out(input_buffer_number):
-    file = v_dev.filename_out[input_buffer_number]
+def ru_file_in(input_buffer_number):
+    file = v_configparameter.from_ru
     if os.path.exists(file):
-        os.remove(file)
-    i = 0
-    s = ""
-    while i < len(v_dev.data_to_device):
-        s += str(v_dev.data_to_device[i])
-        i += 1
-    f = open(v_io.to_sk, "a")
-    f.write(s)
-    f.close()
+        f = open(file, "rb")
+        data = f.readline()
+        if len(data) > 0:
+            # data must be appended always; do not empty v_sk.inputline[input_buffer_number]
+            # otherwise v_sk.data_len is not resetted!
+            i = 0
+            while i < len(data):
+                v_sk.inputline[input_buffer_number].append(data[i])
+                i += 1
+            f.close()
+        os.remove(v_io.from_sk)
+    return
+
+def ru_file_out(change_mode, user_name, password):
+    file = v_configparameter.to_ru
+    if not os.path.exists(file):
+        f = open(v_io.to_sk, "ab")
+        f.write(change_mode + ";" + user_name + ";" + password)
+        f.close()
     return

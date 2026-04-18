@@ -1,13 +1,14 @@
 """
 name : v_linelength.py
-last edited: 20260224
+last edited: 20260414
 list of required command /answer length used for parsing
 Copyright : DK1RI
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
 
 command = {}                # command: list for length of command, the length contain length of tok (of full list);
 answer = {}				    # answer / info: list for length of answer, the length contain length of device commandtoken
+                            # per device
 
 """
 The intention of these lists is simplify the parsing of commands, answers / info
@@ -26,7 +27,7 @@ For the first call the commandtoken is available. If the command has no paramete
 Otherwise number of bytes for this commandtoken is got and the CR wait for these bytes.
 For each commandtoken a specific type (1 to 5) is used. The handling of the following data depend on this type.
 
-Some parameters are stored in v_sk.len[input_device], v_dev_xxx[device], which will be used during the next call
+Some parameters are stored in v_sk.data_len[input_device], v_dev_xxx[device], which will be used during the next call
 
 Each string requires 2 calls: one for length, one for the string itself.
 
@@ -35,16 +36,17 @@ Each string requires 2 calls: one for length, one for the string itself.
 Detailed description of v_linelength.command , v_line_length.answer for each tok:
   
             index
- type 0:            no parameters, just forward command, some switches with one stack
+ type 0:            no parameters, just forward command, some switches with one stack, basic commands, some answer commands
             0       type
             1       length of commandtoken
             
-                    v_sk.len / v_dev.len: not used
+                    v_sk.data_len / v_dev.len: not used
  
- type 1:            operate commands and answers for switches, range, m (numeric + string) ; all answer commands
-                    ob command with one element (numeric)
+type 1:             operate commands and answers for switches, range, m (numeric + string) ; all answer commands
+                    ob command with one element 
+                    with numericparameters
             0:      1
-            1:      1ength: to be copied to v_sk.len[0]
+            1:      1ength: to be copied to v_sk.data_len[0]
            
             2:      first parameter max values
             3:      length of this
@@ -53,12 +55,12 @@ Detailed description of v_linelength.command , v_line_length.answer for each tok
             5:      same for second parameter
             ...
             
-            used v_sk.len / v_dev.len:
+            used v_sk.data_len / v_dev.len:
             0: actual wait
             
 type 2:             operate commands and answers for n
             0       2
-            1       length: to be copied to v_sk.len[0]
+            1       length: to be copied to v_sk.data_len[0]
             
             2       max of start
             3       length of start
@@ -72,7 +74,7 @@ type 2:             operate commands and answers for n
             9       length of this
             10      string (0 or 1)
             
-            used v_sk.len / v_dev.len:
+            used v_sk.data_len / v_dev.len:
             0: actual wait
             1: number of calls (0 based)
             2: numer of elements not yet transmitted
@@ -82,16 +84,16 @@ type 2:             operate commands and answers for n
 type 3:             operate oa / answer aa with position + one or more string or numeric
                     
             0:      3
-            1       1ength: to be copied to v_sk.len[0]
-            2:      max of position (for more than one paramter)
-            3:      length of position (for more than one paramter)
+            1       1ength: to be copied to v_sk.data_len[0]
+            2:      max of position (for more than one parameter)
+            3:      length of position (for more than one parameter)
             4:      0 (for more than one paramter)
             5:      max of 1st parameter (max stringlength for strings)
             6:      length of 1st parameter
             7:      string: 0 or 1
             8:      ..
             
-            used v_sk.len / v_dev.len:
+            used v_sk.data_len / v_dev.len:
             0: len of line to wait
             1: number of calls (0 based)
             2: 1st parameter
@@ -99,13 +101,13 @@ type 3:             operate oa / answer aa with position + one or more string or
     
 type 4:             operate of / answer of af   
             0:      4
-            1       1ength: to be copied to v_sk.len[0]
+            1       1ength: to be copied to v_sk.data_len[0]
             2:      max of number of transmitted elements
             3:      length of this
             4:      max of valu of element or length of string
             5:      string: 0 or 1
 
-            used v_sk.len / v_dev.len:
+            used v_sk.data_len / v_dev.len:
             0: actual wait
             1: next call
             1: numer of elements not yet transmitted
@@ -114,7 +116,7 @@ type 4:             operate of / answer of af
 
 type 5:             ob / ab any number of mixed string / numeric
             0       5
-            1       1ength: to be copied to v_sk.len[0]
+            1       1ength: to be copied to v_sk.data_len[0]
             
             2       max of start
             3       length of start
@@ -129,7 +131,7 @@ type 5:             ob / ab any number of mixed string / numeric
             10:     string: 0 or 1
             11:      ..
             
-            used v_sk.len / v_dev.len:
+            used v_sk.data_len / v_dev.len:
             0: actual wait
             1: call
             2: numer of elements not yet transmitted
@@ -139,13 +141,13 @@ type 5:             ob / ab any number of mixed string / numeric
 type 6:             ob one element (string)
                     om with string
             0       6
-            1       1ength: to be copied to v_sk.len[0]
+            1       1ength: to be copied to v_sk.data_len[0]
             
             2       max of stringlength
             3       length of this
             4       string : 1
             
-            used v_sk.len / v_dev.len:
+            used v_sk.data_len / v_dev.len:
             0: actual wait
             1: call
             2: stringlength

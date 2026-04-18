@@ -1,19 +1,19 @@
 """
 name : command_handling.py
-last edited: 20240224
+last edited: 20240414
 command handling subprograms for SK
 Copyright : DK1RI
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
 
 from cr_own_commands import *
-from data_handling import  *
-import misc_functions
+from data_handling import *
 
 import time
 import v_announcelist
 import v_linelength
 import v_sk
+from ld_buffer_handling import ld_analyze
 
 
 # ------------------------------------------------
@@ -35,78 +35,59 @@ This part is sensitive to speed; so this part is optimized for speed, not for se
         # if input data is correct and complete appropriate action is called
         if len(line_of_input_device) > 0:
             # check for basic command
-            if line_of_input_device[0] == 0:
-                # CR basic command: directly answered, not sent to LD
-                announce_line = chr(0) + chr(len(v_announcelist.full[0])) + v_announcelist.full[0]
-                v_sk.info_to_all += misc_functions.str_to_bytearray(announce_line)
-                # necessary to delete token:
-                v_sk.len[input_device][0] = v_announcelist.length_of_full_elements
-                finish = 10
+            if line_of_input_device[0] == [0]:
+                finish = cr_own(0, input_device)
             else:
                 got_bytes = len(line_of_input_device)
-
                 if got_bytes >= v_announcelist.length_of_full_elements:
-
                     tok = int.from_bytes(line_of_input_device[:v_announcelist.length_of_full_elements], byteorder='big', signed=False)
-                    if tok >= v_announcelist.start_of_reserved_token:
-                        # reserved CR commands
-                        if tok == v_announcelist.start_of_reserved_token:
-                            finish = misc_functions.com240(tok, line_of_input_device[v_announcelist.length_of_full_elements:], input_device)
-                        else:
-                            finish = 2
+                    if not(tok in v_announcelist.all_token):
+                        misc_functions.write_log ("unvalid token: " + str(tok))
+                        finish = 2
                     else:
-                        if not(tok in v_announcelist.all_token):
-                                print ("unvalid")
-                                finish = 2
+                        if tok in v_announcelist.cr_token:
+                            # answered by CR
+                            finish = cr_own(tok, input_device)
                         else:
-                            announce_line = v_announcelist.full[tok]
-                            ct = announce_line[1]
-                            if ct == "m" or ct == "c":
-                                # other basic commands, directly answered, not sent to LD
-                                v_sk.info_to_all += misc_functions.str_to_bytearray(hex(v_announcelist.start_of_cr_token))
-                                v_sk.info_to_all += misc_functions.str_to_bytearray(hex(len(announce_line)))
-                                v_sk.info_to_all += misc_functions.str_to_bytearray(";".join(announce_line))
-                                # necessary to delete token:
-                                v_sk.len[input_device][0] = v_announcelist.length_of_full_elements
-                                finish = 10
-                            else:
-                                # normal command
-                                # get "type" (0 - 7)
-                                # after getting the commandtoken v_sk[input_device].len[0] (wait) is 0
-                                if v_sk.len[input_device][0] == 0:
-                                    # get the number of bytes for the fist loop
-                                    v_sk.len[input_device][0] = v_linelength.command[tok][1]
-                                    # set time for timeout
-                                    v_sk.starttime[input_device] = time.time()
-                                if got_bytes >= v_sk.len[input_device][0]:
-                                    print(v_linelength.command[tok])
-                                    match  v_linelength.command[tok][0]:
-                                        case "0":
-                                            # some switches, no parameters
-                                            finish = data_0(got_bytes, v_sk.len[input_device], input_device)
-                                        case "1":
-                                            # switches, range commands, om / am, an, on numeric: all parameters numeric and fixed
-                                            v_sk.len[input_device], finish = data_1(tok, line_of_input_device, got_bytes, v_sk.len[input_device],v_linelength.command[tok], input_device)
-                                        case "2":
-                                            # on
-                                            v_sk.len[input_device], finish = data_2(line_of_input_device, got_bytes, v_sk.len[input_device],v_linelength.command[tok], input_device)
-                                        case "3":
-                                            # oa
-                                            v_sk.len[input_device], finish = data_3(tok, line_of_input_device, got_bytes, v_sk.len[input_device],v_linelength.command[tok], input_device)
-                                        case "4":
-                                            # of
-                                            v_sk.len[input_device], finish = data_4(line_of_input_device, got_bytes, v_sk.len[input_device],v_linelength.command[tok], input_device)
-                                        case "5":
-                                            # ob
-                                            v_sk.len[input_device], finish = data_5(line_of_input_device, got_bytes, v_sk.len[input_device],v_linelength.command[tok], input_device)
-                                        case "6":
-                                            # ob one element string
-                                            v_sk.len[input_device], finish = data_6(line_of_input_device, got_bytes, v_sk.len[input_device],v_linelength.command[tok], input_device)
-                                        case "7":
-                                            v_sk.len[input_device], finish = data_7(line_of_input_device, got_bytes, v_sk.len[input_device], v_linelength.command[tok], input_device)
+                            # normal command
+                            # get "type" (0 - 7)
+                            # after getting the commandtoken v_sk[input_device].len[0] (wait) is 0
+                            if v_sk.data_len[input_device][0] == 0:
+                                # get the number of bytes for the fist loop
+                                v_sk.data_len[input_device][0] = v_linelength.command[tok][1]
+                                # set time for timeout
+                                v_sk.starttime[input_device] = time.time()
+                            if got_bytes >= v_sk.data_len[input_device][0]:
+                                match  v_linelength.command[tok][0]:
+                                    case 0:
+                                        # some switches, no parameters
+                                        finish = data_0(got_bytes, v_sk.data_len[input_device], input_device)
+                                    case 1:
+                                        # switches, range commands, om / am, an, on numeric: all parameters numeric and fixed
+                                        v_sk.data_len[input_device], finish = data_1(tok, line_of_input_device, got_bytes, v_sk.data_len[input_device],v_linelength.command[tok], input_device)
+                                    case 2:
+                                        # on
+                                        v_sk.data_len[input_device], finish = data_2(line_of_input_device, got_bytes, v_sk.data_len[input_device],v_linelength.command[tok], input_device)
+                                    case 3:
+                                        # oa
+                                        v_sk.data_len[input_device], finish = data_3(tok, line_of_input_device, got_bytes, v_sk.data_len[input_device],v_linelength.command[tok], input_device)
+                                    case 4:
+                                        # of
+                                        v_sk.data_len[input_device], finish = data_4(line_of_input_device, got_bytes, v_sk.data_len[input_device],v_linelength.command[tok], input_device)
+                                    case 5:
+                                        # ob
+                                        v_sk.data_len[input_device], finish = data_5(line_of_input_device, got_bytes, v_sk.data_len[input_device],v_linelength.command[tok], input_device)
+                                    case 6:
+                                        # ob one element string
+                                        v_sk.data_len[input_device], finish = data_6(line_of_input_device, got_bytes, v_sk.data_len[input_device],v_linelength.command[tok], input_device)
+                                    case 7:
+                                        v_sk.data_len[input_device], finish = data_7(line_of_input_device, got_bytes, v_sk.data_len[input_device], v_linelength.command[tok], input_device)
             if finish == 0:
                 pass
             elif finish == 1:
+                # ld_analyze must be called for each input buffer individually
+                if v_sk.orig_to_ld != []:
+                    ld_analyze()
                 finish_sk(input_device)
             elif finish == 10:
                 finish_sk(input_device)
@@ -118,10 +99,10 @@ This part is sensitive to speed; so this part is optimized for speed, not for se
 
 def clear_sk(input_device):
     # reset some values of v_sk after error
-    v_sk.inputline[input_device] = []
+    v_sk.inputline[input_device] = bytearray()
     v_sk.input_as_parameter_list = []
     v_sk.orig_to_ld = []
-    v_sk.len[input_device] = [0, 0, 0, 0, 0, 0, 0]
+    v_sk.data_len[input_device] = [0, 0, 0, 0, 0, 0, 0]
     v_sk.starttime[input_device] = 0
     # avoid channel timeout
  #   if v_sk.multi_channel == 1:
@@ -132,8 +113,8 @@ def finish_sk(input_device):
     # transfer data
     # send command to LD as listelement containing data for one command (original hex)
     # reset some values of v_sk after command finished
-    v_sk.inputline[input_device] = v_sk.inputline[input_device][v_sk.len[input_device][0]:]
-    v_sk.len[input_device] = [0,0,0,0,0,0,0]
+    v_sk.inputline[input_device] = bytearray()
+    v_sk.data_len[input_device] = [0,0,0,0,0,0,0]
     v_sk.starttime[input_device] = 0
     # avoid channel timeout
  #   if v_sk.multi_channel == 1:

@@ -1,17 +1,17 @@
 """
-name : commandrouterlength_of_commandtypes.py
-last edited: 20260224
+name : length_of_commandtypes.py
+last edited: 20260414
 calculate the length of transmitted data for command, answer / info
 called at initialization
 ct_xx :xx is the commmandtyp, for detailed description see MYC documentation
-for details see description of variable v_linelength
+for details see description of variable v_linelength.py
 These list are used for incoming data to CR. The CR will forward accepted data only
-annoncement is syntactically correct (checked before)
+announcement is syntactically correct (checked before)
 
-for all operate / answer commands the format of the operating commnad is identical to the answer of the answer command
+for all operate / answer commands the format of the operating command is identical to the answer of the answer command
 except the length of the commandtoken
 Copyright : DK1RI
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
 
 import misc_functions
@@ -19,23 +19,22 @@ import v_cr_params
 import v_linelength
 import v_token_params
 import v_announcelist
-from misc_functions import length_of_typ
 
 
-def ct_m(stripped):
+def ct_m(stripped, o_a, dev):
     # basic lines
     # are handled similar to aa commands with 1 string element
-    command_list = ["0", v_announcelist.length_of_full_elements,]
-    answer_list = [1, v_announcelist.length_of_full_elements, 1, 0, 255,1, 0, 2, 0]
+    if o_a == 0:
+        o_a_list = [0, v_announcelist.length_of_full_elements,]
+    else:
+        o_a_list = [3, v_announcelist.length_of_full_elements, 1, 0, 0, 0, 0,255,1, 1]
+    return o_a_list
 
-    return command_list, answer_list
 
-
-def ct_nc(stripped):
+def ct_nc(stripped, o_a, dev):
     # <c>;yx do not send to device
-    command_list = [0, v_announcelist.length_of_full_elements]
-    answer_list = [0, v_announcelist.length_of_full_elements]
-    return command_list, answer_list
+    o_a_list = [0, v_announcelist.length_of_full_elements]
+    return o_a_list
 
 def add_stack(stripped, command_list):
     stacks, stack_length = misc_functions.stacklength(stripped)
@@ -49,21 +48,22 @@ def add_stack(stripped, command_list):
         command_list.append(0)
     return command_list
 
-def ct_or(stripped):
+def ct_or(stripped, o_a, dev):
     # n on / off switches
     # <c>;or;number_of_stacks;pos0;...;posn
     # <c><m><n>0|1
-    command_list = c_or(stripped)
-
-    answer_list = [5, 0]
-    return command_list, answer_list
+    if o_a == 0:
+        o_a_list = c_or(stripped)
+    else:
+        o_a_list = [5, 0]
+    return o_a_list
 
 def c_or(stripped):
     command_list = []
     number_of_items = len(stripped)
     # number of bytes for stacks
     number_of_params = number_of_items - 3
-    command_list.append("1")
+    command_list.append(1)
     command_list.append(v_announcelist.length_of_full_elements)
 
     command_list = add_stack(stripped, command_list)
@@ -95,45 +95,49 @@ def c_or(stripped):
     return command_list
 
 
-def ct_ar(stripped):
+def ct_ar(stripped, o_a, dev):
     # <c>;number_of_stacks;pos0...;posn
-    command_list = []
-    number_of_items = len(stripped)
-    # number of bytes for stacks
-    stacks, stack_length = misc_functions.stacklength(stripped)
-    number_of_params = number_of_items - 3
-    # maxpos: example: number of positions: 3, maxpos: 2, (positions 0, 1, 2 )
-    if number_of_params == 1 and stack_length == 0:
-        # no parameter to transmit
-        command_list.append("0")
-        command_list.append(v_announcelist.length_of_full_elements)
-    else:
-        command_list.append("1")
-        # 1: wait bytes for start:
-        command_list.append(v_announcelist.length_of_full_elements)
-
-        command_list = add_stack(stripped, command_list)
-
-        if number_of_params > 1:
-            maxpos = number_of_params - 1
-            maxpos_length = misc_functions.length_of_int(maxpos)
-            command_list[1] += maxpos_length
-            command_list.append(maxpos)
-            # length
-            command_list.append(maxpos_length)
-            # string
+    if o_a == 0:
+        command_list = []
+        number_of_items = len(stripped)
+        # number of bytes for stacks
+        stacks, stack_length = misc_functions.stacklength(stripped)
+        number_of_params = number_of_items - 3
+        # maxpos: example: number of positions: 3, maxpos: 2, (positions 0, 1, 2 )
+        if number_of_params == 1 and stack_length == 0:
+            # no parameter to transmit
             command_list.append(0)
-    answer_list = c_or(stripped)
+            command_list.append(v_announcelist.length_of_full_elements)
+        else:
+            command_list.append(1)
+            # 1: wait bytes for start:
+            command_list.append(v_announcelist.length_of_full_elements)
 
-    return command_list, answer_list
+            command_list = add_stack(stripped, command_list)
 
-def ct_os(stripped):
+            if number_of_params > 1:
+                maxpos = number_of_params - 1
+                maxpos_length = misc_functions.length_of_int(maxpos)
+                command_list[1] += maxpos_length
+                command_list.append(maxpos)
+                # length
+                command_list.append(maxpos_length)
+                # string
+                command_list.append(0)
+    else:
+        answer_list = c_or(stripped)
+        command_list = answer_list
+    return command_list
+
+def ct_os(stripped, o_a, dev):
     # 1 of n switch
     # <c>;os;number_of_stacks;pos0;...posn
     # <c><m><n>
-    answer_list = []
-    command_list = c_os(stripped)
-    return command_list, answer_list
+    if o_a == 0:
+        o_a_list = c_os(stripped)
+    else:
+        o_a_list = [1, v_announcelist.length_of_full_elements]
+    return o_a_list
 
 def c_os(stripped):
     # for command and answer of answercommand
@@ -141,7 +145,7 @@ def c_os(stripped):
     number_of_items = len(stripped)
     number_of_params = number_of_items - 3
     # type
-    command_list.append("1")
+    command_list.append(1)
     # 1: wait bytes for start:
     command_list.append(v_announcelist.length_of_full_elements)
 
@@ -158,89 +162,99 @@ def c_os(stripped):
     command_list.append(0)
     return command_list
 
-def ct_as(stripped):
+def ct_as(stripped, o_a, device):
     # <c>;as;number_of_stacks;pos0;...posn
     tok = stripped[0]
-    command_list = []
+    o_a_list = []
     if tok in v_token_params.a_to_o:
-        command_list = v_linelength.command[v_token_params.a_to_o[tok]]
-        answer_list = v_linelength.answer[v_token_params.a_to_o[tok]]
+        if o_a == 0:
+            o_a_list = v_linelength.command[v_token_params.a_to_o[tok]]
+        else:
+            o_a_list = v_linelength.answer[device][v_token_params.a_to_o[tok]]
     else:
-        command_list.append("1")
-        # 1: wait bytes for start:
-        command_list.append(v_announcelist.length_of_full_elements)
+        if o_a == 0:
+            o_a_list.append(1)
+            # 1: wait bytes for start:
+            o_a_list.append(v_announcelist.length_of_full_elements)
 
-        command_list = add_stack(stripped, command_list)
+            o_a_list = add_stack(stripped, o_a_list)
 
-        stacks, stack_length = misc_functions.stacklength(stripped)
-        if stack_length == 0:
-            command_list[0] = "0"
-            command_list[1] = v_announcelist.length_of_full_elements
-        answer_list = c_os(stripped)
-    return command_list, answer_list
+            stacks, stack_length = misc_functions.stacklength(stripped)
+            if stack_length == 0:
+                o_a_list[0] = 0
+                o_a_list[1] = v_announcelist.length_of_full_elements
+        else:
+            o_a_list = c_os(stripped)
+    return o_a_list
 
 
-def ct_at(stripped):
+def ct_at(stripped, o_a, dev):
     # toggling switch
     # <c>;at;number_of_stacks;pos0;...;posn
-    command_list = []
-    answer_list = []
     stacks, stack_length = misc_functions.stacklength(stripped)
-    if stack_length > 0:
-        answer_list.append("1")
-        # 1: wait bytes for start:
-        answer_list.append(v_announcelist.length_of_full_elements)
-        answer_list = add_stack(stripped, answer_list)
-        # new value
-        answer_list.append(len(stripped) - 3)
-        #length of this
-        answer_list.append(misc_functions.length_of_int(len(stripped) - 3))
-        # string
-        answer_list.append(0)
-
-        command_list.append("1")
-        # 1: wait bytes for start:
-        command_list.append(v_announcelist.length_of_full_elements)
-        command_list = add_stack(stripped, command_list)
+    if o_a == 0:
+        o_a_list = []
+        if stack_length > 0:
+            o_a_list.append(1)
+            # 1: wait bytes for start:
+            o_a_list.append(v_announcelist.length_of_full_elements)
+            o_a_list = add_stack(stripped, o_a_list)
+        else:
+            o_a_list.append(0)
+            o_a_list.append(v_announcelist.length_of_full_elements)
     else:
-        answer_list.append("1")
-        # wait
-        answer_list.append(v_announcelist.length_of_full_elements)
-        # new value
-        answer_list.append(len(stripped) - 3)
-        # length of this
-        answer_list.append(misc_functions.length_of_int(len(stripped) - 3))
-        # string
-        answer_list.append(0)
+        o_a_list = []
+        stacks, stack_length = misc_functions.stacklength(stripped)
+        if stack_length > 0:
+            o_a_list.append(1)
+            # 1: wait bytes for start:
+            o_a_list.append(v_announcelist.length_of_full_elements)
+            o_a_list = add_stack(stripped, o_a_list)
+            # new value
+            o_a_list.append(len(stripped) - 3)
+            #length of this
+            o_a_list.append(misc_functions.length_of_int(len(stripped) - 3))
+            # string
+            o_a_list.appeno_a_listd(0)
+        else:
+            o_a_list.append(1)
+            # wait
+            o_a_list.append(v_announcelist.length_of_full_elements)
+            # new value
+            o_a_list.append(len(stripped) - 3)
+            # length of this
+            o_a_list.append(misc_functions.length_of_int(len(stripped) - 3))
+            # string
+            o_a_list.append(0)
 
-        command_list.append("0")
-        command_list.append(v_announcelist.length_of_full_elements)
+    return o_a_list
 
-    return command_list, answer_list
+def ct_ou(stripped, o_a, dev):
+    if o_a == 0:
+        o_a_list = c_os(stripped)
+    else:
+        o_a_list = []
+        # there ar no answers
+        o_a_list.append(0)
+        o_a_list.append(0)
+    return o_a_list
 
-def ct_ou(stripped):
-    answer_list = []
-    command_list = c_os(stripped)
-    # there ar no answers
-    answer_list.append("0")
-    answer_list.append(0)
-    return command_list, answer_list
-
-def ct_op(stripped):
+def ct_op(stripped, o_a, dev):
     # <c>;op;number_of_stacks;number_of_valuesx;lin|log,;unitx;number_of_valuesy,...
     # <c><n>
     # <c><n><n>
-    answer_list = []
-    command_list = c_op(stripped)
-
-    answer_list.append("0")
-    answer_list.append(0)
-    return command_list, answer_list
+    if o_a == 0:
+        o_a_list = c_op(stripped)
+    else:
+        o_a_list = []
+        o_a_list.append(0)
+        o_a_list.append(0)
+    return o_a_list
 
 def c_op(stripped):
     # for command and answer of answercommand
     command_list = []
-    command_list.append("1")
+    command_list.append(1)
     # 1: wait bytes for start:
     command_list.append(v_announcelist.length_of_full_elements)
 
@@ -266,97 +280,112 @@ def c_op(stripped):
     return command_list
 
 
-def ct_ap(stripped):
+def ct_ap(stripped,o_a, dev):
     # <c>;ap;number_of_stacks;number_of_valuesx,<des>;b;unitx;number_of_valuesy,..
-    command_list = []
+    if o_a == 0:
+        o_a_list = []
 
-    # number of bytes for stacks
-    stacks, stack_length = misc_functions.stacklength(stripped)
+        # number of bytes for stacks
+        stacks, stack_length = misc_functions.stacklength(stripped)
 
-    if stack_length == 0:
-        command_list.append("0")
-        command_list.append(v_announcelist.length_of_full_elements)
+        if stack_length == 0:
+            o_a_list.append(0)
+            o_a_list.append(v_announcelist.length_of_full_elements)
+        else:
+            o_a_list.append(1)
+            # 1: wait bytes for start:
+            o_a_list.append(v_announcelist.length_of_full_elements)
+
+            o_a_list = add_stack(stripped, o_a_list)
     else:
-        command_list.append("1")
-        # 1: wait bytes for start:
-        command_list.append(v_announcelist.length_of_full_elements)
-
-        command_list = add_stack(stripped, command_list)
-
-    answer_list = c_op(stripped)
-    return command_list, answer_list
+        o_a_list = c_op(stripped)
+    return o_a_list
 
 
-def ct_oo(stripped):
+def ct_oo(stripped, o_a, dev):
     # <c>;oo;number_of_steps;steptime;unit;stepsize;b;
     # <c><n><n><n><n>  1 dimension
     # <c><n><n><n><n><n><n><n><n><n>   2 dimension
     # length is calculated for the 1st loop only, so no check of values is done
-    command_list = []
-    answer_list = []
-    # number of bytes for stacks
-    command_list.append("1")
-    # 1: wait bytes for start:
-    command_list.append(v_announcelist.length_of_full_elements)
+    if o_a == 0:
+        o_a_list = []
+        # number of bytes for stacks
+        o_a_list.append(1)
+        # 1: wait bytes for start:
+        o_a_list.append(v_announcelist.length_of_full_elements)
 
-    command_list = add_stack(stripped, command_list)
+        o_a_list = add_stack(stripped, o_a_list)
 
-    pos_of_stripped = 3
-    while pos_of_stripped < len(stripped):
-        # number_of steps
-        if int(stripped[pos_of_stripped]) != 0:
-            temp = int(stripped[pos_of_stripped])
-        else:
-            temp = 0
-        command_list.append(temp)
-        # length of this
-        length = misc_functions.length_of_int(temp)
-        command_list.append(length)
-        command_list[1] += length
-        # string
-        command_list.append(0)
+        pos_of_stripped = 3
+        while pos_of_stripped < len(stripped):
+            # number_of steps
+            if int(stripped[pos_of_stripped]) != 0:
+                temp = int(stripped[pos_of_stripped])
+            else:
+                temp = 0
+            o_a_list.append(temp)
+            # length of this
+            length = misc_functions.length_of_int(temp)
+            o_a_list.append(length)
+            o_a_list[1] += length
+            # string
+            o_a_list.append(0)
 
-        # stepsize
-        if int(stripped[pos_of_stripped + 1].split(",")[0]) != 0:
-            temp = int(stripped[pos_of_stripped + 1])
-        else:
-            temp = 0
-        command_list.append(temp)
-        # length of this
-        length = misc_functions.length_of_int(temp)
-        command_list.append(length)
-        command_list[1] += length
-        # string
-        command_list.append(0)
+            # stepsize
+            if int(stripped[pos_of_stripped + 1].split(",")[0]) != 0:
+                temp = int(stripped[pos_of_stripped + 1])
+            else:
+                temp = 0
+            o_a_list.append(temp)
+            # length of this
+            length = misc_functions.length_of_int(temp)
+            o_a_list.append(length)
+            o_a_list[1] += length
+            # string
+            o_a_list.append(0)
 
-        # steptime
-        if int(stripped[pos_of_stripped + 2]) != 0:
-            temp = int(stripped[pos_of_stripped + 2])
-        else:
-            temp = 0
-        command_list.append(temp)
-        # length of this
-        length = misc_functions.length_of_int(temp)
-        command_list.append(length)
-        command_list[1] += length
-        # string
-        command_list.append(0)
+            # steptime
+            if int(stripped[pos_of_stripped + 2]) != 0:
+                temp = int(stripped[pos_of_stripped + 2])
+            else:
+                temp = 0
+            o_a_list.append(temp)
+            # length of this
+            length = misc_functions.length_of_int(temp)
+            o_a_list.append(length)
+            o_a_list[1] += length
+            # string
+            o_a_list.append(0)
 
-        pos_of_stripped += 5
+            # up down
+            typ = stripped[pos_of_stripped + 3]
+            if typ == "a":
+                o_a_list.append(1)
+            else:
+                o_a_list.append(255)
+            # length of this
+            o_a_list.append(1)
+            o_a_list[1] += 1
+            # string
+            o_a_list.append(0)
 
-    answer_list.append("0")
-    answer_list.append(0)
-    return command_list, answer_list
+            pos_of_stripped += 6
+    else:
+        o_a_list = []
+        o_a_list.append(0)
+        o_a_list.append(0)
+    return o_a_list
 
 
-def ct_om(stripped):
+def ct_om(stripped, o_a, dev):
     # <c>;om;<ty>;m
-    answer_list = []
-    command_list = c_om(stripped)
-
-    answer_list.append("5")
-    answer_list.append(0)
-    return command_list, answer_list
+    if o_a == 0:
+        o_a_list = c_om(stripped)
+    else:
+        o_a_list = []
+        o_a_list.append(5)
+        o_a_list.append(0)
+    return o_a_list
 
 
 def c_om(stripped):
@@ -367,7 +396,7 @@ def c_om(stripped):
     positionlength = misc_functions.length_of_int(positions)
     if p_type == "n":
         # 0: type
-        command_list.append("1")
+        command_list.append(1)
         # 1: length
         command_list.append(v_announcelist.length_of_full_elements + positionlength)
 
@@ -388,7 +417,7 @@ def c_om(stripped):
     else:
         # string
         # 0: type
-        command_list.append("7")
+        command_list.append(7)
         # 1: length
         command_list.append(v_announcelist.length_of_full_elements + positionlength)
 
@@ -410,36 +439,38 @@ def c_om(stripped):
     return command_list
 
 
-def ct_am(stripped):
+def ct_am(stripped, o_a, dev):
     # c>;am;<ty>;m
-    command_list = []
-    positions = int(stripped[3]) - 1
-    positionlength = misc_functions.length_of_int(positions)
-    command_list.append("1")
-    command_list.append(v_announcelist.length_of_full_elements + positionlength)
+    if o_a == 0:
+        o_a_list = []
+        positions = int(stripped[3]) - 1
+        positionlength = misc_functions.length_of_int(positions)
+        o_a_list.append(1)
+        o_a_list.append(v_announcelist.length_of_full_elements + positionlength)
 
-    # max
-    command_list.append(positions)
-    command_list.append(positionlength)
-    command_list.append(0)
+        # max
+        o_a_list.append(positions)
+        o_a_list.append(positionlength)
+        o_a_list.append(0)
+    else:
+        o_a_list = c_om(stripped)
+    return o_a_list
 
-    answer_list = c_om(stripped)
-    return command_list, answer_list
-
-def ct_on(stripped):
+def ct_on(stripped, o_a, dev):
     # <c>;on;<ty>;m;n
     # <c><n><m><data>
-    answer_list = []
-    command_list = c_on(stripped)
-
-    answer_list.append("5")
-    answer_list.append(0)
-    return command_list, answer_list
+    if o_a == 0:
+        o_a_list = c_on(stripped)
+    else:
+        o_a_list = []
+        o_a_list.append(5)
+        o_a_list.append(0)
+    return o_a_list
 
 def c_on(stripped):
     command_list = []
     # 0: type
-    command_list.append("2")
+    command_list.append(2)
     # 1: length of first loop: added later
     command_list.append(1)
 
@@ -479,43 +510,45 @@ def c_on(stripped):
         command_list.append(1)
     return command_list
 
-def ct_an(stripped):
+def ct_an(stripped, o_a, dev):
     # c>;an;<ty>;m;n
-    command_list = []
-    # 0: type:
-    command_list.append("1")
-    # 1: length of first loop: added later
-    command_list.append(v_announcelist.length_of_full_elements)
-    positions = int(stripped[3])
-    elements = int(stripped[4])
-    positionlength = misc_functions.length_of_int(positions)
-    elementlength = misc_functions.length_of_int(elements)
-    # 3: max of start positions
-    command_list.append(positions)
-    # 4: length of this
-    command_list.append(positionlength)
-    command_list[1] += positionlength
-    # 5: string
-    command_list.append(0)
+    if o_a == 0:
+        o_a_list = []
+        # 0: type:
+        o_a_list.append(1)
+        # 1: length of first loop: added later
+        o_a_list.append(v_announcelist.length_of_full_elements)
+        positions = int(stripped[3])
+        elements = int(stripped[4])
+        positionlength = misc_functions.length_of_int(positions)
+        elementlength = misc_functions.length_of_int(elements)
+        # 3: max of start positions
+        o_a_list.append(positions)
+        # 4: length of this
+        o_a_list.append(positionlength)
+        o_a_list[1] += positionlength
+        # 5: string
+        o_a_list.append(0)
+        # 6: max for elements
+        o_a_list.append(elements)
+        # 7: length of this
+        o_a_list.append(elementlength)
+        o_a_list[1] += elementlength
+        # 8: string
+        o_a_list.append(0)
+    else:
+        o_a_list = c_on(stripped)
+    return o_a_list
 
-    # 6: max for elements
-    command_list.append(elements)
-    # 7: length of this
-    command_list.append(elementlength)
-    command_list[1] += elementlength
-    # 8: string
-    command_list.append(0)
-    answer_list = c_on(stripped)
-    return command_list, answer_list
-
-def ct_of(stripped):
+def ct_of(stripped, o_a, dev):
     # <c>;of;<ty>;n
-    answer_list = []
-    command_list = c_of(stripped)
-
-    answer_list.append("5")
-    answer_list.append(0)
-    return command_list, answer_list
+    if o_a == 0:
+        o_a_list = c_of(stripped)
+    else:
+        o_a_list = []
+        o_a_list.append(5)
+        o_a_list.append(0)
+    return o_a_list
 
 def c_of(stripped):
     # for command and answer of answercommand
@@ -524,7 +557,7 @@ def c_of(stripped):
     max_len = int(stripped[3])
     length_of_max_len = misc_functions.length_of_int(max_len)
     # 0: typ
-    command_list.append("4")
+    command_list.append(4)
     # length for 1st loop: length_of_commandtoken + length of startcell
     # 1: wait
     command_list.append(v_announcelist.length_of_full_elements + length_of_max_len)
@@ -546,41 +579,43 @@ def c_of(stripped):
         command_list.append(1)
     return command_list
 
-def ct_af(stripped):
+def ct_af(stripped, o_a, dev):
     # <c>;af;<ty>;n
-    command_list = []
-    x_max = int(stripped[3])
-    length_of_max = misc_functions.length_of_int(x_max)
-    # 0: type
-    command_list.append("1")
-    # 1: wait
-    command_list.append(v_announcelist.length_of_full_elements + length_of_max)
+    if o_a == 0:
+        o_a_list = []
+        x_max = int(stripped[3])
+        length_of_max = misc_functions.length_of_int(x_max)
+        # 0: type
+        o_a_list.append(1)
+        # 1: wait
+        o_a_list.append(v_announcelist.length_of_full_elements + length_of_max)
 
-    # 2: max
-    command_list.append(x_max)
-    # 3: length of this
-    command_list.append(length_of_max)
-    # string
-    command_list.append(0)
+        # 2: max
+        o_a_list.append(x_max)
+        # 3: length of this
+        o_a_list.append(length_of_max)
+        # string
+        o_a_list.append(0)
+    else:
+        o_a_list = c_of(stripped)
+    return o_a_list
 
-    answer_list = c_of(stripped)
-    return command_list, answer_list
-
-def ct_oa(stripped):
+def ct_oa(stripped, o_a, dev):
     # <c>;oa;<ty>...;<ty>
-    answer_list = []
-    command_list = c_oa(stripped)
-
-    answer_list.append("0")
-    answer_list.append(0)
-    return command_list, answer_list
+    if o_a == 0:
+        o_a_list = c_oa(stripped)
+    else:
+        o_a_list = []
+        o_a_list.append(0)
+        o_a_list.append(0)
+    return o_a_list
 
 def c_oa(stripped):
     # for command and answer of answercommand
     command_list = []
     number_of_items = len(stripped)
     # 0: type
-    command_list.append("3")
+    command_list.append(3)
     # 1: length to wait
     command_list.append(v_announcelist.length_of_full_elements)
 
@@ -633,34 +668,36 @@ def c_oa(stripped):
             i += 1
     return command_list
 
-def ct_aa(stripped):
+def ct_aa(stripped, o_a, dev):
     # <c>,aa;<ty>...;<ty>
-    command_list = []
-    number_of_items = len(stripped)
-    if number_of_items == 3:
-        # one element
-        command_list.append("0")
-        command_list.append(v_announcelist.length_of_full_elements)
+    if o_a == 0:
+        o_a_list = []
+        number_of_items = len(stripped)
+        if number_of_items == 3:
+            # one element
+            o_a_list.append(0)
+            o_a_list.append(v_announcelist.length_of_full_elements)
+        else:
+            positionlength = misc_functions.length_of_int(number_of_items - 3)
+            o_a_list.append(1)
+            o_a_list.append(v_announcelist.length_of_full_elements + positionlength)
+
+            # max of position in announcement, 0 based -> len(stripped) - c - ct - 1
+            o_a_list.append(number_of_items - 3)
+            o_a_list.append(positionlength)
+            # string
+            o_a_list.append(0)
     else:
-        positionlength = misc_functions.length_of_int(number_of_items - 3)
-        command_list.append("1")
-        command_list.append(v_announcelist.length_of_full_elements + positionlength)
+        o_a_list = c_oa(stripped)
+    return o_a_list
 
-        # max of position in announcement, 0 based -> len(stripped) - c - ct - 1
-        command_list.append(number_of_items - 3)
-        command_list.append(positionlength)
-        # string
-        command_list.append(0)
-    answer_list = c_oa(stripped)
-    return command_list, answer_list
-
-
-def ct_ob(stripped):
-    answer_list = []
-    # <c>;ob;<ty>...;<ty>
-    command_list = c_ob(stripped)
-
-    return command_list, answer_list
+def ct_ob(stripped, o_a, dev):
+    if o_a == 0:
+        # <c>;ob;<ty>...;<ty>
+        o_a_list = c_ob(stripped)
+    else:
+        o_a_list = []
+    return o_a_list
 
 
 def c_ob(stripped):
@@ -671,7 +708,7 @@ def c_ob(stripped):
         p_type, length, maxpar = misc_functions.length_of_typ(stripped[2])
         if p_type == "n":
             # 0: type
-            command_list.append("1")
+            command_list.append(1)
             # 1: wait
             command_list.append(v_announcelist.length_of_full_elements + length)
             # max of par
@@ -682,7 +719,7 @@ def c_ob(stripped):
             command_list.append(0)
         else:
             # 0: type
-            command_list.append("6")
+            command_list.append(6)
             # wait
             command_list.append(v_announcelist.length_of_full_elements + length)
             # max of stringlength
@@ -695,7 +732,7 @@ def c_ob(stripped):
         # more elements
         positions = len(stripped) - 2
         # 0: type
-        command_list.append("5")
+        command_list.append(5)
         # 1: wait
         command_list.append(v_announcelist.length_of_full_elements)
 
@@ -732,39 +769,40 @@ def c_ob(stripped):
             i += 1
     return command_list
 
-def ct_ab(stripped):
+def ct_ab(stripped, o_a, dev):
     # <c>;ab;<ty>...;<ty>
-    command_list = []
-    positions = len(stripped) - 2
-    if positions == 1:
-        # 0: type
-        command_list.append("0")
-        # 1: wait
-        command_list.append(v_announcelist.length_of_full_elements)
+    if o_a == 0:
+        o_a_list = []
+        positions = len(stripped) - 2
+        if positions == 1:
+            # 0: type
+            o_a_list.append(0)
+            # 1: wait
+            o_a_list.append(v_announcelist.length_of_full_elements)
+        else:
+            # 0: type
+            o_a_list.append(1)
+            # 1: wait
+            o_a_list.append(v_announcelist.length_of_full_elements)
+
+            # 2: start element (0 based position)
+            o_a_list.append(positions - 1)
+            # 3: length of this
+            o_a_list.append(misc_functions.length_of_int(positions - 2))
+            o_a_list[1] += misc_functions.length_of_int(positions - 2)
+            # 4: string
+            o_a_list.append(0)
+
+            # 5: number of elements
+            o_a_list.append(positions)
+            # 6: lengh of this
+            o_a_list.append(misc_functions.length_of_int(positions))
+            o_a_list[1] += misc_functions.length_of_int(positions)
+            # 7: string
+            o_a_list.append(0)
     else:
-        # 0: type
-        command_list.append("1")
-        # 1: wait
-        command_list.append(v_announcelist.length_of_full_elements)
-
-        # 2: start element (0 based position)
-        command_list.append(positions - 1)
-        # 3: length of this
-        command_list.append(misc_functions.length_of_int(positions - 2))
-        command_list[1] += misc_functions.length_of_int(positions - 2)
-        # 4: string
-        command_list.append(0)
-
-        # 5: number of elements
-        command_list.append(positions)
-        # 6: lengh of this
-        command_list.append(misc_functions.length_of_int(positions))
-        command_list[1] += misc_functions.length_of_int(positions)
-        # 7: string
-        command_list.append(0)
-
-    answer_list = c_ob(stripped)
-    return command_list, answer_list
+        o_a_list = c_ob(stripped)
+    return o_a_list
 
 def calc_positionlength1(item):
     # number of memory positions

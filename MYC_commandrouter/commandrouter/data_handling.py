@@ -1,11 +1,10 @@
 """
 name : data_handling.py
-last edited: 20260224
+last edited: 20260414
 data handling subprograms for SK, and device
 Copyright : DK1RI
-If no other rights are affected, this programm can be used under GPL (Gnu public licence)
+If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
-import time
 import v_announcelist
 import v_ld
 import v_sk
@@ -13,7 +12,7 @@ import misc_functions
 
 # some switches, no parameters
 def data_0(got_bytes, sk, input_device):
-    # v_sk.len / v_dev.len: not used
+    # v_sk.data_len / v_dev.len: not used
     finish = 0
     if got_bytes >= sk[0]:
         v_sk.orig_to_ld = v_sk.inputline[input_device]
@@ -22,20 +21,17 @@ def data_0(got_bytes, sk, input_device):
 
 # switches, range commands. m, all answer commands
 def data_1(tok, line, got_bytes, sk, linelength, input_device):
-    # used v_sk.len / v_dev.len: 0: actual wait
+    # used v_sk.data_len / v_dev.len: 0: actual wait
     finish = 0
     if got_bytes >= sk[0]:
         pos_in_linelength = 2
         pos_in_data = sk[1]
         while pos_in_linelength < len(linelength) and finish == 0:
             parameter = int.from_bytes(line[pos_in_data + 1:pos_in_data + 1 + linelength[pos_in_linelength + 1]])
-           # parameter = bytes_to_int_ba(line[pos_in_data + 1 :pos_in_data + 1 + linelength[pos_in_linelength + 1]])
             # check always
             if tok in v_ld.right_tok:
-                if v_sk.input_as_parameter_list == []:
-                    v_sk.input_as_parameter_list = parameter
-                else:
-                    v_sk.input_as_parameter_list.append(parameter)
+                v_sk.input_as_parameter_list.append(parameter)
+
             if parameter > linelength[pos_in_linelength]:
                 misc_functions. write_log("transfertype 1 value too high, " + str(parameter) + " should be " + str(linelength[pos_in_linelength]))
                 finish = 2
@@ -54,7 +50,7 @@ def data_2(line, got_bytes, sk, linelength, input_device):
     # sk: actual 0: wait, 1: number of calls (0 based)
     # 2: number of elements not yet transmitted, 3: 0 next stringlength - 1 string,
     # 5: actual got bytes
-    # not used by LD: no input_as_parameter_list
+    # not used by LD
     finish = 0
     if got_bytes >= sk[0]:
         if sk[1] == 0:
@@ -65,7 +61,8 @@ def data_2(line, got_bytes, sk, linelength, input_device):
             if position <= linelength[2]:
                 elements = misc_functions.bytes_to_int_ba(line[sk[0] -1:sk[0] + linelength[6]])
                 if elements == 0:
-                    v_sk.orig_to_ld = v_sk.inputline[input_device]
+                    # not send to LD; directly to dev
+                    v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                     finish = 1
                 elif elements <= linelength[5]:
                     # wait next (length of <ty>)
@@ -98,7 +95,8 @@ def data_2(line, got_bytes, sk, linelength, input_device):
                     sk[4] = got_bytes
                     if sk[2] <= 0:
                         # all elements done
-                        v_sk.orig_to_ld = v_sk.inputline[input_device]
+                        # not send to LD; directly to dev
+                        v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                         finish = 1
                 else:
                     misc_functions.write_log("on numeric parameter too high:" + str(new_data) + " should be <= " + str(linelength[8]))
@@ -124,7 +122,8 @@ def data_2(line, got_bytes, sk, linelength, input_device):
                     sk[4] = got_bytes
                     if sk[2] == 0:
                         # all elements done
-                        v_sk.orig_to_ld = v_sk.inputline[input_device]
+                        # not send to LD; directly to dev
+                        v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                         finish = 1
 
     return sk, finish
@@ -137,38 +136,44 @@ def data_3(tok, line, got_bytes, sk, linelength,  input_device):
     if got_bytes >= sk[0]:
         if sk[1] == 0:
             # got position or data
-            data_pos_value = int.from_bytes(line[sk[0] - 1:sk[0] - 1 + linelength[3]])
-            if len(linelength) == 5:
-                # one element only; got data, no pos
-                if linelength[4] == 0:
-                    # numeric
-                    if data_pos_value <= linelength[2]:
-                        if tok in v_ld.right_tok:
-                            v_sk.input_as_parameter_list = data_pos_value
-                        v_sk.orig_to_ld = v_sk.inputline[input_device]
-                        finish = 1
-                    else:
-                        misc_functions.write_log("oa value too high:" + str(data_pos_value) + " should be " + str(linelength[2]))
-                        finish = 2
-                else:
-                    # string
-                    if data_pos_value <= linelength[2]:
-                        if data_pos_value == 0:
-                            # no data expected
-                            v_sk.orig_to_ld = v_sk.inputline[input_device]
+            data_pos_value = int.from_bytes(line[sk[0] - linelength[3]:sk[0]])
+            if len(linelength) < 9:
+                if data_pos_value <= linelength[2]:
+                    # one element only; got data, no pos
+                    if linelength[4] == 0:
+                        # numeric
+                        if data_pos_value <= linelength[2]:
+                            if tok in v_ld.right_tok:
+                                v_sk.input_as_parameter_list.append(data_pos_value)
+                                v_sk.orig_to_ld = v_sk.inputline[input_device]
                             finish = 1
                         else:
-                            # add length to wait
-                            sk[0] += data_pos_value
-                            # next call
-                            sk[1] = 1
+                            misc_functions.write_log("oa value too high:" + str(data_pos_value) + " should be " + str(linelength[2]))
+                            finish = 2
                     else:
-                        misc_functions.write_log("oa value for stringlength too high:" + str(data_pos_value) + " should be <= " + str(linelength[2]))
-                        finish = 2
+                        # string
+                        if data_pos_value <= linelength[2]:
+                            if data_pos_value == 0:
+                                # no data expected
+                                v_sk.input_as_parameter_list.append(data_pos_value)
+                                v_sk.orig_to_ld = v_sk.inputline[input_device]
+                                finish = 1
+                            else:
+                                # add length to wait
+                                sk[0] += data_pos_value
+                                # next call
+                                sk[1] = 1
+                        else:
+                            misc_functions.write_log("oa value for stringlength too high:" + str(data_pos_value) + " should be <= " + str(linelength[2]))
+                            finish = 2
+                else:
+                    misc_functions.write_log("oa value for position too high:" + str(data_pos_value) + " should be <= " + str(linelength[2]))
+                    finish = 2
+
             else:
                 # more than one element
                 # position
-                if data_pos_value <= linelength[2]:
+                if data_pos_value <= int(linelength[2]):
                     # add length of (next) par or stringlength
                     # wait for bytes given for parameter at position
                     sk[0] += linelength[6 + data_pos_value * 3]
@@ -183,8 +188,12 @@ def data_3(tok, line, got_bytes, sk, linelength,  input_device):
             if len(linelength) == 5:
                 # one parameter in linelength only: string finished
                 if tok in v_ld.right_tok:
-                    v_sk.input_as_parameter_list = line[v_announcelist.length_of_full_elements:]
-                v_sk.orig_to_ld = v_sk.inputline[input_device]
+                    # drop tok
+                    dat = line[v_announcelist.length_of_full_elements:]
+                    # drop stringlength
+                    dat = dat[linelength[3]:]
+                    v_sk.input_as_parameter_list.append(dat)
+                    v_sk.orig_to_ld = v_sk.inputline[input_device]
                 finish = 1
             else:
                 # position for start of parameter block in linelength (numeric value or string length)
@@ -199,10 +208,10 @@ def data_3(tok, line, got_bytes, sk, linelength,  input_device):
                     if parameter_of_line <= linelength[pos_in_linelength]:
                         # position
                         if tok in v_ld.right_tok:
-                            v_sk.input_as_parameter_list = [sk[2]]
+                            v_sk.input_as_parameter_list.append(sk[2])
                             # numeric data
                             v_sk.input_as_parameter_list.append(parameter_of_line)
-                        v_sk.orig_to_ld = v_sk.inputline[input_device]
+                            v_sk.orig_to_ld = v_sk.inputline[input_device]
                         finish = 1
                     else:
                         misc_functions.write_log("oa value too high:" + str(parameter_of_line) + " should be <= " + str(linelength[pos_in_linelength]))
@@ -220,11 +229,17 @@ def data_3(tok, line, got_bytes, sk, linelength,  input_device):
                             length_of_string = parameter_of_line
                             sk[0] += length_of_string
                             sk[1] = 2
+                            # position for start of string (strip tok, pos, length)
+                            sk[3]= v_announcelist.length_of_full_elements + linelength[3] + linelength[6]
                     else:
                         misc_functions.write_log("oa stringlength too high:" + str(parameter_of_line) + " should be <= " + str(linelength[pos_in_linelength]))
                         finish = 2
         else:
             # sk[1] == 2: got string
+            # position
+            v_sk.input_as_parameter_list.append(sk[2])
+            # string
+            v_sk.input_as_parameter_list.append(v_sk.inputline[input_device][sk[3]:])
             v_sk.orig_to_ld = v_sk.inputline[input_device]
             finish = 1
     return sk, finish
@@ -233,16 +248,15 @@ def data_3(tok, line, got_bytes, sk, linelength,  input_device):
 def data_4(line, got_bytes, sk, linelength, input_device):
     # sk: 0: len of line to wait, 1: number of call (0 based),2:  1st parameter,
     #  3: 0:stringlength- 1: string.
-    # not used by LD: no input_as_parameter_list
+    # not used by LD
     finish = 0
     if got_bytes >= sk[0]:
         if sk[1] == 0:
-            print(linelength)
-            print (line[0])
             # got number of elements
             number_of_elements = int.from_bytes(line[v_announcelist.length_of_full_elements:v_announcelist.length_of_full_elements + linelength[3]])
             if number_of_elements == 0:
-                v_sk.orig_to_ld = v_sk.inputline[input_device]
+                # not send to LD; directly to dev
+                v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                 finish = 1
             elif number_of_elements <= linelength[2]:
                 # add length of (next) par or stringlength
@@ -263,8 +277,13 @@ def data_4(line, got_bytes, sk, linelength, input_device):
                     # number of outstanding elements
                     sk[2] -= 1
                     if sk[2] < 1:
-                        v_sk.orig_to_ld = v_sk.inputline[input_device]
+                        # not send to LD; directly to dev
+                        v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                         finish = 1
+                    else:
+                        # ?
+                        misc_functions.write_log("data missing")
+                        finish = 2
                 else:
                     misc_functions.write_log("of value too high:" + str(value) + " should be <= " + str(linelength[5]))
                     finish = 2
@@ -276,7 +295,8 @@ def data_4(line, got_bytes, sk, linelength, input_device):
                 if value <= linelength[5]:
                     if value == 0:
                         # no data expected
-                        v_sk.orig_to_ld = v_sk.inputline[input_device]
+                        # not send to LD; directly to dev
+                        v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                         finish = 1
                     else:
                         # string; add length of string
@@ -293,7 +313,8 @@ def data_4(line, got_bytes, sk, linelength, input_device):
             sk[1] = 1
             sk[2] -= 1
             if sk[2] < 1:
-                v_sk.orig_to_ld = v_sk.inputline[input_device]
+                # not send to LD; directly to dev
+                v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                 finish = 1
             sk[3] = 0
     return sk, finish
@@ -302,7 +323,7 @@ def data_4(line, got_bytes, sk, linelength, input_device):
 def data_5(line, got_bytes, sk, linelength, input_device):
     # sk: 0: len, 1: call, 2: number of not transmitted, 3: 0 normal, 1: additional call
     # 4: next pos in linelength
-    # not used by LD: no input_as_parameter_list
+    # not used by LD
     finish = 0
     if got_bytes >= sk[0]:
         if sk[1] == 0:
@@ -314,7 +335,8 @@ def data_5(line, got_bytes, sk, linelength, input_device):
                 par_start += linelength[3]
                 elements = misc_functions.bytes_to_int_ba(line[par_start:par_start + linelength[6]])
                 if elements == 0:
-                    v_sk.orig_to_ld = v_sk.inputline[input_device]
+                    # not send to LD; directly to dev
+                    v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                     finish = 1
                 if elements <= linelength[5]:
                     sk[2] = elements
@@ -335,14 +357,15 @@ def data_5(line, got_bytes, sk, linelength, input_device):
             # got element or stringlength
             start_of_value = sk[0] - linelength[sk[4] + 1]
             value = misc_functions.bytes_to_int_ba(line[start_of_value:start_of_value + linelength[sk[4] + 1]])
-            if value <= linelength[sk[4]]:
+            if value <= int(linelength[sk[4]]):
                 # actual value ok
                 # numeric or string?
                 if linelength[sk[4] + 2] == 0:
                     # numeric
                     sk[2] -= 1
                     if sk[2] < 1:
-                        v_sk.orig_to_ld = v_sk.inputline[input_device]
+                        # not send to LD; directly to dev
+                        v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                         finish = 1
                     # get data for next block
                     if sk[4] + 3 > len(linelength) - 1:
@@ -365,7 +388,8 @@ def data_5(line, got_bytes, sk, linelength, input_device):
             # string
             sk[2] -= 1
             if sk[2] < 1:
-                v_sk.orig_to_ld = v_sk.inputline[input_device]
+                # not send to LD; directly to dev
+                v_ld.from_ld_to_dev = v_sk.inputline[input_device]
                 finish = 1
                 # get data for next block
             if sk[4] + 3 > len(linelength) - 1:
@@ -382,7 +406,7 @@ def data_5(line, got_bytes, sk, linelength, input_device):
 # ob command / ab answer one element string
 def data_6(line, got_bytes, sk, linelength, input_device):
     # sk: 0: len, 1: call
-    # not used by LD: no input_as_parameter_list
+    # not used by LD
     finish = 0
     if got_bytes >= sk[0]:
         if sk[1] == 0:
@@ -396,14 +420,15 @@ def data_6(line, got_bytes, sk, linelength, input_device):
                 misc_functions.write_log("ob value too high:" + str(length_of_string) + " should be <=" + str(linelength[2]))
                 finish = 2
         elif sk[1] == 1:
-            v_sk.orig_to_ld = v_sk.inputline[input_device]
+            # not send to LD; directly to dev
+            v_ld.from_ld_to_dev = v_sk.inputline[input_device]
             finish = 1
     return sk, finish
 
-# om command / am answer with strin
+# om command / am answer with string
 def data_7(line, got_bytes, sk, linelength, input_device):
     # sk: 0: len, 1: call
-    # not used by LD: no input_as_parameter_list
+    # not used by LD
     finish = 0
     if got_bytes >= sk[0]:
         if sk[1] == 0:
@@ -423,6 +448,7 @@ def data_7(line, got_bytes, sk, linelength, input_device):
                 misc_functions.write_log("ob memoryposition too high:" + str(position) + " should be <=" + str(linelength[2]))
                 finish = 2
         elif sk[1] == 1:
-            v_sk.orig_to_ld = v_sk.inputline[input_device]
+            # not send to LD; directly to dev
+            v_ld.from_ld_to_dev = v_sk.inputline[input_device]
             finish = 1
     return sk, finish

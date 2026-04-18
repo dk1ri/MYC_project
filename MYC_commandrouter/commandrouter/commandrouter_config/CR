@@ -1,0 +1,9 @@
+#20260303
+# do not modify!
+# no update needed, done by program at initialization
+0;c;DK1RI;CR0;1;1;145;1;5;1-1
+240;an,ANNOUNCEMENTS;145;5,start at;5,elements
+241;an;BASIC ANNOUNCEMNTS; 5;5
+252;aa,LAST ERROR;200
+253;aa,MYC INFO;b,ACTIVE
+255;aa,INDIVIDUALIZATION;20,NAME,CR0;b,NUMBER,1;a,USB,1;a,TELNET,1;a,FILE,1;a,TERMINAL,1
