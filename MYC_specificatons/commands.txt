@@ -3,7 +3,7 @@ Hint for the txt-format-version; to read this version as PDF please load https:/
 MYC Announcements and  Commands
 
 Author: DK1RI
-Version V03.00.07 20260418
+Version V03.00.08 20260616
 This paper is published in https://github.com/dk1ri  as well
 
 Introduction
@@ -44,6 +44,7 @@ Each command announcement line contain the unique command-number, the command-ty
  these properties is the uppercase name for the <OPTION>, followed by other parameters.
 
 Each command belongs to a command-type. Command-types have two letters: the first denotes the operation type, the second the operating object / function
+The length of  each announce-line is limited to 254 Byte. If a command require more bytes, the line must be splitted to more lines with identical command-token and command-type.
 .
 Operation type (first letter of command-type: o, a, r, s, i, j, z)
 Active operating is denoted by “o”  as the first letter, answer commands start with “a”. If a function can operate and answer, the “as” notation should be used for the answer command: eg 33:as,as32 . The answer command should directly follow the operate command. The CR may extend the answer with the complete content and replace the “as32” by “ext32”  Commands with “as” and “ext” use the same properties as the corresponding command.
@@ -200,6 +201,7 @@ CODING is a special predefined form of ALPHA There is no definition necessary.
 usage: 
 100;om;5,{alpha};10
 
+
 List of Standardized Command-types
 
 These command-type templates contain a description and format of the properties, where necessary.
@@ -330,7 +332,7 @@ lin				linear numbering
 <unit>	 			unit of range
  <sequence> and <unitx> are information for the SK; no date are transmitted.
 
-announce:	<c>;yo,ext<c>,[<des>];number_of_stacks[,<des_stacks>];number_of_steps,<label>;number_for step_size[,<des_op_ap_oo>][;number_of_step_time[,<des_op_ap_oo>];<UP_DOWN>;<4,LOOP|>|<5,LIMIT>;<step_time-unit>,<label>;[number_of_steps,…..
+announce:	<c>;yo,ext<c>,[<des>];number_of_stacks[,<des_stacks>];number_of_steps,<label>;number_for step_size[,<des_op_ap_oo>][;number_of_step_time[,<des_op_ap_oo>];<2,UP|4,DOWN>;<4,LOOP|>|<5,LIMIT>;<step_time-unit>,<label>;[number_of_steps,…..
 												move position stepwise;  works only as extension of an op
 												command
 4,LOOP|5,LIMIT and <step_time-unit> is  information for the SK; no date are transmitted, but must be given in the announcement.
@@ -403,7 +405,7 @@ announce:	<c>;xn,[,des_c]; <ty>[,<des_type>];m_positions[,<des_memory>;n_element
 												For use by humans a small figure of n_elements is 
 												recommended
 Hints for the xn command:
-The value of n_elements may be higher thane th value m_positions. If you want to transmit all elememts, n_ elements must be m_positions + 1.
+The value of n_elements may be higher thane the value m_positions. If you want to transmit all elememts, n_ elements must be m_positions + 1.
 Some devices have a limited transmit length. This can be solved by reducing n_elements or by sending the data with short gaps.
 
 operate command or answer / info:	<c><m><n><data>					write n elements to memory, starting at position m (“0” based)
@@ -423,7 +425,7 @@ announce:	<c>;xf[,<des_c>];<ty>[,<des_type>];<n_elements>[,<label>]		FIFO, stack
 												For usage for humans it is recommended to limit m to 100!
 												memory command xn with start position 0 would work similar
 												(one more byte)
-operate command or answer / info:	<c>0x02<data><data>					2 elements are sent / read  (0<2< n_elements)
+operate command or answer / info:	<c>0x02<data><data>				2 elements are sent / read  (0<=2< n_elements)
 answer command:	<c><n>								n elements are expected
 
 announce:	<c>;xa[,<des_c>];<ty>[,<des_type>][<ty>[,<des_type>]]…		array of n different elements of type <ty>
@@ -439,7 +441,7 @@ announce:	<c>;xb[,<des_c>];<ty>[,<des_type>][;<ty>[,<des_type>]]...
 												for one element only n and m is not transmitted
 operate command or answer / info:	<c><m><n><data>					write n elements to memory, starting at position m (“0” based)
 												<n> must not exceed the number of elements
-												n = 0 means no data transfer
+												n = 0 means no data transfer (not for one element)
 												If end of memory is reached next element is written to n=0.
 answer command:			<c><m><n>						read n elements from memory, start at position m (“0” based)
 												for one element: <m>, <n> are omitted
