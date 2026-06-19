@@ -1,0 +1,123 @@
+0;m;DK1RI;test3;V01.0;1;124;1;122;1-1
+2;os,mode;1;0,off;1,V;2,I;3,P;4,R;5,calibrate V;6,calibrate I
+3;as,ext2;1;0,off;1,V;2,I;3,P;4,R;5,calibrate V;6,calibrate I
+4;os,mode;3;0,off;3,V;2,I;3,P;4,R;5,calibrate V;6,calibrate I
+5;as,ext4;3;0,off;3,V;2,I;3,P;4,R;5,calibrate V;6,calibrate I
+6;or,on off mode;1;0,off;1,regulated;2,fixed
+7;ar,ext6;1;0,off;1,regulated;2,fixed
+8;or,on off mode;3;0,off;1,regulated;2,fixed
+9;ar,ext8;3;0,off;1,regulated;2,fixed
+10;op,required voltage;1;896;lin;V
+11;ap,ext10;1;896;lin;V
+12;oo,ext11;1;12,steps;10,size;12,time;a;0,LIMIT;sec
+13;op,required voltage;3;896;lin;V
+14;ap,ext13;3;896;lin;V
+15;op,x;3;10;lin;A;20;lin;B
+16;ap,ext15;3;10;lin;A;20;lin;B
+17;oa,16;a
+18;aa,ext17;a
+19;oa,18;b
+20;aa,ext19;b
+21;oa,20;e
+22;aa,ext21;e
+23;oa,22;i
+24;aa,ext23;i
+25;oa,24;w
+26;aa,ext25;w
+27;oa,26;d
+28;aa,ext27;d
+29;oa,28;a;b;w
+30;aa,ext29;a;b;w
+31;oa,30;20
+32;aa,ext31;20
+33;oa,32;20;10;i
+34;aa,ext33;20;10;i
+35;aa,10
+36;aa,LAST ERROR;20,last_error
+37;aa,MYC INFO;b,ACTIVE
+38;oa,INDIVIDUALIZATION;20,NAME,D1;b,NUMBER,1;22,CHAPTER,ADMINISTRATION
+39;aa,INDIVIDUALIZATION;20,NAME,D1;b,NUMBER,1;a,RS232,1;a,RS232_BAUD,0,{115200};3,RS232_BITS,8n1;a,USB,1;a,I2C,1;b,I2CADRESS;14,CHAPTER,ADMINISTRATION
+41;at,1;1;0,on;1,aus
+42;at,2;300,stack;0,on;1,aus;2,idle;3,other
+43;ou,3;1;0,idle;1,on
+44;ou,4;5;0,idle;1,on;2,test
+45;ob,5;a
+46;ab,ext45;a
+47;ob,7;a;b
+48;ab,ext47;a;b
+49;ob,9;b;w
+50;ab,ext49;b;w
+51;ob;10;b
+52;ab,ext51;10;b
+53;of,13;a;3
+54;af,ext53;a;3
+55;of,15;10,yyy;5
+56;af,ext55;10,yyy;5
+57;om,17;b;3
+58;am,ext57;b;3
+59;om,19;e;3
+60;am,ext59;e;3
+61;om,21;5;3
+62;am,ext61;5;3
+63;on,23;a;5;5
+64;an,ext63;a;5;5
+65;on,25;w;5;5
+66;an,ext65;w;5;5
+67;on,27;10;5;5
+68;an,ext67;10;5;5
+69;aa,LAST ERROR;20,last_error
+70;aa,MYC INFO;b,ACTIVE
+71;oa,INDIVIDUALIZATION;20,NAME,D1;b,NUMBER,1;22,CHAPTER,ADMINISTRATION
+72;aa,INDIVIDUALIZATION;20,NAME,D1;b,NUMBER,1;a,RS232,1;a,RS232_BAUD,0,{115200};3,RS232_BITS,8n1;a,USB,1;a,I2C,1;b,I2CADRESS;14,CHAPTER,ADMINISTRATION
+240;an,ANNOUNCEMENTS;145;122;122
+241;an;BASIC ANNOUNCEMNTS;2;2
+252;aa,LAST ERROR;200
+253;aa,MYC INFO;b,ACTIVE
+254;oa,INDIVIDUALIZATION;20,NAME,t1;b,NUMBER,1;a,USB,1;b,USB_COMPORT,10;a,TELNET,0;a,FILE,1;10,FILEIN,from_test1;9,FILEOUT,to_test1;a,TERMINAL,1
+255;aa,INDIVIDUALIZATION;20,NAME,t1;b,NUMBER,1;a,USB,1;b,USB_COMPORT,10;a,TELNET,0;a,FILE,1;10,FILEIN,from_test1;9,FILEOUT,to_test1;a,TERMINAL,1
+R;!21 IF 3=1
+R;!4 IF 3=1
+R;!6 IF 3=1
+R;!~ IF 5=1=1
+R;!!~ IF 5=1=1
+R;!2 IF 5=2=1
+R;!4 IF 5<2=1
+R;!6 IF 5>1=1
+R;!10 IF 5!2=1
+R;!13 IF 5=~=1
+R;!17 IF 5=1TO2=1
+R;!2 IF 7=2=1
+R;!4 IF 7=2=0
+R;!6 IF 9=2=2=1
+R;!10 IF 9<1=2=1
+R;!13 IF 9=1<2=1
+R;!17 IF 9>1=2=1
+R;!19 IF 9=1>0=1
+R;!21 IF 9!2=0=1
+R;!23 IF 9=0TO1=2=1
+R;!25 IF 9=1=0TO1=1
+R;!2 IF 11=10
+R;!4 IF 11=300
+R;!6 IF 11!300
+R;!10 IF 11=2TO4
+R;!13 IF 14=2=200
+R;!17 IF 14>0=300
+R;!19 IF 14<2<200
+R;!21 IF 14!2=301
+R;!2 IF 14=1TO2=210
+R;!4 IF 16=2=9=12
+R;!6 IF 16=1>7=3
+R;!10 IF 16=0!7!13
+R;!25 IF 16=1=2TO7=1
+R;!2 IF 18=1
+R;!4 IF 20=1
+R;!6 IF 22=300
+R;!10 IF 30=1=50
+R;!21 IF 34=1=st
+R;!23 IF 34=0TO1=st
+R;!25 IF 34=2=10
+R;!23 IF 5=2=1 OR 7=2=1
+R;!25 IF 11=10 AND 9=2=1=1
+R;!25 IF 11=4 AND ! 7=2=0
+R;!!~ IF ~
+L;test1;test2;text3

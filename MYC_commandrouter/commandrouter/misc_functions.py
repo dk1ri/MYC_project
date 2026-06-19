@@ -5,19 +5,18 @@ misc functions
 Copyright : DK1RI
 If no other rights are affected, this programm can be used under GPL (Gnu public licence)
 """
-import os
+from http.cookiejar import uppercase_escaped_char
 
-import v_dev
 from buffer_handling import *
 from command_handling import *
-
+import os
 import v_announcelist
 import v_cr_params
 import v_configparameter
+import v_dev
 import v_ld
 import v_sk
 import v_token_params
-import v_time_values
 
 def str_to_bytearray(string):
     # for string s: length with length l
@@ -52,7 +51,7 @@ def length_of_int(i):
         return 1
 
 def int_to_ba(integ, length):
-    # convert a integer to a bytearray of of int (0-255) with a length  ( 1, 2, 4, 8 )
+    # convert a integer to a bytearray of int (0-255) with length
     # length 0: use CR tokenlength
     if length == 0:
         length = v_announcelist.length_of_full_elements
@@ -103,18 +102,6 @@ def tok_to_bytes(tok, length):
             return bytearray([n0, n2, n3 ])
     # should not happen
     return bytearray([tok])
-
-def device_length_of_commandtoken(number):
-    # for devices only
-    # number is highest tokennumber of a devices
-    multi = 256
-    # length_of_commandtoken:
-    length_commandtoken = 1
-    while number + 16 >= multi:
-        multi = multi * 256
-        length_commandtoken += 1
-    return length_commandtoken
-
 
 def length_of_typ(c_type):
     # c_type is parameter - type: a, b, L d, .... or number for string
@@ -180,7 +167,10 @@ def split_rule(line):
     if " UNLESS " in line:
         typ = "UNLESS"
     li_ = line.split(typ)
-    left = li_[0].replace("$", "").replace("R;", "").split(" ")
+    left = li_[0].replace("$", "").replace("R;", "")
+    if left[-1] == " ":
+        left = left[:-1]
+    left=left.split(" ")
     if len(li_) > 1:
         right = li_[1].replace("$", "").replace("&", "")
     else:
@@ -373,6 +363,8 @@ def handle_rules(device):
     for lines in rules0:
         # all must have a value
         ok = 1
+        v_dev.direct_command_to_sent[device].append("")
+        v_dev.left_toks[device].append(-1)
         if lines[1] == "IF":
             v_dev.if_unless[device].append(0)
         else:
@@ -390,7 +382,7 @@ def handle_rules(device):
             left0 = int(left.replace("!", ""))
             # check left0 tok in all_toks_of_dev and operating command
             if left0 in v_dev.all_toks_of_dev[device] and left0 not in v_dev.all_answer_toks[device]:
-                v_dev.left_toks[device].append(left0)
+                v_dev.left_toks[device][rule_index] = left0
             else:
                 misc_functions.write_log("device "+ str(device) + " left token not valid: " + " ".join(lines))
                 ok = 0
@@ -398,13 +390,15 @@ def handle_rules(device):
         elif left[0] == "?":
             # full command to block
             v_dev.ruleindex_typ[device].append(3)
+            v_dev.direct_command_to_sent[device][rule_index] = left
         else:
-            # direct command to excute not allowed for devices
-            misc_functions.write_log("device "+ str(device) + " left data not valid: " + " ".join(lines))
+            # direct command
+            v_dev.ruleindex_typ[device].append(4)
+            v_dev.direct_command_to_sent[device][rule_index] = left
 
         if ok == 1:
             ok = create_condition_per_index(device, rule_index, right)
-        if ok == 1:
+        if ok == 1 and right.replace(" ","") != "~":
             # find toks in right
             r = right.split(" ")
             i = 0
@@ -432,7 +426,7 @@ def handle_rules(device):
                                 ok = 0
                             v_dev.right_toks[device].append(tok_int)
                         else:
-                            misc_functions.write_log("device "+ str(device) + " rule right side error: " + right)
+                            misc_functions.write_log("device "+ str(device) + " rule right side error: " + lines[0] + lines[1] + lines[2])
                             ok = 0
                 i += 1
         if ok == 1:
@@ -564,3 +558,58 @@ def inital_block_status():
             v_ld.blocked_rule_index[rule_index] = 0
         rule_index += 1
     return
+
+def two_byte_to_one_byte(data):
+    #convert 2 byte hex (0-9, a -d to one byte
+    # bytes are in this range
+    d = bytearray()
+    i = 0
+    c2 = 0
+    int_for_hex = 0
+    result = bytearray()
+    ok = 1
+    while i < len(data) and ok == 1:
+        if data[i] >= 97 and data[i] <= 102:
+            d.append(data[i] - 87)
+        elif data[i] >= 48 and data[i] <= 57:
+            d.append(data[i] - 48)
+        elif data[i] >= 65 and data[i] <= 70:
+            d.append(data[i] - 55)
+        else:
+            ok = 0
+        if ok == 1:
+            print(d[c2])
+            if c2 == 0:
+                int_for_hex = d[c2]
+                c2 += 1
+            else:
+                int_for_hex *= 16
+                int_for_hex += d[c2]
+                c2 = 0
+                d = bytearray()
+                result.append(int_for_hex)
+        i += 1
+    return result
+
+def one_byte_to_two_bytes(data):
+    #convert byte to 2 byte hex (0-9, a -d
+    i = 0
+    result = ""
+
+    while i < len(data):
+        d = data[i] // 16
+        if d < 10:
+            # number
+            dd = chr(d + 48)
+        else:
+            dd = chr(d + 55)
+        result += dd
+        d = data[i] % 16
+        if d < 10:
+            # number
+            dd = chr(d + 48)
+        else:
+            dd = chr(d + 55)
+        result += dd
+        i += 1
+    return result

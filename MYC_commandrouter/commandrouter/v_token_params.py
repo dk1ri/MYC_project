@@ -6,7 +6,7 @@ Copyright : DK1RI
 If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
 
-cr_token = []                               # CR_tok for device_tok per device cr_token is != index (tok)
+cr_token = {}                               # CR_tok for device_tok per device cr_token is != index (tok)
 dev_token = {}                              # original commandtoken for a CR tok
 device = {}                                 # device, that tok should be sent to
 a_to_o = {}

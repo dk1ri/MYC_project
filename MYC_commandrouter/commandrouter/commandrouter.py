@@ -1,6 +1,6 @@
 """
 name : commandrouter.py
-Version 03.02 , 20260414
+Version V03.02 , 20260530
 Purpose : Program for a MYC commandrouter
 The Programm supports the MYC protocol
 developed using PyCharm
@@ -10,7 +10,7 @@ Should be used with raspberry Pi Hardware (actual version not tested)
 Copyright : DK1RI
 If no other rights are affected, this program can be used under GPL (Gnu public licence)
 """
-
+import v_cr_params
 from buffer_handling import *
 from device_handling import *
 from init import *
@@ -58,40 +58,26 @@ def time_dependent_tasks():
     return
 
 # Main
+print ("Please wait...")
+v_cr_params.init_ready = 0
 init_start_time = time.time()
+# reads config file
 readconfig()
+# read CR line and create SK interfaces
+read_cr_line()
+print ("search for devices")
+# create device interfaces
+create_devices()
+
+# read list of given devices
 read_device_interface_list()
-if v_configparameter.test_mode == 0:
-    # search devices not tested
-    v_dev.init_ready  = 0
-    v_dev.init_sequence = 0
-    v_dev.init_device = 0
-    init_start = time.time()
-    while v_dev.init_ready  == 0:
-        if time.time() - init_start_time > 1:
-            v_dev.init_sequence = 5
-            start_time = time.time()
-        read_interfaces_anouncefilenames()
-        poll_devices()
-        # analyzes the answers and info from devices:
-        poll_device_buffer()
-else:
-    # device0 is CR!!
-    v_dev.active[0] = 1
-    v_dev.anouncefile_name[1] = "DK1RI_test1_V01.0_D1_1.bas"
-    v_dev.active[1] = 1
-    v_dev.anouncefile_name[2] = "DK1RI_test2_V01.0_D1_1.bas"
-    v_dev.active[2]= 1
+if len(v_dev.anouncefile_name) == 0:
+    sys.exit("no devices found")
+
 initialization()
 print_for_test()
 if v_configparameter.test_mode == 1:
     write_log("started")
-"""
-loops = 0
-all_time = 0
-last_time = time.time()
-display_loops = 0
-"""
 while 1:
     """
     # measure loop time
@@ -112,12 +98,10 @@ while 1:
             display_loops = 0
     """
     time_dependent_tasks()
-    # collect data from (SK )inputs:
-    poll_sk()
-    # analyzes the sk input_buffer
+    # collect data from (SK )inputsnad aalyze data (analyze_sk_input)
     # send commands to LD if applicable per inputdevice
     # check for rules (ld_analyze)
-    poll_input_buffer()
+    poll_sk()
     # send commands to devices:
     send_to_device()
     # get answers and info from normal device and lower level CR:

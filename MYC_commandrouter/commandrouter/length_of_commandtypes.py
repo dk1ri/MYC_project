@@ -215,7 +215,7 @@ def ct_at(stripped, o_a, dev):
             #length of this
             o_a_list.append(misc_functions.length_of_int(len(stripped) - 3))
             # string
-            o_a_list.appeno_a_listd(0)
+            o_a_list.append(0)
         else:
             o_a_list.append(1)
             # wait

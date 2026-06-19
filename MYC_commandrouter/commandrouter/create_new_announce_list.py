@@ -1,6 +1,6 @@
 """"
 name : create_new_announce_list.py
-last edited: 20260414
+last edited: 20260528
 new announcelist is created or modified and some associated lists and parameters
 Copyright : DK1RI
 If no other rights are affected, this program can be used under GPL (Gnu public licence)
@@ -24,7 +24,6 @@ def create_new_announce_list():
     v_announcelist.rules_elements = 0
     v_announcelist.admin_elements = 0
     number_of_devices =  len(v_dev.announcements)
-
     while device_number < number_of_devices:
         # for each device
         v_announcelist.rules_elements += len(v_dev.rules[device_number])
@@ -67,7 +66,7 @@ def create_new_announce_list():
 
     # device 0 is local CR
     v_token_params.dev_token[0] = 0
-    v_token_params.cr_token.append({})
+    v_token_params.cr_token[0] = {}
     v_token_params.cr_token[0] = {}
     v_token_params.cr_token[0][0] = 0
     v_token_params.device[0] = 0
@@ -75,6 +74,8 @@ def create_new_announce_list():
     # announce 0 (CR)
     cr_announce = v_configparameter.cr0_announcements[0]
     item = cr_announce.split(";")
+    # device_type_name of this CR
+    v_cr_params.device_type_name = item[2] + "_" + item[3] + "_" + item[4]
     item[5] = str(number_of_devices)
     # number of commandbytes
     item[7] = str(v_announcelist.length_of_full_elements)
@@ -86,15 +87,12 @@ def create_new_announce_list():
     v_announcelist.basic[0] = bytearray([])
     v_announcelist.basic[0].extend(tok_to_bytes(len(line), 1))
     v_announcelist.basic[0].extend(bytes(map(ord, line)))
-    v_announcelist.full_240.append(bytearray())
-    v_announcelist.full_240[0].extend(tok_to_bytes(len(line), 1))
-    v_announcelist.full_240[0].extend(bytes(map(ord, line)))
+    v_announcelist.full_240.append(line)
     v_announcelist.all_token.append(0)
     # create translate lists: v_token_params.dev_token v_token_params.cr_token and v_token_params.device
     device_number = 1
     new_command_number = v_announcelist.start_of_cr_token
     while device_number < number_of_devices:
-        v_token_params.cr_token.append([])
         v_token_params.cr_token[device_number] = {}
         for tok in v_dev.announcements[device_number]:
             v_token_params.dev_token[new_command_number] = int(tok)
@@ -278,16 +276,30 @@ def create_new_announce_list():
             line = announce
             v_announcelist.full[int(announce[0])] = line
             v_announcelist.all_token.append(int(cr_tok))
-            i = 0
-            found = 0
-            while i < len(announce) and found == 0:
-                if announce[i].find("ADMINISTRATION") > -1:
-                    found = 1
-                i += 1
-            if found == 0:
-                # tok
-                v_announcelist.full_240.append(bytearray())
-                v_announcelist.full_240[index].extend(v_dev.announcments_not_stripped[device_number][tok])
+            # for full_240 list:
+            if v_dev.announcments_not_stripped[device_number][tok].find("ADMINISTRATION") == -1:
+                lin = v_dev.announcments_not_stripped[device_number][tok].split(";")
+                if lin[0] == 0:
+                    # individual basic line
+                    line = v_dev.basic_commands[device_number]
+                elif lin[0][:3] == 255:
+                    # change to individual name and number
+                    lin[2] = v_dev.f255_name
+                    lin[3] = v_dev.f255_number
+                    line = ";".join(lin)
+                else:
+                    s_lin = lin[1].split(",")
+                    if len(s_lin) > 1:
+                        # commandtype with description
+                        if len(s_lin[1].split("ext")) > 1:
+                            org_tok = s_lin[1].split("ext")[1]
+                            # update token
+                            tr_tok = str(v_token_params.cr_token[device_number][int(org_tok)])
+                            s_lin[1] = "ext"+  str(tr_tok)
+                            lin[1] = ",".join(s_lin)
+                    lin[0] = cr_tok
+                    line = ";".join(lin)
+                v_announcelist.full_240.append(line)
                 v_announcelist.full_elements_240 += 1
                 index += 1
         device_number += 1
@@ -297,23 +309,31 @@ def create_new_announce_list():
     items[0] = str(act_tok)
     items[3] = str(v_announcelist.full_elements)
     items[4] = str(v_announcelist.full_elements)
-    v_announcelist.full[act_tok] = items
+    items_stripped = items
+    items_stripped[1] = items_stripped[1].split(",")[0]
+    items_stripped[2] = items_stripped[2].split(",")[0]
+    v_announcelist.full[act_tok] = items_stripped
     line = (";".join(items))
-    v_announcelist.full_240.append([hex(len(line)), bytes(map(ord, line))])
+    v_announcelist.full_240.append(line)
     v_announcelist.all_token.append(act_tok)
     v_announcelist.cr_token.append(act_tok)
+    index += 1
 
     # add 241
     act_tok = v_announcelist.start_of_reserved_token + 1
     items = v_configparameter.cr0_announcements[2].split(";")
     items[0] = str(act_tok)
+    items[2] = str(v_announcelist.basic_elements)
     items[3] = str(v_announcelist.basic_elements)
-    items[4] = str(v_announcelist.basic_elements)
-    v_announcelist.full[act_tok] = items
+    items_stripped = items
+    items_stripped[1] = items_stripped[1].split(",")[0]
+    items_stripped[2] = items_stripped[2].split(",")[0]
+    v_announcelist.full[act_tok] = items_stripped
     line = (";".join(items))
-    v_announcelist.full_240.append([hex(len(line)), bytes(map(ord, line))])
+    v_announcelist.full_240.append(line)
     v_announcelist.all_token.append(act_tok)
     v_announcelist.cr_token.append(act_tok)
+    index += 1
 
     # add 252
     act_tok = v_announcelist.start_of_reserved_token + 12
@@ -321,60 +341,106 @@ def create_new_announce_list():
     items[0] = str(act_tok)
     v_announcelist.full[act_tok] = items
     line = (";".join(items))
-    v_announcelist.full_240.append([hex(len(line)), bytes(map(ord, line))])
+    v_announcelist.full_240.append(line)
     v_announcelist.all_token.append(act_tok)
     v_announcelist.cr_token.append(act_tok)
+    index += 1
 
     # add 253
     act_tok = v_announcelist.start_of_reserved_token + 13
     items = v_configparameter.cr0_announcements[4].split(";")
     items[0] = str(act_tok)
-    v_announcelist.full[act_tok] = items
+    items_stripped = items
+    i = 0
+    while i < len(items_stripped):
+        items_stripped[i] = items_stripped[i].split(",")[0]
+        i += 1
+    v_announcelist.full[act_tok] = items_stripped
     line = (";".join(items))
-    v_announcelist.full_240.append([hex(len(line)), bytes(map(ord, line))])
+    v_announcelist.full_240.append(line)
     v_announcelist.all_token.append(act_tok)
     v_announcelist.cr_token.append(act_tok)
+    index += 1
+
+    # add 254
+    act_tok = v_announcelist.start_of_reserved_token + 14
+    items = v_configparameter.cr0_announcements[5].split(";")
+    items[0] = str(act_tok)
+    items_stripped = items
+    i = 0
+    while i < len(items_stripped):
+        items_stripped[i] = items_stripped[i].split(",")[0]
+        i += 1
+    v_announcelist.full[act_tok] = items_stripped
+    line = (";".join(items))
+    v_announcelist.full_240.append(line)
+    v_announcelist.all_token.append(act_tok)
+    v_announcelist.cr_token.append(act_tok)
+    index += 1
 
     # add 255
     act_tok = v_announcelist.start_of_reserved_token + 15
-    items = v_configparameter.cr0_announcements[5].split(";")
+    items = v_configparameter.cr0_announcements[6].split(";")
     items[0] = str(act_tok)
-    v_announcelist.full[act_tok] = items
+    items_stripped = items
+    i = 0
+    while i < len(items_stripped):
+        items_stripped[i] = items_stripped[i].split(",")[0]
+        i += 1
+    v_announcelist.full[act_tok] = items_stripped
     line = (";".join(items))
-    v_announcelist.full_240.append([hex(len(line)), bytes(map(ord, line))])
+    v_announcelist.full_240.append(line)
     v_announcelist.all_token.append(act_tok)
     v_announcelist.cr_token.append(act_tok)
+    index += 1
 
     # add rules
-    for announce in v_announcelist.rules:
-        v_announcelist.full_240.append("R;" + announce)
-
+    for line in v_announcelist.rules:
+        v_announcelist.full_240.append("R;")
+        v_announcelist.full_240[index] += line
+        index += 1
     # add otherlines
     for device in v_dev.other_lines:
         # otherlines the end of full_240
         for announce in v_dev.other_lines[device]:
             v_announcelist.full_240.append(announce)
+            index += 1
     # full announcelist complete now
-
     # v_linelength.command:
     for cr_tok in v_announcelist.full:
         ct = v_announcelist.full[cr_tok][1].split(",")[0]
         v_linelength.command[int(cr_tok)] = commandtypes[ct](v_announcelist.full[cr_tok], 0, 0)
 
         # some ld lists
-        rules_index = 0
+        ld_rules_index = 0
         device_number = 1
         while device_number < number_of_devices:
+            rules_index = 0
             for lines in v_dev.rules[device_number]:
-                v_ld.if_unless[rules_index] = v_dev.if_unless[device_number][rules_index]
-                v_ld.ruleindex_typ[rules_index] = v_dev.ruleindex_typ[device_number][rules_index]
-                v_ld.direct_command_to_sent[rules_index] = v_dev.direct_command_to_sent[device_number][rules_index]
-                v_ld.all_condition_per_index[rules_index] = v_dev.all_conditions[device_number][rules_index]
-                v_ld.left_tok_by_index[rules_index] = v_token_params.cr_token[
-                    v_dev.left_toks[device_number][rules_index]]
-                v_announcelist.all_answer_token.append(
-                    v_token_params.cr_token[v_dev.all_answer_toks[device_number][rules_index]])
+                v_ld.if_unless[ld_rules_index] = v_dev.if_unless[device_number][rules_index]
+                v_ld.ruleindex_typ[ld_rules_index] = v_dev.ruleindex_typ[device_number][rules_index]
+                v_ld.direct_command_to_sent[ld_rules_index] = 0
+                x =v_dev.direct_command_to_sent[device_number][rules_index]
+                v_ld.direct_command_to_sent[ld_rules_index] = v_dev.direct_command_to_sent[device_number][rules_index]
+                v_ld.all_condition_per_index[ld_rules_index] = v_dev.all_conditions[device_number][rules_index]
+                if v_dev.left_toks[device_number][rules_index] != - 1:
+                    v_ld.left_tok_by_index[ld_rules_index] = v_token_params.cr_token[device_number][v_dev.left_toks[device_number][rules_index]]
+                    v_announcelist.all_answer_token.append(v_token_params.cr_token[device_number][v_dev.left_toks[device_number][rules_index]])
+                else:
+                    v_ld.left_tok_by_index[ld_rules_index] = -1
             device_number += 1
+
+    # copy v_announcelist.full_240 to weberver (if dir exists)
+    xampp_dir = "c:/xampp/htdocs/devices/"
+    if os.path.isdir(xampp_dir):
+        xampp_dir = "c:/xampp/htdocs/devices/" + v_cr_params.device_type_name
+        xampp_file = xampp_dir + "/" + v_cr_params.device_type_name
+        if os.path.isdir(xampp_dir) == False:
+            os.mkdir (xampp_dir)
+        file = open(xampp_file,"w")
+        for lines in v_announcelist.full_240:
+            # file.write(";".join(lines))
+            file.write(lines+ "\n")
 
     inital_block_status()
 # for ct_x see length_of_commandtypes.py

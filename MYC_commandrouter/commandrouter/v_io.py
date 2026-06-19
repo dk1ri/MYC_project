@@ -9,4 +9,3 @@ data = ""                                   # string from keyboard
 filedir =  "file_interface"                 # directory for file_interface
 to_sk = filedir + "/to_sk"
 from_sk = filedir + "/from_sk"
-sk_file_removed = 1

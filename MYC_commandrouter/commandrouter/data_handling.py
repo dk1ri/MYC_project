@@ -31,7 +31,6 @@ def data_1(tok, line, got_bytes, sk, linelength, input_device):
             # check always
             if tok in v_ld.right_tok:
                 v_sk.input_as_parameter_list.append(parameter)
-
             if parameter > linelength[pos_in_linelength]:
                 misc_functions. write_log("transfertype 1 value too high, " + str(parameter) + " should be " + str(linelength[pos_in_linelength]))
                 finish = 2

@@ -23,11 +23,9 @@ def poll_device_buffer():
     # input is a bytearray for each device
     for device in v_dev.data_to_CR:
         #  all devices
-        # wait for complete commandtoke
+        # wait for complete commandtoken
         if len(v_dev.data_to_CR[device]) < v_dev.length_commandtoken[device]:
-            device += 1
             continue
-
         line = v_dev.data_to_CR[device]
         device_tokennumber = int.from_bytes(line[:v_dev.length_commandtoken[device]], byteorder='big', signed=False)
         # usually should be true:
@@ -41,33 +39,31 @@ def poll_device_buffer():
             else:
                 # got valid token now
                 line_length_index_0 = v_linelength.answer[device][device_tokennumber][0]
-
                 # after geting the commandtoken loop is 0:
                 if v_dev.len[device][1] == 0:
                     # get the number of bytes for the fist loop
                     v_dev.len[device][0] = v_linelength.answer[device][device_tokennumber][1]
                     # set time for timeout
                     v_dev.start_time[device] = time.time()
-
                 got_bytes = len(line)
                 # some switches without parameters
-                if line_length_index_0 == "0":
+                if line_length_index_0 == 0:
                     finish = 1
 
                 # switches,range commands and numeric om, am
-                elif line_length_index_0 == "1":
+                elif line_length_index_0 == 1:
                     v_dev.len[device], finish = data_1(device_tokennumber, line,got_bytes,v_dev.len[device],v_linelength.answer[device][device_tokennumber], device)
 
                 # an string
-                elif line_length_index_0 == "2":
+                elif line_length_index_0 == 2:
                     v_dev.len[device], finish = data_4(line, got_bytes,v_dev.len[device], v_linelength.answer[device][device_tokennumber], device)
 
                 # aa
-                elif line_length_index_0 == "3":
+                elif line_length_index_0 == 3:
                     v_dev.len[device], finish = data_3(device_tokennumber,line, got_bytes,v_dev.len[device], v_linelength.answer[device][device_tokennumber], device)
 
                 # ab
-                elif line_length_index_0 == "4":
+                elif line_length_index_0 == 4:
                     v_dev.len[device], finish = data_4(line, got_bytes,v_dev.len[device], v_linelength.answer[device][device_tokennumber], device)
                 else:
                     finish = 2
@@ -82,13 +78,15 @@ def poll_device_buffer():
             # transfer to to SK (skip LD) but store data
             # change dev token to CR token
             dev_tok = int.from_bytes(v_dev.data_to_CR[device][:v_dev.token_length])
-            v_ld.from_ld_to_sk = v_token_params.cr_token[device][dev_tok].to_bytes(v_announcelist.length_of_full_elements, byteorder='big', signed=False)
-            v_ld.from_ld_to_sk += (v_dev.data_to_CR[device][v_dev.token_length:])
-            misc_functions.write_log("dev to ld" + v_ld.from_ld_to_sk)
-            if v_ld.from_ld_to_sk[0] in v_ld.right_tok:
-                store_data(v_ld.from_ld_to_sk[0], v_ld.from_ld_to_sk)
+            from_ld_to_sk = v_token_params.cr_token[device][dev_tok].to_bytes(v_announcelist.length_of_full_elements, byteorder='big', signed=False)
+            from_ld_to_sk += (v_dev.data_to_CR[device][v_dev.token_length:])
+            misc_functions.write_log("dev to sk " + str(len(from_ld_to_sk))+ " bytes")
+            if from_ld_to_sk[0] in v_ld.right_tok:
+                store_data(from_ld_to_sk[0], from_ld_to_sk)
+            v_sk.info_to_all = from_ld_to_sk
             # clear data
-            v_dev.data_to_CR[device] = v_dev.data_to_CR[device][:v_dev.len[device][0]:]
+        #    v_dev.data_to_CR[device] = v_dev.data_to_CR[device][:v_dev.len[device][0]:]
+            v_dev.data_to_CR[device] = bytearray()
             v_dev.len[device] = [0, 0, 0, 0, 0]
             v_dev.start_time[device] = 0
         else:

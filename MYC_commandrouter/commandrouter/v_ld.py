@@ -7,7 +7,7 @@ parameters for LD
 """
 
 from_ld_to_dev = []                 # data from LD to device vis CR
-from_ld_to_sk = []                  # data from LD to SK vis CR
+# from_ld_to_sk = []                  # data from LD to SK vis CR
 
 blocked_rule_index = {}             # ruleindices refer to tok, direct command to execute or direct command to
                                     # blocked either true or false

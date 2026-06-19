@@ -6,12 +6,15 @@
 # # as first char of a line for comments are allowed.
 #
 # The following types of connections are allowed:
-# RS232n	RS232 port n for Serial Connection
-# USBCOMn	RS232 port n for Serial Connection
-# FILE<s>	uses to_<s> and from_<s> in file_interface directory as filenames!
+# RS232n		RS232 port n for Serial Connection
+# USBCOMn		USB port n for Serial Connection
+# FILE<s>		uses to_<s> and from_<s> in file_interface directory as filenames!
+# PIPE<s>		as FILE, but other Transfer via Pipes not yet tested !!!
+# ETH<n>		telenet only (port 22) not yet tested!!!
 # 
 #The following connetion are allowed, but not implemented now:
 # I2C CAN RC5 RC6 SPI TELNET HTTP HTTPS TERMINAL SSH RADIO
 #
-USBCOM1
+USBCOM4
+USBCOM8
 FILEtest1
